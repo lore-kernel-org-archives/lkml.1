@@ -1,138 +1,206 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754973Ab0CECxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 21:53:43 -0500
-Received: from mga05.intel.com ([192.55.52.89]:52580 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754828Ab0CECxm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 21:53:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,584,1262592000"; 
-   d="scan'208";a="546242982"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 6/7] xen: Enable PV clocksource for HVM
-Date: Fri, 5 Mar 2010 10:54:50 +0800
-User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
-Cc: Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "xen-devel" <xen-devel@lists.xensource.com>
-References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com> <1267695416-14988-7-git-send-email-sheng@linux.intel.com> <4B8FF0A3.9060305@goop.org>
-In-Reply-To: <4B8FF0A3.9060305@goop.org>
+	id S1755070Ab0CECyj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 21:54:39 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52389 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754399Ab0CECyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 21:54:37 -0500
+Date: Thu, 4 Mar 2010 18:54:35 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl,
+       cloos@jhcloos.com
+Subject: [PATCH] v3 kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100305025435.GA6836@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003051054.50535.sheng@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 March 2010 01:40:51 Jeremy Fitzhardinge wrote:
-> On 03/04/2010 01:36 AM, Sheng Yang wrote:
-> > And enable it by default in PV extended HVM guest.
-> >
-> > Signed-off-by: Sheng Yang<sheng@linux.intel.com>
-> > ---
-> >   arch/x86/xen/hvmpv.c |   20 ++++++++++++++++++++
-> >   arch/x86/xen/time.c  |    4 +++-
-> >   2 files changed, 23 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
-> > index 7a741ed..284e021 100644
-> > --- a/arch/x86/xen/hvmpv.c
-> > +++ b/arch/x86/xen/hvmpv.c
-> > @@ -43,6 +43,7 @@ static void __init xen_hvm_pv_banner(void)
-> >   		pv_info.name);
-> >   	printk(KERN_INFO "Xen version: %d.%d%s\n",
-> >   		version>>  16, version&  0xffff, extra.extraversion);
-> > +	printk(KERN_INFO "PV feature: PV clocksource enabled\n");
-> >   }
-> >
-> >   static int __init xen_para_available(void)
-> > @@ -117,6 +118,22 @@ static void __init init_shared_info(void)
-> >   	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
-> >   }
-> >
-> > +extern struct clocksource xen_clocksource;
-> 
-> No externs in .c files.  But aside from that, I'd prefer you export a
-> function from xen/time.c to do the clocksource registration and call it
-> from both places (even if its a one-liner).
+This patch appends the localversion string to the Linux kernel version.
+For example, in a git tree with uncommitted changes, the .config file
+might start as follows (but with leading hash marks):
 
-OK
-> 
-> > +
-> > +static void __init init_pv_clocksource(void)
-> > +{
-> > +	if (enable_hvm_pv(HVM_PV_CLOCK))
-> > +		BUG();
-> 
-> BUG is a bit severe.  Will it really never, ever fail?  And if it does,
-> the consequence is hardly serious; we just fall back to emulated devices.
+	Automatically generated make config: don't edit
+	Linux kernel version: 2.6.33-01836-g90a6501-dirty
+	Mon Mar  1 17:05:59 2010
 
-It shouldn't fail. If we got a hypervisor without these extension, this one 
-won't be called. Because the feature should be detected by CPUID, and the 
-hypervisor would mask the unsupported features. So the guest won't see that 
-bit if it's not supported, and this one wouldn't be involved.
+The "-01836-g90a6501-dirty" string is added by this patch.
 
--- 
-regards
-Yang, Sheng
+The KBUILD_CONFIG_NO_CHECK_DIRTY environment variable controls the
+git "-dirty" check.  If this variable is either empty or undefined,
+then a "-dirty" check is performed (the default), otherwise, this
+check is omitted.
 
-> 
-> > +
-> > +	pv_time_ops.sched_clock = xen_sched_clock;
-> > +
-> > +	x86_platform.calibrate_tsc = xen_tsc_khz;
-> > +	x86_platform.get_wallclock = xen_get_wallclock;
-> > +	x86_platform.set_wallclock = xen_set_wallclock;
-> > +
-> > +	clocksource_register(&xen_clocksource);
-> > +}
-> > +
-> >   void __init xen_guest_init(void)
-> >   {
-> >   	int r;
-> > @@ -130,4 +147,7 @@ void __init xen_guest_init(void)
-> >   		return;
-> >
-> >   	init_shared_info();
-> > +
-> > +	/* PV clocksource would be enabled by default */
-> > +	init_pv_clocksource();
-> >   }
-> > diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-> > index 0d3f07c..c80eacb 100644
-> > --- a/arch/x86/xen/time.c
-> > +++ b/arch/x86/xen/time.c
-> > @@ -13,6 +13,7 @@
-> >   #include<linux/clockchips.h>
-> >   #include<linux/kernel_stat.h>
-> >   #include<linux/math64.h>
-> > +#include<linux/module.h>
-> >
-> >   #include<asm/pvclock.h>
-> >   #include<asm/xen/hypervisor.h>
-> > @@ -243,7 +244,7 @@ int xen_set_wallclock(unsigned long now)
-> >   	return -1;
-> >   }
-> >
-> > -static struct clocksource xen_clocksource __read_mostly = {
-> > +struct clocksource xen_clocksource __read_mostly = {
-> >   	.name = "xen",
-> >   	.rating = 400,
-> >   	.read = xen_clocksource_get_cycles,
-> > @@ -252,6 +253,7 @@ static struct clocksource xen_clocksource
-> > __read_mostly = { .shift = XEN_SHIFT,
-> >   	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
-> >   };
-> > +EXPORT_SYMBOL_GPL(xen_clocksource);
-> >
-> >   /*
-> >      Xen clockevent implementation
-> 
+Differences from v2:
+
+o	Replace popen() with the equivalent fork-exec series
+	to prevent security vulnerabilities due to shell metacharacter
+	interpretation.
+
+o	Added the KBUILD_CONFIG_NO_CHECK_DIRTY environment variable,
+	and modified scripts/setlocalversion to check it, as suggested
+	by James Cloos.
+
+Differences from v1:
+
+o	Incorporates feedback from Geert Uytterhoeven, Linus Torvalds,
+	Frans Pop, and James Cloos.
+
+o	Fixed to work correctly with the "O=" Makefile argument and
+	the KBUILD_OUTPUT environment variable, so that .config files
+	created in directories outside of the source tree are tagged
+	correctly.
+
+o	Uses scripts/setlocalversion, which handles not only git, but
+	also mercurial and svn.
+
+o	Make the new behavior default-off, as scripts/setlocalversion
+	has significant latency.  A new environment variable named
+	"KBUILD_CONFIG_LOCALVERSION" must be set to enable the
+	"-01836-g90a6501-dirty" style of string.
+
+	This is intended to address James Cloos's concern that this
+	feature will slow down casual kernel builds.
+
+It has been suggested that this string be output at boot and oops time.
+If there is general agreement, this will be the subject of a separate
+patch.
+
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Suggested-by: Frans Pop <elendil@planet.nl>
+Suggested-by: James Cloos <cloos@jhcloos.com>
+Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Frans Pop <elendil@planet.nl>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ kconfig/confdata.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ setlocalversion    |   17 ++++++++++-------
+ 2 files changed, 59 insertions(+), 9 deletions(-)
+
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index c4dec80..e896b81 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -15,6 +15,8 @@
+ #define LKC_DIRECT_LINK
+ #include "lkc.h"
+ 
++extern char **environ;
++
+ static void conf_warning(const char *fmt, ...)
+ 	__attribute__ ((format (printf, 1, 2)));
+ 
+@@ -399,15 +401,20 @@ int conf_read(const char *name)
+ int conf_write(const char *name)
+ {
+ 	FILE *out;
++	FILE *slv;
+ 	struct symbol *sym;
+ 	struct menu *menu;
+ 	const char *basename;
+-	char dirname[128], tmpname[128], newname[128];
++	char dirname[128], tmpname[128], newname[128], localversion[128];
++	char cmdline[PATH_MAX * 2 + 128];
+ 	int type, l;
+ 	const char *str;
+ 	time_t now;
+ 	int use_timestamp = 1;
++	int pipefd[2];
+ 	char *env;
++	char *path;
++	pid_t pid;
+ 
+ 	dirname[0] = 0;
+ 	if (name && name[0]) {
+@@ -450,12 +457,52 @@ int conf_write(const char *name)
+ 	if (env && *env)
+ 		use_timestamp = 0;
+ 
++	strcpy(localversion, "-?-nopath");
++	path = getenv(SRCTREE);
++	if (path && *path) {
++		strcpy(localversion, "-?-pipe()-failed");
++		if (pipe(pipefd) != 0)
++			goto nolocalversion;
++		env = getenv("KBUILD_CONFIG_NO_CHECK_DIRTY");
++		sprintf(cmdline, "%s/scripts/setlocalversion", path);
++		strcpy(localversion, "-?-fork()-failed");
++		pid = fork();
++		if (pid < 0)
++			goto nolocalversion;
++		if (pid == 0) { /* child */
++			int fd_new_stderr;
++			char *newargv[] = { cmdline, path, NULL };
++
++			close(1); /* stdout */
++			close(2); /* stderr */
++			fd_new_stderr = open("/dev/null", O_RDONLY);
++			if (dup2(pipefd[1], 1) < 0)
++				_exit(1);
++			if (fd_new_stderr != 2)
++				if (dup2(fd_new_stderr, 1) < 0) {
++					_exit(2);
++			}
++			execve(cmdline, newargv, environ);
++			_exit(3);
++		} else { /* parent */
++			strcpy(localversion, "-?-fscanf()-failed");
++			slv = fdopen(pipefd[0], "r");
++			if (slv != NULL) {
++				close(pipefd[1]);
++				fscanf(slv, " %127s ", localversion);
++				fclose(slv);
++			}
++		}
++	}
++nolocalversion:
++
+ 	fprintf(out, _("#\n"
+ 		       "# Automatically generated make config: don't edit\n"
+-		       "# Linux kernel version: %s\n"
++		       "# Linux kernel version: %s%s\n"
+ 		       "%s%s"
+ 		       "#\n"),
+ 		     sym_get_string_value(sym),
++		     localversion[0] != '\0' ? localversion : "",
+ 		     use_timestamp ? "# " : "",
+ 		     use_timestamp ? ctime(&now) : "");
+ 
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index 46989b8..3d4ff84 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -39,13 +39,16 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+ 	        printf -- '-svn%s' "`git svn find-rev $head`"
+ 	fi
+ 
+-	# Update index only on r/w media
+-	[ -w . ] && git update-index --refresh --unmerged > /dev/null
+-
+-	# Check for uncommitted changes
+-	if git diff-index --name-only HEAD | grep -v "^scripts/package" \
+-	    | read dummy; then
+-		printf '%s' -dirty
++	if [ -z "$KBUILD_CONFIG_NO_CHECK_DIRTY" ]; then
++		# Update index only on r/w media
++		[ -w . ] && git update-index --refresh --unmerged > /dev/null
++
++		# Check for uncommitted changes
++		if git diff-index --name-only HEAD \
++		    | grep -v "^scripts/package" \
++		    | read dummy; then
++			printf '%s' -dirty
++		fi
+ 	fi
+ 
+ 	# All done with git
