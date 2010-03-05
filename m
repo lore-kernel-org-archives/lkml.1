@@ -1,67 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984Ab0CEVNA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:13:00 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:63287 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462Ab0CEVM7 (ORCPT
+	id S1755180Ab0CEVNi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:13:38 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:39551 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754170Ab0CEVNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:12:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=HOWv1C/FWf/evt3z7ww+UUCF+Wnqsmo365l9B8R6kIPSldaNbhnvVSzmFW2UqQByNn
-         jG5uEHM1GfBKFQK1olaTk32wFLK5a07CFLLfzw4dKz1//FE4KnBSngORmC3nwm9CJois
-         99iWQ/YnJQazgS6tvQ6pseqXbNhXg/j9s9Fb8=
+	Fri, 5 Mar 2010 16:13:37 -0500
+Date: Fri, 5 Mar 2010 22:13:30 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
+ governor
+Message-ID: <20100305211329.GC20554@elf.ucw.cz>
+References: <20100303000649.757684000@intel.com>
+ <20100303000849.278509000@intel.com>
+ <4B8DADB9.1040302@xenotime.net>
+ <20100303215453.GG2579@ucw.cz>
+ <1267662469.16916.1020.camel@localhost.localdomain>
+ <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
+ <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
+ <20100305204029.GB20554@elf.ucw.cz>
+ <20100305205522.GA15489@srcf.ucam.org>
 MIME-Version: 1.0
-Date: Fri, 5 Mar 2010 15:12:57 -0600
-Message-ID: <a4e6962a1003051312r2b6e12deg5c647c1cd5c0e321@mail.gmail.com>
-Subject: GIT PULL] 9p file system additions for merge window
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: V9FS Developers <v9fs-developer@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100305205522.GA15489@srcf.ucam.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri 2010-03-05 20:55:22, Matthew Garrett wrote:
+> On Fri, Mar 05, 2010 at 09:40:29PM +0100, Pavel Machek wrote:
+> 
+> > That can be only true if it does not give benefits period... AC and
+> > battery power are quite different scenarios.
+> 
+> No, they're not.
 
-The following changes since commit 64ba9926759792cf7b95f823402e2781edd1b5d4:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.open-osd.org/linux-open-osd
+Yes, they are.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
-
-Aneesh Kumar K.V (4):
-      net/9p: Add multi channel support.
-      net/9p: Remove MAX_9P_CHAN limit
-      net/9p: Handle mount errors correctly.
-      fs/9p: Add hardlink support to .u extension
-
-Sripathi Kodi (4):
-      9P2010.L handshake: Add VFS flags
-      9P2010.L handshake: Add mount option
-      9P2010.L handshake: Remove "dotu" variable
-      9P2010.L handshake: .L protocol negotiation
-
- fs/9p/fid.c               |    2 +-
- fs/9p/v9fs.c              |    8 ++--
- fs/9p/v9fs.h              |   23 ++++++---
- fs/9p/vfs_dir.c           |    2 +-
- fs/9p/vfs_file.c          |    4 +-
- fs/9p/vfs_inode.c         |   48 +++++++++++++------
- include/linux/virtio_9p.h |    3 -
- include/net/9p/client.h   |   18 +++++++-
- net/9p/client.c           |  114 ++++++++++++++++++++++++++++++++++-----------
- net/9p/protocol.c         |   74 ++++++++++++++++-------------
- net/9p/protocol.h         |    6 +-
- net/9p/trans_virtio.c     |   80 +++++++++++++------------------
- 12 files changed, 238 insertions(+), 144 deletions(-)
-
-thanks,
-
-     -eric
+Would you care to elaborate? I may very well want top power on AC
+power, and max powersavings on battery; most people do.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
