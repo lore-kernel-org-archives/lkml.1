@@ -1,54 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489Ab0CEQDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:03:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455Ab0CEQDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:03:40 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: M vd S <mvds.00@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: O_NONBLOCK is NOOP on block devices
-References: <4B904D98.50602@gmail.com> <4B9060DE.4080104@gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 05 Mar 2010 11:03:37 -0500
-In-Reply-To: <4B9060DE.4080104@gmail.com> (M. vd S.'s message of "Fri, 05 Mar
-	2010 02:39:42 +0100")
-Message-ID: <x49sk8ezrfq.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754641Ab0CEQEU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:04:20 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41625 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752455Ab0CEQET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:04:19 -0500
+Date: Fri, 5 Mar 2010 16:03:40 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: daniel@fooishbar.org, mattst88@gmail.com, crmafra2@gmail.com,
+       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: Making Xorg easier to test
+Message-ID: <20100305160340.6229b0e5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100305.074932.225568964.davem@davemloft.net>
+References: <20100305100030.GA4970@Pilar.aei.mpg.de>
+	<b4198de61003050722s54478b08q31c4eb7fd892fb90@mail.gmail.com>
+	<20100305154143.GD2505@tempa>
+	<20100305.074932.225568964.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-M vd S <mvds.00@gmail.com> writes:
+On Fri, 05 Mar 2010 07:49:32 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
->> > > If O_NONBLOCK is meaningful whatsoever (see man page docs for
->> > > semantics) against block devices, one would expect a nonblocking io
->> >
->> > It isn't...
->>
->> Thanks for the reply. It's good to get confirmation that I am not all
->> alone in an alternate non blocking universe. The linux man pages
->> actually had me convinced O_NONBLOCK would actually keep a process
->> from blocking on device io :-)
->>
->
-> You're even less alone, I'm running into the same issue just now. But
-> I think I've found a way around it, see below.
+> From: Daniel Stone <daniel@fooishbar.org>
+> Date: Fri, 5 Mar 2010 17:41:43 +0200
+> 
+> > I understand that you guys are upset about this, so maybe you'd like to
+> > donate, say, 10% of your developer base to help out? That'd be pretty
+> > ace.
+> 
+> You have to support less than %10 of the amount of hardware we have to
+> support.
 
-I guess I should note that I've suggested nonblocking I/O for files
-before:
+If we believe the changelogs including X.org userspace then they also have
+a good deal less than 10% of the contributors.
 
-  http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-10/0290.html
-
-I'll also note that enabling such a patch broke apps that accessed cd
-burners, for example, since O_NONBLOCK had some preexisting semantics
-there that I fail to recall.
-
-Cheers,
-Jeff
+Alan
