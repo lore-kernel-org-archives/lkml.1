@@ -1,109 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034Ab0CESkJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 13:40:09 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58023 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753629Ab0CESkI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 13:40:08 -0500
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, stephen.chen@atheros.com,
-       cliff.holden@atheros.com, mcgrof@gmail.com,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH 2.6.23..2.6.24] Backport r and q constraints fixes
-Date: Fri,  5 Mar 2010 13:40:04 -0500
-Message-Id: <1267814404-27394-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
+	id S1755188Ab0CESn0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 13:43:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35687 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754151Ab0CESnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 13:43:25 -0500
+Message-ID: <4B915074.4020704@kernel.org>
+Date: Fri, 05 Mar 2010 10:41:56 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Greg Thelen <gthelen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
+References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> 	<20100305032106.GA12065@cmpxchg.org> <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
+In-Reply-To: <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Upstream commit: 811a0fff5d6e80e18e06be88e0fb685f3924bf8f
+On 03/04/2010 09:17 PM, Greg Thelen wrote:
+> On Thu, Mar 4, 2010 at 7:21 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+>> On Thu, Mar 04, 2010 at 01:21:41PM -0800, Greg Thelen wrote:
+>>> On several systems I am seeing a boot panic if I use mmotm
+>>> (stamp-2010-03-02-18-38).  If I remove
+>>> bootmem-avoid-dma32-zone-by-default.patch then no panic is seen.  I
+>>> find that:
+>>> * 2.6.33 boots fine.
+>>> * 2.6.33 + mmotm w/o bootmem-avoid-dma32-zone-by-default.patch: boots fine.
+>>> * 2.6.33 + mmotm (including
+>>> bootmem-avoid-dma32-zone-by-default.patch): panics.
+...
+> 
+> Note: mmotm has been recently updated to stamp-2010-03-04-18-05.  I
+> re-tested with 'make defconfig' to confirm the panic with this later
+> mmotm.
 
-This patch included on 2.6.25 is required to be backported to compile
-both the 2.6.23 and 2.6.24 kernels on x86_64 systems with a modern
-toolchain. Otherwise you get this pesky assembly error:
+please check
 
-arch/i386/boot/boot.h: Assembler messages:
-arch/i386/boot/boot.h:112: Error: bad register name `%dil'
+[PATCH] early_res: double check with updated goal in alloc_memory_core_early
 
-	Author: H. Peter Anvin <hpa@zytor.com>
-	Date:   Wed Jan 30 13:33:02 2008 +0100
+Johannes Weiner pointed out that new early_res replacement for alloc_bootmem_node
+change the behavoir about goal.
+original bootmem one will try go further regardless of goal.
 
-	    x86 setup: fix constraints in segment accessor functions
-	    
-	    Fix the operand constraints for the segment accessor functions,
-	    {rd,wr}{fs,gs}*.  In particular, the 8-bit functions used "r"
-	    constraints instead of "q" constraints.
-	    
-	    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-	    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+and it will break his patch about default goal from MAX_DMA to MAX_DMA32...
+also broke uncommon machines with <=16M of memory.
+(really? our x86 kernel still can run on 16M system?)
 
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+so try again with update goal.
+
+Reported-by: Greg Thelen <gthelen@google.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
+ mm/bootmem.c |   28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
-This patch is not likely to be applied upstream as 2.6.23.y and 2.6.24.y
-are both dead now. Use at least the latest 2.6.27.y as that is the latest
-supported kernel. I put this out there though in case someone also is looking
-for a solution and does not have an option to upgrade. May the google cache
-be with you.
-
---- arch/i386/boot/boot.h.orig	2010-01-05 17:03:12.000000000 -0800
-+++ arch/i386/boot/boot.h	2010-01-06 00:14:04.000000000 -0800
-@@ -109,7 +109,7 @@
- static inline u8 rdfs8(addr_t addr)
- {
- 	u8 v;
--	asm volatile("movb %%fs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
-+	asm volatile("movb %%fs:%1,%0" : "=q" (v) : "m" (*(u8 *)addr));
- 	return v;
- }
- static inline u16 rdfs16(addr_t addr)
-@@ -127,21 +127,21 @@
- 
- static inline void wrfs8(u8 v, addr_t addr)
- {
--	asm volatile("movb %1,%%fs:%0" : "+m" (*(u8 *)addr) : "r" (v));
-+	asm volatile("movb %1,%%fs:%0" : "+m" (*(u8 *)addr) : "qi" (v));
- }
- static inline void wrfs16(u16 v, addr_t addr)
- {
--	asm volatile("movw %1,%%fs:%0" : "+m" (*(u16 *)addr) : "r" (v));
-+	asm volatile("movw %1,%%fs:%0" : "+m" (*(u16 *)addr) : "ri" (v));
- }
- static inline void wrfs32(u32 v, addr_t addr)
- {
--	asm volatile("movl %1,%%fs:%0" : "+m" (*(u32 *)addr) : "r" (v));
-+	asm volatile("movl %1,%%fs:%0" : "+m" (*(u32 *)addr) : "ri" (v));
+Index: linux-2.6/mm/bootmem.c
+===================================================================
+--- linux-2.6.orig/mm/bootmem.c
++++ linux-2.6/mm/bootmem.c
+@@ -170,6 +170,28 @@ void __init free_bootmem_late(unsigned l
  }
  
- static inline u8 rdgs8(addr_t addr)
+ #ifdef CONFIG_NO_BOOTMEM
++static void * __init ___alloc_memory_core_early(pg_data_t *pgdat, u64 size,
++						 u64 align, u64 goal, u64 limit)
++{
++	void *ptr;
++	unsigned long end_pfn;
++
++	ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
++					 goal, limit);
++	if (ptr)
++		return ptr;
++
++	/* check goal according  */
++	end_pfn = pgdat->node_start_pfn + pgdat->node_spanned_pages;
++	if ((end_pfn << PAGE_SHIFT) < (goal + size)) {
++		goal = pgdat->node_start_pfn << PAGE_SHIFT;
++		ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
++						 goal, limit);
++	}
++
++	return ptr;
++}
++
+ static void __init __free_pages_memory(unsigned long start, unsigned long end)
  {
- 	u8 v;
--	asm volatile("movb %%gs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
-+	asm volatile("movb %%gs:%1,%0" : "=q" (v) : "m" (*(u8 *)addr));
- 	return v;
- }
- static inline u16 rdgs16(addr_t addr)
-@@ -159,15 +159,15 @@
+ 	int i;
+@@ -836,7 +858,7 @@ void * __init __alloc_bootmem_node(pg_da
+ 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
  
- static inline void wrgs8(u8 v, addr_t addr)
- {
--	asm volatile("movb %1,%%gs:%0" : "+m" (*(u8 *)addr) : "r" (v));
-+	asm volatile("movb %1,%%gs:%0" : "+m" (*(u8 *)addr) : "qi" (v));
- }
- static inline void wrgs16(u16 v, addr_t addr)
- {
--	asm volatile("movw %1,%%gs:%0" : "+m" (*(u16 *)addr) : "r" (v));
-+	asm volatile("movw %1,%%gs:%0" : "+m" (*(u16 *)addr) : "ri" (v));
- }
- static inline void wrgs32(u32 v, addr_t addr)
- {
--	asm volatile("movl %1,%%gs:%0" : "+m" (*(u32 *)addr) : "r" (v));
-+	asm volatile("movl %1,%%gs:%0" : "+m" (*(u32 *)addr) : "ri" (v));
- }
+ #ifdef CONFIG_NO_BOOTMEM
+-	return __alloc_memory_core_early(pgdat->node_id, size, align,
++	return  ___alloc_memory_core_early(pgdat, size, align,
+ 					 goal, -1ULL);
+ #else
+ 	return ___alloc_bootmem_node(pgdat->bdata, size, align, goal, 0);
+@@ -920,7 +942,7 @@ void * __init __alloc_bootmem_node_nopan
+ 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
  
- /* Note: these only return true/false, not a signed return value! */
+ #ifdef CONFIG_NO_BOOTMEM
+-	ptr =  __alloc_memory_core_early(pgdat->node_id, size, align,
++	ptr =  ___alloc_memory_core_early(pgdat, size, align,
+ 						 goal, -1ULL);
+ #else
+ 	ptr = alloc_arch_preferred_bootmem(pgdat->bdata, size, align, goal, 0);
+@@ -980,7 +1002,7 @@ void * __init __alloc_bootmem_low_node(p
+ 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
+ 
+ #ifdef CONFIG_NO_BOOTMEM
+-	return __alloc_memory_core_early(pgdat->node_id, size, align,
++	return ___alloc_memory_core_early(pgdat, size, align,
+ 				goal, ARCH_LOW_ADDRESS_LIMIT);
+ #else
+ 	return ___alloc_bootmem_node(pgdat->bdata, size, align,
