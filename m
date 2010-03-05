@@ -1,122 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185Ab0CEHry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:47:54 -0500
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:40248 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725Ab0CEHrw (ORCPT
+	id S1753023Ab0CEHuO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:50:14 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:52531 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653Ab0CEHuL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:47:52 -0500
-Message-ID: <4B90B723.3000100@in.ibm.com>
-Date: Fri, 05 Mar 2010 13:17:47 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Fri, 5 Mar 2010 02:50:11 -0500
+To: Garrett Cooper <yanegomi@gmail.com>
+Cc: Shi Weihua <shiwh@cn.fujitsu.com>,
+       Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>,
+       LTP <ltp-list@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [LTP] [PATCH] sysctl03: sysctl returns EACCES after 2.6.33-rc1
+References: <4B7BA24F.2010705@linux.vnet.ibm.com>
+	<364299f41002170910i336abf6eh72acbcbec9b72e7b@mail.gmail.com>
+	<20100218042532.GC13013@rishikesh.in.ibm.com>
+	<4B822F2E.9030609@cn.fujitsu.com>
+	<364299f41002212344v4873843ej986f1b39ec3494df@mail.gmail.com>
+	<4B8333ED.5080709@cn.fujitsu.com>
+	<364299f41002241718g4be216d1pbec918821b7027b0@mail.gmail.com>
+	<4B8F716E.5070207@cn.fujitsu.com>
+	<364299f41003041037s57f1d4bfr98c20ac7736b8905@mail.gmail.com>
+	<m13a0fc11w.fsf@fess.ebiederm.org>
+	<364299f41003042320n7437e4a2j219b32a0a5f8dc50@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 04 Mar 2010 23:50:05 -0800
+In-Reply-To: <364299f41003042320n7437e4a2j219b32a0a5f8dc50@mail.gmail.com> (Garrett Cooper's message of "Thu\, 4 Mar 2010 23\:20\:52 -0800")
+Message-ID: <m1pr3jky1e.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: -next March 3: Boot failure on x86 (Oops)
-References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com> <4B8F0CD0.1040507@kernel.org> <4B8F43DD.10002@in.ibm.com> <4B909FC5.8020800@kernel.org> <4B90A031.8090306@kernel.org> <4B90A214.70301@kernel.org>
-In-Reply-To: <4B90A214.70301@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
->
-> On 03/05/2010 03:09 PM, Tejun Heo wrote:
->   
->> On 03/05/2010 03:08 PM, Tejun Heo wrote:
->>     
->>> Hmmm... this means that on one of the chunks, chunk->list.next was
->>> NULL (BTW, the disassembly is from unlinked object, right?).  The main
->>> allocation code hasn't seen much change lately.  The only changes are,
+Garrett Cooper <yanegomi@gmail.com> writes:
+
+> On Thu, Mar 4, 2010 at 11:57 AM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+>> Garrett Cooper <yanegomi@gmail.com> writes:
 >>>
->>> 22b737f4c75197372d64afc6ed1bccd58c00e549 : just refactoring
->>> 833af8427be4b217b5bc522f61afdbd3f1d282c2 : possible but isn't very new
->>>       
->> Can you also please try reverting the above two commits?
->>     
+>>> Wow... that's a fair amount of code refactoring and additions to the syscall.
+>>>
+>>> Yes, all of the issues with opening a directory and reading/writing
+>>> now apply to sysctl(2), especially if someone attempts to read from a
+>>> write-only descriptor, or vice versa.
+>>
+>> No mismatches of file descriptor modes and how the descriptor is
+>> accessed can not occur.  There is a file descriptor but the file
+>> descriptor is completely internal to binary_sysctl(), and it is opened
+>> with the mode of what we are trying to use.  There are no user space
+>> controllable parts there.
+>>
+>> Looking through the old sysctl code it appears that it was a bug that
+>> kept it from returning EACCES.  The code has had this beautiful snippet
+>> in it for ages:
+>>
+>> static int test_perm(int mode, int op)
+>> {
+>>        if (!current->euid)
+>>                mode >>= 6;
+>>        else if (in_egroup_p(0))
+>>                mode >>= 3;
+>>        if ((mode & op & 0007) == op)
+>>                return 0;
+>>        return -EACCES;
+>> }
 >
-> Sorry about all the fuss but I think this could be it.  It looks like
-> I forgot to update need_to_extend logic while adding simultaneous
-> head/tail split for alignment, so the array might be overrun by one
-> entry.  Can you please try this one first?
+>     Wow. Took a second for me to stare and it and see what you mean,
+> but yeah -- that is pretty dang awesome that it was always hardwired
+> to return 0.
+
+Sorry that wasn't clear without context.  What used to happen
+where all of the callers of that function did:
+if (test_perm(...))
+   return -EPERM;
+
+Instead of the much more conventional:
+
+err = test_perm()
+if (err)
+   return err;
+
+>> I admit that the manpage doesn't document EACCES but the manpage
+>> has always said don't use sysctl(2) so...
 >
-> Thanks.
+>     Well, if someone bumbles across this later, it will be a confusing
+> issue to work through. It's better to be documented instead of
+> undocumented. I'll file the bug upstream to document this, but it
+> would be nice to determine if there are any more immediate gaps which
+> need to be addressed in the changes.
+
+I think the linux test project may be nearly the only caller of sysctl(2)
+at this point.  At least until recently there was one caller in arm
+glibc.  But finding any program that uses sysctl(2) is nearly impossible.
+
+>> You may see a slightly different error code from sysctl(2) on failure
+>> but otherwise  sysctl(2) should be unchanged, and yes I did test it.
+>> Of course I was not being picky about which error code I got on failure.
 >
-> diff --git a/mm/percpu.c b/mm/percpu.c
-> index 768419d..f1ed9ea 100644
-> --- a/mm/percpu.c
-> +++ b/mm/percpu.c
-> @@ -373,11 +373,11 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk)
->  {
->  	int new_alloc;
+>     Hmmm.. ok. We just get 20 questions when something fails and it's
+> not documented why it should fail in a particular manner :).
+
+>> What exists today is simply a backwards compatibility wrapper of
+>> sysctl(2) built on top of /proc/sys.  sysctl(2) was a practically
+>> unmaintained bit-rotting pile, that was never adequately maintained or
+>> tested.
 >
-> -	if (chunk->map_alloc >= chunk->map_used + 2)
-> +	if (chunk->map_alloc >= chunk->map_used + 3)
->  		return 0;
+>     Yeah, you're probably right (especially because Linux tends not to
+> focus on sysctl(3) like the BSDs do).
 >
->  	new_alloc = PCPU_DFL_MAP_ALLOC;
-> -	while (new_alloc < chunk->map_used + 2)
-> +	while (new_alloc < chunk->map_used + 3)
->  		new_alloc *= 2;
+>> At this point nothing should change again until such time as the code
+>> is disabled/removed by default.
 >
->  	return new_alloc;
->
->   
-This did not help. With this patch applied i ran into the
-following 
+>     Hmmm... ok. I assume that sysctl(2) is going completely out the
+> window in the future, in favor of what (just out of curiosity)? 100%
+> sysfs only tunables maybe?
 
-Unpacking initramfs...
-Freeing initrd memory: 11780k freed
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<c01df0e2>] pcpu_alloc+0x1cb/0x75e
-*pdpt = 0000000000661001 *pde = 0000000000000000
-Oops: 0000 [#1] SMP
-last sysfs file:
-Modules linked in:
+/proc/sys is going to stay.  Which is what people have actually used.
+Even /sbin/sysctl has always used /proc/sys.  Nothing anyone actually
+uses is going to go away.  Just the practically dead code that is the
+syscall is slowly going away.  Since I have written the emulation layer
+the need for it to disappear is less immediate than it once was, but I will
+strongly discourage anyone from using it.
 
-Pid: 1, comm: swapper Not tainted 2.6.33-git10-autotest #2 /eserver xSeries 235 -[86717AX]-
-EIP: 0060:[<c01df0e2>] EFLAGS: 00010002 CPU: 1
-EIP is at pcpu_alloc+0x1cb/0x75e
-EAX: 00000000 EBX: c0647a00 ECX: cccccccc EDX: 00000000
-ESI: 00000040 EDI: 00000004 EBP: f5c3ff74 ESP: f5c3fef8
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process swapper (pid: 1, ti=f5c3e000 task=f5c48000 task.ti=f5c3e000)
-Stack:
- 00000000 00000004 00000002 00000002 00000002 f6227fa0 00000040 00000040
-<0> 00000002 00000286 f62294a0 00000000 f5c3ff54 00000202 00000000 f6200400
-<0> 00000202 00000000 00000020 f6200000 00000000 f62294a0 00000000 f5c3ff64
-Call Trace:
- [<c01b364b>] ? free_hot_page+0x31/0x35
- [<c01df68e>] ? __alloc_percpu+0xa/0xc
- [<c0163c29>] ? __create_workqueue_key+0x74/0x1c8
- [<c05fe3d3>] ? irqfd_module_init+0x0/0x2c
- [<c05fe3ed>] ? irqfd_module_init+0x1a/0x2c
- [<c0101139>] ? do_one_initcall+0x4c/0x131
- [<c05fc352>] ? kernel_init+0x127/0x1a8
- [<c05fc22b>] ? kernel_init+0x0/0x1a8
- [<c01220b6>] ? kernel_thread_helper+0x6/0x10
-Code: 45 a8 e9 65 ff ff ff 8b 4d 9c 8b 55 a0 8b 45 84 e8 31 fa ff ff 85 c0 89 45 a4 0f 89 fd 00 00 00 8b 45 84 8b 00 89 45 84 8b 55 84 <8b> 02 0f 18 00 90 8b 45 cc 03 05 a0 9f 5f c0 39 c2 0f 85 67 ff
-EIP: [<c01df0e2>] pcpu_alloc+0x1cb/0x75e SS:ESP 0068:f5c3fef8
-CR2: 0000000000000000
----[ end trace a7919e7f17c0a725 ]---
-
-I will try reverting the two commits you mentioned and see if that
-helps.
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Eric
