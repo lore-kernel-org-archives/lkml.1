@@ -1,67 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236Ab0CEDnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 22:43:33 -0500
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:59048 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755148Ab0CEDnc (ORCPT
+	id S1755254Ab0CEECp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 23:02:45 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:22936 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754940Ab0CEECo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 22:43:32 -0500
-From: Frans Pop <elendil@planet.nl>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] v3 kconfig: place git SHA1 in .config output if in SCM
-Date: Fri, 5 Mar 2010 04:43:27 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       geert@linux-m68k.org, cloos@jhcloos.com
-References: <20100305025435.GA6836@linux.vnet.ibm.com>
-In-Reply-To: <20100305025435.GA6836@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 4 Mar 2010 23:02:44 -0500
+X-Spam-Processed: digidescorp.com, Thu, 04 Mar 2010 22:02:43 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-MDRemoteIP: 99.142.47.99
+X-Return-Path: prvs=16809811db=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Subject: [BUG?][NOMMU] microblaze: scheduling with interrupts disabled
+From: "Steven J. Magnani" <steve@digidescorp.com>
+Reply-To: steve@digidescorp.com
+To: microblaze-uclinux@itee.uq.edu.au, monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Digital Design Corporation
+Date: Thu, 04 Mar 2010 22:02:40 -0600
+Message-Id: <1267761760.11837.7.camel@iscandar.digidescorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201003050443.30431.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Mar 2010 03:43:31.0480 (UTC) FILETIME=[0651B180:01CABC16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 March 2010, Paul E. McKenney wrote:
-> o	Added the KBUILD_CONFIG_NO_CHECK_DIRTY environment variable,
-> 	and modified scripts/setlocalversion to check it, as suggested
-> 	by James Cloos.
+I ran across the following code in kernel/entry-nommu.S:
 
-Just to state the obvious: this will also affect CONFIG_LOCALVERSION_AUTO.
+work_pending:
+	andi	r11, r19, _TIF_NEED_RESCHED
+	beqi	r11, 1f
+	bralid	r15, schedule
+	nop
+1:	andi	r11, r19, _TIF_SIGPENDING
+	beqi	r11, no_work_pending
+	addk	r5, r1, r0
+	addik	r7, r0, 1
+	bralid	r15, do_signal
+	addk	r6, r0, r0
+	bri	no_work_pending
 
-> @@ -450,12 +457,52 @@ int conf_write(const char *name)
->  	if (env && *env)
->  		use_timestamp = 0;
->
-> +	strcpy(localversion, "-?-nopath");
-> +	path = getenv(SRCTREE);
-> +	if (path && *path) {
-> +		strcpy(localversion, "-?-pipe()-failed");
-> +		if (pipe(pipefd) != 0)
-> +			goto nolocalversion;
-> +		env = getenv("KBUILD_CONFIG_NO_CHECK_DIRTY");
+ENTRY(ret_to_user)
+	disable_irq
 
-Is this line actually needed? AFAICT the variable is unused here and should 
-pass down through the environment to the setlocalversion script without 
-needing any help.
+	swi	r4, r1, PT_R4		/* return val */
+	swi	r3, r1, PT_R3		/* return val */
 
-> +		sprintf(cmdline, "%s/scripts/setlocalversion", path);
-> +		strcpy(localversion, "-?-fork()-failed");
-> +		pid = fork();
+	lwi	r6, r31, TS_THREAD_INFO /* get thread info */
+	lwi	r19, r6, TI_FLAGS /* get flags in thread info */
+	bnei	r19, work_pending
+no_work_pending:
+	disable_irq
 
-Do I read correctly that you're also postfixing error conditions to the 
-kernel version? Don't think that's a great idea TBH. Errors should be 
-printed to STDERR as they occur, not as pseudo version strings.
+If I am reading this correctly, it looks like schedule() and do_signal()
+can get called with interrupts disabled. This looks like a bug to me. I
+would propose to fix it by putting an enable_irq at work_pending.
 
-Users coming across them in config files would be very unlikely to be able 
-to make any sense of them. IMO, if no VCS version can be determined, 
-nothing should be printed.
+Comments?
+------------------------------------------------------------------------
+ Steven J. Magnani               "I claim this network for MARS!
+ www.digidescorp.com              Earthling, return my space modulator!"
 
-Cheers,
-FJP
+ #include <standard.disclaimer>
+
+
+
+
+
