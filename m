@@ -1,39 +1,33 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663Ab0CEHK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:10:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52188 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754528Ab0CEHK5 (ORCPT
+	id S1754556Ab0CEHM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:12:27 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:62104 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882Ab0CEHM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:10:57 -0500
-Date: Thu, 4 Mar 2010 23:10:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/3] device.h drivers/base/core.c Convert dev_<level>
- macros to functions
-Message-Id: <20100304231047.4d76e0ef.akpm@linux-foundation.org>
-In-Reply-To: <e18f5d8b8a0857a07918107f464a653234a47564.1267771398.git.joe@perches.com>
-References: <cover.1267771398.git.joe@perches.com>
-	<e18f5d8b8a0857a07918107f464a653234a47564.1267771398.git.joe@perches.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 02:12:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=q32BMe1vORodB1PaDoulSg98S5Mgmm9PXu59nM+upzu9X4F0PBZr7S9WGYOX+/SWxO
+         oA3ZOQeDyu//YWA1iYQ5mWkRRK1Z3xtTUu15CpmZyAZfhXxIt/hc4t8/3SAaohZT17HH
+         fjQI05oL11+bPCpRCNSxR5dJS2dWEaQ1wxqWg=
+MIME-Version: 1.0
+Date: Fri, 5 Mar 2010 15:12:25 +0800
+Message-ID: <c6ed1ac51003042312k103aafddpda82d2d64bd5f73d@mail.gmail.com>
+Subject: sched_fair: vruntime and min_vruntime will be overflow?
+From: figo zhang <figo1802@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  4 Mar 2010 22:56:53 -0800 Joe Perches <joe@perches.com> wrote:
+hi,
 
-> Perhaps over time the struct and local uses of dev_info should be renamed.
+when enqueue or dequeue the task, the se->vruntime and cfs_rq->min_vruntime will
+increased, i want to know it is will be overflow in future time?
 
-aww, c'mon.
-
-y:/usr/src/linux-2.6.33> grep -r '\*dev_info;' . | wc -l
-30
-
-Half an hour, tops.
+Best,
+Figo.zhang
