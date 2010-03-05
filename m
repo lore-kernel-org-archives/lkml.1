@@ -1,134 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342Ab0CENZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 08:25:58 -0500
-Received: from mail-iw0-f189.google.com ([209.85.223.189]:60559 "EHLO
-	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343Ab0CENZ4 (ORCPT
+	id S1752601Ab0CENzL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 08:55:11 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:33777 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898Ab0CENzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 08:25:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type;
-        b=NLbyOYoZNKLnQUJUA5oAwQbeo8+gjdY3PsnKTO9XuH+IdZJHCKz5NiHeHyzSy/HsmQ
-         HwQHuIXbsC9RZIfRqSE85sUdGxtxkAm0M4l13mOk5Wfy6B96tlYWcUGbyTupnjwFLxEM
-         mGIsyca1e0R4I1jCeJUjJlpkgcOgvfVEgiF4k=
+	Fri, 5 Mar 2010 08:55:09 -0500
+Date: Fri, 5 Mar 2010 14:55:04 +0100
+From: Luc Verhaegen <libv@skynet.be>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305135504.GB8643@skynet.be>
+References: <20100304105624.70fe845e@jbarnes-piketon> <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain> <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com> <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain> <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com> <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain> <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu> <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com> <20100305074407.GC19703@elte.hu>
 MIME-Version: 1.0
-From: Albert Strasheim <fullung@gmail.com>
-Date: Fri, 5 Mar 2010 15:25:35 +0200
-Message-ID: <5eec5f301003050525w653d25er34f4dee293f79b9@mail.gmail.com>
-Subject: SAS multipath performance
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100305074407.GC19703@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all
+On Fri, Mar 05, 2010 at 08:44:07AM +0100, Ingo Molnar wrote:
+> 
+> Yeah. I've seen a few other bad arguments as well:
+> 
+>    'exploding test matrix'
+> 
+> This is often the result of _another_ bad technical decision: 
+> over-modularization.
+> 
+> Xorg, mesa/libdrm and the kernel DRM drivers pretty share this signature:
+> 
+>  - it's developed by the same tightly knit developer base who often cross
+>    between these packages. Features often need changes in each component.
+> 
+>  - a developer to be able to do real work has to have the latest sources
+>    of all these components.
+> 
+>  - a user just uses whatever horizontal version cut the distro did and never
+>    truly 'mixes' these components as a conscious decision.
+> 
+>  - distros just try to get the latest and most capable but still stable
+>    version. Desperately so. Often they will create a version mix that was
+>    never tested by developers in that form. They'll expose users to ABI
+>    combinations that were never really intended. They have trouble
+>    bootstrapping and stabilizing those essentially random combinations and
+>    then have trouble applying stability and security fixes.
+> 
+> The thing is, if development has such characteristics then it's pretty clearly 
+> not 3-4 separate projects but _one_ abstract project. [*]
+> 
+> So the 'exploding test matrix' is simply the result of: creating ABIs between 
+> 3-4 _artificial components of the same project_ and then going through 
+> developer hell living with that mistake. [**]
+> 
+> It's a bit as if we split up the kernel into 'microkernel' components, did a 
+> VFS ABI, MM ABI, drivers ABI, scheduler ABI, networking ABI and arch ABIs, and 
+> then tried to develop them as separate components.
+> 
+> If we did then then Linux kernel development would slow down massively while 
+> in reality everyone would _still_ have to have the latest and greatest source 
+> checked out to do some real development work and to be able to implement 
+> features that affect the whole kernel ...
+> 
+> Linux would become an epic fail of historic proportions if we ever did that.
+> 
+> 	Ingo
+> 
+> [*]  I realize that it's possibly hard for Xorg to merge with mesa and the 
+>      kernel for license reasons, but my technical observation still stands.
+> 
+> [**] I realize that modularization and many small packages were a clear 
+>      advantage when we were still all downloading bits via 14.4k modems, but 
+>      in this day and age of megabit connections that has become a non-issue.
+>      Rampant over-modularization and the resulting loss of focus on the end
+>      result (and the resulting explosion of a test matrix) is hurting us _far 
+>      more_ than the disadvantages of any monolithic could ever hurt. We are 
+>      seeing the proof of that all day with a 10+ MLOC kernel.
 
-I've been doing some experiments with the 2.6.31 and 2.6.33 kernels
-with multipathing to Sun JBODs over SAS.
+Tying kernel, libdrm, X and mesa together 1-1 is not going to help
+anybody. When thinking along the same line of your reasoning, the answer 
+is unifying graphics driver stacks, which requires increased 
+modularization (in libdrm and mesa): one big abstract project.
 
-Theoretically, our setup should allow throughput in the 3600 MB/sec
-range, but we get about 2200-2300 MB/sec. Even taking into account the
-various potential inefficiencies in the setup, it still seems like one
-might be able to squeeze more out of this system.
+All of X.org, libdrm, drm, mesa/dri, mesa/gallium, all have relatively 
+stable interfaces as they are supposed to support multiple (from 3 
+(libdrm) to ~50 (Xorg)) drivers. It's driver internal interfaces that 
+are highly volatile, as it is easy to adjust all parts inside the same 
+graphics driver stack, especially since the same developers know all 
+these parts and it supports the same hw.
 
-We have the following hardware:
+On top, graphics driver are special, they are as complex and diverse as 
+the hardware. So, graphics driver stacks can currently have up to 7-8 
+pieces spread everywhere: kernel drm driver, firmware, libdrm driver, 
+Xorg driver, 2 mesa drivers, 1-2 media acceleration libraries. All 
+spreading inherently unstable interfaces everywhere.
 
-Sun Blade X6270
-2* LSI SAS 1068E controllers
-2* Sun J4400 JBODs with 1 TB disks (24 disks per JBOD)
-Fedora Core 12
-2.6.33 kernel from FC13 (also tried with latest 2.6.31 kernel from
-FC12, same results)
+Graphics drivers will always be complex, and buggy and unstable, but we 
+should try to encapsulate some of that mess in a way that makes sense.
 
-The build of 2.6.33 is from here:
+I had a talk on FOSDEM about this which was very "warmly" received by 
+some; the slides are here 
+http://www.phoronix.com/scan.php?page=article&item=fosdem_2010_unification&num=1
 
-http://kojipkgs.fedoraproject.org/packages/kernel/2.6.33/4.fc13/
-
-Here's the datasheet for the SAS hardware:
-
-http://www.sun.com/storage/storage_networking/hba/sas/PCIe.pdf
-
-It's using PCI Express 1.0a, 8x lanes. With a bandwidth of 250 MB/sec
-per lane, we should be able to do 2000 MB/sec per SAS controller.
-
-Each controller can do 3 Gb/sec per port and has two 4 port PHYs. We
-connect both PHYs from a controller to a JBOD. So between the JBOD and
-the controller we have 2 PHYs * 4 SAS ports * 3 Gb/sec = 24 Gb/sec of
-bandwidth, which is more than the PCI Express bandwidth.
-
-With write caching enabled and when doing big writes, each disk can
-sustain about 80 MB/sec (near the start of the disk). With 24 disks,
-that means we should be able to do 1920 MB/sec per JBOD.
-
-I write to the disks using dd, since we're mostly interested in
-sequential performance.
-
-The multipath configuration for each disk looks as follows:
-
-multipath {
-  rr_min_io 100
-  uid 0
-  path_grouping_policy multibus
-  failback manual
-  path_selector "round-robin 0"
-  rr_weight priorities
-  alias somealias
-  no_path_retry queue
-  mode 0644
-  gid 0
-  wwid somewwid
-}
-
-I tried values of 50, 100, 1000 for rr_min_io, but it doesn't seem to
-make much difference.
-
-Along with varying rr_min_io I tried adding some delay between
-starting the dd's to prevent all of them writing over the same PHY at
-the same time, but this didn't make any difference, so I think the
-I/O's are getting properly spread out.
-
-According to /proc/interrupts, the SAS controllers are using a
-"IR-IO-APIC-fasteoi" interrupt scheme. For some reason only core #0 in
-the machine is handling these interrupts. I can improve performance
-slightly by assigning a separate core to handle the interrupts for
-each SAS controller:
-
-echo 2 > /proc/irq/24/smp_affinity
-echo 4 > /proc/irq/26/smp_affinity
-
-Using dd to write to the disk generates "Function call interrupts" (no
-idea what these are), which are handled by core #4, so I keep other
-processes off this core too.
-
-I run 48 dd's (one for each disk), assigning them to cores not dealing
-with interrupts like so:
-
-taskset -c somecore dd if=/dev/zero of=/dev/mapper/mpathx oflag=direct bs=128M
-
-oflag=direct prevents any kind of buffer cache from getting involved.
-
-None of my cores seem maxed out. The cores dealing with interrupts are
-mostly idle and all the other cores are waiting on I/O as one would
-expect.
-
-Cpu0  :  0.0%us,  1.0%sy,  0.0%ni, 91.2%id,  7.5%wa,  0.0%hi,  0.2%si,  0.0%st
-Cpu1  :  0.0%us,  0.8%sy,  0.0%ni, 93.0%id,  0.2%wa,  0.0%hi,  6.0%si,  0.0%st
-Cpu2  :  0.0%us,  0.6%sy,  0.0%ni, 94.4%id,  0.1%wa,  0.0%hi,  4.8%si,  0.0%st
-Cpu3  :  0.0%us,  7.5%sy,  0.0%ni, 36.3%id, 56.1%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu4  :  0.0%us,  1.3%sy,  0.0%ni, 85.7%id,  4.9%wa,  0.0%hi,  8.1%si,  0.0%st
-Cpu5  :  0.1%us,  5.5%sy,  0.0%ni, 36.2%id, 58.3%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu6  :  0.0%us,  5.0%sy,  0.0%ni, 36.3%id, 58.7%wa,  0.0%hi,  0.0%si,  0.0%st
-...
-Cpu15 :  0.1%us,  5.4%sy,  0.0%ni, 36.5%id, 58.1%wa,  0.0%hi,  0.0%si,  0.0%st
-
-Does anybody have any idea where my missing throughput went or how to
-continue this investigation to find the reason for the bottleneck?
-
-Thanks!
-
-Regards
-
-Albert Strasheim
+Luc Verhaegen.
