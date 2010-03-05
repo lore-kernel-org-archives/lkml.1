@@ -1,18 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357Ab0CEG5P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 01:57:15 -0500
-Received: from mail.perches.com ([173.55.12.10]:1417 "EHLO mail.perches.com"
+	id S1754402Ab0CEG5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:57:38 -0500
+Received: from mail.perches.com ([173.55.12.10]:1415 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754036Ab0CEG46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 01:56:58 -0500
+	id S1754141Ab0CEG45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 01:56:57 -0500
 From: Joe Perches <joe@perches.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] kernel.h kernel/printk.c: Convert pr_<level> macros to functions
-Date: Thu,  4 Mar 2010 22:56:54 -0800
-Message-Id: <1c74bc55ad2850559b2a3952914e3735f38023e1.1267771398.git.joe@perches.com>
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH 2/3] device.h drivers/base/core.c Convert dev_<level> macros to functions
+Date: Thu,  4 Mar 2010 22:56:53 -0800
+Message-Id: <e18f5d8b8a0857a07918107f464a653234a47564.1267771398.git.joe@perches.com>
 X-Mailer: git-send-email 1.7.0.14.g7e948
 In-Reply-To: <cover.1267771398.git.joe@perches.com>
 References: <cover.1267771398.git.joe@perches.com>
@@ -20,149 +21,214 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Save ~1K of duplicated KERN_<level> strings
+Save ~60k in a defconfig
 
 Use %pV and struct va_format
 Format arguments are verified before printk
 
+There are existing "struct dev_info" declarations as well as local variables
+named dev_info so the dev_info macro to function conversion is instead
+called _dev_info and a macro is used to call _dev_info
+
+Perhaps over time the struct and local uses of dev_info should be renamed.
+
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/linux/kernel.h |   70 +++++++++++++++++++++++++++++++++++++-----------
- kernel/printk.c        |   26 ++++++++++++++++++
- 2 files changed, 80 insertions(+), 16 deletions(-)
+ drivers/base/core.c    |   56 +++++++++++++++++++++++++
+ include/linux/device.h |  105 ++++++++++++++++++++++++++++++++++++------------
+ 2 files changed, 135 insertions(+), 26 deletions(-)
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 0eae8e9..2bba3d6 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -255,6 +255,22 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
- asmlinkage int printk(const char * fmt, ...)
- 	__attribute__ ((format (printf, 1, 2))) __cold;
-+asmlinkage int pr_emerg(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_crit(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_alert(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_err(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_warning(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_notice(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_info(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int pr_cont(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
- 
- extern int __printk_ratelimit(const char *func);
- #define printk_ratelimit() __printk_ratelimit(__func__)
-@@ -283,6 +299,30 @@ static inline int vprintk(const char *s, va_list args) { return 0; }
- static inline int printk(const char *s, ...)
- 	__attribute__ ((format (printf, 1, 2)));
- static inline int __cold printk(const char *s, ...) { return 0; }
-+static inline int pr_emerg(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_emerg(const char *s, ...) { return 0; }
-+static inline int pr_crit(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_crit(const char *s, ...) { return 0; }
-+static inline int pr_alert(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_alert(const char *s, ...) { return 0; }
-+static inline int pr_err(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_err(const char *s, ...) { return 0; }
-+static inline int pr_warning(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_warning(const char *s, ...) { return 0; }
-+static inline int pr_notice(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_notice(const char *s, ...) { return 0; }
-+static inline int pr_info(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_info(const char *s, ...) { return 0; }
-+static inline int pr_cont(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int pr_cont(const char *s, ...) { return 0; }
- static inline int printk_ratelimit(void) { return 0; }
- static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
- 					  unsigned int interval_msec)	\
-@@ -381,22 +421,20 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- #define pr_fmt(fmt) fmt
- #endif
- 
--#define pr_emerg(fmt, ...) \
--        printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_alert(fmt, ...) \
--        printk(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_crit(fmt, ...) \
--        printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_err(fmt, ...) \
--        printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_warning(fmt, ...) \
--        printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_notice(fmt, ...) \
--        printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_info(fmt, ...) \
--        printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_cont(fmt, ...) \
--	printk(KERN_CONT fmt, ##__VA_ARGS__)
-+#define pr_emerg(fmt, ...)			\
-+	pr_emerg(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_alert(fmt, ...)			\
-+	pr_alert(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_crit(fmt, ...)			\
-+	pr_crit(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_err(fmt, ...)			\
-+	pr_err(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_warning(fmt, ...)			\
-+	pr_warning(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_notice(fmt, ...)			\
-+	pr_notice(pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_info(fmt, ...)			\
-+	pr_info(pr_fmt(fmt), ##__VA_ARGS__)
- 
- /* pr_devel() should produce zero code unless DEBUG is defined */
- #ifdef DEBUG
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 4067412..83b6299 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -797,6 +797,32 @@ out_restore_irqs:
- EXPORT_SYMBOL(printk);
- EXPORT_SYMBOL(vprintk);
- 
-+#define declare_pr_level(function, level)		\
-+asmlinkage int function(const char *fmt, ...)		\
-+{							\
-+	struct va_format vaf;				\
-+	va_list args;					\
-+	int r;						\
-+							\
-+	va_start(args, fmt);				\
-+	vaf.fmt = fmt;					\
-+	vaf.va = &args;					\
-+	r = printk(level "%pV", &vaf);			\
-+	va_end(args);					\
-+							\
-+	return r;					\
-+}							\
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 2820257..19de3ab 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1745,3 +1745,59 @@ void device_shutdown(void)
+ 	}
+ 	async_synchronize_full();
+ }
++
++/*
++ * Device logging functions
++ */
++
++#ifdef CONFIG_PRINTK
++
++static int __dev_printk(const char *level, const struct device *dev,
++			const char *fmt, va_list args)
++{
++	struct va_format vaf;
++
++	vaf.fmt = fmt;
++	vaf.va = &args;
++	return printk("%s%s %s: %pV",
++		      level, dev_driver_string(dev), dev_name(dev), &vaf);
++}
++
++int dev_printk(const char *level, const struct device *dev,
++	       const char *fmt, ...)
++{
++	int r;
++	va_list args;
++
++	va_start(args, fmt);
++	r = __dev_printk(level, dev, fmt, args);
++	va_end(args);
++
++	return r;
++}
++EXPORT_SYMBOL(dev_printk);
++
++#define declare_dev_level(function, level)			\
++int function(const struct device *dev, const char *fmt, ...)	\
++{								\
++	int r;							\
++        va_list args;						\
++								\
++        va_start(args, fmt);					\
++	r = __dev_printk(level, dev, fmt, args);		\
++        va_end(args);						\
++								\
++        return r;						\
++}								\
 +EXPORT_SYMBOL(function)
 +
-+declare_pr_level(pr_emerg,	KERN_EMERG);
-+declare_pr_level(pr_alert,	KERN_ALERT);
-+declare_pr_level(pr_crit,	KERN_CRIT);
-+declare_pr_level(pr_err,	KERN_ERR);
-+declare_pr_level(pr_warning,	KERN_WARNING);
-+declare_pr_level(pr_notice,	KERN_NOTICE);
-+declare_pr_level(pr_info,	KERN_INFO);
-+declare_pr_level(pr_cont,	KERN_CONT);
++declare_dev_level(dev_emerg,	KERN_EMERG);
++declare_dev_level(dev_alert,	KERN_ALERT);
++declare_dev_level(dev_crit,	KERN_CRIT);
++declare_dev_level(dev_err,	KERN_ERR);
++declare_dev_level(dev_warn,	KERN_WARNING);
++declare_dev_level(dev_notice,	KERN_NOTICE);
++declare_dev_level(_dev_info,	KERN_INFO);
++/* Not dev_info because it conflicts with with existing "struct dev_info" */
 +
- #else
++#endif
+diff --git a/include/linux/device.h b/include/linux/device.h
+index b30527d..5948c07 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -590,43 +590,96 @@ extern void sysdev_shutdown(void);
  
- static void call_console_drivers(unsigned start, unsigned end)
+ /* debugging and troubleshooting/diagnostic helpers. */
+ extern const char *dev_driver_string(const struct device *dev);
+-#define dev_printk(level, dev, format, arg...)	\
+-	printk(level "%s %s: " format , dev_driver_string(dev) , \
+-	       dev_name(dev) , ## arg)
+-
+-#define dev_emerg(dev, format, arg...)		\
+-	dev_printk(KERN_EMERG , dev , format , ## arg)
+-#define dev_alert(dev, format, arg...)		\
+-	dev_printk(KERN_ALERT , dev , format , ## arg)
+-#define dev_crit(dev, format, arg...)		\
+-	dev_printk(KERN_CRIT , dev , format , ## arg)
+-#define dev_err(dev, format, arg...)		\
+-	dev_printk(KERN_ERR , dev , format , ## arg)
+-#define dev_warn(dev, format, arg...)		\
+-	dev_printk(KERN_WARNING , dev , format , ## arg)
+-#define dev_notice(dev, format, arg...)		\
+-	dev_printk(KERN_NOTICE , dev , format , ## arg)
+-#define dev_info(dev, format, arg...)		\
+-	dev_printk(KERN_INFO , dev , format , ## arg)
++
++#ifdef CONFIG_PRINTK
++
++extern int dev_printk(const char *level, const struct device *dev,
++		      const char *fmt, ...)
++	__attribute__ ((format (printf, 3, 4)));
++extern int dev_emerg(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int dev_alert(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int dev_crit(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int dev_err(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int dev_warn(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int dev_notice(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int _dev_info(const struct device *dev, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++
++#else
++
++static inline int dev_printk(const char *level, const struct device *dev,
++		      const char *fmt, ...)
++	__attribute__ ((format (printf, 3, 4)));
++static inline int dev_printk(const char *level, const struct device *dev,
++		      const char *fmt, ...)
++	 { return 0; }
++
++static inline int dev_emerg(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_emerg(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int dev_crit(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_crit(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int dev_alert(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_alert(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int dev_err(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_err(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int dev_warn(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_warn(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int dev_notice(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int dev_notice(const struct device *dev, const char *s, ...)
++	{ return 0; }
++static inline int _dev_info(const struct device *dev, const char *s, ...)
++	__attribute__ ((format (printf, 2, 3)));
++static inline int _dev_info(const struct device *dev, const char *s, ...)
++	{ return 0; }
++
++#endif
++
++#define dev_info(dev, fmt, arg...) _dev_info(dev, fmt, ##arg)
++/* workaround for existing struct dev_info and variable dev_info uses */
+ 
+ #if defined(DEBUG)
+ #define dev_dbg(dev, format, arg...)		\
+-	dev_printk(KERN_DEBUG , dev , format , ## arg)
++	dev_printk(KERN_DEBUG, dev, format, ##arg)
+ #elif defined(CONFIG_DYNAMIC_DEBUG)
+-#define dev_dbg(dev, format, ...) do { \
++#define dev_dbg(dev, format, ...)		     \
++do {						     \
+ 	dynamic_dev_dbg(dev, format, ##__VA_ARGS__); \
+-	} while (0)
++} while (0)
+ #else
+-#define dev_dbg(dev, format, arg...)		\
+-	({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
++#define dev_dbg(dev, format, arg...)				\
++({								\
++	if (0)							\
++		dev_printk(KERN_DEBUG, dev, format, ##arg);	\
++	0;							\
++})
+ #endif
+ 
+ #ifdef VERBOSE_DEBUG
+ #define dev_vdbg	dev_dbg
+ #else
+-
+-#define dev_vdbg(dev, format, arg...)		\
+-	({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
++#define dev_vdbg(dev, format, arg...)				\
++({								\
++	if (0)							\
++		dev_printk(KERN_DEBUG, dev, format, ##arg);	\
++	0;							\
++})
+ #endif
+ 
+ /*
 -- 
 1.7.0.14.g7e948
 
