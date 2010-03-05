@@ -1,40 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537Ab0CETjo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 14:39:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40488 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754833Ab0CETjm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 14:39:42 -0500
-Subject: Re: [PATCH 06/14] perf, x86: PEBS infrastructure
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: Paul Mackerras <paulus@samba.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       fweisbec@gmail.com, Arnaldo Carvalho de Melo <acme@infradead.org>
-In-Reply-To: <bd4cb8901003051111h4ef4de03i426dc82c7e25b8d3@mail.gmail.com>
-References: <20100304140046.596569763@chello.nl>
-	 <20100304140100.392111285@chello.nl>
-	 <20100305061942.GF27606@brick.ozlabs.ibm.com>
-	 <1267780810.16716.51.camel@laptop>
-	 <bd4cb8901003051111h4ef4de03i426dc82c7e25b8d3@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Mar 2010 20:39:39 +0100
-Message-ID: <1267817979.4942.9.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1755565Ab0CETnL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 14:43:11 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:33465 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755350Ab0CETnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 14:43:09 -0500
+Date: Fri, 5 Mar 2010 11:43:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl,
+       cloos@jhcloos.com
+Subject: [PATCH 0/2] v4 kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100305194305.GA23009@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-05 at 11:11 -0800, Stephane Eranian wrote:
-> By rewinding you get the IP of the instruction that caused the event. But the
-> register state is STILL reflecting the situation at retirement of that
-> instruction. 
+This patch appends the localversion string to the Linux kernel version.
+For example, in a git tree with uncommitted changes, the .config file
+might start as follows (but with leading hash marks):
 
-I'm quite aware of that, but its near impossible to reverse interpret
-instructions such as "mov rdx, $rdx", so until we get fault like PEBS
-we'll just have to live with this.
+	Automatically generated make config: don't edit
+	Linux kernel version: 2.6.33-01836-g90a6501-dirty
+	Mon Mar  1 17:05:59 2010
 
+The "-01836-g90a6501-dirty" string is added by this patch.
+
+The KBUILD_CONFIG_NO_CHECK_DIRTY environment variable controls the
+git "-dirty" check.  If this variable is either empty or undefined,
+then a "-dirty" check is performed (the default), otherwise, this
+check is omitted.
+
+Differences from v3 (http://lkml.org/lkml/2010/3/4/520):
+
+o	Print errors to stderr, using gcc error format so that scripts
+	that pull errors from build output will find them.
+
+o	Make error strings placed in .config file more comprehensible.
+
+o	Make parent warn of child error return (via wait() system call).
+
+Differences from v2 (http://lkml.org/lkml/2010/3/2/570):
+
+o	Replace popen() with the equivalent fork-exec series
+	to prevent security vulnerabilities due to shell metacharacter
+	interpretation.
+
+o	Added the KBUILD_CONFIG_NO_CHECK_DIRTY environment variable,
+	and modified scripts/setlocalversion to check it, as suggested
+	by James Cloos.
+
+Differences from v1 (http://lkml.org/lkml/2010/2/28/191):
+
+o	Incorporates feedback from Geert Uytterhoeven, Linus Torvalds,
+	Frans Pop, and James Cloos.
+
+o	Fixed to work correctly with the "O=" Makefile argument and
+	the KBUILD_OUTPUT environment variable, so that .config files
+	created in directories outside of the source tree are tagged
+	correctly.
+
+o	Uses scripts/setlocalversion, which handles not only git, but
+	also mercurial and svn.
+
+o	Make the new behavior default-off, as scripts/setlocalversion
+	has significant latency.  A new environment variable named
+	"KBUILD_CONFIG_LOCALVERSION" must be set to enable the
+	"-01836-g90a6501-dirty" style of string.
+
+	This is intended to address James Cloos's concern that this
+	feature will slow down casual kernel builds.
+
+It has been suggested that this string be output at boot and oops time.
+If there is general agreement, this will be the subject of a separate
+patch.
+
+ kconfig/confdata.c |   69 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ setlocalversion    |   18 +++++++------
+ 2 files changed, 76 insertions(+), 11 deletions(-)
