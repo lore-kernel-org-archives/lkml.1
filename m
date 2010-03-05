@@ -1,77 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652Ab0CEH6m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:58:42 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57389 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318Ab0CEH6l (ORCPT
+	id S1753630Ab0CEH6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:58:54 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:47499 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420Ab0CEH6w convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:58:41 -0500
-Date: Fri, 5 Mar 2010 08:58:39 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] genirq: spurious irq detection for threaded irqs
-Message-ID: <20100305075839.GA15810@pengutronix.de>
-References: <1267698622-1216-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.1003042323090.2014@localhost.localdomain>
+	Fri, 5 Mar 2010 02:58:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vEEwVHDaMgn14cYZA2fFDRPlJATQ9lxPb96JmghuvVQqE+mv+XM8xlzF2FguqBQeZX
+         GM/rlCk8azrb6I4ly678M/0aUcPKXyQGlDUW/XkOCoHjzr5jh36BaQztEpHqJBSIoAJf
+         JC8y18OG9PczPZ+MVnzdmicImIV1MEmyRg8hA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.1003042323090.2014@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <20100305074407.GC19703@elte.hu>
+References: <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+	 <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>
+	 <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
+	 <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
+	 <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu>
+	 <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com>
+	 <20100305074407.GC19703@elte.hu>
+Date: Fri, 5 Mar 2010 17:58:50 +1000
+Message-ID: <21d7e9971003042358j6c7678d7j3c0a86884f1425a@mail.gmail.com>
+Subject: Re: [git pull] drm request 3
+From: Dave Airlie <airlied@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ben Skeggs <skeggsb@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 11:26:20PM +0100, Thomas Gleixner wrote:
-> On Thu, 4 Mar 2010, Uwe Kleine-König wrote:
-> > -void note_interrupt(unsigned int irq, struct irq_desc *desc,
-> > -		    irqreturn_t action_ret)
-> > +void note_threaded_interrupt(unsigned int irq, struct irq_desc *desc,
-> > +		irqreturn_t action_ret)
-> >  {
-> >  	if (unlikely(action_ret != IRQ_HANDLED)) {
-> >  		/*
-> > @@ -262,6 +262,19 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
-> >  	desc->irqs_unhandled = 0;
-> >  }
-> >  
-> > +void note_interrupt(unsigned int irq, struct irq_desc *desc,
-> > +		irqreturn_t action_ret)
-> > +{
-> > +	if (action_ret == IRQ_WAKE_THREAD)
-> > +		/* handled in irq_thread() when the threaded handler returns */
-> > +		return;
-> > +
-> > +	/* don't report IRQ_WAKE_THREAD | IRQ_HANDLED as bogus return value */
-> > +	action_ret &= ~IRQ_WAKE_THREAD;
-> > +
-> > +	note_threaded_interrupt(irq, desc, action_ret);
-> > +}
-> > +
-> 
-> We don't need an extra function for that. A simple
-> 
-> 	if (action_ret & IRQ_WAKE_THREAD)
-> 		return;
-> 
-> in note_interrupt() is sufficient to cover everything.
-With your suggestion if action_ret == IRQ_WAKE_THREAD | IRQ_HANDLED then
-the IRQ_HANDLED bit doesn't get noted.  Does that matter?
+On Fri, Mar 5, 2010 at 5:44 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>
+>> On Fri, Mar 5, 2010 at 8:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> > The conclusion is crystal clear, breaking an ABI via a "flag day"
+>> > cleanup/feature/etc is:
+>> >
+>> > ?- wrong
+>> >
+>> > ?- harmful
+>> >
+>> > ?- limits the developer base
+>> >
+>> > ?- limits the tester base
+>> >
+>> > ?- wastes time and effort. (fewer developers/testers means that while _this_
+>> > ? feature was easier to add, all your _future_ features will be a bit harder
+>> > ? to do. It compounds up.)
+>> >
+>> > ?- so it hurts even the very developer who is most convinced that this was the
+>> > ? right thing to do
+>> >
+>> > It's a bad technical decision throughout. It's masochistic and often suicidal
+>> > to just about any project in essence. I've seen projects that did it once and
+>> > died just due to that single act of stupidity. I've seen projects that have
+>> > done it a few times and took the usage hit, limped along with the wounds and
+>> > never grew to the size they could have achieved. I've seen projects that did
+>> > it once, took the hit, learned from it and never did it again.
+>>
+>> Agreed. What bothers me in this discussion is that people keep bringing up
+>> the fact that nouveau is mostly developed by volunteers and thus it doesn't
+>> make sense to make sure it's backwards (or forwards) compatible. But the way
+>> I see it, it's the complete opposite. It's _more_ important to support ABIs
+>> for community-driven efforts because you're relying on people who by
+>> definition don't have time to waste. While the nouveau people might have
+>> good intentions, I'm afraid they might be severely limiting their developer
+>> and tester base because they're not focused on real world problems (like the
+>> ones Linus is seeing).
+>
+> Yeah. I've seen a few other bad arguments as well:
+>
+>   'exploding test matrix'
+>
+> This is often the result of _another_ bad technical decision:
+> over-modularization.
+>
+> Xorg, mesa/libdrm and the kernel DRM drivers pretty share this signature:
+>
+>  - it's developed by the same tightly knit developer base who often cross
+>   between these packages. Features often need changes in each component.
+>
+>  - a developer to be able to do real work has to have the latest sources
+>   of all these components.
+>
+>  - a user just uses whatever horizontal version cut the distro did and never
+>   truly 'mixes' these components as a conscious decision.
+>
+>  - distros just try to get the latest and most capable but still stable
+>   version. Desperately so. Often they will create a version mix that was
+>   never tested by developers in that form. They'll expose users to ABI
+>   combinations that were never really intended. They have trouble
+>   bootstrapping and stabilizing those essentially random combinations and
+>   then have trouble applying stability and security fixes.
+>
+> The thing is, if development has such characteristics then it's pretty clearly
+> not 3-4 separate projects but _one_ abstract project. [*]
+>
+> So the 'exploding test matrix' is simply the result of: creating ABIs between
+> 3-4 _artificial components of the same project_ and then going through
+> developer hell living with that mistake. [**]
+>
+> It's a bit as if we split up the kernel into 'microkernel' components, did a
+> VFS ABI, MM ABI, drivers ABI, scheduler ABI, networking ABI and arch ABIs, and
+> then tried to develop them as separate components.
+>
+> If we did then then Linux kernel development would slow down massively while
+> in reality everyone would _still_ have to have the latest and greatest source
+> checked out to do some real development work and to be able to implement
+> features that affect the whole kernel ...
+>
+> Linux would become an epic fail of historic proportions if we ever did that.
 
-But still you're right about the extra function.  Assuming a threaded
-handler doesn't return IRQ_WAKE_THREAD my note_interrupt does the same
-as note_threaded_interrupt.
+The other option that we used to have was out-of-tree kernel modules, that
+shipped in X.org along with Mesa all in one big tree. This wasn't satisfactory
+and we were pretty much told to put the drm modules into the kernel at
+that point,
 
-Best regards
-Uwe
+Other suggestion from Luc has been to stablise drm/mesa/X.org APIs a
+lot more and
+ship driver sources for all 3 bit separately, but that doesn't seem
+workable either,
+since the Mesa API is infinitely broad (its effectively OpenGL), and
+changes way too
+often, as does the kernel API, though the drm component is probably okay.
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+You'll find groups like Intel are releasing things at fairly similiar
+times every quarter
+and recommending those groupings for distros to take as tested together.
+
+You also have the BSD options where they just create a base OS system and screw
+the whole pick-n-mix decisions.
+
+Dave
