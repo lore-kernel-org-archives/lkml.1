@@ -1,62 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670Ab0CETKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 14:10:38 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:48613 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755418Ab0CETKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 14:10:36 -0500
-Message-Id: <20100305191035.058221526@gulag1.americas.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 05 Mar 2010 13:10:35 -0600
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jack Steiner <steiner@sgi.com>, Tony Ernst <tee@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] reduce per cpu boot up messages
+	id S1755752Ab0CETKx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 14:10:53 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50147 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755736Ab0CETKu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 14:10:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=t/SUCX9JRgGtmksikUPNXQRGoubCMJAj71aXa0VRrFolI80vn6WEEMVxbhkOKZsQjs
+         ARQBTRjTQmRKgXDUqaaQ+jhLl5884muoMzF6+/x+vpKBEp5LCLx12e+XkidB7wNymTcj
+         L6PKr/3jr2w215mPfsYSyC0TqPtHNIBXEqxDM=
+Message-ID: <4B915765.5090203@gmail.com>
+Date: Fri, 05 Mar 2010 11:11:33 -0800
+From: "Justin P. mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Daniel Stone <daniel@fooishbar.org>, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, skeggsb@gmail.com, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [git pull] drm request 3
+References: <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu> <20100305123834.0d9c6277@lxorguk.ukuu.org.uk> <20100305.063718.211238119.davem@davemloft.net> <20100305151754.GB2505@tempa> <4B91428E.6070006@garzik.org>
+In-Reply-To: <4B91428E.6070006@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 03/05/2010 09:42 AM, Jeff Garzik wrote:
+> On 03/05/2010 10:17 AM, Daniel Stone wrote:
+>> On Fri, Mar 05, 2010 at 06:37:18AM -0800, David Miller wrote:
+>>> If it effects such a large number of people, which this noveau thing
+>>> does, it's entirely relevant to everyone. And the way it's breaking
+>>> and making kernel development difficult for so many people matters to
+>>> us.
+>>
+>> Maybe the lesson to be learned from all this is, 'if the developers
+>> don't want something merged because they're not ready and forsee huge
+>> problems in the future, actually listen to them instead of blindly
+>> ramming it in regardless'? But maybe that's just me.
+>
+> That particular horse left the barn when Fedora shipped nouveau in a
+> stable release, not when Linus merged it into his tree.
+>
+> Jeff
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
 
-Since more complex patches were rejected, try simple patches to
-reduce the boot up clutter on the console, specifically those
-which are printed for each cpu.
 
+stopped me in my tracks i.g.
+in order to install using the livecd
+requires brain surgery.
+(for me that's fine, but for an average business
+person/s forget it).
 
-Patch 1: limit-MCA-messages changes:
-
-Booting Node   0, Processors  #1
-CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #2
-CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #3
-CPU 3 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #4
-CPU 4 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #5
-CPU 5 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #6
-CPU 6 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
- #7
-
-<<< and so on for up to 4096 cpus >>>
-
-to a less cluttered:
-
-Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
-Booting Node   1, Processors  #8 #9 #10 #11 #12 #13 #14 #15 Ok.
-Booting Node   2, Processors  #16 #17 #18 #19 #20 #21 #22 #23 Ok.
-...
-
-Patch 2: change-firmware-msglevel
-
-Change the loglevel of these messages to debug so as to not
-get 4096 repititous messages.
-
-Patch 3: remove-idle-messages
-
-Print the "WARNING: polling idle and HT enabled, performance may degrade"
-message once instead of for each cpu.
-
--- 
+Justin P. Mattock
