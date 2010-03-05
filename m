@@ -1,201 +1,125 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055Ab0CEKZK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 05:25:10 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:44189 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820Ab0CEKZI (ORCPT
+	id S1755103Ab0CEK0L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 05:26:11 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:32052 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881Ab0CEK0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 05:25:08 -0500
+	Fri, 5 Mar 2010 05:26:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=GoDjtaK5dhtylJ8ygt2DvcRJZC4FHzgkU7neYHtjBjTadZy3V7NCRF+GJuCXjEqof5
+         wllXYQOrLqx0eqwhjvGXSPKACS1ZjX1S0K8v+LXZ5Tv0nJDoo9Pzx9hPCUK8BR0GXWzX
+         bWdQsfGrxOT5+8Sb+BvafOW6c/l5ReR46wdE8=
+Message-ID: <4B90DC3C.1060000@gmail.com>
+Date: Fri, 05 Mar 2010 11:26:04 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-11.2 Thunderbird/3.0.1
 MIME-Version: 1.0
-Date: Fri, 5 Mar 2010 15:55:07 +0530
-Message-ID: <d760cf2d1003050225t59cb3932t5b44835887225d50@mail.gmail.com>
-Subject: [PATCH 3/3] Add handlers for swap events
-From: Nitin Gupta <ngupta@vflare.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Pekka Enberg <penberg@gmail.com>, andi@firstfloor.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Johannes Weiner <hannes@cmpxchg.org>, Greg Thelen <gthelen@google.com>,
+       linux-mm@kvack.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
+References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <4B90C921.6060908@kernel.org>
+In-Reply-To: <4B90C921.6060908@kernel.org>
+X-Enigmail-Version: 1.0.1
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SWAPON handler sets callback which frees memory associated
-with given swap slot, eliminating any stale data in corresponding
-ramzswap device.
+On 03/05/2010 10:04 AM, Yinghai Lu wrote:
+> according to context
+> http://patchwork.kernel.org/patch/73893/
+> 
+> Jiri, 
+> please check current linus tree still have problem about mem_map is using that much low mem?
 
-Without this callback, ramzswap device does not get any notification
-when a swap slot is freed. Thus, stale data can quickly accumulate in
-(compressed) memory which can defeat the whole purpose of such a device.
-With this callback, the device can free memory as soon as corresponding
-swap slot is freed.
+Hi!
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
----
- drivers/staging/ramzswap/ramzswap_drv.c   |   91 +++++++++++++++++++++++++++++
- drivers/staging/ramzswap/ramzswap_drv.h   |    1 +
- drivers/staging/ramzswap/ramzswap_ioctl.h |    1 +
- 3 files changed, 93 insertions(+), 0 deletions(-)
+Sorry, I don't have direct access to the machine. I might try to ask the
+owners to do so.
 
-diff --git a/drivers/staging/ramzswap/ramzswap_drv.c
-b/drivers/staging/ramzswap/ramzswap_drv.c
-index 989fac5..89cc491 100644
---- a/drivers/staging/ramzswap/ramzswap_drv.c
-+++ b/drivers/staging/ramzswap/ramzswap_drv.c
-@@ -254,6 +254,7 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
- 	s->failed_reads = rs->failed_reads;
- 	s->failed_writes = rs->failed_writes;
- 	s->invalid_io = rs->invalid_io;
-+	s->notify_free = rs->notify_free;
- 	s->pages_zero = rs->pages_zero;
+> on my 1024g system first node has 128G ram, [2g, 4g) are mmio range.
 
- 	s->good_compress_pct = good_compress_perc;
-@@ -1334,6 +1335,69 @@ static void create_device(struct ramzswap *rzs,
-int device_id)
- 	rzs->init_done = 0;
- }
+So where gets your mem_map allocated (I suppose you're running flat model)?
 
-+static void ramzswap_slot_free_notify(struct file *swap_file,
-+				unsigned long index)
-+{
-+	struct ramzswap *rzs;
-+
-+	rzs = ((struct file *)swap_file)->private_data;
-+	ramzswap_free_page(rzs, index);
-+	stat_inc(rzs->stats.notify_free);
-+}
-+
-+/*
-+ * Returns ramzswap device for the given swap file. Also caches
-+ * struct ramzswap in file->private_data.
-+ *
-+ * Returns NULL if the given file is not a ramzswap device.
-+ */
-+static struct ramzswap *ramzswap_find_device(struct file *swap_file)
-+{
-+	int i;
-+	struct file *file;
-+	struct inode *inode;
-+	struct ramzswap *rzs;
-+	struct block_device *bdev;
-+
-+	file = (struct file *)swap_file;
-+	inode = file->f_mapping->host;
-+	bdev = I_BDEV(inode);
-+	rzs = bdev->bd_disk->private_data;
-+
-+	for (i = 0; i < num_devices; i++) {
-+		if (rzs == &devices[i])
-+			break;
-+	}
-+
-+	if (i == num_devices) {
-+		rzs = NULL;
-+		goto out;
-+	}
-+
-+	file->private_data = rzs;
-+
-+out:
-+	return rzs;
-+}
-+
-+static int ramzswap_swapon_notify(struct notifier_block *self,
-+			unsigned long type, void *swap_file)
-+{
-+	if (ramzswap_find_device(swap_file))
-+		set_swap_free_notify(type, ramzswap_slot_free_notify);
-+
-+	return 0;
-+}
-+
-+static int ramzswap_swapoff_notify(struct notifier_block *self,
-+			unsigned long type, void *swap_file)
-+{
-+	if (ramzswap_find_device(swap_file))
-+		set_swap_free_notify(type, NULL);
-+
-+	return 0;
-+}
-+
- static void destroy_device(struct ramzswap *rzs)
- {
- 	if (rzs->disk) {
-@@ -1345,6 +1409,14 @@ static void destroy_device(struct ramzswap *rzs)
- 		blk_cleanup_queue(rzs->queue);
- }
+Note that the failure we were seeing was with different amount of memory
+on different machines. Obviously because of different e820 reservations
+and driver requirements at boot time. So the required memory to trigger
+the error oscillated around 128G, sometimes being 130G.
 
-+static struct notifier_block ramzswap_swapon_nb = {
-+	.notifier_call = ramzswap_swapon_notify
-+};
-+
-+static struct notifier_block ramzswap_swapoff_nb = {
-+	.notifier_call = ramzswap_swapoff_notify
-+};
-+
- static int __init ramzswap_init(void)
- {
- 	int i, ret;
-@@ -1377,6 +1449,20 @@ static int __init ramzswap_init(void)
- 	for (i = 0; i < num_devices; i++)
- 		create_device(&devices[i], i);
+It triggered when mem_map fit exactly into 0-2G (and 2-4G was reserved)
+and no more space was there. If RAM was more than 130G, mem_map was
+above 4G boundary implicitly, so that there was enough space in the
+first 4G of memory for others with specific bootmem limitations.
 
-+	ret = register_swap_event_notifier(&ramzswap_swapon_nb,
-+				SWAP_EVENT_SWAPON, 0);
-+	if (ret) {
-+		pr_err("Error registering swapon notifier\n");
-+		goto out;
-+	}
-+
-+	ret = register_swap_event_notifier(&ramzswap_swapoff_nb,
-+				SWAP_EVENT_SWAPOFF, 0);
-+	if (ret) {
-+		pr_err("Error registering swapoff notifier\n");
-+		goto out;
-+	}
-+
- 	return 0;
- out:
- 	unregister_blkdev(ramzswap_major, "ramzswap");
-@@ -1388,6 +1474,11 @@ static void __exit ramzswap_exit(void)
- 	int i;
- 	struct ramzswap *rzs;
+> with NO_BOOTMEM
+> [    0.000000]  a - 11
+> [    0.000000]  19 40 - 80 95
+> [    0.000000]  702 740 - 1000 1000
+> [    0.000000]  331f 3340 - 3400 3400
+> [    0.000000]  35dd - 3600
+> [    0.000000]  37dd - 3800
+> [    0.000000]  39dd - 3a00
+> [    0.000000]  3bdd - 3c00
+> [    0.000000]  3ddd - 3e00
+> [    0.000000]  3fdd - 4000
+> [    0.000000]  41dd - 4200
+> [    0.000000]  43dd - 4400
+> [    0.000000]  45dd - 4600
+> [    0.000000]  47dd - 4800
+> [    0.000000]  49dd - 4a00
+> [    0.000000]  4bdd - 4c00
+> [    0.000000]  4ddd - 4e00
+> [    0.000000]  4fdd - 5000
+> [    0.000000]  51dd - 5200
+> [    0.000000]  93dd 9400 - 7d500 7d53b
+> [    0.000000]  7f730 - 7f750
+> [    0.000000]  100012 100040 - 100200 100200
+> [    0.000000]  170200 170200 - 2080000 2080000
+> [    0.000000]  2080065 2080080 - 2080200 2080200
+> 
+> so PFN: 9400 - 7d500 are free.
 
-+	unregister_swap_event_notifier(&ramzswap_swapon_nb,
-+				SWAP_EVENT_SWAPON, 0);
-+	unregister_swap_event_notifier(&ramzswap_swapoff_nb,
-+				SWAP_EVENT_SWAPOFF, 0);
-+
- 	for (i = 0; i < num_devices; i++) {
- 		rzs = &devices[i];
+Could you explain more the dmesg output?
 
-diff --git a/drivers/staging/ramzswap/ramzswap_drv.h
-b/drivers/staging/ramzswap/ramzswap_drv.h
-index a6ea240..adc841a 100644
---- a/drivers/staging/ramzswap/ramzswap_drv.h
-+++ b/drivers/staging/ramzswap/ramzswap_drv.h
-@@ -124,6 +124,7 @@ struct ramzswap_stats {
- 	u64 failed_reads;	/* can happen when memory is too low */
- 	u64 failed_writes;	/* should NEVER! happen */
- 	u64 invalid_io;		/* non-swap I/O requests */
-+	u64 notify_free;	/* no. of swap slot free notifications */
- 	u32 pages_zero;		/* no. of zero filled pages */
- 	u32 pages_stored;	/* no. of pages currently stored */
- 	u32 good_compress;	/* % of pages with compression ratio<=50% */
-diff --git a/drivers/staging/ramzswap/ramzswap_ioctl.h
-b/drivers/staging/ramzswap/ramzswap_ioctl.h
-index c713a09..ec50416 100644
---- a/drivers/staging/ramzswap/ramzswap_ioctl.h
-+++ b/drivers/staging/ramzswap/ramzswap_ioctl.h
-@@ -27,6 +27,7 @@ struct ramzswap_ioctl_stats {
- 	u64 failed_reads;	/* can happen when memory is too low */
- 	u64 failed_writes;	/* should NEVER! happen */
- 	u64 invalid_io;		/* non-swap I/O requests */
-+	u64 notify_free;	/* no. of swap slot free notifications */
- 	u32 pages_zero;		/* no. of zero filled pages */
- 	u32 good_compress_pct;	/* no. of pages with compression ratio<=50% */
- 	u32 pages_expand_pct;	/* no. of incompressible pages */
+> without NO_BOOTMEM
+> [    0.000000] nid=0 start=0x0000000000 end=0x0002080000 aligned=1
+> [    0.000000]   free [0x000000000a - 0x0000000095]
+> [    0.000000]   free [0x0000000702 - 0x0000001000]
+> [    0.000000]   free [0x00000032c4 - 0x0000003400]
+> [    0.000000]   free [0x00000035de - 0x0000003600]
+> [    0.000000]   free [0x00000037dd - 0x0000003800]
+> [    0.000000]   free [0x00000039dd - 0x0000003a00]
+> [    0.000000]   free [0x0000003bdd - 0x0000003c00]
+> [    0.000000]   free [0x0000003ddd - 0x0000003e00]
+> [    0.000000]   free [0x0000003fdd - 0x0000004000]
+> [    0.000000]   free [0x00000041dd - 0x0000004200]
+> [    0.000000]   free [0x00000043dd - 0x0000004400]
+> [    0.000000]   free [0x00000045dd - 0x0000004600]
+> [    0.000000]   free [0x00000047dd - 0x0000004800]
+> [    0.000000]   free [0x00000049dd - 0x0000004a00]
+> [    0.000000]   free [0x0000004bdd - 0x0000004c00]
+> [    0.000000]   free [0x0000004ddd - 0x0000004e00]
+> [    0.000000]   free [0x0000004fdd - 0x0000005000]
+> [    0.000000]   free [0x00000051dd - 0x0000005200]
+> [    0.000000]   free [0x00000053dd - 0x000007d53b]
+> [    0.000000]   free [0x000007f730 - 0x000007f750]
+> [    0.000000]   free [0x000010041f - 0x0000100a00]
+> [    0.000000]   free [0x0000170a00 - 0x0000180a00]
+> [    0.000000]   free [0x0000180a03 - 0x0002080000]
+> so pfn: 53dd 7d53b are free
+> 
+> looks like we don't need to change the default goal in alloc_bootmem_node.
+
+thanks,
 -- 
-1.6.2.5
+js
