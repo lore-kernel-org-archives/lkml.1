@@ -1,40 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664Ab0CEGKF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 01:10:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58677 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888Ab0CEGKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 01:10:01 -0500
-Message-ID: <4B90A031.8090306@kernel.org>
-Date: Fri, 05 Mar 2010 15:09:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Sachin Sant <sachinp@in.ibm.com>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: -next March 3: Boot failure on x86 (Oops)
-References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com> <4B8F0CD0.1040507@kernel.org> <4B8F43DD.10002@in.ibm.com> <4B909FC5.8020800@kernel.org>
-In-Reply-To: <4B909FC5.8020800@kernel.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Mar 2010 06:09:56 +0000 (UTC)
+	id S1752843Ab0CEGKo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:10:44 -0500
+Received: from novprvlin0050.provo.novell.com ([137.65.248.33]:19252 "EHLO
+	novprvlin0050.provo.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752083Ab0CEGKm (ORCPT
+	<rfc822;groupwise-jlee@novell.com:4:1>);
+	Fri, 5 Mar 2010 01:10:42 -0500
+Message-Id: <4B913B0D0200002300014364@novprvlin0050.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Thu, 04 Mar 2010 23:10:37 -0700
+From: "Joey Lee" <jlee@novell.com>
+To: <mjg59@srcf.ucam.org>
+Cc: <mzxreary@0pointer.de>, <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that
+	 is need load SCM
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/05/2010 03:08 PM, Tejun Heo wrote:
-> Hmmm... this means that on one of the chunks, chunk->list.next was
-> NULL (BTW, the disassembly is from unlinked object, right?).  The main
-> allocation code hasn't seen much change lately.  The only changes are,
+Hi Matthew, 
+
+於 四，2010-03-04 於 17:09 +0000，Matthew Garrett 提到：
+> On Thu, Mar 04, 2010 at 10:07:53AM -0700, Joey Lee wrote:
+> > Thank's for your review and suggestion.
+> > Per discuss for msi-laptop patchset, I will submit a bit patch for the
+> > following change:
+> > 	- remove threeg sysfs interface.
+> > 	- add KEY_RFKILL keymapping to msi-laptop.
 > 
-> 22b737f4c75197372d64afc6ed1bccd58c00e549 : just refactoring
-> 833af8427be4b217b5bc522f61afdbd3f1d282c2 : possible but isn't very new
+> If the key event comes through the keyboard controller, there's no need 
+> to add the mapping to msi-laptop. Doing it through udev or hal is fine.
+> 
 
-Can you also please try reverting the above two commits?
+Thank's fully undertood, now, will send patch for remove threeg sysfs
+interface.
 
-Thanks.
 
--- 
-tejun
+Joey Lee
+
