@@ -1,46 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151Ab0CEQBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:01:16 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54109 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753931Ab0CEQBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:01:15 -0500
-Date: Fri, 5 Mar 2010 16:02:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: daniel@fooishbar.org, skeggsb@gmail.com, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: [git pull] drm request 3
-Message-ID: <20100305160217.663413eb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100305.074835.159078083.davem@davemloft.net>
-References: <20100305151754.GB2505@tempa>
-	<20100305.072612.186421758.davem@davemloft.net>
-	<20100305154009.GC2505@tempa>
-	<20100305.074835.159078083.davem@davemloft.net>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753940Ab0CEQCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:02:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752455Ab0CEQCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:02:38 -0500
+Message-ID: <4B912AE9.90603@redhat.com>
+Date: Fri, 05 Mar 2010 11:01:45 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/6] perf probe: Add missing variable initialization
+References: <1267804269-22660-1-git-send-email-acme@infradead.org>
+In-Reply-To: <1267804269-22660-1-git-send-email-acme@infradead.org>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You can't unleash something like this on a userbase of this magnitude
-> and then throw your hands up in the air and say "I'm not willing to
-> support this in a reasonable way."
+Arnaldo Carvalho de Melo wrote:
+> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> cc1: warnings being treated as errors
+> util/probe-finder.c: In function ‘find_line_range’:
+> util/probe-finder.c:172: warning: ‘src’ may be used uninitialized in this function
+> make: *** [util/probe-finder.o] Error 1
 
-Not to belabour the obvious - they didn't. Linus ordered them to merge it.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-> We're better than that.
+Thank you!
 
-If you consider the problem is with the Fedora kernel team decision to
-merge it into Fedora in the first place, perhaps you should have an
-internal Red Hat discussion about it with the people who made that
-decision - who I suspect see it differently. Either way the Nouveau
-developers don't control Fedora packaging policy, in fact the GPL licence
-specially ensures the control is not theirs.
+> 
+> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
+>  tools/perf/util/probe-finder.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+> index e77dc88..1e6c65e 100644
+> --- a/tools/perf/util/probe-finder.c
+> +++ b/tools/perf/util/probe-finder.c
+> @@ -169,7 +169,7 @@ static const char *cu_find_realpath(Dwarf_Die *cu_die, const char *fname)
+>  {
+>  	Dwarf_Files *files;
+>  	size_t nfiles, i;
+> -	const char *src;
+> +	const char *src = NULL;
+>  	int ret;
+>  
+>  	if (!fname)
 
-Alan
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
