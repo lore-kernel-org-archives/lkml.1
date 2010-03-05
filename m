@@ -1,80 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311Ab0CENIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 08:08:44 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:50066 "EHLO cmpxchg.org"
+	id S1751831Ab0CENZD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 08:25:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35001 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745Ab0CENIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 08:08:43 -0500
-Date: Fri, 5 Mar 2010 14:08:34 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Greg Thelen <gthelen@google.com>,
-       linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
-Message-ID: <20100305130834.GB13726@cmpxchg.org>
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <4B90C921.6060908@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B90C921.6060908@kernel.org>
+	id S1750719Ab0CENZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 08:25:00 -0500
+Message-ID: <4B910623.9020707@kernel.org>
+Date: Fri, 05 Mar 2010 22:24:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Sachin Sant <sachinp@in.ibm.com>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: -next March 3: Boot failure on x86 (Oops)
+References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com> <4B8F0CD0.1040507@kernel.org> <4B8F43DD.10002@in.ibm.com> <4B909FC5.8020800@kernel.org> <4B90A031.8090306@kernel.org> <4B90E07A.5090302@in.ibm.com>
+In-Reply-To: <4B90E07A.5090302@in.ibm.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Mar 2010 13:24:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 01:04:33AM -0800, Yinghai Lu wrote:
-> On 03/04/2010 07:21 PM, Johannes Weiner wrote:
-> > Hello Greg,
-> > 
-> > On Thu, Mar 04, 2010 at 01:21:41PM -0800, Greg Thelen wrote:
-> >> On several systems I am seeing a boot panic if I use mmotm
-> >> (stamp-2010-03-02-18-38).  If I remove
-> >> bootmem-avoid-dma32-zone-by-default.patch then no panic is seen.  I
-> >> find that:
-> >> * 2.6.33 boots fine.
-> >> * 2.6.33 + mmotm w/o bootmem-avoid-dma32-zone-by-default.patch: boots fine.
-> >> * 2.6.33 + mmotm (including
-> >> bootmem-avoid-dma32-zone-by-default.patch): panics.
-> >> Note: I had to enable earlyprintk to see the panic.  Without
-> >> earlyprintk no console output was seen.  The system appeared to hang
-> >> after the loader.
-> > 
-> > where sparse_index_init(), in the SPARSEMEM_EXTREME case, will allocate
-> > the mem_section descriptor with bootmem.  If this would fail, the box
-> > would panic immediately earlier, but NO_BOOTMEM does not seem to get it
-> > right.
-> > 
-> > Greg, could you retry _with_ my bootmem patch applied, but with setting
-> > CONFIG_NO_BOOTMEM=n up front?
-> > 
-> > I think NO_BOOTMEM has several problems.  Yinghai, can you verify them?
-> ...
-> > 
-> > 1. It does not seem to handle goal appropriately: bootmem would try
-> > without the goal if it does not make sense.  And in this case, the
-> > goal is 4G (above DMA32) and the amount of memory is 256M.
-> > 
-> > And if I did not miss something, this is the difference with my patch:
-> > without it, the default goal is 16M, which is no problem as it is well
-> > within your available memory.  But the change of the default goal moved
-> > it outside it which the bootmem replacement can not handle.
-> > 
-> > 2. The early reservation stuff seems to return NULL but callsites assume
-> > that the bootmem interface never does that.  Okay, the result is the same,
-> > we crash.  But it still moves error reporting to a possibly much later
-> > point where somebody actually dereferences the returned pointer.
+Hello,
+
+On 03/05/2010 07:44 PM, Sachin Sant wrote:
+> Tejun Heo wrote:
+>> On 03/05/2010 03:08 PM, Tejun Heo wrote:
+>>  
+>>> Hmmm... this means that on one of the chunks, chunk->list.next was
+>>> NULL (BTW, the disassembly is from unlinked object, right?).  The main
+>>> allocation code hasn't seen much change lately.  The only changes are,
+>>>
+>>> 22b737f4c75197372d64afc6ed1bccd58c00e549 : just refactoring
+>>> 833af8427be4b217b5bc522f61afdbd3f1d282c2 : possible but isn't very new
+>>>     
+>>
+>> Can you also please try reverting the above two commits?
+>>
+>> Thanks.
+>>
+>>   
+> Reverting both the commits allows the machine to boot.
+> If i just apply 22b737f4c75197372d64afc6ed1bccd58c00e549 the
+> box fails to boot with following kobject related traces:
 > 
-> under CONFIG_NO_BOOTMEM
-> for alloc_bootmem_node it will honor goal, if someone input big goal it will not
-> fallback to get a small one below that goal.
+> registered taskstats version 1
+> kobject '' (c11d5fdc): tried to add an uninitialized object, something
+> is seriously wrong.
+> Pid: 1, comm: swapper Not tainted 2.6.33-autotest-next-20100305 #3
+> Call Trace:
+> [<c03a7678>] ? printk+0xf/0x17
+> [<c028766f>] kobject_add+0x28/0x49
+> [<c05a1a8e>] memmap_init+0x4f/0x89
+> [<c05a1a3f>] ? memmap_init+0x0/0x89
+> [<c0101139>] do_one_initcall+0x4c/0x131
+> [<c057b352>] kernel_init+0x127/0x1a8
+> [<c057b22b>] ? kernel_init+0x0/0x1a8
+> [<c0102db6>] kernel_thread_helper+0x6/0x10
+> ------------[ cut here ]------------
+> WARNING: at lib/kobject.c:595 kobject_put+0x27/0x3c()
+> Hardware name: eserver xSeries 235 -[86717AX]-
+> kobject: '' (c11d5fdc): is not initialized, yet kobject_put() is being
+> called.
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.33-autotest-next-20100305 #3
+> Call Trace:
+> [<c012fe66>] warn_slowpath_common+0x60/0x90
+> [<c012feca>] warn_slowpath_fmt+0x24/0x27
+> [<c02872c6>] kobject_put+0x27/0x3c
+> [<c05a1a9c>] memmap_init+0x5d/0x89
+> [<c05a1a3f>] ? memmap_init+0x0/0x89
+> [<c0101139>] do_one_initcall+0x4c/0x131
+> [<c057b352>] kernel_init+0x127/0x1a8
+> [<c057b22b>] ? kernel_init+0x0/0x1a8
+> [<c0102db6>] kernel_thread_helper+0x6/0x10
+> ---[ end trace 7b6574301a0037c2 ]---
+> 
+> The results are with today's next, but i think same applies to Linus
+> tree as well.
 
-Yes, that's the problem.
+I'm having very difficult time imagining how 22b737f4 could have
+affected this as the patch is identical transformation of the previous
+code.  Also, 833af842 was released with 2.6.32 and stayed that way, so
+it really looks like a memory overrun / random corruption thing.  Can
+you please retry with kmalloc debug stuff turned on?
 
-> return NULL, could make caller have more choice and more control.
+Thanks.
 
-Most callers do not need it as there is no real way to handle allocation
-failures at this point of time in the boot process.
-
-For everything else, there is the _nopanic API.
+-- 
+tejun
