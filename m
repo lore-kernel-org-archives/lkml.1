@@ -1,154 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103Ab0CEWVG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 17:21:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41052 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337Ab0CEWVD (ORCPT
+	id S1755812Ab0CEWYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 17:24:00 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:44179 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348Ab0CEWX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 17:21:03 -0500
-Subject: Re: HW perf. events arch implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Cree <mcree@orcon.net.nz>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1EE1A83F-EB50-40F3-A6A0-5D8DE0B38446@orcon.net.nz>
-References: <1EE1A83F-EB50-40F3-A6A0-5D8DE0B38446@orcon.net.nz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Mar 2010 23:20:57 +0100
-Message-ID: <1267827657.4997.51.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 17:23:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
+         :content-type;
+        b=R5f07AuctxfttUbHkg/KtN24YQJBl9daXPQLMTCCJJMDy8bBP4ozYcZc4d6uIhRJEv
+         fvfGwHRuCPhWGrwHItrLM5TQhYqyTKGx08iuQkWf/3WAcLMRNB8HlByJRW4aTFtyRmFN
+         vCMSW3uWkV7ezanJHEpUPhVEhUW1eTU0Mx4mQ=
+Date: Sat, 6 Mar 2010 06:23:47 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+cc: Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, petr@vmware.com,
+       Eli Collins <ecollins@vmware.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: commit 554f76962d3a6eb5110415f1591aca83f96a84ae hangs USB vmware-7.0.1
+Message-ID: <Pine.LNX.4.64.1003060621380.6420@boston.corp.fedex.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 14:35 +1300, Michael Cree wrote:
-> I am trying to implement arch specific code on the Alpha for hardware  
-> performance events (yeah, I'm probably a little bit loopy and unsound  
-> of mind pursuing this on an end-of-line platform, but it's a way in to  
-> learn a little bit of kernel programming and it scratches an itch).
-> 
-> I have taken a look at the code in the x86, sparc and ppc  
-> implementations and tried to drum up an Alpha implementation for the  
-> EV67/7/79 cpus, but it ain't working and is producing obviously  
-> erroneous counts.  Part of the problem is that I don't understand  
-> under what conditions, and with what assumptions, the performance  
-> event subsystem is calling into the architecture specific code.  Is  
-> there any documentation available that describes the architecture  
-> specific interface?
-> 
-> The Alpha CPUs of interest have two 20-bit performance monitoring  
-> counters that can count cycles, instructions, Bcache misses and Mbox  
-> replays (but not all combinations of those).  For round numbers  
-> consider a 1GHz CPU, with a theoretical maximal sustained throughput  
-> of four instructions per cycle, then a single performance counter  
-> could potentially generate 4000 interrupts per second to signal  
-> counter overflow when counting instructions.
-> 
-> The x86, sparc and PPC implementations seem to me to assume that calls  
-> to read back the counters occur more frequently than performance  
-> counter overflow interrupts, and that the highest bit of the counter  
-> can safely be used to detect overflow.  (Am I correct?)  That is  
-> likely not to be true of the Alpha because of the small width of the  
-> counter.  Is there someone who would be happy to give me, a kernel  
-> newbie who probably doesn't even make the grade of neophyte, a bit of  
-> direction on this?
-
-Right, so the architecture interface is 2 fold, a struct pmu, and a
-bunch of weak hw_perf_*() functions.
-
-I'm trying to move away from the hw_perf*() functions, but for now
-they're there and are useful for a number of things.
-
-We have:
-
-  hw_perf_event_init();
-  hw_perf_disable();
-  hw_perf_enable();
-  hw_perf_group_sched_in();
-
-hw_perf_event_init() is called when we are creating a counter of type
-PERF_TYPE_RAW, PERF_TYPE_HARDWARE or PERF_TYPE_HW_CACHE, it will return
-a struct pmu for that event.
-
-hw_perf_disable()/hw_perf_enable() are like
-local_irq_disable()/local_irq_enable() but for the Performance Monitor
-Interrupt (PMI), which might be a NMI, so we need to disable it in some
-arch specific way -- these basically freeze/unfreeze the PMU.
-
-hw_perf_group_sched_in() is a bit of a nightmare and a source of bugs
-and I really should get around to killing it off, but this is used
-optimize multiple pmu->enable() calls.
-
-Then we have struct pmu, it has the following members:
-
-  enable()
-  disable()
-  start()
-  stop()
-  read()
-  unthrottle()
 
 
-->enable() will try to program the event onto the hardware and return 0
-on success, if however it cannot, due to there not being a suitable
-counter available, it shall return an error.
+Linux version v2.6.33-5399-gcc7889f with reiser3 and vmware-7.0.1
 
-->disable() will remove the event from the hardware and release all
-resources that were acquired by ->enable().
+Starting vmware just hang even before displaying the main GUI. Reverting 
+554f76962d3a6eb5110415f1591aca83f96a84ae solves the problem.
 
-->start() will undo ->stop().
+It seems vmware is trying to access the USB but this commit blocks it.
 
-->stop() will stop the counter but not release any resources that might
-have been acquired by ->enable().
-
-->read() will read the hardware counter and fold the delta into
-event->count.
-
-->unthrottle(), when present, will undo whatever is done to stop the PMI
-from triggering after perf_event_overflow() returns !0. That is, we have
-sysctl_perf_event_sample_rate and we try to ensure the PMI doesn't
-exceed that, if it does perf_event_overflow() will return !0 and the
-arch code is supposed to inhibit it from firing again until
-->unthrottle() is called. This avoid users from accidentally
-live-locking the system by requesting a PMI on every completed
-instruction ;-)
-
-[ ->start/->stop are a way to reprogram the hardware without releasing
-  constraint reservations, this is useful when you change the 
+So, is this a vmware problem or shall this be reverted?
 
 
-As to your counter width, if you have a special overflow bit in a
-separate register then you can possibly use that, but otherwise you need
-it to keep your count straight. The PMI will happen _after_ the
-overflow, at which point you need to fold back the counter delta into
-your event->count, if it just overflowed that's bound to be a very small
-delta -- I guess you can always add the max value on PMI, but it might
-racy, esp. in the presence of ->read() calls.
+Thanks,
+Jeff
 
-Also, if you have multiple registers sharing a PMI you need to be able
-to tell which register overflowed and caused the PMI.
 
-> Also, the Alpha CPUs have an interesting mode whereby one programmes  
-> up one counter with a specified (or random) value that specifies a  
-> future instruction to profile.  The CPU runs for that number of  
-> instructions/cycles, then a short monitoring window (of a few cycles)  
-> is opened about the profiled instruction and when completed an  
-> interrupt is generated.  One can then read back a whole lot of  
-> information about the pipeline at the time of the profiled  
-> instruction.  This can be used for statistical sampling.  Does the  
-> performance events subsystem support monitoring with such a mode?
+commit 554f76962d3a6eb5110415f1591aca83f96a84ae
+Author: Oliver Neukum <oliver@neukum.org>
+Date:   Wed Jan 13 15:30:47 2010 +0100
 
-That sounds like AMD IBS, which I've been told is based on the Alpha
-PMU. We currently do no have AMD IBS supported.
+     USB: Remove BKL from poll()
 
-AMD has two IBS counters, one does instructions and one does fetches, I
-think Robert was going to support these by modeling them as fixed
-purpose counters and provide the extra information through
-PERF_SAMPLE_RAW until we can come up with a saner model.
+     Replace BKL with usbfs_mutex to protect a global counter
+     and a per file data structure
 
-A potential saner model is adding non sampling counters into its group
-which are used to represent these other aspects of the unit.
+     Signed-off-by: Oliver Neukum <oliver@neukum.org>
+     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+diff --git a/drivers/usb/core/devices.c b/drivers/usb/core/devices.c
+index 355dffc..175529f 100644
+--- a/drivers/usb/core/devices.c
++++ b/drivers/usb/core/devices.c
+@@ -118,6 +118,7 @@ static const char *format_endpt =
+   */
+
+  static DECLARE_WAIT_QUEUE_HEAD(deviceconndiscwq);
++/* guarded by usbfs_mutex */
+  static unsigned int conndiscevcnt;
+
+  /* this struct stores the poll state for <mountpoint>/devices pollers */
+@@ -156,7 +157,9 @@ static const struct class_info clas_info[] =
+
+  void usbfs_conn_disc_event(void)
+  {
++	mutex_lock(&usbfs_mutex);
+  	conndiscevcnt++;
++	mutex_unlock(&usbfs_mutex);
+  	wake_up(&deviceconndiscwq);
+  }
+
+@@ -629,42 +632,29 @@ static ssize_t usb_device_read(struct file *file, char 
+__user *buf,
+  static unsigned int usb_device_poll(struct file *file,
+  				    struct poll_table_struct *wait)
+  {
+-	struct usb_device_status *st = file->private_data;
++	struct usb_device_status *st;
+  	unsigned int mask = 0;
+
+-	lock_kernel();
++	mutex_lock(&usbfs_mutex);
++	st = file->private_data;
+  	if (!st) {
+  		st = kmalloc(sizeof(struct usb_device_status), GFP_KERNEL);
+-
+-		/* we may have dropped BKL -
+-		 * need to check for having lost the race */
+-		if (file->private_data) {
+-			kfree(st);
+-			st = file->private_data;
+-			goto lost_race;
+-		}
+-		/* we haven't lost - check for allocation failure now */
+  		if (!st) {
+-			unlock_kernel();
++			mutex_unlock(&usbfs_mutex);
+  			return POLLIN;
+  		}
+
+-		/*
+-		 * need to prevent the module from being unloaded, since
+-		 * proc_unregister does not call the release method and
+-		 * we would have a memory leak
+-		 */
+  		st->lastev = conndiscevcnt;
+  		file->private_data = st;
+  		mask = POLLIN;
+  	}
+-lost_race:
++
+  	if (file->f_mode & FMODE_READ)
+  		poll_wait(file, &deviceconndiscwq, wait);
+  	if (st->lastev != conndiscevcnt)
+  		mask |= POLLIN;
+  	st->lastev = conndiscevcnt;
+-	unlock_kernel();
++	mutex_unlock(&usbfs_mutex);
+  	return mask;
+  }
 
