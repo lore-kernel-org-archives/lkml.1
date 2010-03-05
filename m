@@ -1,228 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940Ab0CEXJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:09:38 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:50481 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755670Ab0CEXJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:09:36 -0500
-X-SpamScore: -38
-X-BigFish: VPS-38(zz154dM1432R14c3L98dN936eM9371Pab9bhzz1202hzzz2fh2a8h6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B918EE0.9020501@am.sony.com>
-Date: Fri, 5 Mar 2010 15:08:16 -0800
-From: <Timothy.Bird@am.sony.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+	id S1755925Ab0CEXLw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:11:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8855 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753336Ab0CEXLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 18:11:51 -0500
+Date: Sat, 6 Mar 2010 00:09:57 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: [PATCH,RESEND -mm 1/2] umh && creds: convert
+	call_usermodehelper_keys() to use subprocess_info->init()
+Message-ID: <20100305230957.GA22614@redhat.com>
+References: <20100226205300.GA26171@redhat.com> <20100226200357.GB16092@redhat.com> <20100226182325.GA31674@redhat.com> <20100225181500.GA18008@redhat.com> <16951.1267207238@redhat.com> <17603.1267209668@redhat.com> <20100226200313.GA16092@redhat.com> <23363.1267216958@redhat.com> <29907.1267226649@redhat.com> <20100305225243.GA21790@redhat.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RFC] ftrace: add tracing_thresh support to function_graph
- tracer (v3)
-References: <1267234355.6328.155.camel@gandalf.stny.rr.com>
-In-Reply-To: <1267234355.6328.155.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Reverse-DNS: mail7.fw-bc.sony.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100305225243.GA21790@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/2010 05:32 PM, Steven Rostedt wrote:
-> Can you take look at this patch, and if you agree, can you give it your
-> ACK?  Applying this on top of my pull request gives a nice output:
+(on top of kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch)
 
+call_usermodehelper_keys() uses call_usermodehelper_setkeys() to change
+subprocess_info->cred in advance. Now that we have info->init() we can
+change this code to set tgcred->session_keyring in context of execing
+kernel thread.
 
-Steven, Frederic...
+Note: since currently call_usermodehelper_keys() is never called with
+UMH_NO_WAIT, call_usermodehelper_keys()->key_get() and umh_keys_cleanup()
+are not really needed, we could rely on install_session_keyring_to_cred()
+which does key_get() on success.
 
-What happened with this?  Did it make it into anyone's
-tree?  Last I saw, the response was favorable, but I don't
-see it in Linus' tree, and I'd hate to miss the merge window.
- -- Tim
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
+---
 
-> [root@bxrhel51 tracing]# echo 300 > tracing_thresh 
-> [root@bxrhel51 tracing]# cat trace | head -30
-> # tracer: function_graph
-> #
-> # CPU  DURATION                  FUNCTION CALLS
-> # |     |   |                     |   |   |   |
->  1) ! 3630.044 us |          } (__dentry_open)
->  1) ! 3632.456 us |        } (nameidata_to_filp)
->  1) ! 3685.980 us |      } (do_filp_open)
->  1) ! 3701.625 us |    } (do_sys_open)
->  1) ! 3702.830 us |  } (sys_open)
->  ------------------------------------------
->  1)   bash-4190    =>   events/-16  
->  ------------------------------------------
-> 
->  1) ! 4152.329 us |  } (schedule)
->  ------------------------------------------
->  1)   events/-16   =>   bash-4190   
->  ------------------------------------------
-> 
->  1) ! 461.230 us  |            } (_raw_spin_unlock_irqrestore)
->  1) ! 466.865 us  |          } (tty_ldisc_try)
->  1) ! 468.948 us  |        } (tty_ldisc_ref_wait)
->  0) ! 333.541 us  |                  } (walk_tg_tree)
->  0) ! 339.638 us  |                } (update_shares)
->  0) ! 488.176 us  |              } (rebalance_domains)
->  0) ! 490.382 us  |            } (run_rebalance_domains)
->  0) ! 532.406 us  |          } (__do_softirq)
->  0) ! 536.246 us  |        } (do_softirq)
->  0) ! 540.842 us  |      } (irq_exit)
->  0) ! 593.286 us  |    } (smp_apic_timer_interrupt)
-> 
-> 
-> 
-> (note, I forgot to update the changelog, I'll do that next)
-> 
-> -- Steve
-> 
-> 
-> commit c020a9a11ec44e0c81f1aa16781d2d42c6c5e560
-> Author: Tim Bird <tim.bird@am.sony.com>
-> Date:   Thu Feb 25 15:36:43 2010 -0800
-> 
->     ftrace: add tracing_thresh support to function_graph tracer (v3)
->     
->     Add support for tracing_thresh to the function_graph tracer.  This
->     version of this feature isolates the checks into new entry and
->     return functions, to avoid adding more conditional code into the
->     main function_graph paths.
->     
->     Also, add support for specifying tracing_thresh on the kernel
->     command line.  When used like so: "tracing_thresh=200 ftrace=function_graph"
->     this can be used to analyse system startup.  It is important to disable
->     tracing soon after boot, in order to avoid losing the trace data.
->     
->     Note: the elimination of 'notrace' in the definition of '__init'
->     may be controversial.  This can be removed, or made conditional,
->     if it's a bit too scary, but it worked OK for me.  Tracing during
->     kernel startup still works, just with no visibility of routines
->     declared __init.
->     
->     Signed-off-by: Tim Bird <tim.bird@am.sony.com>
->     LKML-Reference: <4B87098B.4040308@am.sony.com>
->     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 032c57c..34ead59 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -374,6 +374,21 @@ static int __init set_buf_size(char *str)
->  }
->  __setup("trace_buf_size=", set_buf_size);
->  
-> +static int __init set_tracing_thresh(char *str)
-> +{
-> +	unsigned long threshhold;
-> +	int ret;
-> +
-> +	if (!str)> Frederic,
-> 
-> +		return 0;
-> +	ret = strict_strtoul(str, 0, &threshhold);
-> +	if (ret < 0)
-> +		return 0;
-> +	tracing_thresh = threshhold * 1000;
-> +	return 1;
-> +}
-> +__setup("tracing_thresh=", set_tracing_thresh);
-> +
->  unsigned long nsecs_to_usecs(unsigned long nsecs)
->  {
->  	return nsecs / 1000;
-> @@ -579,9 +594,10 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
->  static arch_spinlock_t ftrace_max_lock =
->  	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
->  
-> +unsigned long __read_mostly	tracing_thresh;
-> +
->  #ifdef CONFIG_TRACER_MAX_TRACE
->  unsigned long __read_mostly	tracing_max_latency;
-> -unsigned long __read_mostly	tracing_thresh;
->  
->  /*
->   * Copy the new maximum trace into the separate maximum-trace
-> @@ -4248,10 +4264,10 @@ static __init int tracer_init_debugfs(void)
->  #ifdef CONFIG_TRACER_MAX_TRACE
->  	trace_create_file("tracing_max_latency", 0644, d_tracer,
->  			&tracing_max_latency, &tracing_max_lat_fops);
-> +#endif
->  
->  	trace_create_file("tracing_thresh", 0644, d_tracer,
->  			&tracing_thresh, &tracing_max_lat_fops);
-> -#endif
->  
->  	trace_create_file("README", 0444, d_tracer,
->  			NULL, &tracing_readme_fops);
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index fd05bca..1bc8cd1 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -396,9 +396,10 @@ extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
->  
->  extern unsigned long nsecs_to_usecs(unsigned long nsecs);
->  
-> +extern unsigned long tracing_thresh;
-> +
->  #ifdef CONFIG_TRACER_MAX_TRACE
->  extern unsigned long tracing_max_latency;
-> -extern unsigned long tracing_thresh;
->  
->  void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
->  void update_max_tr_single(struct trace_array *tr,
-> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-> index e998a82..aaf580c 100644
-> --- a/kernel/trace/trace_functions_graph.c
-> +++ b/kernel/trace/trace_functions_graph.c
-> @@ -237,6 +237,14 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
->  	return ret;
->  }
->  
-> +int trace_graph_thresh_entry(struct ftrace_graph_ent *trace)
-> +{
-> +	if (tracing_thresh)
-> +		return 1;
-> +	else
-> +		return trace_graph_entry(trace);
-> +}
-> +
->  static void __trace_graph_return(struct trace_array *tr,
->  				struct ftrace_graph_ret *trace,
->  				unsigned long flags,
-> @@ -290,13 +298,26 @@ void set_graph_array(struct trace_array *tr)
->  	smp_mb();
->  }
->  
-> +void trace_graph_thresh_return(struct ftrace_graph_ret *trace)
-> +{
-> +	if (tracing_thresh &&
-> +	    (trace->rettime - trace->calltime < tracing_thresh))
-> +		return;
-> +	else
-> +		trace_graph_return(trace);
-> +}
-> +
->  static int graph_trace_init(struct trace_array *tr)
->  {
->  	int ret;
->  
->  	set_graph_array(tr);
-> -	ret = register_ftrace_graph(&trace_graph_return,
-> -				    &trace_graph_entry);
-> +	if (tracing_thresh)
-> +		ret = register_ftrace_graph(&trace_graph_thresh_return,
-> +					    &trace_graph_thresh_entry);
-> +	else
-> +		ret = register_ftrace_graph(&trace_graph_return,
-> +					    &trace_graph_entry);
->  	if (ret)
->  		return ret;
->  	tracing_start_cmdline_record();
-> 
-> 
-> 
+ include/linux/kmod.h         |   17 -----------------
+ kernel/kmod.c                |   18 ------------------
+ security/keys/internal.h     |    1 +
+ security/keys/process_keys.c |    3 +--
+ security/keys/request_key.c  |   32 ++++++++++++++++++++++++++++++++
+ 5 files changed, 34 insertions(+), 37 deletions(-)
 
+--- mm/include/linux/kmod.h~1_CONVERT_KEYS	2010-02-25 17:37:41.000000000 +0100
++++ mm/include/linux/kmod.h	2010-02-26 21:45:28.000000000 +0100
+@@ -71,8 +71,6 @@ struct subprocess_info *call_usermodehel
+ 						  char **envp, gfp_t gfp_mask);
+ 
+ /* Set various pieces of state into the subprocess_info structure */
+-void call_usermodehelper_setkeys(struct subprocess_info *info,
+-				 struct key *session_keyring);
+ void call_usermodehelper_setfns(struct subprocess_info *info,
+ 		    int (*init)(struct subprocess_info *info),
+ 		    void (*cleanup)(struct subprocess_info *info),
+@@ -108,21 +106,6 @@ call_usermodehelper(char *path, char **a
+ 				       wait, NULL, NULL, NULL);
+ }
+ 
+-static inline int
+-call_usermodehelper_keys(char *path, char **argv, char **envp,
+-			 struct key *session_keyring, enum umh_wait wait)
+-{
+-	struct subprocess_info *info;
+-	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+-
+-	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
+-	if (info == NULL)
+-		return -ENOMEM;
+-
+-	call_usermodehelper_setkeys(info, session_keyring);
+-	return call_usermodehelper_exec(info, wait);
+-}
+-
+ extern void usermodehelper_init(void);
+ 
+ extern int usermodehelper_disable(void);
+--- mm/kernel/kmod.c~1_CONVERT_KEYS	2010-02-25 17:37:41.000000000 +0100
++++ mm/kernel/kmod.c	2010-02-26 21:45:28.000000000 +0100
+@@ -386,24 +386,6 @@ struct subprocess_info *call_usermodehel
+ EXPORT_SYMBOL(call_usermodehelper_setup);
+ 
+ /**
+- * call_usermodehelper_setkeys - set the session keys for usermode helper
+- * @info: a subprocess_info returned by call_usermodehelper_setup
+- * @session_keyring: the session keyring for the process
+- */
+-void call_usermodehelper_setkeys(struct subprocess_info *info,
+-				 struct key *session_keyring)
+-{
+-#ifdef CONFIG_KEYS
+-	struct thread_group_cred *tgcred = info->cred->tgcred;
+-	key_put(tgcred->session_keyring);
+-	tgcred->session_keyring = key_get(session_keyring);
+-#else
+-	BUG();
+-#endif
+-}
+-EXPORT_SYMBOL(call_usermodehelper_setkeys);
+-
+-/**
+  * call_usermodehelper_setfns - set a cleanup/init function
+  * @info: a subprocess_info returned by call_usermodehelper_setup
+  * @cleanup: a cleanup function
+--- mm/security/keys/internal.h~1_CONVERT_KEYS	2010-02-25 15:22:14.000000000 +0100
++++ mm/security/keys/internal.h	2010-02-26 20:30:52.000000000 +0100
+@@ -115,6 +115,7 @@ extern struct key *find_keyring_by_name(
+ extern int install_user_keyrings(void);
+ extern int install_thread_keyring_to_cred(struct cred *);
+ extern int install_process_keyring_to_cred(struct cred *);
++extern int install_session_keyring_to_cred(struct cred *, struct key *);
+ 
+ extern struct key *request_key_and_link(struct key_type *type,
+ 					const char *description,
+--- mm/security/keys/process_keys.c~1_CONVERT_KEYS	2010-02-25 15:22:14.000000000 +0100
++++ mm/security/keys/process_keys.c	2010-02-26 20:22:14.000000000 +0100
+@@ -217,8 +217,7 @@ static int install_process_keyring(void)
+ /*
+  * install a session keyring directly to a credentials struct
+  */
+-static int install_session_keyring_to_cred(struct cred *cred,
+-					   struct key *keyring)
++int install_session_keyring_to_cred(struct cred *cred, struct key *keyring)
+ {
+ 	unsigned long flags;
+ 	struct key *old;
+--- mm/security/keys/request_key.c~1_CONVERT_KEYS	2010-02-25 17:37:41.000000000 +0100
++++ mm/security/keys/request_key.c	2010-02-26 21:46:23.000000000 +0100
+@@ -58,6 +58,38 @@ void complete_request_key(struct key_con
+ }
+ EXPORT_SYMBOL(complete_request_key);
+ 
++static int umh_keys_init(struct subprocess_info *info)
++{
++	struct cred *cred = (struct cred*)current_cred();
++	struct key *keyring = info->data;
++	/*
++	 * This is called in context of freshly forked kthread before
++	 * kernel_execve(), we can just change our ->session_keyring.
++	 */
++	return install_session_keyring_to_cred(cred, keyring);
++}
++
++static void umh_keys_cleanup(struct subprocess_info *info)
++{
++	struct key *keyring = info->data;
++	key_put(keyring);
++}
++
++static int call_usermodehelper_keys(char *path, char **argv, char **envp,
++			 struct key *session_keyring, enum umh_wait wait)
++{
++	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
++	struct subprocess_info *info =
++		call_usermodehelper_setup(path, argv, envp, gfp_mask);
++
++	if (!info)
++		return -ENOMEM;
++
++	call_usermodehelper_setfns(info, umh_keys_init, umh_keys_cleanup,
++					key_get(session_keyring));
++	return call_usermodehelper_exec(info, wait);
++}
++
+ /*
+  * request userspace finish the construction of a key
+  * - execute "/sbin/request-key <op> <key> <uid> <gid> <keyring> <keyring> <keyring>"
 
