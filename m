@@ -1,81 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928Ab0CEQ23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:28:29 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:55228 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455Ab0CEQ22 (ORCPT
+	id S1754740Ab0CEQ26 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:28:58 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53521 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752455Ab0CEQ24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:28:28 -0500
-Message-ID: <4B91317D.7000205@lougher.demon.co.uk>
-Date: Fri, 05 Mar 2010 16:29:49 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: [GIT PULL V2] Squashfs updates for 2.6.34-rc1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 5 Mar 2010 11:28:56 -0500
+Date: Fri, 5 Mar 2010 16:31:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: daniel@fooishbar.org, skeggsb@gmail.com, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305163129.03b52797@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100305.080626.09630724.davem@davemloft.net>
+References: <20100305154009.GC2505@tempa>
+	<20100305.074835.159078083.davem@davemloft.net>
+	<20100305160434.GE2505@tempa>
+	<20100305.080626.09630724.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 05 Mar 2010 08:06:26 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-Please consider pulling the following revised Squashfs update for 2.6.34-rc1.
-I have removed all the lzma/bunzip2/inflate/lzo code changes (which as far as I
-know were the blocking issue previously).
+> From: Daniel Stone <daniel@fooishbar.org>
+> Date: Fri, 5 Mar 2010 18:04:34 +0200
+> 
+> > So you're saying that there's no way to develop any reasonable body of
+> > code for the Linux kernel without committing to keeping your ABI
+> > absolutely rock-solid stable for eternity, no exceptions, ever? Cool,
+> > that worked really well for Xlib.
+> 
+> read() still works the same way it did 30 years ago last time I
+> checked.
 
-What remains in the pull request is a clean-up/refactoring of the zlib
-wrapper code, outline knowledge of lzma/lzo compressed filesystems (unsupported,
-but it gives users an understandable error message when they try to mount them),
-and some trivial code tidying.
+Thats disingenous as read() is a method not an interface. It's also wrong
+because read() and write() behaviour has changed in various ways and old
+code broke because of it in subtle ways. Keeping the same method behaviour
+would have required things like new versions of read() for 64bit files,
+nonblocking, mandlocks, NFS, networking, etc all of which changed the
+core read() behaviour. I've yet to see anyone meaningfully argue it was
+the wrong thing to do.
 
-Please pull.
+Alan
 
-Thanks
 
-Phillip
-
--------------
-
-The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
-   Linus Torvalds (1):
-         Linux 2.6.33-rc4
-
-are available in the git repository at:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git master
-
-Phillip Lougher (6):
-       Squashfs: move zlib decompression wrapper code into a separate file
-       Squashfs: factor out remaining zlib dependencies into separate wrapper file
-       Squashfs: add a decompressor framework
-       Squashfs: add decompressor entries for lzma and lzo
-       Squashfs: get rid of obsolete variable in struct squashfs_sb_info
-       Squashfs: get rid of obsolete definition in header file
-
-  fs/squashfs/Makefile         |    2 +-
-  fs/squashfs/block.c          |   76 ++--------------------
-  fs/squashfs/cache.c          |    1 -
-  fs/squashfs/decompressor.c   |   68 +++++++++++++++++++
-  fs/squashfs/decompressor.h   |   55 +++++++++++++++
-  fs/squashfs/dir.c            |    1 -
-  fs/squashfs/export.c         |    1 -
-  fs/squashfs/file.c           |    1 -
-  fs/squashfs/fragment.c       |    1 -
-  fs/squashfs/id.c             |    1 -
-  fs/squashfs/inode.c          |    1 -
-  fs/squashfs/namei.c          |    1 -
-  fs/squashfs/squashfs.h       |    8 ++-
-  fs/squashfs/squashfs_fs.h    |    6 +-
-  fs/squashfs/squashfs_fs_sb.h |   40 ++++++------
-  fs/squashfs/super.c          |   49 +++++++-------
-  fs/squashfs/symlink.c        |    1 -
-  fs/squashfs/zlib_wrapper.c   |  150 ++++++++++++++++++++++++++++++++++++++++++
-  18 files changed, 335 insertions(+), 128 deletions(-)
-  create mode 100644 fs/squashfs/decompressor.c
-  create mode 100644 fs/squashfs/decompressor.h
-  create mode 100644 fs/squashfs/zlib_wrapper.c
