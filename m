@@ -1,75 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752271Ab0CEM5r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 07:57:47 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53254 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826Ab0CEM5p (ORCPT
+	id S1752346Ab0CENCi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 08:02:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44291 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752066Ab0CENCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 07:57:45 -0500
-Date: Fri, 5 Mar 2010 13:57:33 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, akpm@osdl.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
-	deprecation)
-Message-ID: <20100305125732.GA23456@pengutronix.de>
-References: <20100303075944.GA23354@comet.dominikbrodowski.net> <20100303083010.GA22928@flint.arm.linux.org.uk> <20100305120746.646126b9@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
-Content-Disposition: inline
-In-Reply-To: <20100305120746.646126b9@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 5 Mar 2010 08:02:37 -0500
+Date: Fri, 5 Mar 2010 13:04:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Mike Hayward <hayward@loup.net>, foosaa@gmail.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, linux-mm@kvack.org
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+ program
+Message-ID: <20100305130426.1c9414d1@lxorguk.ukuu.org.uk>
+In-Reply-To: <87f94c371003042201n72ce8578vc01331678b52da75@mail.gmail.com>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	<20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+	<f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
+	<201003041631.o24GVl51005720@alien.loup.net>
+	<f875e2fe1003041012m680ffc87i50099ed011526440@mail.gmail.com>
+	<201003050042.o250gsUC007947@alien.loup.net>
+	<87f94c371003042201n72ce8578vc01331678b52da75@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> For clarity, most ATA class disk drives are spec'ed to have one
+> non-recoverable error per 150TB or so of writes.  Disk drives do blind
+> writes.  (ie. They are not verified).  So we should all expect to have
+> the occasional silent data corruption on write.  The problem is
+> compounded with bad cables, controllers, RAM, etc.
 
---cNdxnHkX5QqsyA0e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cable errors should only be a PATA issue, SATA protects the command block
+and the data.
 
-> Do any graphical environments even support the ancient user space
-> pcmcica helper stuff ? I can't find any evidence they do but I realise
-> Russell you get to deal with assorted crazy ARM embedded setups.
+> The only way for the linux kernel even attempt to fix that is for it
+> to do a read verify on everything it writes.  For the vast majority of
+> uses that is just not acceptable for performance reasons.
 
-FWIW, a few months ago I searched the web for the warning about the usage of
-the deprectaed pcmcia-ioctls. The vast majority came from Debian's discover
-which seems to be no issue according to:
+It's also the wrong layer
 
-http://article.gmane.org/gmane.linux.kernel/885286
+> OTOH, if data integrity is of the utmost for you, then you should
+> maintain a md5hash or similar for your critical files and verify them
+> any time you make a copy.  btrfs may offer a auto read-verify.  I
+> don't know much about btrfs.
 
-The other occurences I found have been fixed meanwhile. (I understand that I
-might have missed rare cases this way)
+If you deal with utterly enormous amounts of data (as some clusters and
+the like do) you protect your data from application to application layer.
+It leaves ECC protected memory and it comes back to ECC protected memory
+with a hash. That covers a lot of the errors by the OS, hardware, cables,
+busses - even drive memory.
 
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---cNdxnHkX5QqsyA0e
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkuQ/7wACgkQD27XaX1/VRvhgQCcCSSFDerqWs5FFPiUSn5Gwml+
-cJoAn2ZpPw+N25Yt2wjGCJRplR+wG0ZH
-=jcec
------END PGP SIGNATURE-----
-
---cNdxnHkX5QqsyA0e--
