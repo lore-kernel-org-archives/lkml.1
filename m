@@ -1,56 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284Ab0CERxs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:53:48 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54933
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755039Ab0CERxr (ORCPT
+	id S1755244Ab0CER4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:56:10 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:28748 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267Ab0CER4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:53:47 -0500
-Date: Fri, 05 Mar 2010 09:54:06 -0800 (PST)
-Message-Id: <20100305.095406.115464327.davem@davemloft.net>
-To: xavier.bestel@free.fr
-Cc: daniel@fooishbar.org, skeggsb@gmail.com, airlied@linux.ie,
-       crmafra2@gmail.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
-       dri-devel@lists.sf.net, torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: Making Xorg easier to test
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1267811424.3405.110.camel@skunk>
-References: <20100305154143.GD2505@tempa>
-	<20100305.074932.225568964.davem@davemloft.net>
-	<1267811424.3405.110.camel@skunk>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Fri, 5 Mar 2010 12:56:08 -0500
+Date: Fri, 5 Mar 2010 09:52:52 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: x86@kernel.org, torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH reresend] x86: fix mtrr missing kernel-doc
+Message-Id: <20100305095252.c4f9af5c.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B914568.00CD:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xavier Bestel <xavier.bestel@free.fr>
-Date: Fri, 05 Mar 2010 18:50:24 +0100
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On Fri, 2010-03-05 at 07:49 -0800, David Miller wrote:
->> From: Daniel Stone <daniel@fooishbar.org>
->> Date: Fri, 5 Mar 2010 17:41:43 +0200
->> 
->> > I understand that you guys are upset about this, so maybe you'd like to
->> > donate, say, 10% of your developer base to help out? That'd be pretty
->> > ace.
->> 
->> You have to support less than %10 of the amount of hardware we have to
->> support.
-> 
-> You can't compare a network card and a GPU. The latter is way more
-> complex to code for.
+Fix missing kernel-doc notation in mtrr/main.c:
 
-I wasn't talking specifically about network cards.  But if you want
-specific examples...
+Warning(arch/x86/kernel/cpu/mtrr/main.c:152): No description found for parameter 'info'
 
-How about the x86 or parisc cpu, and all their derivatives, are those
-complex enough for you? :-)
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/kernel/cpu/mtrr/main.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-I've worked on OpenGL capable grapics card drivers of various
-vintages, and I honestly don't think there is anything in there more
-complex than what we have to deal with in the kernel.
+Q: Should I merge this or the do x86 maintainers want to do it?
+
+--- lnx-2633-rc8.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ lnx-2633-rc8/arch/x86/kernel/cpu/mtrr/main.c
+@@ -145,6 +145,7 @@ struct set_mtrr_data {
+ 
+ /**
+  * ipi_handler - Synchronisation handler. Executed by "other" CPUs.
++ * @info: pointer to mtrr configuration data
+  *
+  * Returns nothing.
+  */
