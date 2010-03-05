@@ -1,90 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154Ab0CEWPF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 17:15:05 -0500
-Received: from trinity.develer.com ([83.149.158.210]:59906 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755358Ab0CEWPB (ORCPT
+	id S1755614Ab0CEWTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 17:19:53 -0500
+Received: from cicero-fbr1.cybercity.dk ([212.242.40.5]:64789 "EHLO
+	cicero-fbr1.cybercity.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753043Ab0CEWTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 17:15:01 -0500
-Date: Fri, 5 Mar 2010 23:14:56 +0100
-From: Andrea Righi <arighi@develer.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100305221456.GB1578@linux>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
- <1267699215-4101-4-git-send-email-arighi@develer.com>
- <20100305101234.909001e8.nishimura@mxp.nes.nec.co.jp>
- <20100305105855.9b53176c.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 5 Mar 2010 17:19:52 -0500
+Message-ID: <4B918341.7030107@ritz.dk>
+Date: Fri, 05 Mar 2010 23:18:41 +0100
+From: Jonas Ritz <jonas@ritz.dk>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100305105855.9b53176c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm request 3
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 10:58:55AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 5 Mar 2010 10:12:34 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > On Thu,  4 Mar 2010 11:40:14 +0100, Andrea Righi <arighi@develer.com> wrote:
-> > > Infrastructure to account dirty pages per cgroup and add dirty limit
-> > >  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
-> > >  {
-> > >  	int *val = data;
-> > > @@ -1275,34 +1423,70 @@ static void record_last_oom(struct mem_cgroup *mem)
-> > >  }
-> > >  
-> > >  /*
-> > > - * Currently used to update mapped file statistics, but the routine can be
-> > > - * generalized to update other statistics as well.
-> > > + * Generalized routine to update file cache's status for memcg.
-> > > + *
-> > > + * Before calling this, mapping->tree_lock should be held and preemption is
-> > > + * disabled.  Then, it's guarnteed that the page is not uncharged while we
-> > > + * access page_cgroup. We can make use of that.
-> > >   */
-> > IIUC, mapping->tree_lock is held with irq disabled, so I think "mapping->tree_lock
-> > should be held with irq disabled" would be enouth.
-> > And, as far as I can see, callers of this function have not ensured this yet in [4/4].
-> > 
-> > how about:
-> > 
-> > 	void mem_cgroup_update_stat_locked(...)
-> > 	{
-> > 		...
-> > 	}
-> > 
-> > 	void mem_cgroup_update_stat_unlocked(mapping, ...)
-> > 	{
-> > 		spin_lock_irqsave(mapping->tree_lock, ...);
-> > 		mem_cgroup_update_stat_locked();
-> > 		spin_unlock_irqrestore(...);
-> > 	}
-> >
-> Rather than tree_lock, lock_page_cgroup() can be used if tree_lock is not held.
-> 
-> 		lock_page_cgroup();
-> 		mem_cgroup_update_stat_locked();
-> 		unlock_page_cgroup();
-> 
-> Andrea-san, FILE_MAPPED is updated without treelock, at least. You can't depend
-> on migration_lock about FILE_MAPPED.
+guys...
 
-Right. I'll consider this in the next version of the patch.
+Some stages of development of software requires the change API.
 
-Thanks,
--Andrea
+fx. the initial phase or clean up phase.
+
+The use of software (or development of dependent software) requires a 
+predictable API.
+
+To do both effectively, the community needs to invent a tool that keeps 
+track of what version userspace code the kernel needs, and a formalized 
+directory structure for staging/oldies code.
