@@ -1,51 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753868Ab0CEPWa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 10:22:30 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:49722 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753731Ab0CEPW2 (ORCPT
+	id S1753639Ab0CEPZz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 10:25:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59373
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752675Ab0CEPZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 10:22:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=CxEcIyBq3qv8iq2y4i5E688yGf+X/L4d2Cb/1LYI25h0rKqtu3CJwq2Xy5DEFlEcCh
-         TNxsUDFfBuWw5P1bSQGEdhmoNosI0APfck8IyzaLSKnwqn1eWpShl4cgZrh9Db0hlISZ
-         NSTNe8dmNL8dRHnp6Ba8A6BQvRllM+YN/aRG0=
-MIME-Version: 1.0
-In-Reply-To: <20100305100030.GA4970@Pilar.aei.mpg.de>
-References: <20100304105624.70fe845e@jbarnes-piketon>
-	 <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
-	 <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
-	 <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
-	 <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
-	 <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu>
-	 <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com>
-	 <20100305074407.GC19703@elte.hu>
-	 <20100305100030.GA4970@Pilar.aei.mpg.de>
-Date: Fri, 5 Mar 2010 10:22:27 -0500
-Message-ID: <b4198de61003050722s54478b08q31c4eb7fd892fb90@mail.gmail.com>
-Subject: Re: Making Xorg easier to test (was Re: [git pull] drm request 3)
-From: Matt Turner <mattst88@gmail.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Ben Skeggs <skeggsb@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, dri-devel@lists.sf.net,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Mar 2010 10:25:53 -0500
+Date: Fri, 05 Mar 2010 07:26:12 -0800 (PST)
+Message-Id: <20100305.072612.186421758.davem@davemloft.net>
+To: daniel@fooishbar.org
+Cc: alan@lxorguk.ukuu.org.uk, skeggsb@gmail.com, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [git pull] drm request 3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100305151754.GB2505@tempa>
+References: <20100305123834.0d9c6277@lxorguk.ukuu.org.uk>
+	<20100305.063718.211238119.davem@davemloft.net>
+	<20100305151754.GB2505@tempa>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 5:00 AM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
-> Why can't there be a 'Linus Torvalds' for Xorg accepting patches from various
-> maintainers and keeping the whole thing tied up? Why can't it mimic the
-> 'make menuconfig' way of selecting what to compile to have the guarantee that
-> the whole thing will simply work nicely together?
+From: Daniel Stone <daniel@fooishbar.org>
+Date: Fri, 5 Mar 2010 17:17:54 +0200
 
-You must not follow X development at all. His name is Keith Packard.
+> On Fri, Mar 05, 2010 at 06:37:18AM -0800, David Miller wrote:
+>> If it effects such a large number of people, which this noveau thing
+>> does, it's entirely relevant to everyone.  And the way it's breaking
+>> and making kernel development difficult for so many people matters to
+>> us.
+> 
+> Maybe the lesson to be learned from all this is, 'if the developers
+> don't want something merged because they're not ready and forsee huge
+> problems in the future, actually listen to them instead of blindly
+> ramming it in regardless'? But maybe that's just me.
 
-Matt Turner
+That's doesn't work, and it never will.
+
+First of all, if we didn't merge the driver Fedora users wouldn't be
+able to test the upstream kernel at all.
+
+And if you think things through, there is one and onle one set of
+actions that would have made things work properly.
+
+And that's merge the driver upstream and not break user visible APIs.
+
+In fact, I argue that the moment nouveau went into Fedora and
+was turned on by default, the interfaces needed to be frozen.
+
+Consider if it didn't go upstream and I want to do upstream
+kernel development, ok so I patch the noveau-of-the-moment into
+my upstream tree.
+
+Six months and 10 DRM library updates later I go back and try to boot
+that kernel.  And it's not going to work.
+
+So if the user visible APIs are changed in any set of situations
+(upstream merged, not upstream merged, etc.) things can end up
+breaking.
+
+Ergo, you simply can't sanely do it at all.  You have to have
+a compatability story when you change these things.
+
+Personally I wouldn't have ever committed to that "user visible APIs
+can break cause it's in -stable."  Because that's complete garbage.
+
