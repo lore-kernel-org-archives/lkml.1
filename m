@@ -1,63 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752018Ab0CEFmj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 00:42:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35637 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751469Ab0CEFmi (ORCPT
+	id S1752482Ab0CEGBL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:01:11 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:60451 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180Ab0CEGBJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 00:42:38 -0500
-Date: Thu, 4 Mar 2010 21:42:28 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@gmail.com>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <alpine.LFD.2.00.1003042130230.3768@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1003042133340.3788@localhost.localdomain>
-References: <20100304103929.6eb81d45@jbarnes-piketon>  <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>  <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>  <1267748927.3496.6.camel@nisroch>  <alpine.LFD.2.00.1003041635280.3751@localhost.localdomain>
-  <20100305005617.GA31883@skynet.be>  <alpine.LFD.2.00.1003041702110.3659@localhost.localdomain>  <alpine.LFD.2.00.1003041718090.3768@localhost.localdomain>  <21d7e9971003041728u7f7477f4g16805bc1ee235e8f@mail.gmail.com>  <alpine.LFD.2.00.1003042114340.3768@localhost.localdomain>
- <21d7e9971003042122j4c19ad22odabfa1f4cd90503b@mail.gmail.com> <alpine.LFD.2.00.1003042130230.3768@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 5 Mar 2010 01:01:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vdNYvMNhQ/ZH6DgiwOrKUImK2+mo0gG3m7wxsVqseaTaYiXQlWhTljsO5tjmxPLLWS
+         wv391HxG5mxFPpQOWWUUl+yNb0ORphnYc5KkwUE5pf5Ek7qKrxTueza3MWQ8yWkU8bRE
+         0B+Q1PpBoGFM2WUreTUKxBRqC7LCwxo/FUsKw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <201003050042.o250gsUC007947@alien.loup.net>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+	 <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
+	 <201003041631.o24GVl51005720@alien.loup.net>
+	 <f875e2fe1003041012m680ffc87i50099ed011526440@mail.gmail.com>
+	 <201003050042.o250gsUC007947@alien.loup.net>
+Date: Fri, 5 Mar 2010 01:01:07 -0500
+Message-ID: <87f94c371003042201n72ce8578vc01331678b52da75@mail.gmail.com>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Mike Hayward <hayward@loup.net>
+Cc: foosaa@gmail.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Please let me know if you can prove data corruption.  I'm writing a
+> sophisticated storage app and would like to know if kernel has such a
+> defect.  My bet is it's just a drive that is slowly remapping.
+>
+> - Mike
+
+For clarity, most ATA class disk drives are spec'ed to have one
+non-recoverable error per 150TB or so of writes.  Disk drives do blind
+writes.  (ie. They are not verified).  So we should all expect to have
+the occasional silent data corruption on write.  The problem is
+compounded with bad cables, controllers, RAM, etc.
+
+The only way for the linux kernel even attempt to fix that is for it
+to do a read verify on everything it writes.  For the vast majority of
+uses that is just not acceptable for performance reasons.
+
+OTOH, if data integrity is of the utmost for you, then you should
+maintain a md5hash or similar for your critical files and verify them
+any time you make a copy.  btrfs may offer a auto read-verify.  I
+don't know much about btrfs.
+
+Greg
 
 
-On Thu, 4 Mar 2010, Linus Torvalds wrote:
-> On Fri, 5 Mar 2010, Dave Airlie wrote:
-> > 
-> > if not then:
-> > http://people.fedoraproject.org/~airlied/xorg-x11-drv-nouveau-0.0.16-2.20100218git2964702.fc13.test.src.rpm
-> > 
-> > That src rpm should be rebuildable on F12, I just removed the requires
-> > on F13 stuff.
-> 
-> Well, that wants the new kernel, but I can force it with --nodeps..
-> 
-> I'll reboot and test.
+-- 
+Greg Freemyer
+Head of EDD Tape Extraction and Processing team
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+Preservation and Forensic processing of Exchange Repositories White Paper -
+<http://www.norcrossgroup.com/forms/whitepapers/tng_whitepaper_fpe.html>
 
-Bingo. 
-
-Could this be done as a real F12 binary package (maybe call it 
-"force-nouveau-0.0.16" or something) for testers to use? I had most of the 
-X devel tools set up anyway since I used to build intel drivers from git 
-for one of my experimental machines. And I guess most kernel devs can 
-generally easily do the rpm build, but I'd hate to lose any more plain 
-testers than I absolutely have to.
-
-And it would make it way easier for people to try out their kernel, notice 
-that X doesn't work, and then let them know that something like a simple
-
-	yum install force-nouveau-0.0.16
-
-makes it work. Compared to having them install X builds, do a "rpm -Uvh 
---nodeps" etc etc.
-
-Anyway, this at least makes me feel like I don't have to revert that 
-commit just to be able to test current -git again. Thanks,
-
-			Linus
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
