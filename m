@@ -1,56 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676Ab0CEIow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 03:44:52 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:57529 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754434Ab0CEIov (ORCPT
+	id S1754870Ab0CEIze (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 03:55:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:27670 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754434Ab0CEIzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 03:44:51 -0500
-From: Jean Pihet <jpihet@mvista.com>
-Organization: MontaVista
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][PATCH 05/11] perf: Generic perf_sample_data initialization
-Date: Fri, 5 Mar 2010 09:44:19 +0100
-User-Agent: KMail/1.9.9
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       eranian@google.com, robert.richter@amd.com, fweisbec@gmail.com,
-       Jamie Iles <jamie.iles@picochip.com>,
-       "David S. Miller" <davem@davemloft.net>, stable@kernel.org
-References: <20100303163936.906011640@chello.nl> <20100303164306.222595079@chello.nl>
-In-Reply-To: <20100303164306.222595079@chello.nl>
+	Fri, 5 Mar 2010 03:55:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=FFVCzk5fLPqMxAHX+sHxmYO27g0PXroA9EJBOxzcuPBz4oEYLCPWR75HZ7Gr5YXTBU
+         n/mbskBHiVMhiATuf7xSjA2TUPxzRaUUhCBNT7rAB2eBupRuB4r65Y8kKaRTXJJSO9FF
+         dS6xXWOzxqdYY/+uWm73jBFMY0VDg2NjOenrY=
+Message-ID: <4B90C701.3070308@gmail.com>
+Date: Fri, 05 Mar 2010 09:55:29 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-11.2 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: git@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: gitignore broken in git 1.7.0.1: slash checks leading dirs
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201003050944.20032.jpihet@mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wednesday 03 March 2010 17:39:41 Peter Zijlstra wrote:
-> This makes it easier to extend perf_sample_data and fixes a bug on
-> arm and sparc, which failed to set ->raw to NULL, which can cause
-> crashes when combined with PERF_SAMPLE_RAW.
->
-> It also optimizes PowerPC and tracepoint, because the struct
-> initialization is forced to zero out the whole structure.
->
-> CC: Jamie Iles <jamie.iles@picochip.com>
-> CC: Jean Pihet <jpihet@mvista.com>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: David S. Miller <davem@davemloft.net>
-> CC: Stephane Eranian <eranian@google.com>
-> CC: Frederic Weisbecker <fweisbec@gmail.com>
-> CC: stable@kernel.org
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+having 'linux' line in .gitignore makes 'include/linux/vga_switcheroo.h'
+to be ignored though the documentation says:
+***
+If the pattern does not contain a slash /, git treats it as a shell
+glob pattern and checks for a match against the pathname without
+leading directories.
+***
 
-Acked-by: Jean Pihet <jpihet@mvista.com>
+$ touch test
+$ touch include/linux/vga_asdads.h
+$ git ls-files -o --exclude-from=test
+include/linux/vga_asdads.h
+test
+$ echo linux >test
+$ git ls-files -o --exclude-from=test
+test
 
-Thanks!
+This does not happen with git 1.6.
 
-
-
+thanks,
+-- 
+js
