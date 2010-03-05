@@ -1,25 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068Ab0CEGHq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 01:07:46 -0500
-Received: from mga14.intel.com ([143.182.124.37]:54169 "EHLO mga14.intel.com"
+	id S1753300Ab0CEGHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:07:53 -0500
+Received: from mga09.intel.com ([134.134.136.24]:24916 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752565Ab0CEGGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 01:06:50 -0500
+	id S1753167Ab0CEGHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 01:07:49 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,585,1262592000"; 
-   d="scan'208";a="251137390"
+   d="scan'208";a="497975812"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Ingo Molnar <mingo@elte.hu>
 Cc: Ian Pratt <Ian.Pratt@eu.citrix.com>,
        Ian Campbell <Ian.Campbell@citrix.com>,
        xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
-       Sheng Yang <sheng@linux.intel.com>,
-       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>
-Subject: [PATCH 4/7] xen/hvm: Xen PV extension of HVM initialization
-Date: Fri,  5 Mar 2010 14:07:54 +0800
-Message-Id: <1267769277-20522-5-git-send-email-sheng@linux.intel.com>
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 3/7] xen: Make pv drivers only work with xen_pv_domain()
+Date: Fri,  5 Mar 2010 14:07:53 +0800
+Message-Id: <1267769277-20522-4-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267769277-20522-1-git-send-email-sheng@linux.intel.com>
 References: <1267769277-20522-1-git-send-email-sheng@linux.intel.com>
@@ -27,246 +26,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PV extended HVM(once known as Hybrid) is started from real mode like
-HVM guest, but also with a component based PV feature selection(e.g. PV halt,
-PV timer, event channel, then PV drivers). So guest can takes the advantages
-of both H/W virtualization and Para-Virtualization.
-
-This patch introduced the PV extension of HVM guest initialization.
-
-Guest would detect the capability using CPUID 0x40000002.edx, then call
-HVMOP_enable_pv hypercall to enable pv support in hypervisor.
+Otherwise they would still try to enable with HVM domain type.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
 ---
- arch/x86/include/asm/xen/cpuid.h   |    5 ++
- arch/x86/xen/Kconfig               |    4 +
- arch/x86/xen/Makefile              |    1 +
- arch/x86/xen/hvmpv.c               |  137 ++++++++++++++++++++++++++++++++++++
- include/xen/interface/hvm/hvm_op.h |    8 ++
- include/xen/xen.h                  |   11 +++
- 6 files changed, 166 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/xen/hvmpv.c
+ drivers/block/xen-blkfront.c      |    2 +-
+ drivers/input/xen-kbdfront.c      |    2 +-
+ drivers/net/xen-netfront.c        |    2 +-
+ drivers/video/xen-fbfront.c       |    2 +-
+ drivers/xen/grant-table.c         |    2 +-
+ drivers/xen/xenbus/xenbus_probe.c |    4 ++--
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
-index 8787f03..a93c851 100644
---- a/arch/x86/include/asm/xen/cpuid.h
-+++ b/arch/x86/include/asm/xen/cpuid.h
-@@ -65,4 +65,9 @@
- #define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
- #define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 05a31e5..32e28bd 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -1068,7 +1068,7 @@ static struct xenbus_driver blkfront = {
  
-+#define _XEN_CPUID_FEAT2_HVM_PV 0
-+#define XEN_CPUID_FEAT2_HVM_PV (1u<<0)
-+#define _XEN_CPUID_FEAT2_HVM_PV_EVTCHN 1
-+#define XEN_CPUID_FEAT2_HVM_PV_EVTCHN (1u<<1)
-+
- #endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index b83e119..74fc233 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -36,3 +36,7 @@ config XEN_DEBUG_FS
- 	help
- 	  Enable statistics output and various tuning options in debugfs.
- 	  Enabling this option may incur a significant performance overhead.
-+
-+config XEN_HVM_PV
-+	def_bool y
-+	depends on XEN && X86_64
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3bb4fc2..73bd5db 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -17,4 +17,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PARAVIRT_SPINLOCKS)+= spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_HVM_PV)	+= hvmpv.o
+ static int __init xlblk_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
  
-diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
-new file mode 100644
-index 0000000..540eef4
---- /dev/null
-+++ b/arch/x86/xen/hvmpv.c
-@@ -0,0 +1,137 @@
-+/*
-+ * PV extension of HVM implementation.
-+ *
-+ * Sheng Yang <sheng@linux.intel.com>, Intel Corporation, 2010
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/percpu.h>
-+#include <linux/module.h>
-+
-+#include <xen/xen.h>
-+#include <xen/features.h>
-+#include <xen/events.h>
-+#include <xen/hvm.h>
-+#include <xen/interface/xen.h>
-+#include <xen/interface/version.h>
-+#include <xen/interface/memory.h>
-+
-+#include <asm/xen/cpuid.h>
-+#include <asm/xen/hypercall.h>
-+#include <asm/xen/hypervisor.h>
-+
-+#include "xen-ops.h"
-+
-+u32 xen_hvm_pv_features;
-+EXPORT_SYMBOL_GPL(xen_hvm_pv_features);
-+
-+static const struct pv_info xen_hvm_pv_info __initdata = {
-+	.paravirt_enabled = 1,
-+	.shared_kernel_pmd = 0,
-+	.kernel_rpl = 0,
-+	.name = "Xen",
-+};
-+
-+static void __init xen_hvm_pv_banner(void)
-+{
-+	unsigned version = HYPERVISOR_xen_version(XENVER_version, NULL);
-+	struct xen_extraversion extra;
-+	HYPERVISOR_xen_version(XENVER_extraversion, &extra);
-+
-+	printk(KERN_INFO "Booting PV extended HVM kernel on %s\n",
-+		pv_info.name);
-+	printk(KERN_INFO "Xen version: %d.%d%s\n",
-+		version >> 16, version & 0xffff, extra.extraversion);
-+}
-+
-+static int __init xen_para_available(void)
-+{
-+	uint32_t eax, ebx, ecx, edx;
-+	cpuid(XEN_CPUID_LEAF(0), &eax, &ebx, &ecx, &edx);
-+
-+	if (ebx == XEN_CPUID_SIGNATURE_EBX &&
-+	    ecx == XEN_CPUID_SIGNATURE_ECX &&
-+	    edx == XEN_CPUID_SIGNATURE_EDX &&
-+	    ((eax - XEN_CPUID_LEAF(0)) >= 2))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int __init enable_hvm_pv(u64 flags)
-+{
-+	struct xen_hvm_pv_type a;
-+
-+	a.domid = DOMID_SELF;
-+	a.flags = flags;
-+	return HYPERVISOR_hvm_op(HVMOP_enable_pv, &a);
-+}
-+
-+static int __init init_hvm_pv_info(void)
-+{
-+	uint32_t ecx, edx, pages, msr;
-+	u64 pfn;
-+
-+	if (!xen_para_available())
-+		return -EINVAL;
-+
-+	cpuid(XEN_CPUID_LEAF(2), &pages, &msr, &ecx, &edx);
-+
-+	/* Check if hvm_pv mode is supported */
-+	if (!(edx & XEN_CPUID_FEAT2_HVM_PV))
-+		return -ENODEV;
-+
-+	if (pages < 1)
-+		return -ENODEV;
-+
-+	pfn = __pa(hypercall_page);
-+	if (wrmsr_safe(msr, (u32)pfn, ((u64)pfn) >> 32))
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+static struct shared_info shared_info_page __page_aligned_bss;
-+
-+static int __init init_shared_info(void)
-+{
-+	struct xen_add_to_physmap xatp;
-+
-+	xatp.domid = DOMID_SELF;
-+	xatp.idx = 0;
-+	xatp.space = XENMAPSPACE_shared_info;
-+	xatp.gpfn = __pa(&shared_info_page) >> PAGE_SHIFT;
-+	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &xatp))
-+		return -EINVAL;
-+
-+	HYPERVISOR_shared_info = (struct shared_info *)&shared_info_page;
-+
-+	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
-+
-+	return 0;
-+}
-+
-+void __init xen_guest_init(void)
-+{
-+	int r;
-+
-+	/* Ensure the we won't confused with others */
-+	if (xen_domain())
-+		return;
-+
-+	r = init_hvm_pv_info();
-+	if (r < 0)
-+		return;
-+
-+	r = init_shared_info();
-+	if (r < 0)
-+		return;
-+
-+	xen_setup_features();
-+
-+	x86_init.oem.banner = xen_hvm_pv_banner;
-+	pv_info = xen_hvm_pv_info;
-+
-+	xen_domain_type = XEN_HVM_DOMAIN;
-+}
-diff --git a/include/xen/interface/hvm/hvm_op.h b/include/xen/interface/hvm/hvm_op.h
-index 7c74ba4..3f0b118 100644
---- a/include/xen/interface/hvm/hvm_op.h
-+++ b/include/xen/interface/hvm/hvm_op.h
-@@ -69,4 +69,12 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_link_route);
- /* Flushes all VCPU TLBs: @arg must be NULL. */
- #define HVMOP_flush_tlbs          5
+ 	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index c721c0a..0c3f4ca 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -338,7 +338,7 @@ static struct xenbus_driver xenkbd_driver = {
  
-+#define HVMOP_enable_pv 9
-+struct xen_hvm_pv_type {
-+	domid_t domid;
-+	uint32_t flags;
-+#define HVM_PV_CLOCK  (1ull<<0)
-+#define HVM_PV_EVTCHN (1ull<<1)
-+};
-+
- #endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
-diff --git a/include/xen/xen.h b/include/xen/xen.h
-index a164024..ce2a256 100644
---- a/include/xen/xen.h
-+++ b/include/xen/xen.h
-@@ -19,6 +19,17 @@ extern enum xen_domain_type xen_domain_type;
- #define xen_hvm_domain()	(xen_domain() &&			\
- 				 xen_domain_type == XEN_HVM_DOMAIN)
+ static int __init xenkbd_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
  
-+#ifdef CONFIG_XEN_HVM_PV
-+
-+#define XEN_HVM_PV_EVTCHN_ENABLED   (1u << 1)
-+extern u32 xen_hvm_pv_features;
-+
-+#define xen_hvm_pv_evtchn_enabled() \
-+		(xen_hvm_pv_features & XEN_HVM_PV_EVTCHN_ENABLED)
-+#else
-+#define xen_hvm_pv_evtchn_enabled() 0
-+#endif /* CONFIG_XEN_HVM_PV */
-+
- #ifdef CONFIG_XEN_DOM0
- #include <xen/interface/xen.h>
- #include <asm/xen/hypervisor.h>
+ 	/* Nothing to do if running in dom0. */
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index a869b45..e3ae126 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1804,7 +1804,7 @@ static struct xenbus_driver netfront_driver = {
+ 
+ static int __init netif_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
+ 
+ 	if (xen_initial_domain())
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 603598f..3360470 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -683,7 +683,7 @@ static struct xenbus_driver xenfb_driver = {
+ 
+ static int __init xenfb_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
+ 
+ 	/* Nothing to do if running in dom0. */
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+index 4c6c0bd..ade7f3d 100644
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -510,7 +510,7 @@ static int __devinit gnttab_init(void)
+ 	unsigned int max_nr_glist_frames, nr_glist_frames;
+ 	unsigned int nr_init_grefs;
+ 
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
+ 
+ 	nr_grant_frames = 1;
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 2f7aaa9..a5712cd 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -786,7 +786,7 @@ static int __init xenbus_probe_init(void)
+ 	DPRINTK("");
+ 
+ 	err = -ENODEV;
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		goto out_error;
+ 
+ 	/* Register ourselves with the kernel bus subsystem */
+@@ -922,7 +922,7 @@ static void wait_for_devices(struct xenbus_driver *xendrv)
+ 	struct device_driver *drv = xendrv ? &xendrv->driver : NULL;
+ 	unsigned int seconds_waited = 0;
+ 
+-	if (!ready_to_wait_for_devices || !xen_domain())
++	if (!ready_to_wait_for_devices || !xen_pv_domain())
+ 		return;
+ 
+ 	while (exists_connecting_device(drv)) {
 -- 
 1.5.4.5
 
