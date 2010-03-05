@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630Ab0CEH6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:58:54 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:47499 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420Ab0CEH6w convert rfc822-to-8bit (ORCPT
+	id S1753719Ab0CEIQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 03:16:38 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:45993 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780Ab0CEIQh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:58:52 -0500
+	Fri, 5 Mar 2010 03:16:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=vEEwVHDaMgn14cYZA2fFDRPlJATQ9lxPb96JmghuvVQqE+mv+XM8xlzF2FguqBQeZX
-         GM/rlCk8azrb6I4ly678M/0aUcPKXyQGlDUW/XkOCoHjzr5jh36BaQztEpHqJBSIoAJf
-         JC8y18OG9PczPZ+MVnzdmicImIV1MEmyRg8hA=
+        b=v6xUEnidJWQERFe6YMvskCKmlIPxGlagwwvSQ0Cj8M4Vjzr+PafS4L6A21TfSq+n/G
+         RKsPTHXPR9AfOG7AqU0/FSnmShpnGlJv1BgluUwWlGfDl79nk1YB3jKuATRHGXBTvINp
+         eVsc7guNVMIIN9FdJMgqTRpREp8Sfx9irS1sE=
 MIME-Version: 1.0
 In-Reply-To: <20100305074407.GC19703@elte.hu>
 References: <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
@@ -25,22 +25,22 @@ References: <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
 	 <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu>
 	 <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com>
 	 <20100305074407.GC19703@elte.hu>
-Date: Fri, 5 Mar 2010 17:58:50 +1000
-Message-ID: <21d7e9971003042358j6c7678d7j3c0a86884f1425a@mail.gmail.com>
+Date: Fri, 5 Mar 2010 00:16:35 -0800
+Message-ID: <6a89f9d51003050016l16343417od6bdd90abfafd53d@mail.gmail.com>
 Subject: Re: [git pull] drm request 3
-From: Dave Airlie <airlied@gmail.com>
+From: Stephane Marchesin <stephane.marchesin@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ben Skeggs <skeggsb@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
        Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net
+       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 5:44 PM, Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Mar 4, 2010 at 23:44, Ingo Molnar <mingo@elte.hu> wrote:
 >
 > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 >
@@ -122,25 +122,37 @@ On Fri, Mar 5, 2010 at 5:44 PM, Ingo Molnar <mingo@elte.hu> wrote:
 > features that affect the whole kernel ...
 >
 > Linux would become an epic fail of historic proportions if we ever did that.
+>
 
-The other option that we used to have was out-of-tree kernel modules, that
-shipped in X.org along with Mesa all in one big tree. This wasn't satisfactory
-and we were pretty much told to put the drm modules into the kernel at
-that point,
+Yes that is exactly the problem we are facing. And you know what? All
+graphic driver devs agree on that, but there is no obvious solution.
 
-Other suggestion from Luc has been to stablise drm/mesa/X.org APIs a
-lot more and
-ship driver sources for all 3 bit separately, but that doesn't seem
-workable either,
-since the Mesa API is infinitely broad (its effectively OpenGL), and
-changes way too
-often, as does the kernel API, though the drm component is probably okay.
+Here are the interfaces which are part of this problem:
+- drm interface (drm wrappers as seen from the driver, drm ioctls from
+the user space)
+- X.Org acceleration interface (EXA and friends as seen from the
+driver, XRender and friends as seen from the apps)
+- Mesa interface (Gallium or mesa driver interface from the driver,
+OpenGL seen from the app)
 
-You'll find groups like Intel are releasing things at fairly similiar
-times every quarter
-and recommending those groupings for distros to take as tested together.
+Any solution will involve merging two or more components together to
+remove interfaces, so lets observe pairwise what could be merged and
+the drawbacks:
+- Merge DRM and Mesa drivers. Technically we could do this, but then
+what happens when a new OpenGL version/feature comes around? Yes, we
+get a new mesa interface. So we're exchanging one interface for
+another here. No gain.
+- Merge DDX And DRM driver. Same problem as before, whenever 2D
+interfaces changes, we have to update the DDX anyway. Again, no gain
+in sight.
+- Merge Mesa and DDX drivers. This makes sense, and this is where
+gallium is going by providing 2D and GL acceleration on top of a
+single, common gallium driver. So yes, I have hopes that this one will
+happen eventually, at least on non-intel hardware.
 
-You also have the BSD options where they just create a base OS system and screw
-the whole pick-n-mix decisions.
+In a far away future, I can only hope that all acceleration (2D and
+3D) will be done on top of GL only. That'll mean we can remove the DDX
+entirely. We've been talking about this for 6 years or so. But as you
+know, it's far from the case yet.
 
-Dave
+Stephane
