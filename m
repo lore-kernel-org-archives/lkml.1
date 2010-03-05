@@ -1,63 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672Ab0CEQid (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:38:33 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51542 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752194Ab0CEQib (ORCPT
+	id S1754427Ab0CEQiu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:38:50 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:35224 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360Ab0CEQis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:38:31 -0500
-Date: Fri, 5 Mar 2010 08:30:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Daniel Stone <daniel@fooishbar.org>
-cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Ben Skeggs <skeggsb@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, dri-devel@lists.sf.net,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Making Xorg easier to test (was Re: [git pull] drm request 3)
-In-Reply-To: <20100305161143.GG2505@tempa>
-Message-ID: <alpine.LFD.2.00.1003050819490.3788@localhost.localdomain>
-References: <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com> <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain> <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com> <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
- <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu> <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com> <20100305074407.GC19703@elte.hu> <20100305100030.GA4970@Pilar.aei.mpg.de> <alpine.LFD.2.00.1003050726520.3788@localhost.localdomain>
- <20100305161143.GG2505@tempa>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 5 Mar 2010 11:38:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZIUu9g37dXpzFlhCr6j2cHVrwKsw3bxsBCFy5fDXzKMQyDC4ng/73nAm9kPqSHwrXI
+         b7jy54UBPht3m2tHi2I24TsKXZWhctGxh05PDR1xNmIOj80isiG7GCGrHnfaGLbLJLdI
+         ktTEUhjMXDxwhmgNRq1iBUpxerFyb96nrmF3U=
+Date: Fri, 5 Mar 2010 17:38:41 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H . Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Archs <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/2] perf: Introduce new perf_save_regs() for hot regs
+	snapshot
+Message-ID: <20100305163838.GA5244@nowhere>
+References: <1267605529.25158.75.camel@laptop> <1267758486-30499-2-git-send-regression-fweisbec@gmail.com> <4B911E57.60004@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B911E57.60004@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 5 Mar 2010, Daniel Stone wrote:
+On Fri, Mar 05, 2010 at 10:08:07AM -0500, Masami Hiramatsu wrote:
+> > +void perf_arch_save_regs(struct pt_regs *regs, unsigned long ip, int skip)
 > 
-> FWIW, Option "ModulePath" in xorg.conf lets you more or less do this;
-> the usual approach is to install your new server + drivers into a
-> separate prefix.
+> Hmm, why would you call it 'save_regs' ?
+> It seems that this function is just for fixing registers 
+> instead of saving it into somewhere...
+> 
+> Thank you,
 
-The thing is, Xorg has - and I think for _very_ good reasons - deprecated 
-using xorg.conf at all. So most people don't even have one (I certainly 
-don't), and wouldn't know how to create one in the first place.
 
-And yeah, I used to happily edit timing lines and make up non-standard 
-modes for my monitor, but I have to admit that I never _ever_ want to 
-touch that file ever again. Last time I tried to, it was to set DPI to be 
-something sane, but these days X gets even that right automatically, and 
-no longer does the insane "set DPY by size of the screen" thing any more.
+Hmm, save_regs() describes what it does: you pass
+a pt_regs and it saves registers inside. But it
+has also a kind of fixup thing as it also rewinds.
 
-And I think all of the reasons xorg.conf is basically being deprecated are 
-valid for this case too. Switching between kernels is - in this case, due 
-to the whole API change - effectively the same as switching the graphics 
-card in the machine, but without even the ability to _name_ the cards and 
-share a xorg.conf for the two cases (not that I think that you could do 
-different ModulePath's per display anyway).
+I'm not sure using a fixup thing for the naming
+is correct as we are not starting with initial
+regs passed to the function (just a raw buffer).
 
-So yeah, you could "switch between kernels, start out in init 3, edit 
-xorg.conf appropriately, switch to init 5", but once you start doing that, 
-you might as well just switch a symlink around instead - it's easier.
+What about perf_save_caller_regs() ?
 
-So I don't think xorg.conf is a help.
-
-				Linus
