@@ -1,474 +1,338 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914Ab0CEXXm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:23:42 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:49170 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755424Ab0CEXXk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:23:40 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: David Hinds <dahinds@gmail.com>
-In-Reply-To: <1267831063.2819.361.camel@localhost>
-References: <1267831063.2819.361.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Fri, 05 Mar 2010 23:23:34 +0000
-Message-ID: <1267831414.2819.365.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCHv2 2/2] firmware: Add source and copyright notice for CIS
- files from pcmcia-cs
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S1755927Ab0CEXcM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:32:12 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:34960 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424Ab0CEXcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 18:32:09 -0500
+Date: Fri, 5 Mar 2010 15:32:33 -0800 (PST)
+From: Sage Weil <sage@newdream.net>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [GIT PULL] Ceph distributed file system client for 2.6.34-rc1
+Message-ID: <Pine.LNX.4.64.1003051434240.10078@cobra.newdream.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- firmware/WHENCE                |   25 +++++++++++++++++++---
- firmware/cis/src/3CCFEM556.cis |   22 ++++++++++++++++++++
- firmware/cis/src/3CXEM556.cis  |   22 ++++++++++++++++++++
- firmware/cis/src/COMpad2.cis   |   20 ++++++++++++++++++
- firmware/cis/src/COMpad4.cis   |   14 ++++++++++++
- firmware/cis/src/DP83903.cis   |   24 +++++++++++++++++++++
- firmware/cis/src/LA-PCM.cis    |   44 ++++++++++++++++++++++++++++++++++++++++
- firmware/cis/src/MT5634ZLX.cis |   18 ++++++++++++++++
- firmware/cis/src/NE2K.cis      |   10 +++++++++
- firmware/cis/src/PCMLM28.cis   |   37 +++++++++++++++++++++++++++++++++
- firmware/cis/src/PE-200.cis    |   11 ++++++++++
- firmware/cis/src/PE520.cis     |   11 ++++++++++
- firmware/cis/src/RS-COM-2P.cis |   14 ++++++++++++
- firmware/cis/src/tamarack.cis  |   17 +++++++++++++++
- 14 files changed, 285 insertions(+), 4 deletions(-)
- create mode 100644 firmware/cis/src/3CCFEM556.cis
- create mode 100644 firmware/cis/src/3CXEM556.cis
- create mode 100644 firmware/cis/src/COMpad2.cis
- create mode 100644 firmware/cis/src/COMpad4.cis
- create mode 100644 firmware/cis/src/DP83903.cis
- create mode 100644 firmware/cis/src/LA-PCM.cis
- create mode 100644 firmware/cis/src/MT5634ZLX.cis
- create mode 100644 firmware/cis/src/NE2K.cis
- create mode 100644 firmware/cis/src/PCMLM28.cis
- create mode 100644 firmware/cis/src/PE-200.cis
- create mode 100644 firmware/cis/src/PE520.cis
- create mode 100644 firmware/cis/src/RS-COM-2P.cis
- create mode 100644 firmware/cis/src/tamarack.cis
+Hi Linus,
 
-diff --git a/firmware/WHENCE b/firmware/WHENCE
-index fbee146..0cb459a 100644
---- a/firmware/WHENCE
-+++ b/firmware/WHENCE
-@@ -602,30 +602,42 @@ File: cis/LA-PCM.cis
-       cis/tamarack.cis
-       cis/PE-200.cis
-       cis/PE520.cis
-+Source: cis/src/LA-PCM.cis
-+Source: cis/src/PCMLM28.cis
-+Source: cis/src/DP83903.cis
-+Source: cis/src/NE2K.cis
-+Source: cis/src/tamarack.cis
-+Source: cis/src/PE-200.cis
-+Source: cis/src/PE520.cis
- 
--Licence: GPL
-+Licence: Dual GPLv2/MPL
- 
- Originally developed by the pcmcia-cs project
-+Copyright (C) 1998, 1999, 2000 David A. Hinds
- 
- --------------------------------------------------------------------------
- 
- Driver: PCMCIA_3C589 - 3Com PCMCIA adapter
- 
- File: cis/3CXEM556.cis
-+Source: cis/src/3CXEM556.cis
- 
--Licence: GPL
-+Licence: Dual GPLv2/MPL
- 
- Originally developed by the pcmcia-cs project
-+Copyright (C) 1998, 1999, 2000 David A. Hinds
- 
- --------------------------------------------------------------------------
- 
- Driver: PCMCIA_3C574 - 3Com PCMCIA adapter
- 
- File: cis/3CCFEM556.cis
-+Source: cis/src/3CCFEM556.cis
- 
--Licence: GPL
-+Licence: Dual GPLv2/MPL
- 
- Originally developed by the pcmcia-cs project
-+Copyright (C) 1998, 1999, 2000 David A. Hinds
- 
- --------------------------------------------------------------------------
- 
-@@ -635,10 +647,15 @@ File: cis/MT5634ZLX.cis
-       cis/RS-COM-2P.cis
-       cis/COMpad2.cis
-       cis/COMpad4.cis
-+Source: cis/src/MT5634ZLX.cis
-+Source: cis/src/RS-COM-2P.cis
-+Source: cis/src/COMpad2.cis
-+Source: cis/src/COMpad4.cis
- 
--Licence: GPL
-+Licence: Dual GPLv2/MPL
- 
- Originally developed by the pcmcia-cs project
-+Copyright (C) 1998, 1999, 2000 David A. Hinds
- 
- --------------------------------------------------------------------------
- 
-diff --git a/firmware/cis/src/3CCFEM556.cis b/firmware/cis/src/3CCFEM556.cis
-new file mode 100644
-index 0000000..be627d0
---- /dev/null
-+++ b/firmware/cis/src/3CCFEM556.cis
-@@ -0,0 +1,22 @@
-+#
-+# This card is MFC-compliant, but identifies itself as single function
-+#
-+vers_1 5.0, "3Com", "Megahertz 3CCFEM556", "LAN + 56k Modem"
-+manfid 0x0101, 0x0556
-+funcid 0
-+
-+mfc {
-+  funcid network_adapter
-+  config base 0x1000 mask 0x267 last_index 0x07
-+  cftable_entry 0x07
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x000f [8bit] [16bit]
-+}, {
-+  funcid serial_port
-+  config base 0x1100 mask 0x277 last_index 0x27
-+  cftable_entry 0x27
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x0007 [8bit]
-+}
-diff --git a/firmware/cis/src/3CXEM556.cis b/firmware/cis/src/3CXEM556.cis
-new file mode 100644
-index 0000000..819f08f
---- /dev/null
-+++ b/firmware/cis/src/3CXEM556.cis
-@@ -0,0 +1,22 @@
-+#
-+# This card is MFC-compliant, but identifies itself as single function
-+#
-+vers_1 5.0, "3Com", "Megahertz 3CXEM556", "LAN + 56k Modem"
-+manfid 0x0101, 0x0035
-+funcid 0
-+
-+mfc {
-+  funcid network_adapter
-+  config base 0x0800 mask 0x63 last_index 0x07
-+  cftable_entry 0x07
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x000f [8bit] [16bit]
-+}, {
-+  funcid serial_port
-+  config base 0x900 mask 0x63 last_index 0x27
-+  cftable_entry 0x27
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x0007 [8bit]
-+}
-diff --git a/firmware/cis/src/COMpad2.cis b/firmware/cis/src/COMpad2.cis
-new file mode 100644
-index 0000000..bfc2374
---- /dev/null
-+++ b/firmware/cis/src/COMpad2.cis
-@@ -0,0 +1,20 @@
-+#
-+# Replacement CIS for Advantech COMpad-32/85
-+#
-+dev_info
-+  NULL 0ns, 512b
-+vers_1 4.1, "ADVANTECH", "COMpad-32/85", "1.0"
-+funcid serial_port [post]
-+config base 0x0100 mask 0x0003 last_index 0x05
-+cftable_entry 0x01 [default]
-+  [mwait]
-+  io 0x02e8-0x02ef, 0x03e8-0x03ef [lines=10] [8bit] [range]
-+  irq mask 0x9eb8 [level]
-+cftable_entry 0x02
-+  io 0x0330-0x033f [lines=10] [8bit] [range]
-+cftable_entry 0x03
-+  io 0x0340-0x034f [lines=10] [8bit] [range]
-+cftable_entry 0x04
-+  io 0x0350-0x035f [lines=10] [8bit] [range]
-+cftable_entry 0x05
-+  io 0x0360-0x036f [lines=10] [8bit] [range]
-diff --git a/firmware/cis/src/COMpad4.cis b/firmware/cis/src/COMpad4.cis
-new file mode 100644
-index 0000000..325991c
---- /dev/null
-+++ b/firmware/cis/src/COMpad4.cis
-@@ -0,0 +1,14 @@
-+#
-+# Replacement CIS for Advantech COMpad-32/85B-4
-+#
-+dev_info
-+  NULL 0ns, 512b
-+vers_1 4.1, "ADVANTECH", "COMpad-32/85B-4"
-+funcid serial_port [post]
-+config base 0x0100 mask 0x0001 last_index 0x02
-+cftable_entry 0x01 [default]
-+  [mwait]
-+  io 0x0240-0x025f [lines=10] [8bit] [range]
-+  irq mask 0x9eb8 [level]
-+cftable_entry 0x02
-+  io 0x0340-0x035f [lines=10] [8bit] [range]
-diff --git a/firmware/cis/src/DP83903.cis b/firmware/cis/src/DP83903.cis
-new file mode 100644
-index 0000000..ce86f45
---- /dev/null
-+++ b/firmware/cis/src/DP83903.cis
-@@ -0,0 +1,24 @@
-+#
-+# This CIS is for cards based on the National Semiconductor
-+# DP83903 Multiple Function Interface Chip
-+#
-+vers_1 4.1, "Multifunction Card", "", "", "NSC MF LAN/Modem"
-+manfid 0x0175, 0x0000
-+funcid 0
-+
-+mfc {
-+  funcid network_adapter
-+  config base 0x1020 mask 0x277 last_index 0x17
-+  cftable_entry 0x17
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x001f [8bit] [16bit]
-+    memory 0x0000-0x3fff @ 0x0000
-+}, {
-+  funcid serial_port
-+  config base 0x1040 mask 0x0277 last_index 0x07
-+  cftable_entry 0x07
-+    Vcc Vnom 5V
-+    irq mask 0xffff [level]
-+    io  0x0000-0x0007 [8bit]
-+}
-diff --git a/firmware/cis/src/LA-PCM.cis b/firmware/cis/src/LA-PCM.cis
-new file mode 100644
-index 0000000..5c427bd
---- /dev/null
-+++ b/firmware/cis/src/LA-PCM.cis
-@@ -0,0 +1,44 @@
-+#
-+# Replacement CIS for Allied Telesis LA-PCM
-+#
-+dev_info
-+  fn_specific 100ns, 64kb
-+  FLASH 150ns, 60kb
-+attr_dev_info
-+  FLASH 150ns, 4kb
-+manfid 0xc00f, 0x0002
-+funcid network_adapter [post] [rom]
-+vers_1 4.1, "Allied Telesis,K.K", "Ethernet LAN Card", "CentreCOM", "LA-PCM"
-+config base 0x20000 mask 0x000b last_index 0x10
-+cftable_entry 0x01
-+  io 0x0200-0x021f [8bit] [16bit]
-+cftable_entry 0x02
-+  io 0x0220-0x023f [8bit] [16bit]
-+cftable_entry 0x03
-+  io 0x0240-0x025f [8bit] [16bit]
-+cftable_entry 0x04
-+  io 0x0260-0x027f [8bit] [16bit]
-+cftable_entry 0x05
-+  io 0x0280-0x029f [8bit] [16bit]
-+cftable_entry 0x06
-+  io 0x02a0-0x02bf [8bit] [16bit]
-+cftable_entry 0x07
-+  io 0x02c0-0x02df [8bit] [16bit]
-+cftable_entry 0x08
-+  io 0x02e0-0x02ff [8bit] [16bit]
-+cftable_entry 0x09
-+  io 0x0300-0x031f [8bit] [16bit]
-+cftable_entry 0x0a
-+  io 0x0320-0x033f [8bit] [16bit]
-+cftable_entry 0x0b
-+  io 0x0340-0x035f [8bit] [16bit]
-+cftable_entry 0x0c
-+  io 0x0360-0x037f [8bit] [16bit]
-+cftable_entry 0x0d
-+  io 0x0380-0x039f [8bit] [16bit]
-+cftable_entry 0x0e
-+  io 0x03a0-0x03bf [8bit] [16bit]
-+cftable_entry 0x0f
-+  io 0x03c0-0x03df [8bit] [16bit]
-+cftable_entry 0x10
-+  io 0x03e0-0x03ff [8bit] [16bit]
-diff --git a/firmware/cis/src/MT5634ZLX.cis b/firmware/cis/src/MT5634ZLX.cis
-new file mode 100644
-index 0000000..52249b3
---- /dev/null
-+++ b/firmware/cis/src/MT5634ZLX.cis
-@@ -0,0 +1,18 @@
-+#
-+# Replacement CIS for Multitech MT5634ZLX modems
-+#
-+dev_info no_info
-+vers_1 4.1, "MultiTech", "PCMCIA 56K DataFax"
-+manfid 0x0200, 0x0001
-+funcid serial_port
-+config base 0xff80 mask 0x0067 last_index 0x27
-+cftable_entry 0x0f [default]
-+  [rdybsy] [audio] [pwrdown]
-+  Vcc Vnom 5V Vpp1 Vnom 5V Vpp2 Vnom 5V
-+  io 0x03f8-0x03ff [lines=10] [8bit]
-+cftable_entry 0x17
-+  io 0x02f8-0x02ff [lines=10] [8bit]
-+cftable_entry 0x1f
-+  io 0x03e8-0x03ef [lines=10] [8bit]
-+cftable_entry 0x27
-+  io 0x02e8-0x02ef [lines=10] [8bit]
-diff --git a/firmware/cis/src/NE2K.cis b/firmware/cis/src/NE2K.cis
-new file mode 100644
-index 0000000..d1d47f3
---- /dev/null
-+++ b/firmware/cis/src/NE2K.cis
-@@ -0,0 +1,10 @@
-+#
-+# Replacement CIS for various busted NE2000-compatible cards
-+#
-+vers_1 4.1, "PCMCIA", "Ethernet"
-+funcid network_adapter
-+config base 0x03f8 mask 0x03 last_index 0x20
-+cftable_entry 0x20 [default]
-+  Vcc Vnom 5V
-+  irq mask 0xffff [level]
-+  io 0x0000-0x001f [8bit] [16bit]
-diff --git a/firmware/cis/src/PCMLM28.cis b/firmware/cis/src/PCMLM28.cis
-new file mode 100644
-index 0000000..39c6d16
---- /dev/null
-+++ b/firmware/cis/src/PCMLM28.cis
-@@ -0,0 +1,37 @@
-+#
-+# The on-card CIS says it is MFC-compliant, but it is not
-+#
-+vers_1 4.1, "LINKSYS", "PCMLM28"
-+manfid 0x0143, 0xc0ab
-+funcid 0
-+config base 0x03f8 mask 0x03 last_index 0x2f
-+
-+cftable_entry 0x24 [default]
-+  Vcc Vnom 5V
-+  irq mask 0xffff [level]
-+  io 0x0300-0x031f, 0x02f8-0x02ff [8bit] [16bit]
-+
-+cftable_entry 0x25
-+  io 0x0320-0x033f, 0x02f8-0x02ff [8bit] [16bit]
-+cftable_entry 0x26
-+  io 0x0340-0x035f, 0x02f8-0x02ff [8bit] [16bit]
-+cftable_entry 0x27
-+  io 0x0360-0x037f, 0x02f8-0x02ff [8bit] [16bit]
-+
-+cftable_entry 0x28
-+  io 0x0300-0x031f, 0x03e8-0x03ef [8bit] [16bit]
-+cftable_entry 0x29
-+  io 0x0320-0x033f, 0x03e8-0x03ef [8bit] [16bit]
-+cftable_entry 0x2a
-+  io 0x0340-0x035f, 0x03e8-0x03ef [8bit] [16bit]
-+cftable_entry 0x2b
-+  io 0x0360-0x037f, 0x03e8-0x03ef [8bit] [16bit]
-+
-+cftable_entry 0x2c
-+  io 0x0300-0x031f, 0x02e8-0x02ef [8bit] [16bit]
-+cftable_entry 0x2d
-+  io 0x0320-0x033f, 0x02e8-0x02ef [8bit] [16bit]
-+cftable_entry 0x2e
-+  io 0x0340-0x035f, 0x02e8-0x02ef [8bit] [16bit]
-+cftable_entry 0x2f
-+  io 0x0360-0x037f, 0x02e8-0x02ef [8bit] [16bit]
-diff --git a/firmware/cis/src/PE-200.cis b/firmware/cis/src/PE-200.cis
-new file mode 100644
-index 0000000..7db7494
---- /dev/null
-+++ b/firmware/cis/src/PE-200.cis
-@@ -0,0 +1,11 @@
-+#
-+# Replacement CIS for PE-200 ethernet card
-+#
-+vers_1 4.1, "PMX   ", "PE-200", "ETHERNET", "R01"
-+funcid network_adapter [post] [rom]
-+config base 0x0100 mask 0x0001 last_index 0x01
-+cftable_entry 0x1 [default]
-+  [mwait]
-+  Vcc Vnom 5V
-+  irq mask 0xffff [level]
-+  io 0x0000-0x000f, 0x0010-0x001f [8bit] [16bit]
-diff --git a/firmware/cis/src/PE520.cis b/firmware/cis/src/PE520.cis
-new file mode 100644
-index 0000000..fb411ab
---- /dev/null
-+++ b/firmware/cis/src/PE520.cis
-@@ -0,0 +1,11 @@
-+#
-+# Replacement CIS for LanPro EP-4000A ethernet card
-+#
-+vers_1 4.1, "KTI", "PE520 PLUS", "PCMCIA Ethernet"
-+manfid 0x0161, 0x0010
-+funcid network_adapter
-+config base 0x0fd0 mask 0x0b last_index 0x01
-+cftable_entry 0x01 [default]
-+  Vcc Vnom 5V
-+  irq mask 0xffff [level]
-+  io 0x0000-0x001f [8bit] [16bit]
-diff --git a/firmware/cis/src/RS-COM-2P.cis b/firmware/cis/src/RS-COM-2P.cis
-new file mode 100644
-index 0000000..2e385cb
---- /dev/null
-+++ b/firmware/cis/src/RS-COM-2P.cis
-@@ -0,0 +1,14 @@
-+#
-+# Replacement CIS for dual-serial-port IO card
-+#
-+vers_1 4.1, "PCMCIA", "RS-COM 2P"
-+funcid serial_port [post]
-+config base 0x0100 mask 0x0001 last_index 0x03
-+cftable_entry 0x01 [default]
-+  [mwait]
-+  io 0x03e8-0x03ef, 0x02e8-0x02ef [lines=10] [8bit] [range]
-+  irq mask 0x9eb8 [level]
-+cftable_entry 0x02
-+  io 0x0250-0x0257, 0x0258-0x025f [lines=10] [8bit] [range]
-+cftable_entry 0x03
-+  io 0x0260-0x0267, 0x0268-0x026f [lines=10] [8bit] [range]
-diff --git a/firmware/cis/src/tamarack.cis b/firmware/cis/src/tamarack.cis
-new file mode 100644
-index 0000000..8802694
---- /dev/null
-+++ b/firmware/cis/src/tamarack.cis
-@@ -0,0 +1,17 @@
-+#
-+# Replacement CIS for Surecom, Tamarack NE2000 cards
-+#
-+dev_info
-+  fn_specific 100ns, 512b
-+attr_dev_info
-+  EEPROM 250ns, 512b
-+vers_1 4.1, "TAMARACK", "Ethernet", "A", "004743118001"
-+funcid network_adapter
-+config base 0x03f8 mask 0x0003 last_index 0x20
-+cftable_entry 0x20 [default]
-+  [mwait]
-+  Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Istatic 100mA
-+    Iavg 170mA Ipeak 200mA
-+  timing wait 15us
-+  io 0x0000-0x000f, 0x0010-0x001f [lines=5] [8bit] [16bit]
-+  irq mask 0xffff [level]
--- 
-1.6.6.2
+Please consider pulling the Ceph distributed file system client from
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/sage/ceph-client.git for-linus
+
+which includes a patch with the recent write_inode API change, but does 
+not merge Al's write_inode branch, as that currently conflicts with your 
+tree in a few places.  (OTOH, my branch has a trivial conflict in 
+Documentation/ioctl/ioctl-numbers.txt.)
+
+Red Hat has bugs open asking for Ceph, and has included the userspace in 
+F13, but they are antsy about pulling in the kernel client before it goes 
+upstream.  Another half dozen people have piped up on LKML or the ceph 
+list asking to see it pushed upstream.
+
+A larger number of people are evaluating and testing the system.  A few 
+sites have reasonably sized clusters set up (>16 nodes), the rest have 
+tried the system on a small number of nodes.  At this point you still 
+won't find a particularly large user base, or as much demand as say btrfs 
+simply because Ceph is useful for a much smaller audience--those with lots 
+of storage boxes they'd like to aggregate into a single file system--and 
+because those people tend to be pretty careful with their data.
+
+Although stability has improved greatly is the last few months, Ceph is 
+still relatively new and experimental for a something as conservative as 
+storage, and only time and testing will change that.  Getting the code 
+upstream sooner rather than later will accelerate that process by reducing 
+barriers to testing, expanding the pool of systems with a usable client, 
+and making it easier for distros to include it.
+
+Thanks-
+sage
 
 
+Alexander Beregalov (1):
+      ceph: move dereference after NULL test
+
+Julia Lawall (3):
+      fs/ceph: introduce missing kfree
+      fs/ceph: Move a dereference below a NULL test
+      ceph: remove duplicate variable initialization
+
+Noah Watkins (3):
+      ceph: replace list_entry with container_of
+      ceph: remove redundant use of le32_to_cpu
+      ceph: fix intra strip unit length calculation
+
+Sage Weil (173):
+      ceph: documentation
+      ceph: on-wire types
+      ceph: client types
+      ceph: ref counted buffer
+      ceph: super.c
+      ceph: inode operations
+      ceph: directory operations
+      ceph: file operations
+      ceph: address space operations
+      ceph: MDS client
+      ceph: OSD client
+      ceph: CRUSH mapping algorithm
+      ceph: monitor client
+      ceph: capability management
+      ceph: snapshot management
+      ceph: messenger library
+      ceph: message pools
+      ceph: nfs re-export support
+      ceph: ioctls
+      ceph: debugfs
+      ceph: Kconfig, Makefile
+      ceph: document shared files in README
+      ceph: show meaningful version on module load
+      ceph: include preferred_osd in file layout virtual xattr
+      ceph: gracefully avoid empty crush buckets
+      ceph: fix mdsmap decoding when multiple mds's are present
+      ceph: renew mon subscription before it expires
+      ceph: fix osd request submission race
+      ceph: revoke osd request message on request completion
+      ceph: fail gracefully on corrupt osdmap (bad pg_temp mapping)
+      ceph: reset osd session on fault, not peer_reset
+      ceph: cancel osd requests before resending them
+      ceph: update to mon client protocol v15
+      ceph: add file layout validation
+      ceph: ignore trailing data in monamp
+      ceph: remove unused CEPH_MSG_{OSD,MDS}_GETMAP
+      ceph: add version field to message header
+      ceph: convert encode/decode macros to inlines
+      ceph: initialize sb->s_bdi, bdi_unregister after kill_anon_super
+      ceph: move generic flushing code into helper
+      ceph: flush dirty caps via the cap_dirty list
+      ceph: correct subscribe_ack msgpool payload size
+      ceph: warn on allocation from msgpool with larger front_len
+      ceph: move dirty caps code around
+      ceph: enable readahead
+      ceph: include preferred osd in placement seed
+      ceph: v0.17 of client
+      ceph: move directory size logic to ceph_getattr
+      ceph: remove small mon addr limit; use CEPH_MAX_MON where appropriate
+      ceph: reduce parse_mount_args stack usage
+      ceph: silence uninitialized variable warning
+      ceph: fix, clean up string mount arg parsing
+      ceph: allocate and parse mount args before client instance
+      ceph: correct comment to match striping calculation
+      ceph: fix object striping calculation for non-default striping schemes
+      ceph: fix uninitialized err variable
+      crush: always return a value from crush_bucket_choose
+      ceph: init/destroy bdi in client create/destroy helpers
+      ceph: use fixed endian encoding for ceph_entity_addr
+      ceph: fix endian conversions for ceph_pg
+      ceph: fix sparse endian warning
+      ceph: convert port endianness
+      ceph: clean up 'osd%d down' console msg
+      ceph: make CRUSH hash functions non-inline
+      ceph: use strong hash function for mapping objects to pgs
+      ceph: make object hash a pg_pool property
+      ceph: make CRUSH hash function a bucket property
+      ceph: do not confuse stale and dead (unreconnected) caps
+      ceph: separate banner and connect during handshake into distinct stages
+      ceph: remove recon_gen logic
+      ceph: exclude snapdir from readdir results
+      ceph: initialize i_size/i_rbytes on snapdir
+      ceph: pr_info when mds reconnect completes
+      ceph: build cleanly without CONFIG_DEBUG_FS
+      ceph: fix page invalidation deadlock
+      ceph: remove bad calls to ceph_con_shutdown
+      ceph: remove unnecessary ceph_con_shutdown
+      ceph: handle errors during osd client init
+      ceph: negotiate authentication protocol; implement AUTH_NONE protocol
+      ceph: move mempool creation to ceph_create_client
+      ceph: small cleanup in hash function
+      ceph: fix debugfs entry, simplify fsid checks
+      ceph: decode updated mdsmap format
+      ceph: reset requested max_size after mds reconnect
+      ceph: reset msgr backoff during open, not after successful handshake
+      ceph: remove dead code
+      ceph: remove useless IS_ERR checks
+      ceph: plug leak of request_mutex
+      ceph: whitespace cleanup
+      ceph: hide /.ceph from readdir results
+      ceph: allow preferred osd to be get/set via layout ioctl
+      ceph: update MAINTAINERS entry with correct git URL
+      ceph: mark v0.18 release
+      ceph: use kref for ceph_buffer
+      ceph: simplify ceph_buffer interface
+      ceph: use kref for struct ceph_mds_request
+      ceph: use kref for ceph_osd_request
+      ceph: use kref for ceph_msg
+      ceph: do not feed bad device ids to crush
+      ceph: fix leak of monc mutex
+      ceph: carry explicit msg reference for currently sending message
+      ceph: plug msg leak in con_fault
+      ceph: detect lossy state of connection
+      ceph: don't save sent messages on lossy connections
+      ceph: hex dump corrupt server data to KERN_DEBUG
+      ceph: plug leak of incoming message during connection fault/close
+      ceph: make mds ops interruptible
+      ceph: include link to bdi in debugfs
+      ceph: ensure rename target dentry fails revalidation
+      ceph: do not drop lease during revalidate
+      ceph: fix error paths for corrupt osdmap messages
+      ceph: fix incremental osdmap pg_temp decoding bug
+      ceph: do not touch_caps while iterating over caps list
+      ceph: only unregister registered bdi
+      ceph: unregister canceled/timed out osd requests
+      ceph: use connection mutex to protect read and write stages
+      ceph: control access to page vector for incoming data
+      ceph: more informative msgpool errors
+      ceph: include transaction id in ceph_msg_header (protocol change)
+      ceph: add feature bits to connection handshake (protocol change)
+      ceph: support ceph_pagelist for message payload
+      ceph: use ceph_pagelist for mds reconnect message; change encoding (protocol change)
+      ceph: remove unused erank field
+      ceph: display pgid in debugfs osd request dump
+      ceph: mark MDS CREATE as a write op
+      ceph: properly handle aborted mds requests
+      ceph: precede encoded ceph_pg_pool struct with version
+      ceph: include type in ceph_entity_addr, filepath
+      ceph: release all pages after successful osd write response
+      ceph: buffer decoding helpers
+      ceph: aes crypto and base64 encode/decode helpers
+      ceph: allow renewal of auth credentials
+      ceph: add struct version to auth encoding
+      ceph: add support for auth_x authentication protocol
+      ceph: add uid field to ceph_pg_pool
+      ceph: cap revocation fixes
+      ceph: do not retain caps that are being revoked
+      ceph: fix sync read eof check deadlock
+      ceph: cleanup async writeback, truncation, invalidate helpers
+      ceph: invalidate pages even if truncate is pending
+      ceph: remove bogus invalidate_mapping_pages
+      ceph: fix msgr to keep sent messages until acked
+      ceph: reset osd connections after fault
+      ceph: allow connection to be reopened by fault callback
+      ceph: cancel delayed work when closing connection
+      ceph: use rbtree for mds requests
+      ceph: use rbtree for snap_realms
+      ceph: use rbtree for mon statfs requests
+      ceph: fix authentication races, auth_none oops
+      ceph: clean up readdir caps reservation
+      ceph: fix iterate_caps removal race
+      ceph: fix memory leak when destroying osdmap with pg_temp mappings
+      ceph: use rbtree for pg pools; decode new osdmap format
+      ceph: v0.19 release
+      ceph: fix typo in ceph_queue_writeback debug output
+      ceph: fix check for invalidate_mapping_pages success
+      ceph: fix up unexpected message handling
+      ceph: fix comments, locking in destroy_inode
+      ceph: drop messages on unregistered mds sessions; cleanup
+      ceph: fix client_request_forward decoding
+      ceph: invalidate_authorizer without con->mutex held
+      ceph: fix connection fault STANDBY check
+      ceph: remove fragile __map_osds optimization
+      ceph: remove bogus mds forward warning
+      ceph: reset bits on connection close
+      ceph: use single osd op reply msg
+      ceph: fix snaptrace decoding on cap migration between mds
+      ceph: reset front len on return to msgpool; BUG on mismatched front iov
+      ceph: set osd request message front length correctly
+      ceph: return EBADF if waiting for caps on closed file
+      ceph: fix osdmap decoding when pools include (removed) snaps
+      ceph: include migrating caps in issued set
+      ceph: fix flush_dirty_caps race with caps migration
+
+Yehuda Sadeh (24):
+      ceph: mount fails immediately on error
+      ceph: fix msgpool reservation leak
+      ceph: remove unaccessible code
+      ceph: writepage grabs and releases inode
+      ceph: writeback congestion control
+      ceph: fix copy_user_to_page_vector()
+      ceph: change dentry offset and position after splice_dentry
+      ceph: allocate middle of message before stating to read
+      ceph: refactor messages data section allocation
+      ceph: alloc message data pages and check if tid exists
+      ceph: keep reserved replies on the request structure
+      ceph: remove unreachable code
+      ceph: always send truncation info with read and write osd ops
+      ceph: remove unused variable
+      ceph: put unused osd connections on lru
+      ceph: fix short synchronous reads
+      ceph: refactor ceph_write_begin, fix ceph_page_mkwrite
+      ceph: fix truncation when not holding caps
+      ceph: sync read/write considers page cache
+      ceph: remove page upon writeback completion if lost cache cap
+      ceph: don't truncate dirty pages in invalidate work thread
+      ceph: cleanup redundant code in handle_cap_grant
+      ceph: don't clobber write return value when using O_SYNC
+      ceph: reset osd after relevant messages timed out
+
+ Documentation/filesystems/ceph.txt   |  139 ++
+ Documentation/ioctl/ioctl-number.txt |    1 +
+ MAINTAINERS                          |    9 +
+ fs/Kconfig                           |    1 +
+ fs/Makefile                          |    1 +
+ fs/ceph/Kconfig                      |   27 +
+ fs/ceph/Makefile                     |   39 +
+ fs/ceph/README                       |   20 +
+ fs/ceph/addr.c                       | 1188 +++++++++++++
+ fs/ceph/armor.c                      |   99 ++
+ fs/ceph/auth.c                       |  257 +++
+ fs/ceph/auth.h                       |   84 +
+ fs/ceph/auth_none.c                  |  121 ++
+ fs/ceph/auth_none.h                  |   28 +
+ fs/ceph/auth_x.c                     |  656 ++++++++
+ fs/ceph/auth_x.h                     |   49 +
+ fs/ceph/auth_x_protocol.h            |   90 +
+ fs/ceph/buffer.c                     |   78 +
+ fs/ceph/buffer.h                     |   39 +
+ fs/ceph/caps.c                       | 2925 ++++++++++++++++++++++++++++++++
+ fs/ceph/ceph_debug.h                 |   37 +
+ fs/ceph/ceph_frag.c                  |   21 +
+ fs/ceph/ceph_frag.h                  |  109 ++
+ fs/ceph/ceph_fs.c                    |   74 +
+ fs/ceph/ceph_fs.h                    |  650 ++++++++
+ fs/ceph/ceph_hash.c                  |  118 ++
+ fs/ceph/ceph_hash.h                  |   13 +
+ fs/ceph/ceph_strings.c               |  176 ++
+ fs/ceph/crush/crush.c                |  151 ++
+ fs/ceph/crush/crush.h                |  180 ++
+ fs/ceph/crush/hash.c                 |  149 ++
+ fs/ceph/crush/hash.h                 |   17 +
+ fs/ceph/crush/mapper.c               |  596 +++++++
+ fs/ceph/crush/mapper.h               |   20 +
+ fs/ceph/crypto.c                     |  408 +++++
+ fs/ceph/crypto.h                     |   48 +
+ fs/ceph/debugfs.c                    |  483 ++++++
+ fs/ceph/decode.h                     |  194 +++
+ fs/ceph/dir.c                        | 1220 ++++++++++++++
+ fs/ceph/export.c                     |  223 +++
+ fs/ceph/file.c                       |  937 +++++++++++
+ fs/ceph/inode.c                      | 1750 ++++++++++++++++++++
+ fs/ceph/ioctl.c                      |  160 ++
+ fs/ceph/ioctl.h                      |   40 +
+ fs/ceph/mds_client.c                 | 3021 ++++++++++++++++++++++++++++++++++
+ fs/ceph/mds_client.h                 |  335 ++++
+ fs/ceph/mdsmap.c                     |  174 ++
+ fs/ceph/mdsmap.h                     |   54 +
+ fs/ceph/messenger.c                  | 2240 +++++++++++++++++++++++++
+ fs/ceph/messenger.h                  |  254 +++
+ fs/ceph/mon_client.c                 |  834 ++++++++++
+ fs/ceph/mon_client.h                 |  119 ++
+ fs/ceph/msgpool.c                    |  186 +++
+ fs/ceph/msgpool.h                    |   27 +
+ fs/ceph/msgr.h                       |  158 ++
+ fs/ceph/osd_client.c                 | 1537 +++++++++++++++++
+ fs/ceph/osd_client.h                 |  166 ++
+ fs/ceph/osdmap.c                     | 1019 ++++++++++++
+ fs/ceph/osdmap.h                     |  125 ++
+ fs/ceph/pagelist.c                   |   54 +
+ fs/ceph/pagelist.h                   |   54 +
+ fs/ceph/rados.h                      |  374 +++++
+ fs/ceph/snap.c                       |  904 ++++++++++
+ fs/ceph/super.c                      | 1030 ++++++++++++
+ fs/ceph/super.h                      |  900 ++++++++++
+ fs/ceph/types.h                      |   29 +
+ fs/ceph/xattr.c                      |  844 ++++++++++
+ 67 files changed, 28063 insertions(+), 0 deletions(-)
