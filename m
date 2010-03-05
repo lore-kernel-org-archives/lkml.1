@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423Ab0CERr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:47:56 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:39941 "EHLO
+	id S1755445Ab0CERsF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:48:05 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:39959 "EHLO
 	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755392Ab0CERrx (ORCPT
+	with ESMTP id S1755392Ab0CERr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:47:53 -0500
-Subject: [PATCH v2 6/7] PNPACPI: add window support
+	Fri, 5 Mar 2010 12:47:58 -0500
+Subject: [PATCH v2 7/7] PNPACPI: add bus number support
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Len Brown <lenb@kernel.org>
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        Adam Belay <abelay@mit.edu>
-Date: Fri, 05 Mar 2010 10:47:52 -0700
-Message-ID: <20100305174752.21946.55148.stgit@bob.kio>
+Date: Fri, 05 Mar 2010 10:47:57 -0700
+Message-ID: <20100305174757.21946.84154.stgit@bob.kio>
 In-Reply-To: <20100305174656.21946.93874.stgit@bob.kio>
 References: <20100305174656.21946.93874.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -26,172 +26,144 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add support for resource windows.  This is for bridge resources, i.e.,
-regions where a bridge forwards transactions from the primary to the
-secondary side.  This does not add support for *setting* windows via
-the /proc interface.
+Add support for bus number resources.  This is for bridges with a range of
+bus numbers behind them.  Previously, PNP ignored bus number resources.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 ---
 
- drivers/pnp/interface.c        |    6 ++++--
- drivers/pnp/pnpacpi/rsparser.c |   35 ++++++++++++++++++++---------------
- 2 files changed, 24 insertions(+), 17 deletions(-)
+ drivers/pnp/base.h             |    3 +++
+ drivers/pnp/interface.c        |    1 +
+ drivers/pnp/pnpacpi/rsparser.c |   14 ++++++++++++++
+ drivers/pnp/resource.c         |   27 ++++++++++++++++++++++++++-
+ drivers/pnp/support.c          |    4 +++-
+ 5 files changed, 47 insertions(+), 2 deletions(-)
 
 
+diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
+index 0b8d140..0bab84e 100644
+--- a/drivers/pnp/base.h
++++ b/drivers/pnp/base.h
+@@ -166,6 +166,9 @@ struct pnp_resource *pnp_add_io_resource(struct pnp_dev *dev,
+ struct pnp_resource *pnp_add_mem_resource(struct pnp_dev *dev,
+ 					  resource_size_t start,
+ 					  resource_size_t end, int flags);
++struct pnp_resource *pnp_add_bus_resource(struct pnp_dev *dev,
++					  resource_size_t start,
++					  resource_size_t end);
+ 
+ extern int pnp_debug;
+ 
 diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index 68b0c04..ba437b7 100644
+index ba437b7..cfaf5b7 100644
 --- a/drivers/pnp/interface.c
 +++ b/drivers/pnp/interface.c
-@@ -278,9 +278,11 @@ static ssize_t pnp_show_current_resources(struct device *dmdev,
+@@ -278,6 +278,7 @@ static ssize_t pnp_show_current_resources(struct device *dmdev,
  		switch (pnp_resource_type(res)) {
  		case IORESOURCE_IO:
  		case IORESOURCE_MEM:
--			pnp_printf(buffer, " %#llx-%#llx\n",
-+			pnp_printf(buffer, " %#llx-%#llx%s\n",
++		case IORESOURCE_BUS:
+ 			pnp_printf(buffer, " %#llx-%#llx%s\n",
  				   (unsigned long long) res->start,
--				   (unsigned long long) res->end);
-+				   (unsigned long long) res->end,
-+				   res->flags & IORESOURCE_WINDOW ?
-+					" window" : "");
- 			break;
- 		case IORESOURCE_IRQ:
- 		case IORESOURCE_DMA:
+ 				   (unsigned long long) res->end,
 diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index 5702b2c..0d7d61d 100644
+index 0d7d61d..54514aa 100644
 --- a/drivers/pnp/pnpacpi/rsparser.c
 +++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -177,7 +177,8 @@ static int dma_flags(struct pnp_dev *dev, int type, int bus_master,
- }
- 
- static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev, u64 start,
--					       u64 len, int io_decode)
-+					       u64 len, int io_decode,
-+					       int window)
- {
- 	int flags = 0;
- 	u64 end = start + len - 1;
-@@ -186,6 +187,8 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev, u64 start,
- 		flags |= IORESOURCE_IO_16BIT_ADDR;
- 	if (len == 0 || end >= 0x10003)
- 		flags |= IORESOURCE_DISABLED;
-+	if (window)
-+		flags |= IORESOURCE_WINDOW;
- 
- 	pnp_add_io_resource(dev, start, end, flags);
- }
-@@ -247,7 +250,7 @@ static void pnpacpi_parse_allocated_vendor(struct pnp_dev *dev,
- 
- static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
- 						u64 start, u64 len,
--						int write_protect)
-+						int write_protect, int window)
- {
- 	int flags = 0;
- 	u64 end = start + len - 1;
-@@ -256,6 +259,8 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
- 		flags |= IORESOURCE_DISABLED;
- 	if (write_protect == ACPI_READ_WRITE_MEMORY)
- 		flags |= IORESOURCE_MEM_WRITEABLE;
-+	if (window)
-+		flags |= IORESOURCE_WINDOW;
- 
+@@ -265,6 +265,14 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
  	pnp_add_mem_resource(dev, start, end, flags);
  }
-@@ -265,6 +270,7 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
+ 
++static void pnpacpi_parse_allocated_busresource(struct pnp_dev *dev,
++						u64 start, u64 len)
++{
++	u64 end = start + len - 1;
++
++	pnp_add_bus_resource(dev, start, end);
++}
++
+ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
+ 						  struct acpi_resource *res)
  {
- 	struct acpi_resource_address64 addr, *p = &addr;
- 	acpi_status status;
-+	int window;
- 
- 	status = acpi_resource_to_address64(res, p);
- 	if (!ACPI_SUCCESS(status)) {
-@@ -273,37 +279,36 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
- 		return;
- 	}
- 
--	if (p->producer_consumer == ACPI_PRODUCER)
--		return;
-+	window = (p->producer_consumer == ACPI_PRODUCER) ? 1 : 0;
- 
- 	if (p->resource_type == ACPI_MEMORY_RANGE)
- 		pnpacpi_parse_allocated_memresource(dev,
- 			p->minimum, p->address_length,
--			p->info.mem.write_protect);
-+			p->info.mem.write_protect, window);
- 	else if (p->resource_type == ACPI_IO_RANGE)
- 		pnpacpi_parse_allocated_ioresource(dev,
+@@ -290,6 +298,9 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
  			p->minimum, p->address_length,
  			p->granularity == 0xfff ? ACPI_DECODE_10 :
--				ACPI_DECODE_16);
-+				ACPI_DECODE_16, window);
+ 				ACPI_DECODE_16, window);
++	else if (p->resource_type == ACPI_BUS_NUMBER_RANGE)
++		pnpacpi_parse_allocated_busresource(dev, p->minimum,
++						    p->address_length);
  }
  
  static void pnpacpi_parse_allocated_ext_address_space(struct pnp_dev *dev,
- 						      struct acpi_resource *res)
- {
- 	struct acpi_resource_extended_address64 *p = &res->data.ext_address64;
-+	int window;
- 
--	if (p->producer_consumer == ACPI_PRODUCER)
--		return;
-+	window = (p->producer_consumer == ACPI_PRODUCER) ? 1 : 0;
- 
- 	if (p->resource_type == ACPI_MEMORY_RANGE)
- 		pnpacpi_parse_allocated_memresource(dev,
- 			p->minimum, p->address_length,
--			p->info.mem.write_protect);
-+			p->info.mem.write_protect, window);
- 	else if (p->resource_type == ACPI_IO_RANGE)
- 		pnpacpi_parse_allocated_ioresource(dev,
+@@ -309,6 +320,9 @@ static void pnpacpi_parse_allocated_ext_address_space(struct pnp_dev *dev,
  			p->minimum, p->address_length,
  			p->granularity == 0xfff ? ACPI_DECODE_10 :
--				ACPI_DECODE_16);
-+				ACPI_DECODE_16, window);
+ 				ACPI_DECODE_16, window);
++	else if (p->resource_type == ACPI_BUS_NUMBER_RANGE)
++		pnpacpi_parse_allocated_busresource(dev, p->minimum,
++						    p->address_length);
  }
  
  static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
-@@ -368,7 +373,7 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			io->minimum,
- 			io->address_length,
--			io->io_decode);
-+			io->io_decode, 0);
- 		break;
+diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
+index 64d0596..5b277db 100644
+--- a/drivers/pnp/resource.c
++++ b/drivers/pnp/resource.c
+@@ -470,7 +470,8 @@ int pnp_check_dma(struct pnp_dev *dev, struct resource *res)
+ unsigned long pnp_resource_type(struct resource *res)
+ {
+ 	return res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
+-			     IORESOURCE_IRQ | IORESOURCE_DMA);
++			     IORESOURCE_IRQ | IORESOURCE_DMA |
++			     IORESOURCE_BUS);
+ }
  
- 	case ACPI_RESOURCE_TYPE_START_DEPENDENT:
-@@ -380,7 +385,7 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			fixed_io->address,
- 			fixed_io->address_length,
--			ACPI_DECODE_10);
-+			ACPI_DECODE_10, 0);
- 		break;
+ struct resource *pnp_get_resource(struct pnp_dev *dev,
+@@ -590,6 +591,30 @@ struct pnp_resource *pnp_add_mem_resource(struct pnp_dev *dev,
+ 	return pnp_res;
+ }
  
- 	case ACPI_RESOURCE_TYPE_VENDOR:
-@@ -396,21 +401,21 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_memresource(dev,
- 			memory24->minimum,
- 			memory24->address_length,
--			memory24->write_protect);
-+			memory24->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_MEMORY32:
- 		memory32 = &res->data.memory32;
- 		pnpacpi_parse_allocated_memresource(dev,
- 			memory32->minimum,
- 			memory32->address_length,
--			memory32->write_protect);
-+			memory32->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_FIXED_MEMORY32:
- 		fixed_memory32 = &res->data.fixed_memory32;
- 		pnpacpi_parse_allocated_memresource(dev,
- 			fixed_memory32->address,
- 			fixed_memory32->address_length,
--			fixed_memory32->write_protect);
-+			fixed_memory32->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_ADDRESS16:
- 	case ACPI_RESOURCE_TYPE_ADDRESS32:
++struct pnp_resource *pnp_add_bus_resource(struct pnp_dev *dev,
++					  resource_size_t start,
++					  resource_size_t end)
++{
++	struct pnp_resource *pnp_res;
++	struct resource *res;
++
++	pnp_res = pnp_new_resource(dev);
++	if (!pnp_res) {
++		dev_err(&dev->dev, "can't add resource for BUS %#llx-%#llx\n",
++			(unsigned long long) start,
++			(unsigned long long) end);
++		return NULL;
++	}
++
++	res = &pnp_res->res;
++	res->flags = IORESOURCE_BUS;
++	res->start = start;
++	res->end = end;
++
++	pnp_dbg(&dev->dev, "  add %pr\n", res);
++	return pnp_res;
++}
++
+ /*
+  * Determine whether the specified resource is a possible configuration
+  * for this device.
+diff --git a/drivers/pnp/support.c b/drivers/pnp/support.c
+index 9585c1c..f5beb24 100644
+--- a/drivers/pnp/support.c
++++ b/drivers/pnp/support.c
+@@ -69,8 +69,10 @@ char *pnp_resource_type_name(struct resource *res)
+ 		return "irq";
+ 	case IORESOURCE_DMA:
+ 		return "dma";
++	case IORESOURCE_BUS:
++		return "bus";
+ 	}
+-	return NULL;
++	return "unknown";
+ }
+ 
+ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
 
