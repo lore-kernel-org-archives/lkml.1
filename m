@@ -1,62 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900Ab0CEXug (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:50:36 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48782 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755328Ab0CEXue (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:50:34 -0500
-X-Sasl-enc: jI6Dk7qY0OrSQazqELQ82riXygUQicqoHUeAzjeBVYZt 1267833033
-Message-ID: <4B9198C2.9080202@imap.cc>
-Date: Sat, 06 Mar 2010 00:50:26 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.8) Gecko/20100205 SeaMonkey/2.0.3
-MIME-Version: 1.0
-To: tytso@mit.edu, Corbin Simpson <mostawesomedude@gmail.com>,
-       Daniel Stone <daniel@fooishbar.org>, David Miller <davem@davemloft.net>,
-       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [git pull] drm request 3
-References: <20100305151754.GB2505@tempa> <20100305.072612.186421758.davem@davemloft.net> <20100305154009.GC2505@tempa> <20100305.074835.159078083.davem@davemloft.net> <20100305160434.GE2505@tempa> <20100305164615.GC6000@thunk.org> <e7bd23c31003051138k14436b42t5bf544c375413c6c@mail.gmail.com> <20100305215106.GE6000@thunk.org>
-In-Reply-To: <20100305215106.GE6000@thunk.org>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755949Ab0CEXws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:52:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55411 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755328Ab0CEXwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 18:52:47 -0500
+Date: Sat, 6 Mar 2010 10:52:37 +1100
+From: Neil Brown <neilb@suse.de>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+ checks
+Message-ID: <20100306105237.0a8621ed@notabene.brown>
+In-Reply-To: <20100305222748.GT27852@agk-dp.fab.redhat.com>
+References: <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
+	<87wrxtkzwu.fsf@openvz.org>
+	<20100303191613.GB18480@redhat.com>
+	<87lje9kx9i.fsf@openvz.org>
+	<20100303200734.GW5768@kernel.dk>
+	<Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
+	<20100304121931.GB5768@kernel.dk>
+	<Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
+	<20100305073059.GI5768@kernel.dk>
+	<20100306085651.1a571571@notabene.brown>
+	<20100305222748.GT27852@agk-dp.fab.redhat.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 5 Mar 2010 22:27:48 +0000
+Alasdair G Kergon <agk@redhat.com> wrote:
 
-Am 2010-03-05 22:51 schrieb tytso@mit.edu:
-> On Fri, Mar 05, 2010 at 11:38:46AM -0800, Corbin Simpson wrote:
->> If distros want to run weird experiments on their users, let them!
->> Sure, sometimes bad things happen, but sometimes good things happen
->> too. ConsoleKit, DeviceKit, HAL, NetworkManager, KMS, yaird, dracut,
->> Plymouth, the list goes on and on.
+> On Sat, Mar 06, 2010 at 08:56:51AM +1100, Neil Brown wrote:
+> > My preferred end-game would be to allow a bio of any size to be submitted to
+> > any device.  The device would be responsible for cutting it up if necessary.
 > 
-> So what distro would you recommend for people who want to do kernel
-> development, do kernel testing, and do kernel bisects to help us find
-> bugs?
-> 
-> Are you basically saying, "Kernel people shouldn't use Fedora"?  So
-> what should we use instead?
+> >From the dm point of view, splitting is undesirable - memory allocations from
+> separate mempools, submitting the split-off parts could reorder/delay but must
+> still respect barrier constraints etc.  Splitting is the 'slow and complicated'
+> path for us.  We support it, but it is simpler and more efficient if the bio is
+> created a suitable size in the first place - and the merge_bvec_fn does this
+> for us most of the time.
 
-It's been "Kernel people shouldn't use Nvidia" ever since I started
-tinkering with device drivers for Linux. Of course there's hope that
-nouveau will one day change that, but we're obviously not quite there yet.
+I hadn't thought about barriers in this context previously, but on reflection
+I don't think splitting makes barriers noticeably more complex than they are
+already.
+If you have multiple devices, then you pretty much have to handle a barrier
+as:
+  - stall new requests
+  - send zero length barrier to all devices
+  - write the barrier request, either with the barrier flag set,
+    or followed by a zero-length barrier
 
-Jm2c
-Tilman
+I don't think splitting adds complexity.
+I guess if you have a single device, but still wont to split a request, there
+might be some optimisations you have to forego...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+But my first suggestion, that splitting could be made easier, still stands.
+Maybe it doesn't have to be so complicated - then it wouldn't be so slow?
 
-iEYEARECAAYFAkuRmMIACgkQQ3+did9BuFvPcgCfesxRGK/XabLxAEY143aDYwdN
-Z7EAnjAbZKyUutNfzl9enda05vJLSRDV
-=e26J
------END PGP SIGNATURE-----
+And do you honour merge_bvec_fn's of underlying devices?  A quick grep
+suggests you do only for dm-linear and dm-crypt.  This suggests to me that it
+is actually a hard interface to support completely in a stacked device, so we
+might be better off without it.
+In md, I check if merge_bvec_fn is defined and if it is, I just drop
+max_sectors to 4K so it will never be needed.  I figure that a performance
+drop is better than a correctness error.
+
+Yes, splitting is undesirable, and if we can arrange that most requests don't
+get split, then that is good.  But there will always be some requests that
+have to be split - whether by bio_add_page or something lower - and I think
+that it makes sense to only require that the lowest level does the
+splitting, as that is where the specifics on what might be required exists.
+
+Thanks,
+NeilBrown
