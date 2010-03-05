@@ -1,70 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905Ab0CEH3h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:29:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33101 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754038Ab0CEH3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:29:36 -0500
-Date: Thu, 4 Mar 2010 23:29:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/3] device.h drivers/base/core.c Convert dev_<level>
- macros to functions
-Message-Id: <20100304232928.2e45bdd1.akpm@linux-foundation.org>
-In-Reply-To: <1267773815.2136.10.camel@Joe-Laptop.home>
-References: <cover.1267771398.git.joe@perches.com>
-	<e18f5d8b8a0857a07918107f464a653234a47564.1267771398.git.joe@perches.com>
-	<20100304231047.4d76e0ef.akpm@linux-foundation.org>
-	<1267773815.2136.10.camel@Joe-Laptop.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754953Ab0CEHbF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:31:05 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:52221 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754813Ab0CEHbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 02:31:03 -0500
+Date: Fri, 5 Mar 2010 08:30:59 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+	checks
+Message-ID: <20100305073059.GI5768@kernel.dk>
+References: <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org> <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com> <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com> <20100304121931.GB5768@kernel.dk> <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Mar 2010 23:23:35 -0800 Joe Perches <joe@perches.com> wrote:
-
-> On Thu, 2010-03-04 at 23:10 -0800, Andrew Morton wrote:
-> > On Thu,  4 Mar 2010 22:56:53 -0800 Joe Perches <joe@perches.com> wrote:
-> > > Perhaps over time the struct and local uses of dev_info should be renamed.
-> > aww, c'mon.
-> > y:/usr/src/linux-2.6.33> grep -r '\*dev_info;' . | wc -l
-> > 30
+On Thu, Mar 04 2010, Mikulas Patocka wrote:
+> > > I think it should be redesigned in this way:
+> > > * the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
+> > > * the code for splitting bios should be just at one place --- in the 
+> > > generic block layer and it should work with all drivers. I.e.
+> > > q->make_request_fn will return that the request is too big for the given 
+> > > driver and the generic code will allocate few another bios from 
+> > > per-request_queue mempool and split the bio.
+> > > * then, we would fix the raid1 bug and we would also simplify md and dm 
+> > > --- remove the splitting code.
+> > 
+> > The design certainly isn't perfect, but neither is the one that you
+> > suggest. For instance, what would the point of building bigger bios just
+> > to split them _everytime_ be? That's not good design, and it's certainly
+> > not helping performance much.
 > 
-> No doubt I could submit all the required changes in
-> an hour or so, but some of the maintainers seem
-> less than open to what they consider "churn".
+> The point for building a big bio and splitting it is code size reduction.
+> 
+> You must realize that you need to split the request anyway. If the caller 
+> needs to read/write M sectors and the device can process at most N 
+> sectors, where N<M, then the i/o must be split. You can't get rid of that 
+> split.
 
-Well, that has to be one of the worst possible reasons?
+If we consider the basic (and mosted used) file system IO path, then
+those 'M' sectors will usually be submitted in units that are smaller
+than 'N' anyway. It would be silly to allocate a bio for 'N' sectors
+(those get big), only to split it up again shortly.
 
-> $ grep -rP --include=*.[ch] -l "dev_info\b\s*[^\(]" *
-> arch/powerpc/platforms/iseries/dt.c
-> drivers/usb/host/xhci-dbg.c
-> drivers/usb/host/xhci.h
-> drivers/usb/wusbcore/wusbhc.h
-> drivers/scsi/scsi_devinfo.c
-> drivers/staging/comedi/drivers/das08_cs.c
-> drivers/staging/comedi/drivers/ni_daq_dio24.c
-> drivers/staging/comedi/drivers/quatech_daqp_cs.c
-> drivers/staging/comedi/drivers/ni_daq_700.c
-> drivers/staging/comedi/drivers/ni_labpc_cs.c
-> drivers/staging/comedi/drivers/cb_das16_cs.c
-> drivers/staging/udlfb/udlfb.c
-> drivers/media/video/sh_mobile_ceu_camera.c
-> drivers/md/linear.h
-> drivers/net/ksz884x.c
-> drivers/net/bnx2x_link.c
-> drivers/net/wireless/wl3501_cs.c
-> drivers/net/cnic.c
-> drivers/net/bnx2x_main.c
-> include/linux/sfi.h
-> include/net/bluetooth/rfcomm.h
+The point is not to build it too big to begin with, and keep the
+splitting as the slow path. That's how it was originally designed, and
+it'll surely stay that way. Doing the split handling in generic code is
+a good idea, it definitely should be. But I'm never going to make
+splitting a normal part of IO operations just because we allow
+arbitrarily large bios, sorry but that's insane.
 
-Send 'em over, please.  I'll merge any stragglers directly.
+> Now, the question is, where this splitting happens. Currently, the 
+> splitting happens in the issuers of the bio (for example dm-io, which is a 
+> big chunk of code written just to work around the uncertain bio size 
+> limits) as well as in the consumers of the bio (md, dm and request-based 
+> drivers, if their maximum transfer size < PAGE_SIZE).
+> 
+> What I'm proposing is to put that bio splitting just in one place and 
+> remove it from both the issuers and the consumers of the bio.
+
+Agree on that, we can make that generic (and should).
+
+> There is just one case, where it is not desirable to create larger 
+> requests than the physical transfer size because of performance --- that 
+> is page cache readahead. That could use the current approach of querying 
+> the queue for limits and not stuffing more data than the device can 
+> handle.
+> 
+> In all the other (non-readahead) cases, the caller is waiting for all the 
+> data anyway, there is no performance problem with creating a larger 
+> requests and splitting them.
+
+But this I still think is crazy, sorry.
+
+> > Alasdair had an idea for doing a map/unmap like interface instead, which
+> > I think is a lot better. I don't think he ever coded it up, though.
+> > Perhaps talk to him, if you want to improve our situation in this area.
+> 
+> It would increase code size, not reduce it.
+
+What kind of answer is that?
+
+> BTW. see fs/bio.c:bio_split --- it uses a shared mempool. It can deadlock 
+> if the devices depend on each other. You need to use per-queue mempool.
+
+Only if you need to split the same original bio twice on the same IO
+path.
+
+-- 
+Jens Axboe
+
