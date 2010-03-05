@@ -1,112 +1,629 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042Ab0CEQxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:53:19 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:52168 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878Ab0CEQxM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:53:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=CJk5NFK8c1Th5dqo8z5McUlArxyQhk4ldfvc+fKPehECmHQCIsrYsuBw2UszO2dy0r
-         NlrxwMxaBRQjbnIUk6ZjYnScE9ChS43JWTml4PsEzu2XYv+ZPYMONMPtHUuf3+uq97RF
-         WJs2MXhGeUCjyk2r42JVZ2BfcN6ZV4ly0Rogg=
-Message-ID: <4B9136F4.4010007@gmail.com>
-Date: Fri, 05 Mar 2010 17:53:08 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-11.2 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Neil Horman <nhorman@tuxdriver.com>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: [git pull] pull request for writable limits for 2.6.34-rc0
-References: <4B1D32D1.4090404@gmail.com>
-In-Reply-To: <4B1D32D1.4090404@gmail.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	id S1754902Ab0CEQwp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:52:45 -0500
+Received: from mx2.zhaw.ch ([160.85.104.51]:41550 "EHLO mx2.zhaw.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753235Ab0CEQwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:52:36 -0500
+From: Tobias Klauser <tklauser@distanz.ch>
+To: linux-serial@vger.kernel.org
+Cc: gregkh@suse.de, nios2-dev@sopc.et.ntust.edu.tw,
+       linux-kernel@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>
+Subject: [PATCHv3 1/2] serial: Add driver for the Altera JTAG UART
+Date: Fri,  5 Mar 2010 17:52:22 +0100
+Message-Id: <15dc056891fb785001073bab4f9a0d0f3bf99af1.1267807169.git.klto@zhaw.ch>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <cover.1267807169.git.klto@zhaw.ch>
+References: <cover.1267807169.git.klto@zhaw.ch>
+In-Reply-To: <cover.1267807169.git.klto@zhaw.ch>
+References: <cover.1267807169.git.klto@zhaw.ch>
+X-PMX-Version: 5.5.9.388399, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2010.3.5.164226
+X-PerlMx-Spam: Gauge=X, Probability=10%, Report='
+ TO_IN_SUBJECT 0.5, BODY_SIZE_10000_PLUS 0, TO_NO_NAME 0, __CANPHARM_COPYRIGHT 0, __CP_URI_IN_BODY 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __LINES_OF_YELLING 0, __MIME_TEXT_ONLY 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __URI_NS '
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add an UART driver for the JTAG UART component available as a SOPC
+(System on Programmable Chip) component for Altera FPGAs.
 
-please pull the writable limits tree below.
-
-I'm not sure why you didn't pull it in the .33 window. I just guess
-there was no reasoning about why you would do so. So, what are the
-writable limits good for and why we are about to ship it in the next
-Suse enterprise?
-
-Conceivably, there are companies out there (such as SAP) running their
-large-scale products on Linux and eventually they need to change a limit
-without restarting the service. It is because restarting is not an
-option most of the time. The limits are needed to be changed usually
-because (a) it is not known in advance that some limits will need to
-have a different value; (b) some processes start to crash occasionally.
-In both cases the only necessity is just to change the particular limit
-(core size in case of (b)) in runtime.
-
-Hence we provide the functionality in the tree below. Opposing to the
-last merge, most of the cleanup stuff was already merged by respective
-maintainers into their trees rather than being here and are on the way
-to you. They are independent of this merge and just ensure that future
-compiler releases won't do weird things with the code.
-
+Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
 ---
-The following changes since commit 64ba9926759792cf7b95f823402e2781edd1b5d4:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.open-osd.org/linux-open-osd
+ drivers/serial/Kconfig           |   21 ++
+ drivers/serial/Makefile          |    1 +
+ drivers/serial/altera_jtaguart.c |  504 ++++++++++++++++++++++++++++++++++++++
+ include/linux/altera_jtaguart.h  |   16 ++
+ include/linux/serial_core.h      |    3 +
+ 5 files changed, 545 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/serial/altera_jtaguart.c
+ create mode 100644 include/linux/altera_jtaguart.h
 
-are available in the git repository at:
-
-  git://decibel.fi.muni.cz/~xslaby/linux writable_limits
-
-Jiri Slaby (13):
-      SECURITY: add task_struct to setrlimit
-      core: add task_struct to update_rlimit_cpu
-      core: split sys_setrlimit
-      core: allow setrlimit to non-current tasks
-      core: optimize setrlimit for current task
-      FS: proc, switch limits reading to fops
-      FS: proc, make limits writable
-      core: do security check under task_lock
-      core: implement getprlimit and setprlimit syscalls
-      compat: use do_setrlimit in compat_sys_setrlimit
-      COMPAT: add get/put_compat_rlimit
-      x86: add ia32 compat prlimit syscalls
-      Documentation: fs/proc, add limits documentation
-
-Neil Horman (1):
-      unistd: add __NR_[get|set]prlimit syscall numbers
-
-Oleg Nesterov (1):
-      sys_setrlimit: make sure ->rlim_max never grows
-
- Documentation/filesystems/proc.txt |   11 +++
- arch/x86/ia32/ia32entry.S          |    2 +
- arch/x86/include/asm/unistd_32.h   |    4 +-
- arch/x86/include/asm/unistd_64.h   |    4 +
- arch/x86/kernel/syscall_table_32.S |    2 +
- fs/proc/base.c                     |  101 ++++++++++++++++++++++--
- include/asm-generic/unistd.h       |    6 +-
- include/linux/posix-timers.h       |    2 +-
- include/linux/resource.h           |    2 +
- include/linux/security.h           |    9 ++-
- include/linux/syscalls.h           |    4 +
- kernel/compat.c                    |   98 +++++++++++++++++-------
- kernel/posix-cpu-timers.c          |   10 +-
- kernel/sys.c                       |  151
-++++++++++++++++++++++++++++++------
- security/capability.c              |    3 +-
- security/security.c                |    5 +-
- security/selinux/hooks.c           |   10 ++-
- 17 files changed, 346 insertions(+), 78 deletions(-)
-
-thanks,
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index 888a0ce..7e67283 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -1490,4 +1490,25 @@ config SERIAL_GRLIB_GAISLER_APBUART_CONSOLE
+ 	help
+ 	Support for running a console on the GRLIB APBUART
+ 
++config SERIAL_ALTERA_JTAGUART
++	bool "Altera JTAG UART support"
++	select SERIAL_CORE
++	help
++	  This driver supports the Altera JTAG UART port.
++
++config SERIAL_ALTERA_JTAGUART_CONSOLE
++	bool "Altera JTAG UART console support"
++	depends on SERIAL_ALTERA_JTAGUART
++	select SERIAL_CORE_CONSOLE
++	help
++	  Enable a Altera JTAG UART port to be the system console.
++
++config SERIAL_ALTERA_JTAGUART_CONSOLE_BYPASS
++	bool "Bypass output when no connection"
++	depends on SERIAL_ALTERA_JTAGUART_CONSOLE
++	select SERIAL_CORE_CONSOLE
++	help
++	  Bypass console output and keep going even if there is no
++	  JTAG terminal connection with the host.
++
+ endmenu
+diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
+index 5548fe7..6228b6e 100644
+--- a/drivers/serial/Makefile
++++ b/drivers/serial/Makefile
+@@ -82,3 +82,4 @@ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
+ obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
+ obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
+ obj-$(CONFIG_SERIAL_GRLIB_GAISLER_APBUART) += apbuart.o
++obj-$(CONFIG_SERIAL_ALTERA_JTAGUART) += altera_jtaguart.o
+diff --git a/drivers/serial/altera_jtaguart.c b/drivers/serial/altera_jtaguart.c
+new file mode 100644
+index 0000000..f9b49b5
+--- /dev/null
++++ b/drivers/serial/altera_jtaguart.c
+@@ -0,0 +1,504 @@
++/*
++ * altera_jtaguart.c -- Altera JTAG UART driver
++ *
++ * Based on mcf.c -- Freescale ColdFire UART driver
++ *
++ * (C) Copyright 2003-2007, Greg Ungerer <gerg@snapgear.com>
++ * (C) Copyright 2008, Thomas Chou <thomas@wytron.com.tw>
++ * (C) Copyright 2010, Tobias Klauser <tklauser@distanz.ch>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/console.h>
++#include <linux/tty.h>
++#include <linux/tty_flip.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
++#include <linux/altera_jtaguart.h>
++
++#define DRV_NAME "altera_jtaguart"
++
++/*
++ * Altera JTAG UART register definitions according to the Altera JTAG UART
++ * datasheet: http://www.altera.com/literature/hb/nios2/n2cpu_nii51009.pdf
++ */
++
++#define ALTERA_JTAGUART_SIZE			8
++
++#define ALTERA_JTAGUART_DATA_REG		0
++
++#define ALTERA_JTAGUART_DATA_DATA_MSK		0x000000FF
++#define ALTERA_JTAGUART_DATA_RVALID_MSK		0x00008000
++#define ALTERA_JTAGUART_DATA_RAVAIL_MSK		0xFFFF0000
++#define ALTERA_JTAGUART_DATA_RAVAIL_OFF		16
++
++#define ALTERA_JTAGUART_CONTROL_REG		4
++
++#define ALTERA_JTAGUART_CONTROL_RE_MSK		0x00000001
++#define ALTERA_JTAGUART_CONTROL_WE_MSK		0x00000002
++#define ALTERA_JTAGUART_CONTROL_RI_MSK		0x00000100
++#define ALTERA_JTAGUART_CONTROL_RI_OFF		8
++#define ALTERA_JTAGUART_CONTROL_WI_MSK		0x00000200
++#define ALTERA_JTAGUART_CONTROL_AC_MSK		0x00000400
++#define ALTERA_JTAGUART_CONTROL_WSPACE_MSK	0xFFFF0000
++#define ALTERA_JTAGUART_CONTROL_WSPACE_OFF	16
++
++/*
++ * Local per-uart structure.
++ */
++struct altera_jtaguart {
++	struct uart_port port;
++	unsigned int sigs;	/* Local copy of line sigs */
++	unsigned long imr;	/* Local IMR mirror */
++};
++
++static unsigned int altera_jtaguart_tx_empty(struct uart_port *port)
++{
++	return (readl(port->membase + ALTERA_JTAGUART_CONTROL_REG) &
++		ALTERA_JTAGUART_CONTROL_WSPACE_MSK) ? TIOCSER_TEMT : 0;
++}
++
++static unsigned int altera_jtaguart_get_mctrl(struct uart_port *port)
++{
++	return TIOCM_CAR | TIOCM_DSR | TIOCM_CTS;
++}
++
++static void altera_jtaguart_set_mctrl(struct uart_port *port, unsigned int sigs)
++{
++}
++
++static void altera_jtaguart_start_tx(struct uart_port *port)
++{
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++
++	pp->imr |= ALTERA_JTAGUART_CONTROL_WE_MSK;
++	writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++}
++
++static void altera_jtaguart_stop_tx(struct uart_port *port)
++{
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++
++	pp->imr &= ~ALTERA_JTAGUART_CONTROL_WE_MSK;
++	writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++}
++
++static void altera_jtaguart_stop_rx(struct uart_port *port)
++{
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++
++	pp->imr &= ~ALTERA_JTAGUART_CONTROL_RE_MSK;
++	writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++}
++
++static void altera_jtaguart_break_ctl(struct uart_port *port, int break_state)
++{
++}
++
++static void altera_jtaguart_enable_ms(struct uart_port *port)
++{
++}
++
++static void altera_jtaguart_set_termios(struct uart_port *port,
++					struct ktermios *termios,
++					struct ktermios *old)
++{
++	/* Just copy the old termios settings back */
++	if (old)
++		tty_termios_copy_hw(termios, old);
++}
++
++static void altera_jtaguart_rx_chars(struct altera_jtaguart *pp)
++{
++	struct uart_port *port = &pp->port;
++	unsigned char ch, flag;
++	unsigned long status;
++
++	while ((status = readl(port->membase + ALTERA_JTAGUART_DATA_REG)) &
++	       ALTERA_JTAGUART_DATA_RVALID_MSK) {
++		ch = status & ALTERA_JTAGUART_DATA_DATA_MSK;
++		flag = TTY_NORMAL;
++		port->icount.rx++;
++
++		if (uart_handle_sysrq_char(port, ch))
++			continue;
++		uart_insert_char(port, 0, 0, ch, flag);
++	}
++
++	tty_flip_buffer_push(port->state->port.tty);
++}
++
++static void altera_jtaguart_tx_chars(struct altera_jtaguart *pp)
++{
++	struct uart_port *port = &pp->port;
++	struct circ_buf *xmit = &port->state->xmit;
++	unsigned int pending, count;
++
++	if (port->x_char) {
++		/* Send special char - probably flow control */
++		writel(port->x_char, port->membase + ALTERA_JTAGUART_DATA_REG);
++		port->x_char = 0;
++		port->icount.tx++;
++		return;
++	}
++
++	pending = uart_circ_chars_pending(xmit);
++	if (pending > 0) {
++		count = (readl(port->membase + ALTERA_JTAGUART_CONTROL_REG) &
++				ALTERA_JTAGUART_CONTROL_WSPACE_MSK) >>
++			ALTERA_JTAGUART_CONTROL_WSPACE_OFF;
++		if (count > pending)
++			count = pending;
++		if (count > 0) {
++			pending -= count;
++			while (count--) {
++				writel(xmit->buf[xmit->tail],
++				       port->membase + ALTERA_JTAGUART_DATA_REG);
++				xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
++				port->icount.tx++;
++			}
++			if (pending < WAKEUP_CHARS)
++				uart_write_wakeup(port);
++		}
++	}
++
++	if (pending == 0) {
++		pp->imr &= ~ALTERA_JTAGUART_CONTROL_WE_MSK;
++		writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++	}
++}
++
++static irqreturn_t altera_jtaguart_interrupt(int irq, void *data)
++{
++	struct uart_port *port = data;
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++	unsigned int isr;
++
++	isr = (readl(port->membase + ALTERA_JTAGUART_CONTROL_REG) >>
++	       ALTERA_JTAGUART_CONTROL_RI_OFF) & pp->imr;
++
++	spin_lock(&port->lock);
++
++	if (isr & ALTERA_JTAGUART_CONTROL_RE_MSK)
++		altera_jtaguart_rx_chars(pp);
++	if (isr & ALTERA_JTAGUART_CONTROL_WE_MSK)
++		altera_jtaguart_tx_chars(pp);
++
++	spin_unlock(&port->lock);
++
++	return IRQ_RETVAL(isr);
++}
++
++static void altera_jtaguart_config_port(struct uart_port *port, int flags)
++{
++	port->type = PORT_ALTERA_JTAGUART;
++
++	/* Clear mask, so no surprise interrupts. */
++	writel(0, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++}
++
++static int altera_jtaguart_startup(struct uart_port *port)
++{
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++	unsigned long flags;
++	int ret;
++
++	ret = request_irq(port->irq, altera_jtaguart_interrupt, IRQF_DISABLED,
++			DRV_NAME, port);
++	if (ret) {
++		pr_err(DRV_NAME ": unable to attach Altera JTAG UART %d "
++		       "interrupt vector=%d\n", port->line, port->irq);
++		return ret;
++	}
++
++	spin_lock_irqsave(&port->lock, flags);
++
++	/* Enable RX interrupts now */
++	pp->imr = ALTERA_JTAGUART_CONTROL_RE_MSK;
++	writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++
++	spin_unlock_irqrestore(&port->lock, flags);
++
++	return 0;
++}
++
++static void altera_jtaguart_shutdown(struct uart_port *port)
++{
++	struct altera_jtaguart *pp =
++	    container_of(port, struct altera_jtaguart, port);
++	unsigned long flags;
++
++	spin_lock_irqsave(&port->lock, flags);
++
++	/* Disable all interrupts now */
++	pp->imr = 0;
++	writel(pp->imr, port->membase + ALTERA_JTAGUART_CONTROL_REG);
++
++	spin_unlock_irqrestore(&port->lock, flags);
++
++	free_irq(port->irq, port);
++}
++
++static const char *altera_jtaguart_type(struct uart_port *port)
++{
++	return (port->type == PORT_ALTERA_JTAGUART) ? "Altera JTAG UART" : NULL;
++}
++
++static int altera_jtaguart_request_port(struct uart_port *port)
++{
++	/* UARTs always present */
++	return 0;
++}
++
++static void altera_jtaguart_release_port(struct uart_port *port)
++{
++	/* Nothing to release... */
++}
++
++static int altera_jtaguart_verify_port(struct uart_port *port,
++				       struct serial_struct *ser)
++{
++	if (ser->type != PORT_UNKNOWN && ser->type != PORT_ALTERA_JTAGUART)
++		return -EINVAL;
++	return 0;
++}
++
++/*
++ *	Define the basic serial functions we support.
++ */
++static struct uart_ops altera_jtaguart_ops = {
++	.tx_empty	= altera_jtaguart_tx_empty,
++	.get_mctrl	= altera_jtaguart_get_mctrl,
++	.set_mctrl	= altera_jtaguart_set_mctrl,
++	.start_tx	= altera_jtaguart_start_tx,
++	.stop_tx	= altera_jtaguart_stop_tx,
++	.stop_rx	= altera_jtaguart_stop_rx,
++	.enable_ms	= altera_jtaguart_enable_ms,
++	.break_ctl	= altera_jtaguart_break_ctl,
++	.startup	= altera_jtaguart_startup,
++	.shutdown	= altera_jtaguart_shutdown,
++	.set_termios	= altera_jtaguart_set_termios,
++	.type		= altera_jtaguart_type,
++	.request_port	= altera_jtaguart_request_port,
++	.release_port	= altera_jtaguart_release_port,
++	.config_port	= altera_jtaguart_config_port,
++	.verify_port	= altera_jtaguart_verify_port,
++};
++
++#define ALTERA_JTAGUART_MAXPORTS 1
++static struct altera_jtaguart altera_jtaguart_ports[ALTERA_JTAGUART_MAXPORTS];
++
++#if defined(CONFIG_SERIAL_ALTERA_JTAGUART_CONSOLE)
++
++int __init early_altera_jtaguart_setup(struct altera_jtaguart_platform_uart
++				       *platp)
++{
++	struct uart_port *port;
++	int i;
++
++	for (i = 0; i < ALTERA_JTAGUART_MAXPORTS && platp[i].mapbase; i++) {
++		port = &altera_jtaguart_ports[i].port;
++
++		port->line = i;
++		port->type = PORT_ALTERA_JTAGUART;
++		port->mapbase = platp[i].mapbase;
++		port->membase = ioremap(port->mapbase, ALTERA_JTAGUART_SIZE);
++		port->iotype = SERIAL_IO_MEM;
++		port->irq = platp[i].irq;
++		port->flags = ASYNC_BOOT_AUTOCONF;
++		port->ops = &altera_jtaguart_ops;
++	}
++
++	return 0;
++}
++
++#if defined(CONFIG_SERIAL_ALTERA_JTAGUART_CONSOLE_BYPASS)
++static void altera_jtaguart_console_putc(struct console *co, const char c)
++{
++	struct uart_port *port = &(altera_jtaguart_ports + co->index)->port;
++	unsigned long status;
++	unsigned long flags;
++
++	spin_lock_irqsave(&port->lock, flags);
++	while (((status = readl(port->membase + ALTERA_JTAGUART_CONTROL_REG)) &
++		ALTERA_JTAGUART_CONTROL_WSPACE_MSK) == 0) {
++		if ((status & ALTERA_JTAGUART_CONTROL_AC_MSK) == 0) {
++			spin_unlock_irqrestore(&port->lock, flags);
++			return;	/* no connection activity */
++		}
++		spin_unlock_irqrestore(&port->lock, flags);
++		cpu_relax();
++		spin_lock_irqsave(&port->lock, flags);
++	}
++	writel(c, port->membase + ALTERA_JTAGUART_DATA_REG);
++	spin_unlock_irqrestore(&port->lock, flags);
++}
++#else
++static void altera_jtaguart_console_putc(struct console *co, const char c)
++{
++	struct uart_port *port = &(altera_jtaguart_ports + co->index)->port;
++	unsigned long flags;
++
++	spin_lock_irqsave(&port->lock, flags);
++	while ((readl(port->membase + ALTERA_JTAGUART_CONTROL_REG) &
++		ALTERA_JTAGUART_CONTROL_WSPACE_MSK) == 0) {
++		spin_unlock_irqrestore(&port->lock, flags);
++		cpu_relax();
++		spin_lock_irqsave(&port->lock, flags);
++	}
++	writel(c, port->membase + ALTERA_JTAGUART_DATA_REG);
++	spin_unlock_irqrestore(&port->lock, flags);
++}
++#endif
++
++static void altera_jtaguart_console_write(struct console *co, const char *s,
++					  unsigned int count)
++{
++	for (; count; count--, s++) {
++		altera_jtaguart_console_putc(co, *s);
++		if (*s == '\n')
++			altera_jtaguart_console_putc(co, '\r');
++	}
++}
++
++static int __init altera_jtaguart_console_setup(struct console *co,
++						char *options)
++{
++	struct uart_port *port;
++
++	if (co->index < 0 || co->index >= ALTERA_JTAGUART_MAXPORTS)
++		return -EINVAL;
++	port = &altera_jtaguart_ports[co->index].port;
++	if (port->membase == 0)
++		return -ENODEV;
++	return 0;
++}
++
++static struct uart_driver altera_jtaguart_driver;
++
++static struct console altera_jtaguart_console = {
++	.name	= "ttyJ",
++	.write	= altera_jtaguart_console_write,
++	.device	= uart_console_device,
++	.setup	= altera_jtaguart_console_setup,
++	.flags	= CON_PRINTBUFFER,
++	.index	= -1,
++	.data	= &altera_jtaguart_driver,
++};
++
++static int __init altera_jtaguart_console_init(void)
++{
++	register_console(&altera_jtaguart_console);
++	return 0;
++}
++
++console_initcall(altera_jtaguart_console_init);
++
++#define	ALTERA_JTAGUART_CONSOLE	(&altera_jtaguart_console)
++
++#else
++
++#define	ALTERA_JTAGUART_CONSOLE	NULL
++
++#endif /* CONFIG_ALTERA_JTAGUART_CONSOLE */
++
++static struct uart_driver altera_jtaguart_driver = {
++	.owner		= THIS_MODULE,
++	.driver_name	= "altera_jtaguart",
++	.dev_name	= "ttyJ",
++	.major		= ALTERA_JTAGUART_MAJOR,
++	.minor		= ALTERA_JTAGUART_MINOR,
++	.nr		= ALTERA_JTAGUART_MAXPORTS,
++	.cons		= ALTERA_JTAGUART_CONSOLE,
++};
++
++static int __devinit altera_jtaguart_probe(struct platform_device *pdev)
++{
++	struct altera_jtaguart_platform_uart *platp = pdev->dev.platform_data;
++	struct uart_port *port;
++	int i;
++
++	for (i = 0; i < ALTERA_JTAGUART_MAXPORTS && platp[i].mapbase; i++) {
++		port = &altera_jtaguart_ports[i].port;
++
++		port->line = i;
++		port->type = PORT_ALTERA_JTAGUART;
++		port->mapbase = platp[i].mapbase;
++		port->membase = ioremap(port->mapbase, ALTERA_JTAGUART_SIZE);
++		port->iotype = SERIAL_IO_MEM;
++		port->irq = platp[i].irq;
++		port->ops = &altera_jtaguart_ops;
++		port->flags = ASYNC_BOOT_AUTOCONF;
++
++		uart_add_one_port(&altera_jtaguart_driver, port);
++	}
++
++	return 0;
++}
++
++static int __devexit altera_jtaguart_remove(struct platform_device *pdev)
++{
++	struct uart_port *port;
++	int i;
++
++	for (i = 0; i < ALTERA_JTAGUART_MAXPORTS; i++) {
++		port = &altera_jtaguart_ports[i].port;
++		if (port)
++			uart_remove_one_port(&altera_jtaguart_driver, port);
++	}
++
++	return 0;
++}
++
++static struct platform_driver altera_jtaguart_platform_driver = {
++	.probe	= altera_jtaguart_probe,
++	.remove	= __devexit_p(altera_jtaguart_remove),
++	.driver	= {
++		.name	= DRV_NAME,
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init altera_jtaguart_init(void)
++{
++	int rc;
++
++	rc = uart_register_driver(&altera_jtaguart_driver);
++	if (rc)
++		return rc;
++	rc = platform_driver_register(&altera_jtaguart_platform_driver);
++	if (rc) {
++		uart_unregister_driver(&altera_jtaguart_driver);
++		return rc;
++	}
++	return 0;
++}
++
++static void __exit altera_jtaguart_exit(void)
++{
++	platform_driver_unregister(&altera_jtaguart_platform_driver);
++	uart_unregister_driver(&altera_jtaguart_driver);
++}
++
++module_init(altera_jtaguart_init);
++module_exit(altera_jtaguart_exit);
++
++MODULE_DESCRIPTION("Altera JTAG UART driver");
++MODULE_AUTHOR("Thomas Chou <thomas@wytron.com.tw>");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:" DRV_NAME);
+diff --git a/include/linux/altera_jtaguart.h b/include/linux/altera_jtaguart.h
+new file mode 100644
+index 0000000..953b178
+--- /dev/null
++++ b/include/linux/altera_jtaguart.h
+@@ -0,0 +1,16 @@
++/*
++ * altera_jtaguart.h -- Altera JTAG UART driver defines.
++ */
++
++#ifndef	__ALTJUART_H
++#define	__ALTJUART_H
++
++#define ALTERA_JTAGUART_MAJOR	204
++#define ALTERA_JTAGUART_MINOR	186
++
++struct altera_jtaguart_platform_uart {
++	unsigned long mapbase;	/* Physical address base */
++	unsigned int irq;	/* Interrupt vector */
++};
++
++#endif /* __ALTJUART_H */
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 8c3dd36..28aa7c9 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -182,6 +182,9 @@
+ /* Aeroflex Gaisler GRLIB APBUART */
+ #define PORT_APBUART    90
+ 
++/* Altera UARTs */
++#define PORT_ALTERA_JTAGUART	91
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/compiler.h>
 -- 
-js
+1.6.3.3
+
