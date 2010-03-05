@@ -1,64 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875Ab0CFKli (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 05:41:38 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:42438 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898Ab0CFKlh (ORCPT
+	id S1752984Ab0CFKnq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 05:43:46 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:62041 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629Ab0CFKno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 05:41:37 -0500
-Date: Sat, 6 Mar 2010 11:41:31 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: dave b <db.pub.mail@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
-Message-ID: <20100306104131.GV28972@buzzloop.caiaq.de>
-References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
- <19346.6765.457769.167118@pilspetsen.it.uu.se>
- <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com>
+	Sat, 6 Mar 2010 05:43:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=p2ieuRdzcIVUor4AGVSiE/9D8wiunvKHRrptZBCw3Joln7MJ8XjL6JIcHf+xx1xPVm
+         p+5Z89J0WFvaZlI63g+8KAXgSGXjGLzQApviHaU0Z4ygA0C6zvE/8FtcirtN+xWxF8HH
+         kh9fJvxQ0BA+8+OVjpDklE4RXpNlh99PFZOCk=
+From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+Subject: [PATCH] coredump: plug a memory leak situation on dump_seek()
+Date: Fri,  5 Mar 2010 07:40:02 -0300
+Message-Id: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
+X-Mailer: git-send-email 1.7.0.1.164.gbe2f
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 09:24:49PM +1100, dave b wrote:
-> On 6 March 2010 20:03, Mikael Pettersson <mikpe@it.uu.se> wrote:
-> > dave b writes:
-> >  > Hi have now successfully built a 2.6.33 kernel on a linkstation pro
-> >  > v2. This is an arm device. It is currently running debianÂ  lenny
-> >  > armel.
-> >  >
-> >  >
-> >  > I compiledÂ  (make) zImage, then did a make modules which failed on the
-> >  > first two rounds of compiling the modules -
-> >  >
-> >  > "fs/afs/super.c: In function â€˜afs_test_superâ€™:
-> >  > fs/afs/super.c:278: internal compiler error: Segmentation fault
-> >  > Please submit a full bug report,
-> >  > with preprocessed source if appropriate.
-> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
-> >  > This was the error encountered on the attempt at compiling the
-> >  > modules.
-> >  >
-> >  > "crypto/gcm.c: In function â€˜crypto_gcm_setauthsizeâ€™:
-> >  > crypto/gcm.c:152: internal compiler error: Segmentation fault
-> >  > Please submit a full bug report,
-> >  > with preprocessed source if appropriate.
-> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
-> >  > make[1]: *** [crypto/gcm.o] Error 1"
-> >  > This was the error the on the second attempt at compiling the modules.
-> >  >
-> >  > The 3rd attempt at building the modules was successful...
+After having started writing the coredump, if filesystem reports an error
+anytime while writing part of the core file, we would leak a memory page
+when bailing out.
 
-Whenever I had comparable problems, it was _always_ faulty RAM on my
-local machine, and I'm very sure you're seeing a similar. _If_ gcc
-crashes, it will always do that for the same input.
+Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/coredump.h |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-Daniel
+diff --git a/include/linux/coredump.h b/include/linux/coredump.h
+index b3c91d7..8ba66a9 100644
+--- a/include/linux/coredump.h
++++ b/include/linux/coredump.h
+@@ -16,6 +16,8 @@ static inline int dump_write(struct file *file, const void *addr, int nr)
+ 
+ static inline int dump_seek(struct file *file, loff_t off)
+ {
++	int ret = 1;
++
+ 	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
+ 		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
+ 			return 0;
+@@ -29,13 +31,15 @@ static inline int dump_seek(struct file *file, loff_t off)
+ 
+ 			if (n > PAGE_SIZE)
+ 				n = PAGE_SIZE;
+-			if (!dump_write(file, buf, n))
+-				return 0;
++			if (!dump_write(file, buf, n)) {
++				ret = 0;
++				break;
++			}
+ 			off -= n;
+ 		}
+ 		free_page((unsigned long)buf);
+ 	}
+-	return 1;
++	return ret;
+ }
+ 
+ #endif /* _LINUX_COREDUMP_H */
+-- 
+1.7.0.1.164.gbe2f
 
