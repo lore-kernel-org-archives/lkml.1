@@ -1,96 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501Ab0CEHBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:01:48 -0500
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:56856 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754369Ab0CEHBr (ORCPT
+	id S1754544Ab0CEHGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:06:32 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:34379 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882Ab0CEHGa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:01:47 -0500
-Date: Fri, 5 Mar 2010 12:31:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrea Righi <arighi@develer.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100305070133.GJ3073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
- <1267699215-4101-4-git-send-email-arighi@develer.com>
- <20100305101234.909001e8.nishimura@mxp.nes.nec.co.jp>
- <20100305105855.9b53176c.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 5 Mar 2010 02:06:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ifS9DlHbaGMODqORMmQOdfBlmZvvwLYEEnhrMaQ80dGOlEXQoXfOpTuRLB7CCHCPso
+         EhZrWfSGTcBD2ZpbWw+hy0WW05qUGEUlz7MYGDS3+gf5ON4FGeRWiOmzFif5p0bzwjR8
+         zPggWyt7Ttu03LaoqhRCoqQnzg5hAsIpFooIo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100305105855.9b53176c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20100305064955.GA6453@elte.hu>
+References: <20100304103655.0b14343f@jbarnes-piketon>
+	 <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+	 <20100304105624.70fe845e@jbarnes-piketon>
+	 <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>
+	 <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
+	 <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
+	 <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu>
+Date: Fri, 5 Mar 2010 09:06:28 +0200
+X-Google-Sender-Auth: ad748625d78e6cde
+Message-ID: <84144f021003042306w2e017efbva2be364c1c4980a7@mail.gmail.com>
+Subject: Re: [git pull] drm request 3
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ben Skeggs <skeggsb@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-03-05 10:58:55]:
-
-> On Fri, 5 Mar 2010 10:12:34 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > On Thu,  4 Mar 2010 11:40:14 +0100, Andrea Righi <arighi@develer.com> wrote:
-> > > Infrastructure to account dirty pages per cgroup and add dirty limit
-> > >  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
-> > >  {
-> > >  	int *val = data;
-> > > @@ -1275,34 +1423,70 @@ static void record_last_oom(struct mem_cgroup *mem)
-> > >  }
-> > >  
-> > >  /*
-> > > - * Currently used to update mapped file statistics, but the routine can be
-> > > - * generalized to update other statistics as well.
-> > > + * Generalized routine to update file cache's status for memcg.
-> > > + *
-> > > + * Before calling this, mapping->tree_lock should be held and preemption is
-> > > + * disabled.  Then, it's guarnteed that the page is not uncharged while we
-> > > + * access page_cgroup. We can make use of that.
-> > >   */
-> > IIUC, mapping->tree_lock is held with irq disabled, so I think "mapping->tree_lock
-> > should be held with irq disabled" would be enouth.
-> > And, as far as I can see, callers of this function have not ensured this yet in [4/4].
-> > 
-> > how about:
-> > 
-> > 	void mem_cgroup_update_stat_locked(...)
-> > 	{
-> > 		...
-> > 	}
-> > 
-> > 	void mem_cgroup_update_stat_unlocked(mapping, ...)
-> > 	{
-> > 		spin_lock_irqsave(mapping->tree_lock, ...);
-> > 		mem_cgroup_update_stat_locked();
-> > 		spin_unlock_irqrestore(...);
-> > 	}
-> >
-> Rather than tree_lock, lock_page_cgroup() can be used if tree_lock is not held.
-> 
-> 		lock_page_cgroup();
-> 		mem_cgroup_update_stat_locked();
-> 		unlock_page_cgroup();
-> 
-> Andrea-san, FILE_MAPPED is updated without treelock, at least. You can't depend
-> on migration_lock about FILE_MAPPED.
+On Fri, Mar 5, 2010 at 8:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> The conclusion is crystal clear, breaking an ABI via a "flag day"
+> cleanup/feature/etc is:
 >
+>  - wrong
+>
+>  - harmful
+>
+>  - limits the developer base
+>
+>  - limits the tester base
+>
+>  - wastes time and effort. (fewer developers/testers means that while _this_
+>   feature was easier to add, all your _future_ features will be a bit harder
+>   to do. It compounds up.)
+>
+>  - so it hurts even the very developer who is most convinced that this was the
+>   right thing to do
+>
+> It's a bad technical decision throughout. It's masochistic and often suicidal
+> to just about any project in essence. I've seen projects that did it once and
+> died just due to that single act of stupidity. I've seen projects that have
+> done it a few times and took the usage hit, limped along with the wounds and
+> never grew to the size they could have achieved. I've seen projects that did
+> it once, took the hit, learned from it and never did it again.
 
-FILE_MAPPED is updated under pte lock in the rmap context and
-page_cgroup lock within update_file_mapped.
- 
+Agreed. What bothers me in this discussion is that people keep
+bringing up the fact that nouveau is mostly developed by volunteers
+and thus it doesn't make sense to make sure it's backwards (or
+forwards) compatible. But the way I see it, it's the complete
+opposite. It's _more_ important to support ABIs for community-driven
+efforts because you're relying on people who by definition don't have
+time to waste. While the nouveau people might have good intentions,
+I'm afraid they might be severely limiting their developer and tester
+base because they're not focused on real world problems (like the ones
+Linus is seeing).
 
--- 
-	Three Cheers,
-	Balbir
+                         Pekka
