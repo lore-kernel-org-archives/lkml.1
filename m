@@ -1,39 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348Ab0CEPtP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 10:49:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55448
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753506Ab0CEPtO (ORCPT
+	id S1754385Ab0CEPv1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 10:51:27 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43755 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831Ab0CEPvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 10:49:14 -0500
-Date: Fri, 05 Mar 2010 07:49:32 -0800 (PST)
-Message-Id: <20100305.074932.225568964.davem@davemloft.net>
-To: daniel@fooishbar.org
-Cc: mattst88@gmail.com, crmafra2@gmail.com, skeggsb@gmail.com,
-       airlied@linux.ie, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
-       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: Making Xorg easier to test
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100305154143.GD2505@tempa>
-References: <20100305100030.GA4970@Pilar.aei.mpg.de>
-	<b4198de61003050722s54478b08q31c4eb7fd892fb90@mail.gmail.com>
-	<20100305154143.GD2505@tempa>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 10:51:24 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Eric B Munson <ebmunson@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 3/6] perf session: Change add_hist_entry to take the tree root instead of session
+Date: Fri,  5 Mar 2010 12:51:06 -0300
+Message-Id: <1267804269-22660-3-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1267804269-22660-1-git-send-email-acme@infradead.org>
+References: <1267804269-22660-1-git-send-email-acme@infradead.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Stone <daniel@fooishbar.org>
-Date: Fri, 5 Mar 2010 17:41:43 +0200
+From: Eric B Munson <ebmunson@us.ibm.com>
 
-> I understand that you guys are upset about this, so maybe you'd like to
-> donate, say, 10% of your developer base to help out? That'd be pretty
-> ace.
+In order to minimize the impact of storing multiple events in a report
+this function will now take the root of the histogram tree so that the
+logic for selecting the proper tree can be inserted before the call.
 
-You have to support less than %10 of the amount of hardware we have to
-support.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-annotate.c |    2 +-
+ tools/perf/builtin-diff.c     |    3 ++-
+ tools/perf/builtin-report.c   |    3 ++-
+ tools/perf/util/hist.c        |    6 +++---
+ tools/perf/util/hist.h        |    3 ++-
+ 5 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 5ec5de9..4b734c7 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -116,7 +116,7 @@ static int perf_session__add_hist_entry(struct perf_session *self,
+ 		return 0;
+ 	}
+ 
+-	he = __perf_session__add_hist_entry(self, al, NULL, count, &hit);
++	he = __perf_session__add_hist_entry(&self->hists, al, NULL, count, &hit);
+ 	if (he == NULL)
+ 		return -ENOMEM;
+ 
+diff --git a/tools/perf/builtin-diff.c b/tools/perf/builtin-diff.c
+index 18b3f50..20df735 100644
+--- a/tools/perf/builtin-diff.c
++++ b/tools/perf/builtin-diff.c
+@@ -26,7 +26,8 @@ static int perf_session__add_hist_entry(struct perf_session *self,
+ 					struct addr_location *al, u64 count)
+ {
+ 	bool hit;
+-	struct hist_entry *he = __perf_session__add_hist_entry(self, al, NULL,
++	struct hist_entry *he = __perf_session__add_hist_entry(&self->hists,
++							       al, NULL,
+ 							       count, &hit);
+ 	if (he == NULL)
+ 		return -ENOMEM;
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index cfc655d..cd16e6a 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -56,7 +56,8 @@ static int perf_session__add_hist_entry(struct perf_session *self,
+ 	if ((sort__has_parent || symbol_conf.use_callchain) && chain)
+ 		syms = perf_session__resolve_callchain(self, al->thread,
+ 						       chain, &parent);
+-	he = __perf_session__add_hist_entry(self, al, parent, count, &hit);
++	he = __perf_session__add_hist_entry(&self->hists, al, parent,
++					    count, &hit);
+ 	if (he == NULL)
+ 		return -ENOMEM;
+ 
+diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
+index e8daf5c..55dd911 100644
+--- a/tools/perf/util/hist.c
++++ b/tools/perf/util/hist.c
+@@ -12,12 +12,12 @@ struct callchain_param	callchain_param = {
+  * histogram, sorted on item, collects counts
+  */
+ 
+-struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
++struct hist_entry *__perf_session__add_hist_entry(struct rb_root *hists,
+ 						  struct addr_location *al,
+ 						  struct symbol *sym_parent,
+ 						  u64 count, bool *hit)
+ {
+-	struct rb_node **p = &self->hists.rb_node;
++	struct rb_node **p = &hists->rb_node;
+ 	struct rb_node *parent = NULL;
+ 	struct hist_entry *he;
+ 	struct hist_entry entry = {
+@@ -53,7 +53,7 @@ struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
+ 		return NULL;
+ 	*he = entry;
+ 	rb_link_node(&he->rb_node, parent, p);
+-	rb_insert_color(&he->rb_node, &self->hists);
++	rb_insert_color(&he->rb_node, hists);
+ 	*hit = false;
+ 	return he;
+ }
+diff --git a/tools/perf/util/hist.h b/tools/perf/util/hist.h
+index e5f99b2..7b48590 100644
+--- a/tools/perf/util/hist.h
++++ b/tools/perf/util/hist.h
+@@ -10,8 +10,9 @@ struct perf_session;
+ struct hist_entry;
+ struct addr_location;
+ struct symbol;
++struct rb_root;
+ 
+-struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
++struct hist_entry *__perf_session__add_hist_entry(struct rb_root *hists,
+ 						  struct addr_location *al,
+ 						  struct symbol *parent,
+ 						  u64 count, bool *hit);
+-- 
+1.5.5.6
+
