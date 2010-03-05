@@ -1,98 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740Ab0CEB64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 20:58:56 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:50017 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242Ab0CEB6y (ORCPT
+	id S1754102Ab0CECA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 21:00:28 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:48191 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120Ab0CECA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 20:58:54 -0500
+	Thu, 4 Mar 2010 21:00:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cJhu72iWr8KlMFI+6PbHt8AUEvIJHtyxU7mD28YU/s2Yb5/mSEYFY8A5A1lME9LoeX
-         Z0RVMfg53jNQF40SojtsD3//LqviJny2DLphna78FIzOr5O54nFt+pfu2jgNk39R+fjR
-         wU0hDaft2jwJwMujiPnsUjT8DCWEfP5k3F7Ps=
-Message-ID: <4B90655B.4000005@gmail.com>
-Date: Thu, 04 Mar 2010 19:58:51 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=p5LRiVS2bOuCgsoU8qYNBhfz90tuKPOAoWHgrsHanAnVXc+ty2Sl1QWOQ+M8Xozt/F
+         BXaV7zdXCrQvFvvU4OIiqB87sUAik7WEaf4ivnQ3T/rvma0I/4fc7DRqKnByXeV7dNA/
+         a0j92oGy6F7VDI6mWJm354cr4aOWKMew/RM44=
 MIME-Version: 1.0
-To: s ponnusa <foosaa@gmail.com>
-CC: Mark Lord <kernel@teksavvy.com>, Greg Freemyer <greg.freemyer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
- program
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>	 <4B8FC6AC.4060801@teksavvy.com>	 <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>	 <4B8FF2C3.1060808@teksavvy.com> <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-In-Reply-To: <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.2.00.1003041635280.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	 <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+	 <20100304105624.70fe845e@jbarnes-piketon>
+	 <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>
+	 <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
+	 <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
+	 <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
+	 <1267748927.3496.6.camel@nisroch>
+	 <alpine.LFD.2.00.1003041635280.3751@localhost.localdomain>
+Date: Thu, 4 Mar 2010 18:00:25 -0800
+Message-ID: <12c511ca1003041800p743b22e9pe80de18701b6e271@mail.gmail.com>
+Subject: Re: [git pull] drm request 3
+From: Tony Luck <tony.luck@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ben Skeggs <skeggsb@gmail.com>, Dave Airlie <airlied@gmail.com>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/2010 12:20 PM, s ponnusa wrote:
-> SMART data consists only the count of remapped sectors, seek failures,
-> raw read error rate, uncorrectable sector counts, crc errors etc., and
-> technically one should be aware of the error during write operation as
-> well.
->
-> As per the ATAPI specifications, the media will report error for both
-> read / write operations. It times out / sends out error code for both
-> read and write operations. Correct me if I am wrong. What happens if
-> all the available free sectors are remapped and there are no more
-> sectors to map? In that atleast the drive should return an error
-> right? When using the O_DIRECT more, the i/o error, media bad,
-> softreset, hardreset error messages are starting to fill up dmesg
-> almost immediately after the write call.
->
-> It just tries in a continous loop and then finally returns success
-> (even without remapping). I don't know how to change the behavior of
-> libata / or other such driver which does it. All I want to do it to
-> know the error in my program while it is reporting it in the syslog at
-> kernel / driver level.
+On Thu, Mar 4, 2010 at 4:41 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> And if we end up having people bisecting back and forth, I will hate that
+> f*cking nouveau driver even more.
 
-There's nothing in libata which will cause the operation to eventually 
-return success if the drive keeps failing it (at least there definitely 
-should not be and I very much doubt there is). My guess is that somehow 
-what you think should be happening is not what the drive is actually 
-doing (maybe one of the retries you're seeing is actually succeeding in 
-writing to the disk, or at least the drive reports it was).
+Would it help to tag the flag day commit? At least that would make it
+trivial for bisecters to see whether each step in a bisection contains
+the commit or not.
 
-You haven't posted any of the actual kernel output you're seeing, so 
-it's difficult to say exactly what's going on. However, attempting to 
-scan for disk errors using writes seems like a flawed strategy. As 
-several people have mentioned, drives can't necessarily detect errors on 
-a write.
+Generalizing that ... perhaps there could be a way to tell git that some
+set of tags represent flag days, so it could warn in any bisection if the
+set of included flag days changes.
 
->
-> Thank you.
->
-> On Thu, Mar 4, 2010 at 12:49 PM, Mark Lord<kernel@teksavvy.com>  wrote:
->> On 03/04/10 10:33, foo saa wrote:
->> ..
->>>
->>> hdparm is good, but I don't want to use the internal ATA SECURE ERASE
->>> because I can never get the amount of bad sectors the drive had.
->>
->> ..
->>
->> Oh.. but isn't that information in the S.M.A.R.T. data ??
->>
->> You'll not find the bad sectors by writing -- a true WRITE nearly never
->> reports a media error.  Instead, the drive simply remaps to a good sector
->> on the fly and returns success.
->>
->> Generally, only READs report media errors.
->>
->> Cheers
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+-Tony
