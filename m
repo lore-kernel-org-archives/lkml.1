@@ -1,25 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652Ab0CDXxu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 18:53:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41227 "EHLO
+	id S1755567Ab0CEAJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 19:09:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35223 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754750Ab0CDXxt (ORCPT
+	by vger.kernel.org with ESMTP id S1753836Ab0CEAJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 18:53:49 -0500
-Date: Thu, 4 Mar 2010 15:53:32 -0800 (PST)
+	Thu, 4 Mar 2010 19:09:01 -0500
+Date: Thu, 4 Mar 2010 16:08:48 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
 To: Dave Airlie <airlied@gmail.com>
-cc: Stephane Marchesin <stephane.marchesin@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
        linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
 Subject: Re: [git pull] drm request 3
-In-Reply-To: <21d7e9971003041535g9dbfe46k67f64aa4219da0b8@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1003041538380.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <20100304192524.GA24253@srcf.ucam.org>  <alpine.LFD.2.00.1003041131490.3751@localhost.localdomain>  <20100304195302.GA24856@srcf.ucam.org>  <alpine.LFD.2.00.1003041202240.3751@localhost.localdomain>
-  <6a89f9d51003041257j39fde3b6y8bd3336d77f7cf7a@mail.gmail.com>  <alpine.LFD.2.00.1003041449380.3751@localhost.localdomain>  <21d7e9971003041503p726ecbebi4b0b97854c5824de@mail.gmail.com>  <alpine.LFD.2.00.1003041507070.3751@localhost.localdomain> 
- <alpine.LFD.2.00.1003041522570.3751@localhost.localdomain> <21d7e9971003041535g9dbfe46k67f64aa4219da0b8@mail.gmail.com>
+In-Reply-To: <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>  <20100304103655.0b14343f@jbarnes-piketon>  <20100304103929.6eb81d45@jbarnes-piketon>  <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+  <20100304105624.70fe845e@jbarnes-piketon>  <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>  <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>  <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
+ <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,43 +30,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 5 Mar 2010, Dave Airlie wrote:
 > 
-> I'm not saying it doesn't happen in other drivers from time to time, but 
-> when it does its treated as regression, for nouveau and STAGING that 
-> isn't what the Nouveau project (which Stephane mostly speaks for) seems 
-> to want at this stage.
+> Speaking as distro maintainer here,
+> 
+> No because we've got versioned interfaces and we are happy to support them
+> yes it would be nice sometimes to dream about this, but its a major explosion in
+> the testing matrix. You have to realise the more codepaths a distro ships, the
+> more codepath it has to keep track off for security issues, for bug fixes, etc.
 
-The problem with "at this stage" is that the stage has apparently been 
-on-going for several years. 
+I think you're missing the whole point here. There's no new and complex 
+"testing matrix". You only ever test the newest version, so there's no 
+additional testing.
 
-Even if Stepane doesn't care, people inside RedHat/Fedora must care. Are 
-you guys simply planning on never supporting F12 with 2.6.34?  I'd expect 
-it to be a _major_ pain to have that whole hardcoded "X and kernel must 
-always change in lockstep".
+Here's the "inductive proof":
 
-And the sad part is, it would be so nice if the X server would just dlopen 
-the right thing automatically, so that the low-level driver wouldn't even 
-need to care. It already does the whole "discover which driver to load" 
-part, wouldn't it be nice if that code had automatic versioning too, and 
-then a low-level driver really wouldn't have to care, everything would 
-automatically do the right thing just when the version changes.
+ - if the version number doesn't change, you aren't doing anything that is 
+   at all different from what you already do.
 
-Of course, the distro would still have to make all the different versions 
-of libdrm available to users, but now updating one wouldn't screw over the 
-others. So if you had a known-good setup with nouveau-0.0.15, you could 
-install a nouveau-0.0.16 thing and _know_ that it won't affect that 
-previous install at all.
+ - if the version number _does_ change, it does so only because you 
+   updated both the kernel component and the libdrm component together, 
+   and you test them together - exactly like you already do.
 
-And yeah, I realize that those version numbers are "wrong". Normal library 
-versioning rules about patchlevel not changing semantics are obviously 
-broken here. But maybe the rules could even try to first start with the 
-exact version, ie do a "driver-x.y.z.so" load, then a "driver-x.y.so" 
-load, then a "driver-x.so" load and finally a "driver.so" load.
+So there is absolutely no difference for you. In either case, you only 
+ever test paired up versions. If you make a new version, it will never 
+_ever_ interact with old versions. There's no new complex testing needed.
 
-But I guess that nothing even does that drmGetVersion() until the nouveau 
-driver has already been loaded. Which kind of forces the low-level drivers 
-to do any such versioning on their own. 
+The only thing it allows is for you to have multiple kernels installed 
+simultaneously - and be able to _use_ them all. Which is something you 
+already do.
 
-But wouldn't it be nice if something like this was done at a higher level, 
-so that the drivers really wouldn't even need to care?
+And which the current model doesn't allow for. You may have three 
+different kernels installed, but if libdrm got updated with a version 
+change, only one of those kernels will actually _work_.
 
-			Linus
+> When to we decide to stop shipping nouveau_drv-0.0.13? when do we find
+> out it has a security issue?
+
+Irrelevant and total red herring. You never care about older versions, 
+since if people have updated, they are running the newer version.
+
+So the older versions are there purely so that you _can_ have multiple 
+different kernels, and so that your _developers_ can compile new kernels 
+for older distributions. They aren't relevant for the case you point to: 
+if somebody is just doing "yum update", they'll get - and use - the newer 
+version anyway.
+
+> Here's the thing, distros are trying to ship an OS with a consistent set 
+> of packages, not a pick-n-mix.
+
+But here's the thing: if you expect people to do development, they _need_ 
+to be able to mix things. A kernel developer needs to be able to update 
+their kernel. And a kernel _tester_ needs to be able to test that kernel.
+
+Seriously: what do you expect me to do right now in my situation?
+
+I'm not going to release a kernel that I can't test. So if I can't get a 
+libdrm that works in my F12 environment, I will _have_ to revert that 
+patch that you asked me to merge.
+
+Really. Look at it from my standpoint. Look at it from _any_ kernel 
+developer standpoint. It would be totally irresponsible of me to release 
+2.6.34 without even eating my own dog-food on my own main machine. Can't 
+you see that this is obviously true?
+
+So right now, I'm running with that patch reverted on that machine. I 
+haven't committed the revert, and quite frankly, I'd really prefer not to. 
+But the only way that "not revert" case can really happen is if there is 
+some other way for me to have a working machine again.
+
+Think about it. Tell me what the solution is.
+
+		Linus
