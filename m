@@ -1,73 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752482Ab0CEGBL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 01:01:11 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:60451 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180Ab0CEGBJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 01:01:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vdNYvMNhQ/ZH6DgiwOrKUImK2+mo0gG3m7wxsVqseaTaYiXQlWhTljsO5tjmxPLLWS
-         wv391HxG5mxFPpQOWWUUl+yNb0ORphnYc5KkwUE5pf5Ek7qKrxTueza3MWQ8yWkU8bRE
-         0B+Q1PpBoGFM2WUreTUKxBRqC7LCwxo/FUsKw=
-MIME-Version: 1.0
-In-Reply-To: <201003050042.o250gsUC007947@alien.loup.net>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	 <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
-	 <201003041631.o24GVl51005720@alien.loup.net>
-	 <f875e2fe1003041012m680ffc87i50099ed011526440@mail.gmail.com>
-	 <201003050042.o250gsUC007947@alien.loup.net>
-Date: Fri, 5 Mar 2010 01:01:07 -0500
-Message-ID: <87f94c371003042201n72ce8578vc01331678b52da75@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Mike Hayward <hayward@loup.net>
-Cc: foosaa@gmail.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1752741Ab0CEGGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:06:52 -0500
+Received: from mga14.intel.com ([143.182.124.37]:54169 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752252Ab0CEGGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 01:06:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,585,1262592000"; 
+   d="scan'208";a="251137370"
+From: Sheng Yang <sheng@linux.intel.com>
+To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/7][v6] PV extension of HVM (Hybrid) for Xen
+Date: Fri,  5 Mar 2010 14:07:50 +0800
+Message-Id: <1267769277-20522-1-git-send-email-sheng@linux.intel.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please let me know if you can prove data corruption.  I'm writing a
-> sophisticated storage app and would like to know if kernel has such a
-> defect.  My bet is it's just a drive that is slowly remapping.
->
-> - Mike
+Hi, Jeremy
 
-For clarity, most ATA class disk drives are spec'ed to have one
-non-recoverable error per 150TB or so of writes.  Disk drives do blind
-writes.  (ie. They are not verified).  So we should all expect to have
-the occasional silent data corruption on write.  The problem is
-compounded with bad cables, controllers, RAM, etc.
+Here is the sixth version of patchset to enable PV extension of HVM support
+in Linux kernel of Xen.
 
-The only way for the linux kernel even attempt to fix that is for it
-to do a read verify on everything it writes.  For the vast majority of
-uses that is just not acceptable for performance reasons.
+The PV extension of HVM is started from real mode like HVM guest, but also with a
+a range of PV features(e.g. PV timer, event channel, as well as PV
+drivers). So guest with this feature can takes the advantages of both H/W
+virtualization and Para-Virtualization.
 
-OTOH, if data integrity is of the utmost for you, then you should
-maintain a md5hash or similar for your critical files and verify them
-any time you make a copy.  btrfs may offer a auto read-verify.  I
-don't know much about btrfs.
+The first two of the patchset imported several header file from Jeremy's tree
+and Xen tree, respect to Jeremy and Keir's works.
 
-Greg
+The whole patchset based on Linux upstream.
 
+You need a line like:
 
--- 
-Greg Freemyer
-Head of EDD Tape Extraction and Processing team
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-Preservation and Forensic processing of Exchange Repositories White Paper -
-<http://www.norcrossgroup.com/forms/whitepapers/tng_whitepaper_fpe.html>
+cpuid = [ '0x40000002:edx=0x3' ]
 
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+in HVM configuration file to expose hybrid feature to guest, and
+
+CONFIG_XEN
+
+in the guest kernel configuration file to enable the hybrid support.
+
+And the compiled image can be used as native/pv domU/hvm guest/pv feature hvm kernel.
+
+Current the patchset support x86_64 only.
+
+Current base is on Linux 2.6.33.
+
+Change from v5:
+Update the comments from Jeremy.
+
+Change from v4:
+1. Add a new CONFIG_XEN_HVM_PV to enable the feature in kernel
+2. Separate the related code form enlighted.c to hvmpv.c
+3. Separate the feature "PV clocksource" from evtchn. Now we can support HVM
+guest with PV clocksource. This would be enabled by default.
+4. Drop PV halt and pv drivers in this edition. We can work on that
+later.
+5. Update the patchset following Jeremy's comments.
+
+Change from v3:
+1. Rebase to Linux 2.6.33 release.
+2. change the name to "PV extension of HVM"
+3. Some minor coding polishing.
+
+Change from v2:
+1. change the name "hybrid" to "PV featured HVM".
+2. Unified the PV driver's judgement of xen_domain() to xen_evtchn_enabled().
+3. Move the function(evtchn) initialize hypercall near the real enabling place,
+rather than a unified place before function enabled.
+4. Remove the reserved E820 region for grant table. Use QEmu Xen platform
+device's MMIO instead.
+
+The major change from v1:
+1. SMP support.
+2. Modify the entrance point to avoid most of genernic kernel modification.
+3. Binding PV timer with event channel mechanism.
+
+--
+regards
+Yang, Sheng
+
+ arch/x86/include/asm/xen/cpuid.h      |   73 +++++++++++
+ arch/x86/include/asm/xen/hypercall.h  |    6 +
+ arch/x86/include/asm/xen/hypervisor.h |    6 +
+ arch/x86/kernel/setup.c               |    4 +
+ arch/x86/xen/Kconfig                  |    4 +
+ arch/x86/xen/Makefile                 |    1 +
+ arch/x86/xen/enlighten.c              |    6 +-
+ arch/x86/xen/hvmpv.c                  |  214 +++++++++++++++++++++++++++++++++
+ arch/x86/xen/irq.c                    |   28 +++++
+ arch/x86/xen/smp.c                    |   76 +++++++++++-
+ arch/x86/xen/time.c                   |   12 ++-
+ arch/x86/xen/xen-ops.h                |   17 +++
+ drivers/block/xen-blkfront.c          |    2 +-
+ drivers/input/xen-kbdfront.c          |    2 +-
+ drivers/net/xen-netfront.c            |    2 +-
+ drivers/video/xen-fbfront.c           |    2 +-
+ drivers/xen/events.c                  |   74 +++++++++++-
+ drivers/xen/grant-table.c             |    2 +-
+ drivers/xen/xenbus/xenbus_probe.c     |    4 +-
+ include/xen/events.h                  |    4 +
+ include/xen/hvm.h                     |   28 +++++
+ include/xen/interface/hvm/hvm_op.h    |   80 ++++++++++++
+ include/xen/interface/hvm/params.h    |  111 +++++++++++++++++
+ include/xen/interface/xen.h           |    6 +-
+ include/xen/xen.h                     |   11 ++
+ 25 files changed, 753 insertions(+), 22 deletions(-)
