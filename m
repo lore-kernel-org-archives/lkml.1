@@ -1,79 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386Ab0CERrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:47:47 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:39882 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323Ab0CERrn (ORCPT
+	id S1755284Ab0CERxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:53:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54933
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755039Ab0CERxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:47:43 -0500
-Subject: [PATCH v2 4/7] resource: add bus number support
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <abelay@mit.edu>
-Date: Fri, 05 Mar 2010 10:47:42 -0700
-Message-ID: <20100305174742.21946.12508.stgit@bob.kio>
-In-Reply-To: <20100305174656.21946.93874.stgit@bob.kio>
-References: <20100305174656.21946.93874.stgit@bob.kio>
-User-Agent: StGit/0.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 5 Mar 2010 12:53:47 -0500
+Date: Fri, 05 Mar 2010 09:54:06 -0800 (PST)
+Message-Id: <20100305.095406.115464327.davem@davemloft.net>
+To: xavier.bestel@free.fr
+Cc: daniel@fooishbar.org, skeggsb@gmail.com, airlied@linux.ie,
+       crmafra2@gmail.com, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
+       dri-devel@lists.sf.net, torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: Making Xorg easier to test
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1267811424.3405.110.camel@skunk>
+References: <20100305154143.GD2505@tempa>
+	<20100305.074932.225568964.davem@davemloft.net>
+	<1267811424.3405.110.camel@skunk>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Xavier Bestel <xavier.bestel@free.fr>
+Date: Fri, 05 Mar 2010 18:50:24 +0100
 
-Add support for bus number resources.  This is for bridges with a range of
-bus numbers behind them.
+> On Fri, 2010-03-05 at 07:49 -0800, David Miller wrote:
+>> From: Daniel Stone <daniel@fooishbar.org>
+>> Date: Fri, 5 Mar 2010 17:41:43 +0200
+>> 
+>> > I understand that you guys are upset about this, so maybe you'd like to
+>> > donate, say, 10% of your developer base to help out? That'd be pretty
+>> > ace.
+>> 
+>> You have to support less than %10 of the amount of hardware we have to
+>> support.
+> 
+> You can't compare a network card and a GPU. The latter is way more
+> complex to code for.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
+I wasn't talking specifically about network cards.  But if you want
+specific examples...
 
- include/linux/ioport.h |    1 +
- lib/vsprintf.c         |    9 +++++++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+How about the x86 or parisc cpu, and all their derivatives, are those
+complex enough for you? :-)
 
-
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index b126209..510e4ac 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -39,6 +39,7 @@ struct resource_list {
- #define IORESOURCE_MEM		0x00000200
- #define IORESOURCE_IRQ		0x00000400
- #define IORESOURCE_DMA		0x00000800
-+#define IORESOURCE_BUS		0x00001000
- 
- #define IORESOURCE_PREFETCH	0x00002000	/* No side effects */
- #define IORESOURCE_READONLY	0x00004000
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 4d58d28..bcabb2f 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -609,6 +609,12 @@ static char *resource_string(char *buf, char *end, struct resource *res,
- 		.precision = -1,
- 		.flags = SPECIAL | SMALL | ZEROPAD,
- 	};
-+	static const struct printf_spec bus_spec = {
-+		.base = 16,
-+		.field_width = 2,
-+		.precision = -1,
-+		.flags = SMALL | ZEROPAD,
-+	};
- 	static const struct printf_spec dec_spec = {
- 		.base = 10,
- 		.precision = -1,
-@@ -651,6 +657,9 @@ static char *resource_string(char *buf, char *end, struct resource *res,
- 	} else if (res->flags & IORESOURCE_DMA) {
- 		p = string(p, pend, "dma ", str_spec);
- 		specp = &dec_spec;
-+	} else if (res->flags & IORESOURCE_BUS) {
-+		p = string(p, pend, "bus ", str_spec);
-+		specp = &bus_spec;
- 	} else {
- 		p = string(p, pend, "??? ", str_spec);
- 		specp = &mem_spec;
-
+I've worked on OpenGL capable grapics card drivers of various
+vintages, and I honestly don't think there is anything in there more
+complex than what we have to deal with in the kernel.
