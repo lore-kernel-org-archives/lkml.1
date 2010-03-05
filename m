@@ -1,97 +1,417 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401Ab0CECXM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 21:23:12 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:45125 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177Ab0CECXK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 21:23:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IXoc1Mp/xwUpTD9+f7h5x0vb5Le/3VsbPiDa1q8k/IgO32FnG89ElycTap3xpbATYI
-         zAtIVCRI7heiE748xCLkxpiCUZawkpTTIdtpqQjzME1R4vjdQfuMLWAXuJkQIMOcWL40
-         b5XGRqEzTEiYND6BXa2NQBeEcH1tQETJDF2dI=
+	id S1754511Ab0CECcI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 21:32:08 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64861 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754454Ab0CECcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 21:32:06 -0500
+Message-ID: <4B906BB6.3080104@cn.fujitsu.com>
+Date: Fri, 05 Mar 2010 10:25:58 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <201003050042.o250gsUC007947@alien.loup.net>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	 <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
-	 <201003041631.o24GVl51005720@alien.loup.net>
-	 <f875e2fe1003041012m680ffc87i50099ed011526440@mail.gmail.com>
-	 <201003050042.o250gsUC007947@alien.loup.net>
-Date: Thu, 4 Mar 2010 21:23:09 -0500
-Message-ID: <f875e2fe1003041823o507ecb36qfd7af7d27de7683d@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: s ponnusa <foosaa@gmail.com>
-To: Mike Hayward <hayward@loup.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Vivek Goyal <vgoyal@redhat.com>, jens.axboe@oracle.com
+CC: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 1/2 V3] io-controller: Add a new interface "weight_device"
+ for IO-Controller
+References: <4B8DFFD7.2000908@cn.fujitsu.com> <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com>
+In-Reply-To: <20100304152400.GB18786@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 7:42 PM, Mike Hayward <hayward@loup.net> wrote:
->  > The write cache is turned off at the hdd level. I am using O_DIRECT
->  > mode with aligned buffers of the 4k page size. I have turned off the
->  > page cache and read ahead during read as well using the fadvise
->  > function.
-> If O_DIRECT and no write cache, either the sector finally was
-> remapped, or the successful return is very disturbing.  Doesn't matter
-> what operating system, it should not silently corrupt with write cache
-> off.  Test by writing nonzero random data on one of these 'retry'
-> sectors.  Reread to see if data returned after successful write.  If
-> so, you'll know it's just slow to remap.
->
-> Because timeouts can take awhile, if you have many bad blocks I
-> imagine this could be a very painful process :-) It's one thing to
-> wipe a functioning drive, another to wipe a failed one.  If drive
-> doesn't have a low level function to do it more quickly (cut out the
-> long retries), after a couple of hours I'd give up on that, literally
-> disassemble and destroy the platters.  It is probably faster and
-> cheaper than spending a week trying to chew through the bad section.
-> Keep in mind, zeroing the drive is not going to erase the data all
-> that well anyway.  Might as well skip regions when finding a bad
-> sequence and scrub as much of the rest as you can without getting hung
-> up on 5% of the data, then mash it to bits or take a nasty magnet or
-> some equally destructive thing to it!
->
-> If it definitely isn't storing the data you write after it returns
-> success (reread it to check), I'd definitely call that a write-read
-> corruption, either in the kernel or in the drive.  If in kernel it
-> should be fixed as that is seriously broken to silently ignore data
-> corruption and I think we'd all like to trust the kernel if not the
-> drive :-)
->
-> Please let me know if you can prove data corruption.  I'm writing a
-> sophisticated storage app and would like to know if kernel has such a
-> defect.  My bet is it's just a drive that is slowly remapping.
->
-> - Mike
->
-Mike,
+Currently, IO Controller makes use of blkio.weight to assign weight for
+all devices. Here a new user interface "blkio.weight_device" is introduced to
+assign different weights for different devices. blkio.weight becomes the
+default value for devices which are not configured by "blkio.weight_device"
 
-The data written through linux cannot be read back by any other means.
-Does that prove any data corruption? I wrote a signature on to a bad
-drive. (With all the before mentioned permutation and combinations).
-The program returned 0 (zero) errors and said the data was
-successfully written to all the sectors of the drive and it had taken
-5 hrs (The sample size of the drive is 20 GB). And I tried to verify
-it using another program on linux. It produced read errors across a
-couple of million sectors after almost 13 hours of grinding the hdd.
+You can use the following format to assigned specific weight for a given
+device:
 
-I can understand the slow remapping process during the write
-operations. But what if the drive has used up all the available
-sectors for mapping and is slowly dying. The SMART data displays
-thousands of seek, read, crc errors and still linux does not notify
-the program which has asked it to write some data. ????
+major:minor represents device number.
 
-I don't know how one can handle the data integrity / protection with
-it. The data might be just be surviving because of the personnel
-vigilance (constant look out on SMART data / HDD health) and probably
-due to existing redundancy options! :)
+And you can remove a specific weight as following:
+
+V1->V2 changes:
+- use user interface "weight_device" instead of "policy" suggested by Vivek
+- rename some struct suggested by Vivek
+- rebase to 2.6-block "for-linus" branch
+- remove an useless list_empty check pointed out by Li Zefan
+- some trivial typo fix
+
+V2->V3 changes:
+- Move policy_*_node() functions up to get rid of forward declarations
+- rename related functions by adding prefix "blkio_"
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/blk-cgroup.c  |  236 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ block/blk-cgroup.h  |   10 ++
+ block/cfq-iosched.c |    2 +-
+ 3 files changed, 246 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+index c85d74c..8825e49 100644
+--- a/block/blk-cgroup.c
++++ b/block/blk-cgroup.c
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/err.h>
+ #include "blk-cgroup.h"
++#include <linux/genhd.h>
+ 
+ static DEFINE_SPINLOCK(blkio_list_lock);
+ static LIST_HEAD(blkio_list);
+@@ -23,6 +24,32 @@ static LIST_HEAD(blkio_list);
+ struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
+ EXPORT_SYMBOL_GPL(blkio_root_cgroup);
+ 
++static inline void blkio_policy_insert_node(struct blkio_cgroup *blkcg,
++					    struct blkio_policy_node *pn)
++{
++	list_add(&pn->node, &blkcg->policy_list);
++}
++
++/* Must be called with blkcg->lock held */
++static inline void blkio_policy_delete_node(struct blkio_policy_node *pn)
++{
++	list_del(&pn->node);
++}
++
++/* Must be called with blkcg->lock held */
++static struct blkio_policy_node *
++blkio_policy_search_node(const struct blkio_cgroup *blkcg, dev_t dev)
++{
++	struct blkio_policy_node *pn;
++
++	list_for_each_entry(pn, &blkcg->policy_list, node) {
++		if (pn->dev == dev)
++			return pn;
++	}
++
++	return NULL;
++}
++
+ struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
+ {
+ 	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
+@@ -128,6 +155,7 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+ 	struct blkio_group *blkg;
+ 	struct hlist_node *n;
+ 	struct blkio_policy_type *blkiop;
++	struct blkio_policy_node *pn;
+ 
+ 	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
+ 		return -EINVAL;
+@@ -136,7 +164,13 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+ 	spin_lock(&blkio_list_lock);
+ 	spin_lock_irq(&blkcg->lock);
+ 	blkcg->weight = (unsigned int)val;
++
+ 	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
++		pn = blkio_policy_search_node(blkcg, blkg->dev);
++
++		if (pn)
++			continue;
++
+ 		list_for_each_entry(blkiop, &blkio_list, list)
+ 			blkiop->ops.blkio_update_group_weight_fn(blkg,
+ 					blkcg->weight);
+@@ -178,15 +212,208 @@ SHOW_FUNCTION_PER_GROUP(dequeue);
+ 
+ #ifdef CONFIG_DEBUG_BLK_CGROUP
+ void blkiocg_update_blkio_group_dequeue_stats(struct blkio_group *blkg,
+-			unsigned long dequeue)
++					      unsigned long dequeue)
+ {
+ 	blkg->dequeue += dequeue;
+ }
+ EXPORT_SYMBOL_GPL(blkiocg_update_blkio_group_dequeue_stats);
+ #endif
+ 
++static int blkio_check_dev_num(dev_t dev)
++{
++	int part = 0;
++	struct gendisk *disk;
++
++	disk = get_gendisk(dev, &part);
++	if (!disk || part)
++		return -ENODEV;
++
++	return 0;
++}
++
++static int blkio_policy_parse_and_set(char *buf,
++				      struct blkio_policy_node *newpn)
++{
++	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
++	int ret;
++	unsigned long major, minor, temp;
++	int i = 0;
++	dev_t dev;
++
++	memset(s, 0, sizeof(s));
++
++	while ((p = strsep(&buf, " ")) != NULL) {
++		if (!*p)
++			continue;
++
++		s[i++] = p;
++
++		/* Prevent from inputing too many things */
++		if (i == 3)
++			break;
++	}
++
++	if (i != 2)
++		return -EINVAL;
++
++	p = strsep(&s[0], ":");
++	if (p != NULL)
++		major_s = p;
++	else
++		return -EINVAL;
++
++	minor_s = s[0];
++	if (!minor_s)
++		return -EINVAL;
++
++	ret = strict_strtoul(major_s, 10, &major);
++	if (ret)
++		return -EINVAL;
++
++	ret = strict_strtoul(minor_s, 10, &minor);
++	if (ret)
++		return -EINVAL;
++
++	dev = MKDEV(major, minor);
++
++	ret = blkio_check_dev_num(dev);
++	if (ret)
++		return ret;
++
++	newpn->dev = dev;
++
++	if (s[1] == NULL)
++		return -EINVAL;
++
++	ret = strict_strtoul(s[1], 10, &temp);
++	if (ret || (temp < BLKIO_WEIGHT_MIN && temp > 0) ||
++	    temp > BLKIO_WEIGHT_MAX)
++		return -EINVAL;
++
++	newpn->weight =  temp;
++
++	return 0;
++}
++
++unsigned int blkcg_get_weight(struct blkio_cgroup *blkcg,
++			      dev_t dev)
++{
++	struct blkio_policy_node *pn;
++
++	pn = blkio_policy_search_node(blkcg, dev);
++	if (pn)
++		return pn->weight;
++	else
++		return blkcg->weight;
++}
++EXPORT_SYMBOL_GPL(blkcg_get_weight);
++
++static int blkiocg_weight_device_write(struct cgroup *cgrp, struct cftype *cft,
++				       const char *buffer)
++{
++	int ret = 0;
++	char *buf;
++	struct blkio_policy_node *newpn, *pn;
++	struct blkio_cgroup *blkcg;
++	struct blkio_group *blkg;
++	int keep_newpn = 0;
++	struct hlist_node *n;
++	struct blkio_policy_type *blkiop;
++
++	buf = kstrdup(buffer, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
++	if (!newpn) {
++		ret = -ENOMEM;
++		goto free_buf;
++	}
++
++	ret = blkio_policy_parse_and_set(buf, newpn);
++	if (ret)
++		goto free_newpn;
++
++	blkcg = cgroup_to_blkio_cgroup(cgrp);
++
++	spin_lock_irq(&blkcg->lock);
++
++	pn = blkio_policy_search_node(blkcg, newpn->dev);
++	if (!pn) {
++		if (newpn->weight != 0) {
++			blkio_policy_insert_node(blkcg, newpn);
++			keep_newpn = 1;
++		}
++		spin_unlock_irq(&blkcg->lock);
++		goto update_io_group;
++	}
++
++	if (newpn->weight == 0) {
++		/* weight == 0 means deleteing a specific weight */
++		blkio_policy_delete_node(pn);
++		spin_unlock_irq(&blkcg->lock);
++		goto update_io_group;
++	}
++	spin_unlock_irq(&blkcg->lock);
++
++	pn->weight = newpn->weight;
++
++update_io_group:
++	/* update weight for each cfqg */
++	spin_lock(&blkio_list_lock);
++	spin_lock_irq(&blkcg->lock);
++
++	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
++		if (newpn->dev == blkg->dev) {
++			list_for_each_entry(blkiop, &blkio_list, list)
++				blkiop->ops.blkio_update_group_weight_fn(blkg,
++						newpn->weight ?
++						newpn->weight :
++						blkcg->weight);
++		}
++	}
++
++	spin_unlock_irq(&blkcg->lock);
++	spin_unlock(&blkio_list_lock);
++
++free_newpn:
++	if (!keep_newpn)
++		kfree(newpn);
++free_buf:
++	kfree(buf);
++	return ret;
++}
++
++static int blkiocg_weight_device_read(struct cgroup *cgrp, struct cftype *cft,
++				      struct seq_file *m)
++{
++	struct blkio_cgroup *blkcg;
++	struct blkio_policy_node *pn;
++
++	seq_printf(m, "dev\tweight\n");
++
++	blkcg = cgroup_to_blkio_cgroup(cgrp);
++	if (list_empty(&blkcg->policy_list))
++		goto out;
++
++	spin_lock_irq(&blkcg->lock);
++	list_for_each_entry(pn, &blkcg->policy_list, node) {
++		seq_printf(m, "%u:%u\t%u\n", MAJOR(pn->dev),
++			   MINOR(pn->dev), pn->weight);
++	}
++	spin_unlock_irq(&blkcg->lock);
++out:
++	return 0;
++}
++
+ struct cftype blkio_files[] = {
+ 	{
++		.name = "weight_device",
++		.read_seq_string = blkiocg_weight_device_read,
++		.write_string = blkiocg_weight_device_write,
++		.max_write_len = 256,
++	},
++	{
+ 		.name = "weight",
+ 		.read_u64 = blkiocg_weight_read,
+ 		.write_u64 = blkiocg_weight_write,
+@@ -220,6 +447,7 @@ static void blkiocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+ 	struct blkio_group *blkg;
+ 	void *key;
+ 	struct blkio_policy_type *blkiop;
++	struct blkio_policy_node *pn, *pntmp;
+ 
+ 	rcu_read_lock();
+ remove_entry:
+@@ -250,7 +478,12 @@ remove_entry:
+ 		blkiop->ops.blkio_unlink_group_fn(key, blkg);
+ 	spin_unlock(&blkio_list_lock);
+ 	goto remove_entry;
++
+ done:
++	list_for_each_entry_safe(pn, pntmp, &blkcg->policy_list, node) {
++		blkio_policy_delete_node(pn);
++		kfree(pn);
++	}
+ 	free_css_id(&blkio_subsys, &blkcg->css);
+ 	rcu_read_unlock();
+ 	kfree(blkcg);
+@@ -280,6 +513,7 @@ done:
+ 	spin_lock_init(&blkcg->lock);
+ 	INIT_HLIST_HEAD(&blkcg->blkg_list);
+ 
++	INIT_LIST_HEAD(&blkcg->policy_list);
+ 	return &blkcg->css;
+ }
+ 
+diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
+index 84bf745..c8144a2 100644
+--- a/block/blk-cgroup.h
++++ b/block/blk-cgroup.h
+@@ -22,6 +22,7 @@ struct blkio_cgroup {
+ 	unsigned int weight;
+ 	spinlock_t lock;
+ 	struct hlist_head blkg_list;
++	struct list_head policy_list; /* list of blkio_policy_node */
+ };
+ 
+ struct blkio_group {
+@@ -43,6 +44,15 @@ struct blkio_group {
+ 	unsigned long sectors;
+ };
+ 
++struct blkio_policy_node {
++	struct list_head node;
++	dev_t dev;
++	unsigned int weight;
++};
++
++extern unsigned int blkcg_get_weight(struct blkio_cgroup *blkcg,
++				     dev_t dev);
++
+ typedef void (blkio_unlink_group_fn) (void *key, struct blkio_group *blkg);
+ typedef void (blkio_update_group_weight_fn) (struct blkio_group *blkg,
+ 						unsigned int weight);
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index dee9d93..6945e9b 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -954,7 +954,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+ 	if (!cfqg)
+ 		goto done;
+ 
+-	cfqg->weight = blkcg->weight;
+ 	for_each_cfqg_st(cfqg, i, j, st)
+ 		*st = CFQ_RB_ROOT;
+ 	RB_CLEAR_NODE(&cfqg->rb_node);
+@@ -971,6 +970,7 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+ 	sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
+ 	blkiocg_add_blkio_group(blkcg, &cfqg->blkg, (void *)cfqd,
+ 					MKDEV(major, minor));
++	cfqg->weight = blkcg_get_weight(blkcg, cfqg->blkg.dev);
+ 
+ 	/* Add group on cfqd list */
+ 	hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
+-- 
+1.5.4.rc3
+
+
+
+
+
