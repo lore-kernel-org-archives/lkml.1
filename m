@@ -1,71 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394Ab0CEVV4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:21:56 -0500
-Received: from mail-px0-f175.google.com ([209.85.216.175]:58094 "EHLO
-	mail-px0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083Ab0CEVVw (ORCPT
+	id S1755445Ab0CEVWN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:22:13 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:55806 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755410Ab0CEVWK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:21:52 -0500
-X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 16:21:52 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=OmU88VmPZtz9+f1bryAsDcjeOhCfibu6rJ4D+pnnvv2JJ+1aifefOwxQaQW4HPfG/Q
-         c0Un4ueI8Z/0VLf53+5Th1iR56N9KgG2TKVBS/9R2gsEfTunYYVyxmzzcCeaB5Tq1E9l
-         U2dpj2WA5RXY1cKh5a02RMVLIM5BjjuUVHyYQ=
+	Fri, 5 Mar 2010 16:22:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=jmEU8+OanPAA6yOY/SqTWgYlrk5uaPDFuzzeNTtv8q908ma1SXzOOHQN4DK/uQFU6
+	cEXSPtxFLVZrbgmHecspg==
 MIME-Version: 1.0
-Date: Sat, 6 Mar 2010 05:14:38 +0800
-Message-ID: <10d816431003051314i3e87a2d2yab344826d14a310a@mail.gmail.com>
-Subject: Different definition in div_sc and clocksource_cyc2ns
-From: Lin Mac <mkl0301@gmail.com>
-To: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1267823134.4997.5.camel@laptop>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
+Date: Fri, 5 Mar 2010 13:22:06 -0800
+Message-ID: <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Fri, Mar 5, 2010 at 1:05 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2010-03-05 at 20:15 +0100, Peter Zijlstra wrote:
+>> On Fri, 2010-03-05 at 10:58 -0800, Stephane Eranian wrote:
+>> > >        case 15: /* original 65 nm celeron/pentium/core2/xeon, "Merom"/"Conroe" */
+>> > > +               x86_pmu.quirks = intel_clowertown_quirks;
+>> >
+>> > That's too coarse grain!
+>> > It is more subtle than this. Some of the errata are marked as Plan
+>> > fix. They seem to be
+>> > fixed in later models. Your looking at the E5xxx series errata but the
+>> > E7xxx do not have
+>> > the same problems.
+>>
+>> OK, I'll look at those errata again and try to come up with a stepping
+>> test for this errata.
+>
+> The two serious ones, AJ106 and AJ68 are no fix and are listed as such
+> in all errata I can find, including the 7[23]00 series.
+>
+Not E74xx. I think it would be fine to drop LBR with PEBS as the work-around
+to AJ106.
 
-While working with the clocksource, I found that the relation of cycle
-and nanosecond of div_sc and clocksource_cyc2ns is different.
+> I checked the 65nm Core2Duo, Xeon 5200 and Xeon 7[23]00 spec updates.
+> Going by that it seems the full model 15 family is broken and I'll leave
+> the patch as is.
 
-linux-2.6.33
-div_sc in include/linux/clockchips.h suggests that clock_ticks =
-(nanoseconds * factor) >> shift.
-  98/*
-  99 * Calculate a multiplication factor for scaled math, which is
-used to convert
- 100 * nanoseconds based values to clock ticks:
- 101 *
- 102 * clock_ticks = (nanoseconds * factor) >> shift.
- 103 *
- 104 * div_sc is the rearranged equation to calculate a factor from a
-given clock
- 105 * ticks / nanoseconds ratio:
- 106 *
- 107 * factor = (clock_ticks << shift) / nanoseconds
- 108 */
- 109static inline unsigned long div_sc(unsigned long ticks, unsigned long nsec,
- 110                                   int shift)
- 111{
- 112        uint64_t tmp = ((uint64_t)ticks) << shift;
- 113
- 114        do_div(tmp, nsec);
- 115        return (unsigned long) tmp;
- 116}
-
-
-However, clocksource_cyc2ns in include/linux/clocksource.h suggest
-nanoseconds=(cycles*mult)>>shift.
- 268static inline s64 clocksource_cyc2ns(cycle_t cycles, u32 mult, u32 shift)
- 269{
- 270        return ((u64) cycles * mult) >> shift;
- 271}
-
-But there are many others using div_sc, I don't think they got issues
-with it. So what am I missing?
-
-Best Regards,
-Mac Lin
+But the E74xx are okay and you are excluding them. Worst case you should
+provide an override.
