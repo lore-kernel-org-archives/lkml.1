@@ -1,88 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425Ab0CEPGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 10:06:47 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47191 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771Ab0CEPGq (ORCPT
+	id S1753537Ab0CEPGv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 10:06:51 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47903 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751771Ab0CEPGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 10:06:46 -0500
-X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=7U3hwN5JcxgA:10 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=1w7EyjGFqIuEKHxF0M8A:9 a=2optNa1TnJxSLgOd41HvVNIqwdAA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10 a=_oeuOwmZL1R1kA_z:21 a=Gv4Kac4auHPU8feU:21
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
-	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
-	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
-	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 05 Mar 2010 10:06:43 -0500
-Message-ID: <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	Fri, 5 Mar 2010 10:06:48 -0500
+Date: Fri, 5 Mar 2010 15:09:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, skeggsb@gmail.com, torvalds@linux-foundation.org,
+       airlied@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305150934.0c0f83ef@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100305.063718.211238119.davem@davemloft.net>
+References: <1267748927.3496.6.camel@nisroch>
+	<20100305064955.GA6453@elte.hu>
+	<20100305123834.0d9c6277@lxorguk.ukuu.org.uk>
+	<20100305.063718.211238119.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-05 at 15:16 +0800, Américo Wang wrote:
-> On Fri, Mar 5, 2010 at 12:14 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> > On Thu, Mar 4, 2010 at 9:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> >> On Wed, 2010-03-03 at 14:04 +0800, Américo Wang wrote:
-> >>> I am not sure if this is ftrace's fault, but it is ftrace who triggers
-> >>> the soft lockup. On my machine, it is pretty easy, just run:
-> >>>
-> >>> echo function_graph > current_tracer
-> >>>
-
-> >
-> > I can't say that because I didn't try -rc6.
-> >
+> If it effects such a large number of people, which this noveau thing
+> does, it's entirely relevant to everyone.  And the way it's breaking
+> and making kernel development difficult for so many people matters to
+> us.
 > 
-> Sigh, 2.6.33-rc6 doesn't work, even 2.6.32 doesn't work...
+> It's about the tester base, and this breakage shrinks the tester base
+> considerably.
+> 
+> Or do you want the kernel tested by less people?
 
-So basically you are saying that the function_graph tracer, when enabled
-has a high overhead? Well, unfortunately, that's expected.
+I think you miss a bigger picture ?
 
-The function_graph tracer traces the start and end of every function. It
-uses the same mechanism as function tracer to trace the start of the
-function (mcount), but to trace the exit of a function, in the enter of
-the function it hijacks the return address and replaces it to call a
-trampoline. This trampoline will do the trace and then jump back to the
-original return address.
+If Fedora hadn't merged it then it wouldn't have gotten to the state of
+usability it had. If Fedora hadn't merged it then several hundred
+thousand users wouldn't have had useful working machines.
 
-Doing this breaks branch prediction in the CPU, as the CPU uses call/ret
-as part of its branch prediction analysis. So function graph tracing is
-not just twice as slow as function tracing, it actually has a bigger
-impact than that.
+So - do you want Linux used by a lot less people, and to have no Nvidia
+driver ?
 
-So my question to you is, have you seen the function graph perform
-better with the same configs in previous kernels? Also, the function
-graph makes other debugging (like lockdep) have a greater impact to
-performance than they usually do.
+See - its all about viewpoints. Do you think screaming at people who did
+no wrong increases the kernel developer and testing base ? No I thought
+not.
 
-Now some things you can do to help performance. One is not to trace
-functions that are known to have a high hit rate. You can do this with
-the set_ftrace_notrace file, or add "ftrace_notrace=func1,func2,func3"
-to the command line where func1,func2,func3 are the functions you do not
-want to trace. This just adds these by default to the set_ftrace_notrace
-and can be removed at runtime.
+To be honest the big thing I object to here is certain people who
+should know better behaving like small children. Not just in the sense of
+throwing their toys around because mummy didn't buy them the right
+sweetie but in not thinking about how other people see the problem and
+their actions.
 
+- Fedora merged the stuff to make it work and to improve life for lots of
+  users. Good intent, rational logical behaviour
 
-The functions I commonly write to are:
+- Linus asked for it to be merged and was warned about the ABI. He did
+  that for good, sound reasons.
 
-echo '*spin_lock*' '*spin_unlock*' '*spin_try*' '*rcu_read*' > set_ftace_notrace
+- The developers accepted the merge to staging so they could fix the ABI
+  later, they made that clear - again all good sound intentions
 
-since these functions are hit quite intensively, by not tracing them it
-helps a bit with performance.
+- The ABI change and clean up was done - again good sound intentions,
+  rational behaviour
 
--- Steve
+- Linus then threw a tantrum. He's right there are issues about how user
+  migration should be handled but he didn't need to go screaming at the
+  DRM people (not their fault), Fedora (who had good sensible goals in
+  what they did) or the Nouveau people (who told him what was going on
+  well in advance and did exactly what was asked of them before)
 
+Firstly he's being hypocritical (he keeps saying he doesn't want to
+control distributions, he even refused to allow ext2 to be merged *until*
+Red Hat shipped it), he was told clearly, and staging is for unfixed ABIs.
+Secondly he's shouting at people who all did a right thing, which only
+produces bad feelings.
 
+All that was needed was a
+
+"Hey guys, I know its in staging but this is going to be a problem, can
+ we either fix back compatibility or have some kind of migration policy
+ and the tools so I can test it - otherwise I can't merge this"
+
+No blaming, no tantrums, no judgemental comments from a single viewpoint.
+A collection of good intentions produced a problem. It happens all the
+time, screaming and blaming may be how politicians sometimes behave but we
+can surely do better ?
+
+Alan
