@@ -1,55 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740Ab0CEQ26 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:28:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53521 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752455Ab0CEQ24 (ORCPT
+	id S1755163Ab0CEQ3L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:29:11 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44691 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754865Ab0CEQ3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:28:56 -0500
-Date: Fri, 5 Mar 2010 16:31:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: daniel@fooishbar.org, skeggsb@gmail.com, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: [git pull] drm request 3
-Message-ID: <20100305163129.03b52797@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100305.080626.09630724.davem@davemloft.net>
-References: <20100305154009.GC2505@tempa>
-	<20100305.074835.159078083.davem@davemloft.net>
-	<20100305160434.GE2505@tempa>
-	<20100305.080626.09630724.davem@davemloft.net>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 11:29:08 -0500
+Date: Fri, 5 Mar 2010 16:29:08 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs part 2
+Message-ID: <20100305162907.GW30031@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Mar 2010 08:06:26 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+	Next part of VFS stuff: getting do_filp_open() to relative
+sanity.  There will be more piles (the next one is dealing with
+write_inode mess, in an hour or so).  Please, pull from 
+git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-> From: Daniel Stone <daniel@fooishbar.org>
-> Date: Fri, 5 Mar 2010 18:04:34 +0200
-> 
-> > So you're saying that there's no way to develop any reasonable body of
-> > code for the Linux kernel without committing to keeping your ABI
-> > absolutely rock-solid stable for eternity, no exceptions, ever? Cool,
-> > that worked really well for Xlib.
-> 
-> read() still works the same way it did 30 years ago last time I
-> checked.
+Shortlog:
+Al Viro (18):
+      beginning to untangle do_filp_open()
+      gut do_filp_open() a bit more (do_last separation)
+      Shift releasing nd->root from do_last() to its caller
+      unroll do_last: loop in do_filp_open()
+      postpone __putname() until after do_last()
+      pull the common predecessors into do_last()
+      bail out with ELOOP earlier in do_link loop
+      pull more into do_last()
+      Don't pass mangled open_flag to finish_open()
+      Get rid of passing mangled flag to do_last()
+      Leave mangled flag only for setting nd.intent.open.flag
+      Pull handling of LAST_BIND into do_last(), clean up ok: part in do_filp_open()
+      Kill is_link argument of do_last()
+      Unify exits in O_CREAT handling
+      Turn do_link spaghetty into a normal loop
+      Finish pulling of -ESTALE handling to upper level in do_filp_open()
+      Get rid of symlink body copying
+      Switch !O_CREAT case to use of do_last()
 
-Thats disingenous as read() is a method not an interface. It's also wrong
-because read() and write() behaviour has changed in various ways and old
-code broke because of it in subtle ways. Keeping the same method behaviour
-would have required things like new versions of read() for 64bit files,
-nonblocking, mandlocks, NFS, networking, etc all of which changed the
-core read() behaviour. I've yet to see anyone meaningfully argue it was
-the wrong thing to do.
-
-Alan
-
-
+Diffstat:
+ fs/namei.c |  523 ++++++++++++++++++++++++++++++------------------------------
+ 1 files changed, 263 insertions(+), 260 deletions(-)
