@@ -1,105 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285Ab0CEOyR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 09:54:17 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45031 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771Ab0CEOyP (ORCPT
+	id S1753346Ab0CEOzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 09:55:53 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:42233 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752516Ab0CEOzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 09:54:15 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf tools: Don't trow away old map slices not overlapped by new maps
-Date: Fri,  5 Mar 2010 11:54:02 -0300
-Message-Id: <1267800842-22324-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Fri, 5 Mar 2010 09:55:51 -0500
+Date: Fri, 5 Mar 2010 09:55:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm@lists.linux-foundation.org,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Mark Brown <broonie@sirena.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [PATCH] PM: add dpm_use_runtime_{suspend, resume}
+ helper functions
+In-Reply-To: <201003042219.54135.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.1003050954160.1677-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
 
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/thread.c |   35 ++++++++++++++++++++++++++++++++---
- 1 files changed, 32 insertions(+), 3 deletions(-)
+> I agree with all of the comments above, hopefully addessed them in the new
+> patch below.
 
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index 21b9216..9024fa1 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -183,8 +183,8 @@ struct thread *perf_session__findnew(struct perf_session *self, pid_t pid)
- 	return th;
- }
- 
--static void map_groups__remove_overlappings(struct map_groups *self,
--					    struct map *map)
-+static int map_groups__fixup_overlappings(struct map_groups *self,
-+					  struct map *map)
- {
- 	struct rb_root *root = &self->maps[map->type];
- 	struct rb_node *next = rb_first(root);
-@@ -209,7 +209,36 @@ static void map_groups__remove_overlappings(struct map_groups *self,
- 		 * list.
- 		 */
- 		list_add_tail(&pos->node, &self->removed_maps[map->type]);
-+		/*
-+		 * Now check if we need to create new maps for areas not
-+		 * overlapped by the new map:
-+		 */
-+		if (map->start > pos->start) {
-+			struct map *before = map__clone(pos);
-+
-+			if (before == NULL)
-+				return -ENOMEM;
-+
-+			before->end = map->start - 1;
-+			map_groups__insert(self, before);
-+			if (verbose >= 2)
-+				map__fprintf(before, stderr);
-+		}
-+
-+		if (map->end < pos->end) {
-+			struct map *after = map__clone(pos);
-+
-+			if (after == NULL)
-+				return -ENOMEM;
-+
-+			after->start = map->end + 1;
-+			map_groups__insert(self, after);
-+			if (verbose >= 2)
-+				map__fprintf(after, stderr);
-+		}
- 	}
-+
-+	return 0;
- }
- 
- void maps__insert(struct rb_root *maps, struct map *map)
-@@ -254,7 +283,7 @@ struct map *maps__find(struct rb_root *maps, u64 ip)
- 
- void thread__insert_map(struct thread *self, struct map *map)
- {
--	map_groups__remove_overlappings(&self->mg, map);
-+	map_groups__fixup_overlappings(&self->mg, map);
- 	map_groups__insert(&self->mg, map);
- }
- 
--- 
-1.5.5.6
+It looks good.  One small thing: You probably should change the
+kerneldoc for pm_generic_runtime_idle to match the changes in
+pm_generic_runtime_{suspend,resume}.  I must have missed that one.
+
+Alan Stern
 
