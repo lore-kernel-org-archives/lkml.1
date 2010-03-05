@@ -1,94 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755763Ab0CET7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 14:59:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42371 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755440Ab0CET7h (ORCPT
+	id S1755783Ab0CEUHP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:07:15 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55245 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450Ab0CEUHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 14:59:37 -0500
-Date: Fri, 5 Mar 2010 11:59:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Message-Id: <20100305115918.f6c75b12.akpm@linux-foundation.org>
-In-Reply-To: <fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-	<20100205203232.GA1475@oksana.dev.rtsoft.ru>
-	<fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 15:07:13 -0500
+Date: Fri, 5 Mar 2010 14:07:03 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Ashwin Ganti <ashwin.ganti@gmail.com>
+Cc: Greg KH <greg@kroah.com>, rsc@swtch.com, ericvh@gmail.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Ron Minnich <rminnich@gmail.com>, jt.beard@gmail.com
+Subject: Re: [PATCH 1/8] p9auth: set fsuid
+Message-ID: <20100305200703.GA29383@us.ibm.com>
+References: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
+ <20100225232840.GB24155@kroah.com>
+ <20100226040553.GA26170@us.ibm.com>
+ <20100226050639.GA6115@kroah.com>
+ <20100226181930.GA17850@us.ibm.com>
+ <a67e66b21003041404h75d7aacaqb4f3e2a1c97adadc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a67e66b21003041404h75d7aacaqb4f3e2a1c97adadc@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Feb 2010 10:16:44 -0700
-Grant Likely <grant.likely@secretlab.ca> wrote:
-
-> On Fri, Feb 5, 2010 at 1:32 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > Some platforms (e.g. OpenFirmware) want to know when a particular chip
-> > added or removed, so that the platforms could add their specifics for
-> > non-platform devices, like I2C or SPI GPIO chips.
+Quoting Ashwin Ganti (ashwin.ganti@gmail.com):
+> On Fri, Feb 26, 2010 at 10:19 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> > Ashwin, Ron, Eric, (whoever else cares to take a look) I will put
+> > up a git tree hopefully this weekend or monday... hmm, hang on, already
+> > exists - you can take a look at
+> > http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/sergeh/linux-cr.git;a=shortlog;h=refs/heads/p9auth.feb16.3
 > >
-> > This patch implements the notifier for chip addition and removal events.
-> >
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> > drivers/gpio/gpiolib.c   |  14 ++++++++++++++
-> > include/asm-generic/gpio.h |  8 ++++++++
-> > 2 files changed, 22 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-> > index 350842a..375c03a 100644
-> > --- a/drivers/gpio/gpiolib.c
-> > +++ b/drivers/gpio/gpiolib.c
-> > @@ -9,6 +9,7 @@
-> > #include <linux/seq_file.h>
-> > #include <linux/gpio.h>
-> > #include <linux/idr.h>
-> > +#include <linux/notifier.h>
-> >
-> >
-> > /* Optional implementation infrastructure for GPIO interfaces.
-> > @@ -1029,6 +1030,9 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
-> >
-> > #endif /* CONFIG_GPIO_SYSFS */
-> >
-> > +BLOCKING_NOTIFIER_HEAD(gpio_notifier);
-> > +EXPORT_SYMBOL_GPL(gpio_notifier);
-> > +
-> > /**
-> > * gpiochip_add() - register a gpio_chip
-> > * @chip: the chip to register, with chip->base initialized
-> > @@ -1103,6 +1107,9 @@ fail:
-> >        pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
-> >            chip->base, chip->base + chip->ngpio - 1,
-> >            chip->label ? : "generic");
-> > +    else
-> > +        blocking_notifier_call_chain(&gpio_notifier,
-> > +                      GPIO_NOTIFY_CHIP_ADDED, chip);
 > 
-> Rather than doing an else block which will need to be reworked if/when
-> any additional code is added to the bottom of this routine, please
-> rework the if() block to bail on failure instead of implicitly falling
-> through to the return statement.
-
-This still hasn't happened.
-
-> Otherwise, this patch looks okay to me, so you can go ahead and add my:
+> Greg/Serge: Sorry for the delay. I am okay with the patches in
+> general.  Thanks for making the reaping of old capabilities change as
+> well along with these.
 > 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> The only comment I have is that it would be nice to have a README file
+> in the p9auth directory describing these changes to the semantics.
+
+Will do.
+
+> Especially since we are handling groups, file system checks etc. which
+> is going through the capability string, it would be easier and helpful
+> to understand if there is some basic documentation on each of these
+> changes.
 > 
+> Also, I don't know if you want to further get them looked by someone
 
-I'll merge it anyway and will ask you guys to keep track of this issue,
-thanks.
+Yeah I'm going to have to re-send and cc: some core maintainers to get
+their acks (or nacks).
 
+> more knowledgeable to comment on the implications of modifying/moving
+> the set*id functions over but they look alright to me.
+
+If they look ok after I resend them, could you please send an ack I
+can tack onto the patches to help out maintainers?
+
+> I have requested Eric too a couple of days ago to take a look at these
+> patches if he finds time.
+
+Thanks, I'll give it a few more days to see if he sends comments before
+resending.
+
+> Thanks,
+> Ashwin
+
+thanks,
+-serge
