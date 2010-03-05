@@ -1,113 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435Ab0CEVhz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:37:55 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:48960 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622Ab0CEVhx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:37:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Wp/FNDCA/9sQypFFMOU/v6DTlhP3QduX+ct5+iXuXOmu+gaGmwNV6UFs+q1oL+40y3
-         JcWSRf5Um5fhmhdSE/whWpP7oY1E+Ir25+DOdbMvrph9yJYZpVU74cfcp8s6Uw2ZONx1
-         Ra9LoKFJWih4obIOHcRhKrXwVFtmBpW3h3uDs=
-MIME-Version: 1.0
-In-Reply-To: <20100303000938.GA3257@kroah.com>
-References: <20100227051737.GA14976@kroah.com>
-	 <Pine.LNX.4.44L0.1002271215290.25155-100000@netrider.rowland.org>
-	 <20100303000938.GA3257@kroah.com>
-Date: Fri, 5 Mar 2010 22:37:51 +0100
-Message-ID: <d9def9db1003051337s1a73e98eu2644cc2b0d34715f@mail.gmail.com>
-Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
-From: Markus Rechberger <mrechberger@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-usb@vger.kernel.org, werner@guyane.dyn-o-saur.com,
-       Marcus Meissner <meissner@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1755548Ab0CEViY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:38:24 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:50721 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755337Ab0CEViX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 16:38:23 -0500
+Date: Fri, 5 Mar 2010 22:38:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] hwmon updates for 2.6.34
+Message-ID: <20100305223819.5f86eed3@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 3, 2010 at 1:09 AM, Greg KH <greg@kroah.com> wrote:
-> On Sat, Feb 27, 2010 at 12:20:35PM -0500, Alan Stern wrote:
->> On Fri, 26 Feb 2010, Greg KH wrote:
->>
->> > Hm, so it's back to the original idea of just doing a kzalloc of the
->> > initial buffer, that should solve the problem that Marcus found.
->> >
->> > I'll go dig that back up and if you could test it, that would be most
->> > appreciated.
->>
->> Here's a better solution.  In theory we could copy just the individual
->> packets from within the transfer buffer, but that would probably take
->> longer than simply copying the whole buffer.
->>
->> (This was a little hasty; I haven't even compile-tested the patch.
->> Some small fixes may be needed.)
->
-> Markus, did you test this patch out?
->
+Hi Linus,
 
-sorry just saw this now, will do tomorrow morning...
+Please pull some hwmon subsystem updates for Linux 2.6.34 from:
 
-Markus
+git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git hwmon-for-linus
 
-> thanks,
->
-> greg k-h
->
->> -----------------------------------------------------------------------
->>
->> This patch fixes a bug in the way isochronous input data is returned
->> to userspace for usbfs transfers.  The entire buffer must be copied,
->> not just the first actual_length bytes, because the individual packets
->> will be discontiguous if any of them are short.
->>
->> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
->> CC: stable <stable@kernel.org>
->>
->> ---
->>
->> Index: usb-2.6/drivers/usb/core/devio.c
->> ===================================================================
->> --- usb-2.6.orig/drivers/usb/core/devio.c
->> +++ usb-2.6/drivers/usb/core/devio.c
->> @@ -1176,6 +1176,13 @@ static int proc_do_submiturb(struct dev_
->>                       free_async(as);
->>                       return -ENOMEM;
->>               }
->> +             /* Isochronous input data may end up being discontiguous
->> +              * if some of the packets are short.  Clear the buffer so
->> +              * that the gaps don't leak kernel data to userspace.
->> +              */
->> +             if (is_in && uurb->type == USBDEVFS_URB_TYPE_ISO)
->> +                     memset(as->urb->transfer_buffer, 0,
->> +                                     uurb->buffer_length);
->>       }
->>       as->urb->dev = ps->dev;
->>       as->urb->pipe = (uurb->type << 30) |
->> @@ -1312,10 +1319,14 @@ static int processcompl(struct async *as
->>       void __user *addr = as->userurb;
->>       unsigned int i;
->>
->> -     if (as->userbuffer && urb->actual_length)
->> -             if (copy_to_user(as->userbuffer, urb->transfer_buffer,
->> -                              urb->actual_length))
->> +     if (as->userbuffer && urb->actual_length) {
->> +             if (urb->number_of_packets > 0)         /* Isochronous */
->> +                     i = urb->transfer_buffer_length;
->> +             else                                    /* Non-Isoc */
->> +                     i = urb->actual_length;
->> +             if (copy_to_user(as->userbuffer, urb->transfer_buffer, i))
->>                       goto err_out;
->> +     }
->>       if (put_user(as->status, &userurb->status))
->>               goto err_out;
->>       if (put_user(urb->actual_length, &userurb->actual_length))
->
+We have support for 2 new devices (Andigilog aSC7621 and Analog devices
+ADT7411), many improvements to the it87 and lm90 drivers, watchdog
+support added to the w83793 driver, and a few other random fixes.
+
+ Documentation/feature-removal-schedule.txt |    6 -
+ Documentation/hwmon/adt7411                |   42 +
+ Documentation/hwmon/adt7473                |   74 --
+ Documentation/hwmon/asc7621                |  296 +++++++
+ Documentation/hwmon/it87                   |   53 +-
+ Documentation/hwmon/lm90                   |   22 +
+ MAINTAINERS                                |   14 +
+ drivers/hwmon/Kconfig                      |   45 +-
+ drivers/hwmon/Makefile                     |    3 +-
+ drivers/hwmon/adt7411.c                    |  366 ++++++++
+ drivers/hwmon/adt7473.c                    | 1180 --------------------------
+ drivers/hwmon/asc7621.c                    | 1255 ++++++++++++++++++++++++++++
+ drivers/hwmon/fschmd.c                     |   15 +-
+ drivers/hwmon/g760a.c                      |    2 +-
+ drivers/hwmon/it87.c                       |  939 +++++++++++++++------
+ drivers/hwmon/lm90.c                       |   89 ++-
+ drivers/hwmon/tmp401.c                     |    7 +-
+ drivers/hwmon/tmp421.c                     |   24 +-
+ drivers/hwmon/w83793.c                     |  482 +++++++++++-
+ 19 files changed, 3335 insertions(+), 1579 deletions(-)
+ create mode 100644 Documentation/hwmon/adt7411
+ delete mode 100644 Documentation/hwmon/adt7473
+ create mode 100644 Documentation/hwmon/asc7621
+ create mode 100644 drivers/hwmon/adt7411.c
+ delete mode 100644 drivers/hwmon/adt7473.c
+ create mode 100644 drivers/hwmon/asc7621.c
+
+---------------
+
+Amerigo Wang (1):
+      hwmon: Remove the deprecated adt7473 driver
+
+George Joseph (1):
+      hwmon: Driver for Andigilog aSC7621 family monitoring chips
+
+Jean Delvare (18):
+      hwmon: (lm90) Add support for the Winbond/Nuvoton W83L771AWG/ASG
+      hwmon: (lm90) Restore configuration on exit
+      hwmon: (lm90) Add SMBus alert support
+      hwmon: (it87) Display fan outputs in automatic mode as such
+      hwmon: (it87) Expose the PWM/temperature mappings
+      hwmon: (it87) Refactor attributes creation and removal
+      hwmon: (it87) Create vid attributes by group
+      hwmon: (it87) Add support for beep on alarm
+      hwmon: (it87) Fix many checkpatch errors and warnings
+      hwmon: (it87) Use strict_strtol instead of simple_strtol
+      hwmon: (it87) Add an entry in MAINTAINERS
+      hwmon: (it87) Drop dead web links in documentation
+      hwmon: (it87) Add support for old automatic fan speed control
+      hwmon: (it87) Validate auto pwm settings
+      hwmon: (g760a) Make rpm_from_cnt static
+      hwmon: (tmp421) Restore missing inputs
+      hwmon: (tmp421) Fix temperature conversions
+      hwmon: Fix off-by-one kind values
+
+Sven Anders (1):
+      hwmon: (w83793) Add watchdog functionality
+
+Wolfram Sang (2):
+      hwmon: Add driver for ADT7411 voltage and temperature sensor
+      hwmon: (adt7411) Improve locking
+
+Thanks,
+-- 
+Jean Delvare
