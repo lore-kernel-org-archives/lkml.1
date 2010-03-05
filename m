@@ -1,98 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548Ab0CEViY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:38:24 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:50721 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755337Ab0CEViX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:38:23 -0500
-Date: Fri, 5 Mar 2010 22:38:19 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] hwmon updates for 2.6.34
-Message-ID: <20100305223819.5f86eed3@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755511Ab0CEVjE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:39:04 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:28162 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462Ab0CEVjA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 16:39:00 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=LB3BAB68dKDeBvikpneUZlUvUAB/i7k5Dtv42qmEV0kVuPx4qYz/JsoJaauAQoZ1a
+	wDpeixVpuVXgZA2NKVO0Q==
+MIME-Version: 1.0
+In-Reply-To: <1267824933.4997.9.camel@laptop>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
+	 <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+	 <1267824933.4997.9.camel@laptop>
+Date: Fri, 5 Mar 2010 13:38:56 -0800
+Message-ID: <bd4cb8901003051338p1c12ceacv994bad73e81093a2@mail.gmail.com>
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-Please pull some hwmon subsystem updates for Linux 2.6.34 from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git hwmon-for-linus
-
-We have support for 2 new devices (Andigilog aSC7621 and Analog devices
-ADT7411), many improvements to the it87 and lm90 drivers, watchdog
-support added to the w83793 driver, and a few other random fixes.
-
- Documentation/feature-removal-schedule.txt |    6 -
- Documentation/hwmon/adt7411                |   42 +
- Documentation/hwmon/adt7473                |   74 --
- Documentation/hwmon/asc7621                |  296 +++++++
- Documentation/hwmon/it87                   |   53 +-
- Documentation/hwmon/lm90                   |   22 +
- MAINTAINERS                                |   14 +
- drivers/hwmon/Kconfig                      |   45 +-
- drivers/hwmon/Makefile                     |    3 +-
- drivers/hwmon/adt7411.c                    |  366 ++++++++
- drivers/hwmon/adt7473.c                    | 1180 --------------------------
- drivers/hwmon/asc7621.c                    | 1255 ++++++++++++++++++++++++++++
- drivers/hwmon/fschmd.c                     |   15 +-
- drivers/hwmon/g760a.c                      |    2 +-
- drivers/hwmon/it87.c                       |  939 +++++++++++++++------
- drivers/hwmon/lm90.c                       |   89 ++-
- drivers/hwmon/tmp401.c                     |    7 +-
- drivers/hwmon/tmp421.c                     |   24 +-
- drivers/hwmon/w83793.c                     |  482 +++++++++++-
- 19 files changed, 3335 insertions(+), 1579 deletions(-)
- create mode 100644 Documentation/hwmon/adt7411
- delete mode 100644 Documentation/hwmon/adt7473
- create mode 100644 Documentation/hwmon/asc7621
- create mode 100644 drivers/hwmon/adt7411.c
- delete mode 100644 drivers/hwmon/adt7473.c
- create mode 100644 drivers/hwmon/asc7621.c
-
----------------
-
-Amerigo Wang (1):
-      hwmon: Remove the deprecated adt7473 driver
-
-George Joseph (1):
-      hwmon: Driver for Andigilog aSC7621 family monitoring chips
-
-Jean Delvare (18):
-      hwmon: (lm90) Add support for the Winbond/Nuvoton W83L771AWG/ASG
-      hwmon: (lm90) Restore configuration on exit
-      hwmon: (lm90) Add SMBus alert support
-      hwmon: (it87) Display fan outputs in automatic mode as such
-      hwmon: (it87) Expose the PWM/temperature mappings
-      hwmon: (it87) Refactor attributes creation and removal
-      hwmon: (it87) Create vid attributes by group
-      hwmon: (it87) Add support for beep on alarm
-      hwmon: (it87) Fix many checkpatch errors and warnings
-      hwmon: (it87) Use strict_strtol instead of simple_strtol
-      hwmon: (it87) Add an entry in MAINTAINERS
-      hwmon: (it87) Drop dead web links in documentation
-      hwmon: (it87) Add support for old automatic fan speed control
-      hwmon: (it87) Validate auto pwm settings
-      hwmon: (g760a) Make rpm_from_cnt static
-      hwmon: (tmp421) Restore missing inputs
-      hwmon: (tmp421) Fix temperature conversions
-      hwmon: Fix off-by-one kind values
-
-Sven Anders (1):
-      hwmon: (w83793) Add watchdog functionality
-
-Wolfram Sang (2):
-      hwmon: Add driver for ADT7411 voltage and temperature sensor
-      hwmon: (adt7411) Improve locking
-
-Thanks,
--- 
-Jean Delvare
+On Fri, Mar 5, 2010 at 1:35 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2010-03-05 at 13:22 -0800, Stephane Eranian wrote:
+>> > The two serious ones, AJ106 and AJ68 are no fix and are listed as such
+>> > in all errata I can find, including the 7[23]00 series.
+>> >
+>> Not E74xx. I think it would be fine to drop LBR with PEBS as the work-around
+>> to AJ106.
+>>
+>> > I checked the 65nm Core2Duo, Xeon 5200 and Xeon 7[23]00 spec updates.
+>> > Going by that it seems the full model 15 family is broken and I'll leave
+>> > the patch as is.
+>>
+>> But the E74xx are okay and you are excluding them. Worst case you should
+>> provide an override.
+>
+> >From what I can tell E74xx is model 29, which would be just fine with
+> this patch, this patch only marks model 15 as broken.
+>
+True, my bad.
+So it would be a matter to provide some ways of disabling LBR with PEBS
+on model 15.
