@@ -1,175 +1,446 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827Ab0CEAdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 19:33:01 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58915 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756476Ab0CEAc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 19:32:59 -0500
-Date: Fri, 5 Mar 2010 01:33:04 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       dushistov@mail.ru, joel.becker@oracle.com, shaggy@linux.vnet.ibm.com,
-       linux-ext4@vger.kernel.org
-Subject: [PULL REQUEST] Quota cleanups & fixes and ext3 fixes for 2.6.34-rc1
-Message-ID: <20100305003304.GE4887@quack.suse.cz>
+	id S1756770Ab0CEAhV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 19:37:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56839 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756218Ab0CEAhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 19:37:19 -0500
+Message-ID: <4B9050D2.2090203@cn.fujitsu.com>
+Date: Fri, 05 Mar 2010 08:31:14 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: jens.axboe@oracle.com, Chad Talbott <ctalbott@google.com>,
+       linux-kernel@vger.kernel.org, Nauman Rafique <nauman@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/2 V2] io-controller: Add a new interface	"weight_device"
+ for IO-Controller
+References: <4B8DFFD7.2000908@cn.fujitsu.com> <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com>
+In-Reply-To: <20100304152400.GB18786@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello Linus,
+Vivek Goyal wrote:
+> On Thu, Mar 04, 2010 at 03:35:19PM +0800, Gui Jianfeng wrote:
+>> Currently, IO Controller makes use of blkio.weight to assign weight for
+>> all devices. Here a new user interface "blkio.weight_device" is introduced to 
+>> assign different weights for different devices. blkio.weight becomes the
+>> default value for devices which are not configured by "blkio.weight_device"
+>>
+>> You can use the following format to assigned specific weight for a given
+>> device:
+>> #echo "major:minor weight" > blkio.weight_device
+>>
+>> major:minor represents device number.
+>>
+>> And you can remove a specific weight as following:
+>> #echo "major:minor 0" > blkio.weight_device
+>>
+>> V1->V2 changes:
+>> - use user interface "weight_device" instead of "policy" suggested by Vivek
+>> - rename some struct suggested by Vivek
+>> - rebase to 2.6-block "for-linus" branch
+>> - remove an useless list_empty check pointed out by Li Zefan
+>> - some trivial typo fix
+>>
+>> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+>> ---
+>>  block/blk-cgroup.c  |  240 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  block/blk-cgroup.h  |   10 ++
+>>  block/cfq-iosched.c |    2 +-
+>>  3 files changed, 251 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+>> index c85d74c..37f1d8f 100644
+>> --- a/block/blk-cgroup.c
+>> +++ b/block/blk-cgroup.c
+>> @@ -16,6 +16,7 @@
+>>  #include <linux/module.h>
+>>  #include <linux/err.h>
+>>  #include "blk-cgroup.h"
+>> +#include <linux/genhd.h>
+>>  
+>>  static DEFINE_SPINLOCK(blkio_list_lock);
+>>  static LIST_HEAD(blkio_list);
+>> @@ -23,6 +24,12 @@ static LIST_HEAD(blkio_list);
+>>  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
+>>  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
+>>  
+>> +static inline void policy_insert_node(struct blkio_cgroup *blkcg,
+>> +				      struct blkio_policy_node *pn);
+>> +static inline void policy_delete_node(struct blkio_policy_node *pn);
+>> +static struct blkio_policy_node *policy_search_node(const struct blkio_cgroup *blkcg,
+>> +						 dev_t dev);
+> 
+> Hi Gui,
+> 
+> Thanks. Can we move above functions up in the file and get rid of these
+> forward declarations?
+> 
+> Also as I suggested last time, it might be good idea to prefix "blkio_"
+> before function names.
+> 
+> policy_insert_node ---> blkio_policy_insert_node()
+> policy_delete_node ---> blkio_policy_delete_node()
+> policy_search_node ---> blkio_policy_search_node()
+> chekc_dev_num ---> blkio_check_dev_num()
+> .
+> .
 
-  could you please pull from
+Sure, will post again.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git for_linus
+Thanks,
+Gui
 
-  You'll get lots of quota cleanups from Christoph which touch filesystems
-all over the place but it's just function renaming and moving quota calls
-from VFS into filesystems themselves.
+> 
+> Thanks
+> Vivek
+> 
+>> +
+>>  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
+>>  {
+>>  	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
+>> @@ -128,6 +135,7 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+>>  	struct blkio_group *blkg;
+>>  	struct hlist_node *n;
+>>  	struct blkio_policy_type *blkiop;
+>> +	struct blkio_policy_node *pn;
+>>  
+>>  	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
+>>  		return -EINVAL;
+>> @@ -136,7 +144,13 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+>>  	spin_lock(&blkio_list_lock);
+>>  	spin_lock_irq(&blkcg->lock);
+>>  	blkcg->weight = (unsigned int)val;
+>> +
+>>  	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
+>> +		pn = policy_search_node(blkcg, blkg->dev);
+>> +
+>> +		if (pn)
+>> +			continue;
+>> +
+>>  		list_for_each_entry(blkiop, &blkio_list, list)
+>>  			blkiop->ops.blkio_update_group_weight_fn(blkg,
+>>  					blkcg->weight);
+>> @@ -185,8 +199,227 @@ void blkiocg_update_blkio_group_dequeue_stats(struct blkio_group *blkg,
+>>  EXPORT_SYMBOL_GPL(blkiocg_update_blkio_group_dequeue_stats);
+>>  #endif
+>>  
+>> +static int check_dev_num(dev_t dev)
+>> +{
+>> +	int part = 0;
+>> +	struct gendisk *disk;
+>> +
+>> +	disk = get_gendisk(dev, &part);
+>> +	if (!disk || part)
+>> +		return -ENODEV;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int policy_parse_and_set(char *buf, struct blkio_policy_node *newpn)
+>> +{
+>> +	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
+>> +	int ret;
+>> +	unsigned long major, minor, temp;
+>> +	int i = 0;
+>> +	dev_t dev;
+>> +
+>> +	memset(s, 0, sizeof(s));
+>> +
+>> +	while ((p = strsep(&buf, " ")) != NULL) {
+>> +		if (!*p)
+>> +			continue;
+>> +
+>> +		s[i++] = p;
+>> +
+>> +		/* Prevent from inputing too many things */
+>> +		if (i == 3)
+>> +			break;
+>> +	}
+>> +
+>> +	if (i != 2)
+>> +		return -EINVAL;
+>> +
+>> +	p = strsep(&s[0], ":");
+>> +	if (p != NULL)
+>> +		major_s = p;
+>> +	else
+>> +		return -EINVAL;
+>> +
+>> +	minor_s = s[0];
+>> +	if (!minor_s)
+>> +		return -EINVAL;
+>> +
+>> +	ret = strict_strtoul(major_s, 10, &major);
+>> +	if (ret)
+>> +		return -EINVAL;
+>> +
+>> +	ret = strict_strtoul(minor_s, 10, &minor);
+>> +	if (ret)
+>> +		return -EINVAL;
+>> +
+>> +	dev = MKDEV(major, minor);
+>> +
+>> +	ret = check_dev_num(dev);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	newpn->dev = dev;
+>> +
+>> +	if (s[1] == NULL)
+>> +		return -EINVAL;
+>> +
+>> +	ret = strict_strtoul(s[1], 10, &temp);
+>> +	if (ret || (temp < BLKIO_WEIGHT_MIN && temp > 0) ||
+>> +	    temp > BLKIO_WEIGHT_MAX)
+>> +		return -EINVAL;
+>> +
+>> +	newpn->weight =  temp;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +unsigned int blkcg_get_weight(struct blkio_cgroup *blkcg,
+>> +				    dev_t dev)
+>> +{
+>> +	struct blkio_policy_node *pn;
+>> +
+>> +	pn = policy_search_node(blkcg, dev);
+>> +	if (pn)
+>> +		return pn->weight;
+>> +	else
+>> +		return blkcg->weight;
+>> +}
+>> +EXPORT_SYMBOL_GPL(blkcg_get_weight);
+>> +
+>> +static inline void policy_insert_node(struct blkio_cgroup *blkcg,
+>> +				      struct blkio_policy_node *pn)
+>> +{
+>> +	list_add(&pn->node, &blkcg->policy_list);
+>> +}
+>> +
+>> +/* Must be called with blkcg->lock held */
+>> +static inline void policy_delete_node(struct blkio_policy_node *pn)
+>> +{
+>> +	list_del(&pn->node);
+>> +}
+>> +
+>> +/* Must be called with blkcg->lock held */
+>> +static struct blkio_policy_node *policy_search_node(const struct blkio_cgroup *blkcg,
+>> +						 dev_t dev)
+>> +{
+>> +	struct blkio_policy_node *pn;
+>> +
+>> +	list_for_each_entry(pn, &blkcg->policy_list, node) {
+>> +		if (pn->dev == dev)
+>> +			return pn;
+>> +	}
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> +
+>> +static int blkiocg_weight_device_write(struct cgroup *cgrp, struct cftype *cft,
+>> +				const char *buffer)
+>> +{
+>> +	int ret = 0;
+>> +	char *buf;
+>> +	struct blkio_policy_node *newpn, *pn;
+>> +	struct blkio_cgroup *blkcg;
+>> +	struct blkio_group *blkg;
+>> +	int keep_newpn = 0;
+>> +	struct hlist_node *n;
+>> +	struct blkio_policy_type *blkiop;
+>> +
+>> +	buf = kstrdup(buffer, GFP_KERNEL);
+>> +	if (!buf)
+>> +		return -ENOMEM;
+>> +
+>> +	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
+>> +	if (!newpn) {
+>> +		ret = -ENOMEM;
+>> +		goto free_buf;
+>> +	}
+>> +
+>> +	ret = policy_parse_and_set(buf, newpn);
+>> +	if (ret)
+>> +		goto free_newpn;
+>> +
+>> +	blkcg = cgroup_to_blkio_cgroup(cgrp);
+>> +
+>> +	spin_lock_irq(&blkcg->lock);
+>> +
+>> +	pn = policy_search_node(blkcg, newpn->dev);
+>> +	if (!pn) {
+>> +		if (newpn->weight != 0) {
+>> +			policy_insert_node(blkcg, newpn);
+>> +			keep_newpn = 1;
+>> +		}
+>> +		spin_unlock_irq(&blkcg->lock);
+>> +		goto update_io_group;
+>> +	}
+>> +
+>> +	if (newpn->weight == 0) {
+>> +		/* weight == 0 means deleteing a specific weight */
+>> +		policy_delete_node(pn);
+>> +		spin_unlock_irq(&blkcg->lock);
+>> +		goto update_io_group;
+>> +	}
+>> +	spin_unlock_irq(&blkcg->lock);
+>> +
+>> +	pn->weight = newpn->weight;
+>> +
+>> +update_io_group:
+>> +	/* update weight for each cfqg */
+>> +	spin_lock(&blkio_list_lock);
+>> +	spin_lock_irq(&blkcg->lock);
+>> +
+>> +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
+>> +		if (newpn->dev == blkg->dev) {
+>> +			list_for_each_entry(blkiop, &blkio_list, list)
+>> +				blkiop->ops.blkio_update_group_weight_fn(blkg,
+>> +						newpn->weight ?
+>> +						newpn->weight :
+>> +						blkcg->weight);
+>> +		}
+>> +	}
+>> +
+>> +	spin_unlock_irq(&blkcg->lock);
+>> +	spin_unlock(&blkio_list_lock);
+>> +
+>> +free_newpn:
+>> +	if (!keep_newpn)
+>> +		kfree(newpn);
+>> +free_buf:
+>> +	kfree(buf);
+>> +	return ret;
+>> +}
+>> +
+>> +static int blkiocg_weight_device_read(struct cgroup *cgrp, struct cftype *cft,
+>> +				       struct seq_file *m)
+>> +{
+>> +	struct blkio_cgroup *blkcg;
+>> +	struct blkio_policy_node *pn;
+>> +
+>> +	seq_printf(m, "dev\tweight\n");
+>> +
+>> +	blkcg = cgroup_to_blkio_cgroup(cgrp);
+>> +	if (list_empty(&blkcg->policy_list))
+>> +		goto out;
+>> +
+>> +	spin_lock_irq(&blkcg->lock);
+>> +	list_for_each_entry(pn, &blkcg->policy_list, node) {
+>> +		seq_printf(m, "%u:%u\t%u\n", MAJOR(pn->dev),
+>> +			   MINOR(pn->dev), pn->weight);
+>> +	}
+>> +	spin_unlock_irq(&blkcg->lock);
+>> +out:
+>> +	return 0;
+>> +}
+>> +
+>>  struct cftype blkio_files[] = {
+>>  	{
+>> +		.name = "weight_device",
+>> +		.read_seq_string = blkiocg_weight_device_read,
+>> +		.write_string = blkiocg_weight_device_write,
+>> +		.max_write_len = 256,
+>> +	},
+>> +	{
+>>  		.name = "weight",
+>>  		.read_u64 = blkiocg_weight_read,
+>>  		.write_u64 = blkiocg_weight_write,
+>> @@ -220,6 +453,7 @@ static void blkiocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+>>  	struct blkio_group *blkg;
+>>  	void *key;
+>>  	struct blkio_policy_type *blkiop;
+>> +	struct blkio_policy_node *pn, *pntmp;
+>>  
+>>  	rcu_read_lock();
+>>  remove_entry:
+>> @@ -250,7 +484,12 @@ remove_entry:
+>>  		blkiop->ops.blkio_unlink_group_fn(key, blkg);
+>>  	spin_unlock(&blkio_list_lock);
+>>  	goto remove_entry;
+>> +
+>>  done:
+>> +	list_for_each_entry_safe(pn, pntmp, &blkcg->policy_list, node) {
+>> +		policy_delete_node(pn);
+>> +		kfree(pn);
+>> +	}
+>>  	free_css_id(&blkio_subsys, &blkcg->css);
+>>  	rcu_read_unlock();
+>>  	kfree(blkcg);
+>> @@ -280,6 +519,7 @@ done:
+>>  	spin_lock_init(&blkcg->lock);
+>>  	INIT_HLIST_HEAD(&blkcg->blkg_list);
+>>  
+>> +	INIT_LIST_HEAD(&blkcg->policy_list);
+>>  	return &blkcg->css;
+>>  }
+>>  
+>> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
+>> index 84bf745..c8144a2 100644
+>> --- a/block/blk-cgroup.h
+>> +++ b/block/blk-cgroup.h
+>> @@ -22,6 +22,7 @@ struct blkio_cgroup {
+>>  	unsigned int weight;
+>>  	spinlock_t lock;
+>>  	struct hlist_head blkg_list;
+>> +	struct list_head policy_list; /* list of blkio_policy_node */
+>>  };
+>>  
+>>  struct blkio_group {
+>> @@ -43,6 +44,15 @@ struct blkio_group {
+>>  	unsigned long sectors;
+>>  };
+>>  
+>> +struct blkio_policy_node {
+>> +	struct list_head node;
+>> +	dev_t dev;
+>> +	unsigned int weight;
+>> +};
+>> +
+>> +extern unsigned int blkcg_get_weight(struct blkio_cgroup *blkcg,
+>> +				     dev_t dev);
+>> +
+>>  typedef void (blkio_unlink_group_fn) (void *key, struct blkio_group *blkg);
+>>  typedef void (blkio_update_group_weight_fn) (struct blkio_group *blkg,
+>>  						unsigned int weight);
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index dee9d93..6945e9b 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -954,7 +954,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+>>  	if (!cfqg)
+>>  		goto done;
+>>  
+>> -	cfqg->weight = blkcg->weight;
+>>  	for_each_cfqg_st(cfqg, i, j, st)
+>>  		*st = CFQ_RB_ROOT;
+>>  	RB_CLEAR_NODE(&cfqg->rb_node);
+>> @@ -971,6 +970,7 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+>>  	sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
+>>  	blkiocg_add_blkio_group(blkcg, &cfqg->blkg, (void *)cfqd,
+>>  					MKDEV(major, minor));
+>> +	cfqg->weight = blkcg_get_weight(blkcg, cfqg->blkg.dev);
+>>  
+>>  	/* Add group on cfqd list */
+>>  	hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
+>> -- 
+>> 1.5.4.rc3 
+>>
+>>
+> 
+> 
+> 
 
-  The shortlog and diffstat are below:
-
-Christoph Egger (1):
-      jbd[2]: remove references to BUFFER_DEBUG
-
-Christoph Hellwig (19):
-      quota: split do_quotactl
-      quota: clean up checks for supported quota methods
-      quota: special case Q_SYNC without device name
-      quota: simplify permission checking
-      quota: clean up Q_XQUOTASYNC
-      quota: move code from sync_quota_sb into vfs_quota_sync
-      quota: remove invalid optimization from quota_sync_all
-      quota: split out netlink notification support from quota.c
-      quota: split out compat_sys_quotactl support from quota.c
-      quota: drop permission checks from xfs_fs_set_xstate/xfs_fs_set_xquota
-      dquot: cleanup space allocation / freeing routines
-      dquot: cleanup inode allocation / freeing routines
-      dquot: move dquot transfer responsibility into the filesystem
-      dquot: cleanup dquot transfer routine
-      dquot: move dquot drop responsibility into the filesystem
-      dquot: cleanup dquot drop routine
-      dquot: move dquot initialization responsibility into the filesystem
-      dquot: cleanup dquot initialize routine
-      quota: stop using QUOTA_OK / NO_QUOTA
-
-Dmitry Monakhov (7):
-      ext3: mount flags manipulation cleanup
-      ext3: trivial quota cleanup
-      quota: manage reserved space when quota is not active [v2]
-      ext3: quota_write cross block boundary behaviour
-      quota: sb_quota state flags cleanup
-      quota: generalize quota transfer interface
-      ext3: add writepage sanity checks
-
-Jan Kara (6):
-      quota: Cleanup S_NOQUOTA handling
-      ext3: Use bitops to read/modify EXT3_I(inode)->i_state
-      quota: Fix warning when a delayed write happens before quota is enabled
-      jbd: Delay discarding buffers in journal_unmap_buffer
-      quota: Properly invalidate caches even for filesystems with blocksize < pagesize
-      ext3: Truncate allocated blocks if direct IO write fails to update i_size
-
-The diffstat is
-
- Documentation/filesystems/Locking |   18 -
- drivers/staging/pohmelfs/inode.c  |    2 +-
- fs/attr.c                         |   11 +-
- fs/ext2/balloc.c                  |   12 +-
- fs/ext2/file.c                    |    5 +-
- fs/ext2/ialloc.c                  |   14 +-
- fs/ext2/inode.c                   |    7 +-
- fs/ext2/namei.c                   |   51 ++-
- fs/ext2/super.c                   |    2 +
- fs/ext2/xattr.c                   |   10 +-
- fs/ext3/balloc.c                  |   11 +-
- fs/ext3/file.c                    |    7 +-
- fs/ext3/ialloc.c                  |   16 +-
- fs/ext3/inode.c                   |   41 ++-
- fs/ext3/namei.c                   |   24 +-
- fs/ext3/super.c                   |  246 ++++++------
- fs/ext3/xattr.c                   |   22 +-
- fs/ext4/file.c                    |    3 +-
- fs/ext4/ialloc.c                  |   16 +-
- fs/ext4/inode.c                   |   27 +-
- fs/ext4/mballoc.c                 |    6 +-
- fs/ext4/namei.c                   |   23 +-
- fs/ext4/super.c                   |   15 +-
- fs/ext4/xattr.c                   |    8 +-
- fs/gfs2/quota.c                   |    9 +-
- fs/gfs2/quota.h                   |    2 +-
- fs/gfs2/super.c                   |    2 +-
- fs/gfs2/sys.c                     |    2 +-
- fs/inode.c                        |    4 -
- fs/jbd/commit.c                   |   10 +-
- fs/jbd/transaction.c              |   43 ++-
- fs/jfs/acl.c                      |   26 +--
- fs/jfs/file.c                     |   31 ++-
- fs/jfs/inode.c                    |    9 +-
- fs/jfs/jfs_acl.h                  |    7 +-
- fs/jfs/jfs_dtree.c                |   28 +-
- fs/jfs/jfs_extent.c               |   16 +-
- fs/jfs/jfs_inode.c                |    8 +-
- fs/jfs/jfs_inode.h                |    1 +
- fs/jfs/jfs_xtree.c                |   21 +-
- fs/jfs/namei.c                    |   23 +-
- fs/jfs/super.c                    |    6 +
- fs/jfs/xattr.c                    |   17 +-
- fs/namei.c                        |   16 -
- fs/nfsd/vfs.c                     |    4 -
- fs/ocfs2/alloc.c                  |   13 +-
- fs/ocfs2/aops.c                   |   11 +-
- fs/ocfs2/dir.c                    |   37 +-
- fs/ocfs2/file.c                   |   20 +-
- fs/ocfs2/inode.c                  |    6 +-
- fs/ocfs2/namei.c                  |   52 ++--
- fs/ocfs2/quota_global.c           |    7 -
- fs/ocfs2/refcounttree.c           |    2 +-
- fs/open.c                         |    5 +-
- fs/quota/Kconfig                  |    5 +
- fs/quota/Makefile                 |    2 +
- fs/quota/compat.c                 |  118 ++++++
- fs/quota/dquot.c                  |  412 +++++++++++----------
- fs/quota/netlink.c                |   95 +++++
- fs/quota/quota.c                  |  735 ++++++++++++-------------------------
- fs/reiserfs/bitmap.c              |   10 +-
- fs/reiserfs/file.c                |    2 +-
- fs/reiserfs/inode.c               |   20 +-
- fs/reiserfs/namei.c               |   23 +-
- fs/reiserfs/stree.c               |   20 +-
- fs/reiserfs/super.c               |   15 +-
- fs/reiserfs/xattr.c               |    4 -
- fs/sync.c                         |   14 +-
- fs/udf/balloc.c                   |   35 +-
- fs/udf/file.c                     |   28 ++-
- fs/udf/ialloc.c                   |   14 +-
- fs/udf/inode.c                    |    6 +
- fs/udf/namei.c                    |   17 +
- fs/ufs/balloc.c                   |   24 +-
- fs/ufs/file.c                     |    3 +-
- fs/ufs/ialloc.c                   |   11 +-
- fs/ufs/inode.c                    |    4 +
- fs/ufs/namei.c                    |   18 +
- fs/ufs/super.c                    |    6 +
- fs/ufs/truncate.c                 |   10 +
- fs/xfs/linux-2.6/xfs_quotaops.c   |   19 -
- include/linux/ext3_fs.h           |   33 ++-
- include/linux/ext3_fs_i.h         |    2 +-
- include/linux/jbd.h               |   11 -
- include/linux/jbd2.h              |   11 -
- include/linux/quota.h             |   33 +--
- include/linux/quotaops.h          |  304 +++++-----------
- 87 files changed, 1554 insertions(+), 1545 deletions(-)
- create mode 100644 fs/quota/compat.c
- create mode 100644 fs/quota/netlink.c
-
-							Thanks
-								Honza
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Regards
+Gui Jianfeng
+
