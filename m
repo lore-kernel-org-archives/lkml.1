@@ -1,85 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754020Ab0CEPrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 10:47:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52704 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753856Ab0CEPq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 10:46:59 -0500
+	id S1754097Ab0CEPsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 10:48:18 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55441
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752516Ab0CEPsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 10:48:17 -0500
+Date: Fri, 05 Mar 2010 07:48:35 -0800 (PST)
+Message-Id: <20100305.074835.159078083.davem@davemloft.net>
+To: daniel@fooishbar.org
+Cc: skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
 Subject: Re: [git pull] drm request 3
-From: Adam Jackson <ajax@redhat.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <4B90E9EA.9030708@garzik.org>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-	 <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
-	 <20100304185002.GA23532@srcf.ucam.org>
-	 <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
-	 <20100304190450.GA23807@srcf.ucam.org>  <4B900AB2.1020603@garzik.org>
-	 <1267741133.1316.9.camel@atropine.boston.devel.redhat.com>
-	 <4B903273.90305@garzik.org>
-	 <1267743599.1316.47.camel@atropine.boston.devel.redhat.com>
-	 <4B90E9EA.9030708@garzik.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-x1w80BvCqQ8gde5JS0QA"
-Date: Fri, 05 Mar 2010 10:46:21 -0500
-Message-Id: <1267803981.1316.79.camel@atropine.boston.devel.redhat.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100305154009.GC2505@tempa>
+References: <20100305151754.GB2505@tempa>
+	<20100305.072612.186421758.davem@davemloft.net>
+	<20100305154009.GC2505@tempa>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Daniel Stone <daniel@fooishbar.org>
+Date: Fri, 5 Mar 2010 17:40:09 +0200
 
---=-x1w80BvCqQ8gde5JS0QA
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> On Fri, Mar 05, 2010 at 07:26:12AM -0800, David Miller wrote:
+>> In fact, I argue that the moment nouveau went into Fedora and
+>> was turned on by default, the interfaces needed to be frozen.
+> 
+> That's a matter for the Fedora kernel team; for better or worse, they
+> made the choices they did, which included going through all the relevant
+> pain to support this.  They didn't consider it suitable for upstream
+> because they didn't think everyone else should be forced to endure that
+> pain.
 
-On Fri, 2010-03-05 at 06:24 -0500, Jeff Garzik wrote:
-> On 03/04/2010 05:59 PM, Adam Jackson wrote:
-> > in which you merely remove the nouveau userspace component, and in whic=
-h
-> > I can't tell if you built nouveau into the kernel or not, but I assume
-> > you didn't based on your previous post.  The X server does only try the
-> > one driver before falling back to vesa, which is a bug in the fallback
-> > logic I suppose.  I've (blindly) fixed that for F13 now.
->=20
-> Thanks.  Can this be put into F12 too?
+By not merging it upstream the pain is larger not smaller.
 
-Sure, why not.
+It's enabled by default, so you therefore can't test upstream kernels
+by default.
 
-> > - you didn't try writing an xorg.conf fragment
-> > - you did, and it didn't work anyway
-> >
-> > The latter case is entirely plausible, as nv is not the sort of driver
-> > that gets a lot of love, but I'm not aware of any open bugs about gf980=
-0
-> > in particular in nv.
->=20
-> The latter...  would modeset in grub interfere, perhaps?
+And as I showed already, even if you jump through the hoops to make it
+work (building noveau from out of tree in the upstream kernel) you'll
+end up getting screwed when the API changes anyways.
 
-It's not going to do anything if you didn't build a KMS driver.  It's
-just a kcmdline option like any other; if there's no module to honor it,
-then it doesn't do anything.  grub doesn't have any particular KMS
-awareness.
+Using VESA or whatever else you've suggested is just not a reasonable
+alternative.
 
-I'm really going to have to see an X log and dmesg from the failure mode
-when actually using nv to diagnose this any further.
+You can't unleash something like this on a userbase of this magnitude
+and then throw your hands up in the air and say "I'm not willing to
+support this in a reasonable way."
 
-- ajax
-
---=-x1w80BvCqQ8gde5JS0QA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkuRJ0wACgkQW4otUKDs0NPHFgCeL2rByqTvPXu+N4eCdlAsFFfk
-4+sAoOJseyYgWbnKqOKoQK737hAc/5DF
-=nMz9
------END PGP SIGNATURE-----
-
---=-x1w80BvCqQ8gde5JS0QA--
-
+We're better than that.
