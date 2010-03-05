@@ -1,129 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531Ab0CEEoy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 23:44:54 -0500
-Received: from THUNK.ORG ([69.25.196.29]:59655 "EHLO thunker.thunk.org"
+	id S1755551Ab0CEEq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 23:46:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49014 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755330Ab0CEEow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 23:44:52 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 fixes
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1NnPP9-0001Y1-52@closure.thunk.org>
-Date: Thu, 04 Mar 2010 23:44:51 -0500
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1755398Ab0CEEq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 23:46:26 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux@arm.linux.org.uk,
+       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
+       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1267740711.30572.5.camel@e102109-lin.cambridge.arm.com>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+	 <1267712512.31654.176.camel@mulgrave.site>
+	 <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
+	 <20100304154103.GA9384@linux-sh.org>
+	 <1267726049.6526.543.camel@e102109-lin.cambridge.arm.com>
+	 <1267738660.22204.77.camel@pasglop>
+	 <1267740711.30572.5.camel@e102109-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 15:34:10 +1100
+Message-ID: <1267763650.22204.92.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 2010-03-04 at 22:11 +0000, Catalin Marinas wrote:
+> On Thu, 2010-03-04 at 21:37 +0000, Benjamin Herrenschmidt wrote:
+> > On Thu, 2010-03-04 at 18:07 +0000, Catalin Marinas wrote:
+> > > I'm not familiar with SH but for PIO devices the flushing shouldn't be
+> > > more aggressive. For the DMA devices, Russell suggested that we mark
+> > > the page as clean (set PG_dcache_clean) in the DMA API to avoid the
+> > > default flushing.
+> > 
+> > I really like that idea, as I said earlier, but I'm worried about the I$
+> > side of things. IE. What I'm trying to say is that I can't see how to do
+> > that optimisation without ending up with missing I$ invalidations or
+> > doing way too many of them, unless we have a separate bit to track I$
+> > state.
+> 
+> But does this optimisation really matter? I think with careful checking
+> in set_pte_at(), you are not going to invalidate the I-cache more than
+> necessary. If the original page wasn't pte_present() you would need to
+> do the I-cache invalidation. The other cases where set_pte_at() is
+> called for LRU (pte_young) or COW (pte_write) we can avoid the extra
+> invalidation.
 
-Please pull from:
+No. Not on PIPT (or non aliasing VIPT).
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+Take your typical glibc text page. This is a struct page that will be
+mapped in almost every process in your system. You do not want to do the
+icache inval every time. Once it's been cleaned once, it's clean for
+subsequent mappings. Only VIVT needs such multiple invalidates I suppose
+though in this case you probably do everything differently anyways.
 
-to get the latest bug fixes and improvements for the 2.6.34 merge
-window.
+Cheers,
+Ben.
 
-Thanks,
-
-                                                - Ted
-
-Akinobu Mita (3):
-      ext4: cleanup to use ext4_group_first_block_no()
-      ext4: cleanup to use ext4_grp_offs_to_block()
-      ext4: consolidate in_range() definitions
-
-Akira Fujita (3):
-      ext4: Fix insertion point of extent in mext_insert_across_blocks()
-      ext4: Fix the NULL reference in double_down_write_data_sem()
-      ext4: Code cleanup for EXT4_IOC_MOVE_EXT ioctl
-
-Curt Wohlgemuth (1):
-      ext4: Fix BUG_ON at fs/buffer.c:652 in no journal mode
-
-Dmitry Monakhov (7):
-      ext4: mount flags manipulation cleanup
-      ext4: trivial quota cleanup
-      ext4: deprecate obsoleted mount options
-      ext4: fix error handling in migrate
-      ext4: explicitly remove inode from orphan list after failed direct io
-      ext4: Handle non empty on-disk orphan link
-      ext4: Fix ext4_quota_write cross block boundary behaviour
-
-Eric Sandeen (3):
-      ext4: fix async i/o writes beyond 4GB to a sparse file
-      ext4: Fix optional-arg mount options
-      ext4: move __func__ into a macro for ext4_warning, ext4_error
-
-Frank Mayhar (1):
-      ext4: Convert BUG_ON checks to use ext4_error() instead
-
-Jan Kara (1):
-      ext4: Release page references acquired in ext4_da_block_invalidatepages
-
-Jiaying Zhang (4):
-      ext4: Add flag to files with blocks intentionally past EOF
-      ext4: mechanical rename some of the direct I/O get_block's identifiers
-      ext4: use ext4_get_block_write in buffer write
-      ext4: Use direct_IO_no_locking in ext4 dio read
-
-Leonard Michlmayr (1):
-      ext4: correctly calculate number of blocks for fiemap
-
-Roel Kluin (1):
-      ext4: add missing error checking to ext4_expand_extra_isize_ea()
-
-Tao Ma (1):
-      ext4: Fix fencepost error in chosing choosing group vs file preallocation.
-
-Theodore Ts'o (6):
-      ext4: Add block validity check when truncating indirect block mapped inodes
-      ext4: Add new tracepoint for jbd2_cleanup_journal_tail
-      ext4: Add new tracepoints to debug delayed allocation space functions
-      ext4: Use slab allocator for sub-page sized allocations
-      ext4: Use bitops to read/modify EXT4_I(inode)->i_state
-      ext4: Reserve INCOMPAT_EA_INODE and INCOMPAT_DIRDATA feature codepoints
-
-Toshiyuki Okajima (1):
-      ext4: make "offset" consistent in ext4_check_dir_entry()
-
-Venkatesh Pallipadi (1):
-      ext4: fix up rb_root initializations to use RB_ROOT
-
-dingdinghua (2):
-      jbd2: delay discarding buffers in journal_unmap_buffer
-      jbd2: clean up an assertion in jbd2_journal_commit_transaction()
-
- fs/ext4/balloc.c            |   35 +---
- fs/ext4/block_validity.c    |    4 +-
- fs/ext4/dir.c               |   14 +-
- fs/ext4/ext4.h              |  106 +++++++---
- fs/ext4/ext4_jbd2.c         |    4 +-
- fs/ext4/ext4_jbd2.h         |   24 +++
- fs/ext4/extents.c           |  260 ++++++++++++++++++------
- fs/ext4/file.c              |    4 +-
- fs/ext4/fsync.c             |    2 +-
- fs/ext4/ialloc.c            |   32 ++--
- fs/ext4/inode.c             |  459 +++++++++++++++++++++++++++++-------------
- fs/ext4/ioctl.c             |   12 +-
- fs/ext4/mballoc.c           |   73 +++----
- fs/ext4/mballoc.h           |    9 +-
- fs/ext4/migrate.c           |   35 ++--
- fs/ext4/move_extent.c       |   36 ++--
- fs/ext4/namei.c             |   63 +++---
- fs/ext4/resize.c            |  102 ++++------
- fs/ext4/super.c             |  342 ++++++++++++++++++++------------
- fs/ext4/xattr.c             |   56 +++---
- fs/jbd2/checkpoint.c        |    1 +
- fs/jbd2/commit.c            |   13 +-
- fs/jbd2/journal.c           |  132 +++++++++++++
- fs/jbd2/transaction.c       |   43 +++--
- include/linux/jbd2.h        |   11 +-
- include/trace/events/ext4.h |  101 ++++++++++
- include/trace/events/jbd2.h |   28 +++
- 27 files changed, 1344 insertions(+), 657 deletions(-)
