@@ -1,63 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105Ab0CERdt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:33:49 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:57774 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648Ab0CERds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:33:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ndp7EHOgWuO2cmfo4pwp+GIC3I72OMeHUAxTIkTFCBAA/jXMioCC8rlZBJcjkKe08H
-         ZQoXONpexnDcBKxD4UHfgMLDvopFtKVJSv9PQ838XaBk/w8MCjkPGtI52LUMfAe5YNj6
-         UQnpkzxnbkgkwGz1vVkHunWyB+dVNXX9DOfj4=
-Date: Fri, 5 Mar 2010 18:33:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 2/2] perf: Walk through the relevant events only
-Message-ID: <20100305173342.GE5244@nowhere>
-References: <1267772426-5944-1-git-send-regression-fweisbec@gmail.com> <1267772426-5944-2-git-send-regression-fweisbec@gmail.com> <1267781969.16716.55.camel@laptop> <20100305170331.GB5244@nowhere> <1267809629.4942.0.camel@laptop>
+	id S1755179Ab0CERge (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:36:34 -0500
+Received: from nox.protox.org ([88.191.38.29]:39130 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754213Ab0CERgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 12:36:32 -0500
+Date: Fri, 5 Mar 2010 18:36:25 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Miller <davem@davemloft.net>, skeggsb@gmail.com, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       daniel@fooishbar.org, dri-devel@lists.sf.net, mingo@elte.hu,
+       torvalds@linux-foundation.org
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305173625.GA2069@barney.localdomain>
+References: <20100305154009.GC2505@tempa>
+ <20100305.074835.159078083.davem@davemloft.net>
+ <20100305160434.GE2505@tempa>
+ <20100305.080626.09630724.davem@davemloft.net>
+ <20100305163129.03b52797@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267809629.4942.0.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100305163129.03b52797@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-12-10)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 06:20:29PM +0100, Peter Zijlstra wrote:
-> On Fri, 2010-03-05 at 18:03 +0100, Frederic Weisbecker wrote:
+On Fri, Mar 05, 2010 at 04:31:29PM +0000, Alan Cox wrote:
+> On Fri, 05 Mar 2010 08:06:26 -0800 (PST)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Daniel Stone <daniel@fooishbar.org>
+> > Date: Fri, 5 Mar 2010 18:04:34 +0200
 > > 
-> > Now isn't the problem more in the fact that most of the swevents
-> > should be tracepoints? 
+> > > So you're saying that there's no way to develop any reasonable body of
+> > > code for the Linux kernel without committing to keeping your ABI
+> > > absolutely rock-solid stable for eternity, no exceptions, ever? Cool,
+> > > that worked really well for Xlib.
+> > 
+> > read() still works the same way it did 30 years ago last time I
+> > checked.
 > 
-> No, different interface, and I don't want to require TRACE=y, I already
-> utterly hate that x86 requires PERF=y.
+> Thats disingenous as read() is a method not an interface. It's also wrong
+> because read() and write() behaviour has changed in various ways and old
+> code broke because of it in subtle ways. Keeping the same method behaviour
+> would have required things like new versions of read() for 64bit files,
+> nonblocking, mandlocks, NFS, networking, etc all of which changed the
+> core read() behaviour. I've yet to see anyone meaningfully argue it was
+> the wrong thing to do.
+> 
+> Alan
 > 
 
-This could be reduced to the strict minimum, say CONFIG_TRACEPOINT
-and some code around just to support the event ids.
+Also GPU API is way more complex than any others kernel API
+(at least to my knowledge) and you can't know if the API you
+have is the good one until you have a fully working & fast
+3D driver ... and that takes either a lot of time with
+a lot of people.
 
-Software events could be made optionals too.
-
-I just don't like this multiplication of probe points of different
-natures in a single point. That's wasteful.
-
-
-> I already
-> utterly hate that x86 requires PERF=y.
-
-
-Me too, and it's my bad, so me double too. Sometimes I think
-we should make BREAKPOINTs optional, default y. I just don't know
-if something like this that has always been builtin can be made
-optional.
-
+Cheers,
+Jerome
