@@ -1,79 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842Ab0CEUkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:40:42 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:50376 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754725Ab0CEUkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:40:37 -0500
-Date: Fri, 5 Mar 2010 21:40:29 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
- governor
-Message-ID: <20100305204029.GB20554@elf.ucw.cz>
-References: <20100303000649.757684000@intel.com>
- <20100303000849.278509000@intel.com>
- <4B8DADB9.1040302@xenotime.net>
- <20100303215453.GG2579@ucw.cz>
- <1267662469.16916.1020.camel@localhost.localdomain>
- <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
- <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
+	id S1753153Ab0CEUto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:49:44 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33967 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800Ab0CEUtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:49:43 -0500
+Date: Fri, 5 Mar 2010 12:49:41 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       geert@linux-m68k.org
+Subject: Re: [PATCH] v3 kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100305204941.GI6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100305025435.GA6836@linux.vnet.ibm.com> <201003051818.10486.elendil@planet.nl> <20100305201051.GG6764@linux.vnet.ibm.com> <201003052131.12199.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <201003052131.12199.elendil@planet.nl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >You should say what the setting does; you can mention below what MSR
-> >it corresponds to, but "Control IA32_ENERGY_PERF_BIAS setting" is not
-> >suitable user documentation.
-> >
-> >> Also, the expectation here is that kernel will do the right thing by
-> >> default. The option here is to the user who_knows_what_he_is_doing to
-> >> override the kernel default.
-> >
-> >You did not give user enough information to do anything intelligent...
+On Fri, Mar 05, 2010 at 09:31:10PM +0100, Frans Pop wrote:
+> (Dropping cloos as that address is bouncing my mails.)
 > 
-> I have rephrased it in the newer version sent yday with more info.
-
-Good.
-
-> >> > Also... does it make change to tweak the setting during 
-> >runtime? Maybe
-> >> > different settings for AC and battery power?
-> >> 
-> >> Yes. Matthew mentioned in other response aboue setting this based on
-> >> freq. For the CPUs that support this feature currently, we don't see
-> >> advantage in setting this feature at run time.
-> >
-> >If the feature is useless, then why set it at all?
+> On Friday 05 March 2010, Paul E. McKenney wrote:
+> > s/you're over-designing this/you are freaking paranoid/
 > 
-> I just said changing it at run time doesn't give us benefits. Not
->that
+> Whatever makes you happy :-)
 
-That can be only true if it does not give benefits period... AC and
-battery power are quite different scenarios.
+;-)
 
-> the feature is useless. Having the default value for the tunable in
-> mid-range does increase energy-efficiency than the tunable being
-> at performance level.
+> > With that change, I plead guilty to charges as read.  But again, I am
+> > worried about the case where one person generates the .config file
+> > and someone else is reading it.
+> 
+> Not sure that's very relevant. A person reading it will still get the same 
+> oldfashioned basic info as when a build is done from a tree that's not 
+> under an SCM. And he won't really be in a position where he can fix the 
+> errors anyway.
 
-So... what does it really do? What is the difference in power
-consumption, and what is the difference in performance?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But the person reading it is in a position to ask the person sending the
+.config to fix their build system.
+
+							Thanx, Paul
