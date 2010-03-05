@@ -1,93 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172Ab0CEQ3s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:29:48 -0500
-Received: from winfree.gag.com ([192.133.104.8]:41624 "EHLO winfree.gag.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753319Ab0CEQ3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:29:47 -0500
-X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 11:29:46 EST
-From: Bdale Garbee <bdale@gag.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Gertjan van Wingerde <gwingerde@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       stelian@popies.net, Alan Piszcz <ap@solarrain.com>, tytso@mit.edu,
-       Eric Sandeen <sandeen@redhat.com>, debian-gcc@lists.debian.org
-Subject: Re: dump/restore not supported for ext4
-In-Reply-To: <alpine.DEB.2.00.1003050412260.17723@p34.internal.lan>
-References: <alpine.DEB.2.00.1003041704230.17723@p34.internal.lan>
-	<4B90A366.9080201@gmail.com>
-	<alpine.DEB.2.00.1003050412260.17723@p34.internal.lan>
-Date: Fri, 05 Mar 2010 09:21:31 -0700
-Message-ID: <87lje620z8.fsf@gag.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
+	id S1753363Ab0CEQhS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:37:18 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51693 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752194Ab0CEQhQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:37:16 -0500
+Date: Fri, 5 Mar 2010 16:38:17 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Luca Barbieri <luca.barbieri@gmail.com>,
+       Daniel Stone <daniel@fooishbar.org>, David Miller <davem@davemloft.net>,
+       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305163817.143ee6f5@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.1003050814410.3788@localhost.localdomain>
+References: <20100305123834.0d9c6277@lxorguk.ukuu.org.uk>
+	<20100305.063718.211238119.davem@davemloft.net>
+	<20100305151754.GB2505@tempa>
+	<20100305.072612.186421758.davem@davemloft.net>
+	<20100305154009.GC2505@tempa>
+	<ff13bc9a1003050756rca44e03uffbfa3090f96e0ac@mail.gmail.com>
+	<20100305161311.656711e0@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003050814410.3788@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+> The thing I objected to, in the VERY BEGINNING in this thread, i the fact 
+> that the thing was done in such a way that it's basically impossible to 
+> support the old/new ABI at all! 
 
-On Fri, 5 Mar 2010 09:27:52 -0500 (EST), Justin Piszcz <jpiszcz@lucidpixels=
-.com> wrote:
-> I tried the following package in sid:
-> http://http.us.debian.org/debian/pool/main/d/dump/dump_0.4b42-2_amd64.deb
->=20
-> Why Debian does not include this in testing is beyond me..??
+What did you expect them to do. They said when you first forced a merge
+that they would do this. They have no contract that I am aware of to
+deliver you compatibility, in fact quite the reverse they said they
+wouldn't be.
 
-I just looked and it appears that this version of dump has never been
-successfully built on mips or mipsel, which blocks it from being
-promoted to testing. Checking the autobuilder build logs, it looks like
-the root cause may be a toolchain problem, though it's an error message
-I've never seen before.=20
+Then you attribute to malice what was done as a cleanup by people
+who've pointedly never to commited to a constant API yet
 
-https://buildd.debian.org/fetch.cgi?&pkg=3Ddump&ver=3D0.4b42-2&arch=3Dmips&=
-stamp=3D1259085131&file=3Dlog
+ "That commit seems to _on_purpose_ try to avoid at all cost being 
+  compatible."
 
-Chasing down that error message, it looks like this is indeed believed
-to a toolchain issue, fixed by:
+Great way to make friends.
 
-http://gcc.gnu.org/ml/gcc-patches/2009-09/msg02070.html
-
-I don't know, offhand, if this patch is reflected in the current Debian
-gcc packages.  If so, then perhaps I just need to request that the mips
-and mipsel autobuilders retry the builds?  CC'ing the debian-gcc team
-for advice.
-
-> BTW: The man page needs to be fixed in dump as well then (in the new
-> version)
-
-Thanks for noticing those!  I've made those changes in my git repo for
-the next Debian package upload.  Hopefully Stelian will also fix those
-in his next release, I see you've copied him on this.
-
-> Quite nice!
-
-Thanks for testing this so thoroughly.  I myself back up two servers
-with ext4 file systems using amanda and dump quite happily.
-
-Bdale
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUBS5EvizqTYZbAldlBAQrByRAAvkqNCuwSbd9tnAtIMK+yRm596DVXNsB6
-Vk3g09IhNF/zaR6o970NkRLCypPhJpFDaDiZNsNKYfVD/+dlwe9XCx/d3+2jewyz
-bNhsWfZ/9iTPLRQfE/J56NchwAADhWYJfCOil8EJ5m2eUaj/ABcl7Rpc9o/i4Kcr
-UEgfwQimbeifheFJce4/7mcscdcggVfGajttRzBVIpm2FlPdGs+o0G2gHNkz124I
-MjlF9kQ3rlq7JNp8gWwZQmNIAwzaajsi/a2u3fv7w9XjKJpO6gcqw3js3vI1sQ/W
-32yceoBajNuhSbBU1KM3TP5bDr+79w99qkgQfaMu/8cKlXjU+s4TbST1Zu9VtpKi
-gPaK6tbYkSmKY58JRe8gZJFoyhA/gRRgIHkR2SZ/iSXWipER3J3lk8cCuNHU8tyV
-fjbuwKLRX4MXWeyCBYs4lf59YGiGFSzClzNNFy4DpWbHY7aGuIRK1t+mzpvQ4kqB
-U2jzHfMeRb8JXXzMNEkHek/XDHKkmmRejbsQCg+RKrzmrbU/lt8w5DZL2yU5mrq2
-3KxrVPtQgD+Tt4kQa5KXZTHDArXrP7QzbMrXKaRHEJZzghaZVHofnIfzsL5W1/pX
-S9/9R45A0e3G1skx4SS8fcl17oyp4afFpi4wosFa8z7V2AguHhb3SJ2/XYjz6Kdk
-Oqy3ubmPLUM=
-=KTOj
------END PGP SIGNATURE-----
---=-=-=--
+Alan
