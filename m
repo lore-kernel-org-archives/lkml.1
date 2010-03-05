@@ -1,83 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280Ab0CESCb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 13:02:31 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:43339 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753581Ab0CESCa (ORCPT
+	id S1755340Ab0CESC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 13:02:58 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:54066 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581Ab0CESC5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 13:02:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=BfwDYGApTWdv8kXuHGoaKxc1MdAm3nwIKQQ9us+jyBcFwURm/Qt8dJEfoboPwNtYOxHfj7JByxWl5ggZxut2L5x3eFrqZL1+o0UFXOJrzjVayC8TJhBeeBwb4NvYApf+;
-Date: Fri, 5 Mar 2010 10:02:44 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Miller <davem@davemloft.net>
-Cc: xavier.bestel@free.fr, skeggsb@gmail.com, airlied@linux.ie,
-       crmafra2@gmail.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, daniel@fooishbar.org, dri-devel@lists.sf.net,
-       mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: Making Xorg easier to test
-Message-ID: <20100305100244.0d118451@jbarnes-piketon>
-In-Reply-To: <20100305.095406.115464327.davem@davemloft.net>
-References: <20100305154143.GD2505@tempa>
-	<20100305.074932.225568964.davem@davemloft.net>
-	<1267811424.3405.110.camel@skunk>
-	<20100305.095406.115464327.davem@davemloft.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Fri, 5 Mar 2010 13:02:57 -0500
+X-IronPort-AV: E=Sophos;i="4.49,588,1262592000"; 
+   d="scan'208";a="326750063"
+Subject: Re: Merge of the 'write_inode' branch from the VFS tree
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20100305154823.GV30031@ZenIV.linux.org.uk>
+References: <1267802800.5174.6.camel@localhost.localdomain>
+	 <20100305154823.GV30031@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Fri, 05 Mar 2010 13:02:35 -0500
+Message-ID: <1267812155.5174.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 05 Mar 2010 18:02:36.0186 (UTC) FILETIME=[095BA7A0:01CABC8E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Mar 2010 09:54:06 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+On Fri, 2010-03-05 at 15:48 +0000, Al Viro wrote:
 
-> From: Xavier Bestel <xavier.bestel@free.fr>
-> Date: Fri, 05 Mar 2010 18:50:24 +0100
+> Or I can do a new branch, put updated pair of patches there (hch has sent
+> the updated variants my way) and ask you to rebuild NFS tree.  Which will
+> also suck, since it adds PITA for you and you are completely innocent in
+> that clusterfuck.
 > 
-> > On Fri, 2010-03-05 at 07:49 -0800, David Miller wrote:
-> >> From: Daniel Stone <daniel@fooishbar.org>
-> >> Date: Fri, 5 Mar 2010 17:41:43 +0200
-> >> 
-> >> > I understand that you guys are upset about this, so maybe you'd like to
-> >> > donate, say, 10% of your developer base to help out? That'd be pretty
-> >> > ace.
-> >> 
-> >> You have to support less than %10 of the amount of hardware we have to
-> >> support.
-> > 
-> > You can't compare a network card and a GPU. The latter is way more
-> > complex to code for.
-> 
-> I wasn't talking specifically about network cards.  But if you want
-> specific examples...
-> 
-> How about the x86 or parisc cpu, and all their derivatives, are those
-> complex enough for you? :-)
-> 
-> I've worked on OpenGL capable grapics card drivers of various
-> vintages, and I honestly don't think there is anything in there more
-> complex than what we have to deal with in the kernel.
+> Suggestions?  I'd love to get out of that mess with minimal PITA for
+> everyone involved and minimally messed tree...
 
-I think you must be saying this for the sake of argument.  The
-complexity lies not in the programming interfaces exposed by the device
-(those indeed are complex, more so than some CPUs, less so than
-others).  The complexity lies in the fact that those interfaces change
-from revision to revision, and even between boards sharing the same
-chip.  And more than that, the interfaces exposed to applications are
-spread across many software components, some of which send commands to
-the hardware directly.  The problem Linus ran into is directly related
-to this fact, because it involved the interfaces between a few of these
-components.
+Hi Al,
 
-So from that perspective, the graphics stack is the most complex one in
-Linux by a long shot.  It's even worse than if we had STREAMS
-networking with a ton of different modules up in userspace messing with
-protocol. :)
+I'd be fine with rebuilding the NFS tree. I have all the patches which
+depend on write_inode in their own separate branch anyway, so I'd only
+have to rebase that branch and then merge it with the main NFS client
+tree...
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Cheers
+  Trond
