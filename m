@@ -1,94 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898Ab0CEXr2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:47:28 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:44402 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755407Ab0CEXr0 convert rfc822-to-8bit (ORCPT
+	id S1755900Ab0CEXug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:50:36 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48782 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755328Ab0CEXue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:47:26 -0500
+	Fri, 5 Mar 2010 18:50:34 -0500
+X-Sasl-enc: jI6Dk7qY0OrSQazqELQ82riXygUQicqoHUeAzjeBVYZt 1267833033
+Message-ID: <4B9198C2.9080202@imap.cc>
+Date: Sat, 06 Mar 2010 00:50:26 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.8) Gecko/20100205 SeaMonkey/2.0.3
 MIME-Version: 1.0
-In-Reply-To: <20100305123527.d6d68e56.akpm@linux-foundation.org>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru> <20100205203236.GC1475@oksana.dev.rtsoft.ru> 
-	<fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com> 
-	<20100209191620.GA24539@oksana.dev.rtsoft.ru> <20100305120015.a2008f46.akpm@linux-foundation.org> 
-	<fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com> 
-	<20100305123527.d6d68e56.akpm@linux-foundation.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 5 Mar 2010 16:47:06 -0700
-X-Google-Sender-Auth: b30373697a51e757
-Message-ID: <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: tytso@mit.edu, Corbin Simpson <mostawesomedude@gmail.com>,
+       Daniel Stone <daniel@fooishbar.org>, David Miller <davem@davemloft.net>,
+       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [git pull] drm request 3
+References: <20100305151754.GB2505@tempa> <20100305.072612.186421758.davem@davemloft.net> <20100305154009.GC2505@tempa> <20100305.074835.159078083.davem@davemloft.net> <20100305160434.GE2505@tempa> <20100305164615.GC6000@thunk.org> <e7bd23c31003051138k14436b42t5bf544c375413c6c@mail.gmail.com> <20100305215106.GE6000@thunk.org>
+In-Reply-To: <20100305215106.GE6000@thunk.org>
+X-Enigmail-Version: 1.0.1
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 1:35 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 5 Mar 2010 13:28:32 -0700
-> Grant Likely <grant.likely@secretlab.ca> wrote:
->
->> On Fri, Mar 5, 2010 at 1:00 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->> > On Tue, 9 Feb 2010 22:16:20 +0300
->> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
->> >
->> >> On Tue, Feb 09, 2010 at 10:13:11AM -0700, Grant Likely wrote:
->> >> [...]
->> >> > > +static int __init of_gpio_notifier_init(void)
->> >> > > +{
->> >> > > + __ __ __ return blocking_notifier_chain_register(&gpio_notifier, &of_gpio_nb);
->> >> > > +}
->> >> > > +arch_initcall(of_gpio_notifier_init);
->> >> >
->> >> > Another concern; __if any gpio chips get registered before this
->> >> > arch_initcall (not sure if it is possible or not), then those chips
->> >> > won't get registered with the of gpio infrastructure.
->> >>
->> >> Technically, it is possible, but registering usual GPIO controllers
->> >> in arch_initcall feels not quite right approach in the first place
->> >> (and, btw, it won't work most of the time, because even early drivers
->> >> do not register itself earlier than subsys_initcall).
->> >>
->> >> And arch gpio controllers (like QE GPIO) are usually device-less,
->> >> and they use of_mm_gpiochip_add(), so we fully control them.
->> >>
->> >> Plus I don't see any reason why we couldn't move
->> >> of_gpio_notifier_init() into, say, postcore_initcall, if we ever
->> >> need it.
->> >>
->> >
->> > I'll assume that you're OK with that response.
->>
->> No, not really,
->
-> You left me dangling :(
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Sorry, got caught up with other things.
+Am 2010-03-05 22:51 schrieb tytso@mit.edu:
+> On Fri, Mar 05, 2010 at 11:38:46AM -0800, Corbin Simpson wrote:
+>> If distros want to run weird experiments on their users, let them!
+>> Sure, sometimes bad things happen, but sometimes good things happen
+>> too. ConsoleKit, DeviceKit, HAL, NetworkManager, KMS, yaird, dracut,
+>> Plymouth, the list goes on and on.
+> 
+> So what distro would you recommend for people who want to do kernel
+> development, do kernel testing, and do kernel bisects to help us find
+> bugs?
+> 
+> Are you basically saying, "Kernel people shouldn't use Fedora"?  So
+> what should we use instead?
 
->> I'm not really very comfortable with the whole
->> approach being taken.  And, while I acked the first patch in the
->> series, that patch isn't needed by anything except patches 2, 3 & 4.
->>
->> Also, the OF stuff is a moving target at the moment with all the
->> rework is being undertaken.  I'd rather let this series sit out for
->> another merge cycle so that the underlying OF stuff can settle down.
->
-> OK, please take it up on-list?
+It's been "Kernel people shouldn't use Nvidia" ever since I started
+tinkering with device drivers for Linux. Of course there's hope that
+nouveau will one day change that, but we're obviously not quite there yet.
 
-Okay.  I'm making this reply on list.
+Jm2c
+Tilman
 
-Anton, as I've stated before, I'm not thrilled with the approach.
-Combine that with the changes being made to drivers/of right now and
-the addition device tree to ARM and other architectures, my preference
-is to let this patch series lie fallow for one more merge cycle so
-that things can settle out in the OF infrastructure code.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-g.
+iEYEARECAAYFAkuRmMIACgkQQ3+did9BuFvPcgCfesxRGK/XabLxAEY143aDYwdN
+Z7EAnjAbZKyUutNfzl9enda05vJLSRDV
+=e26J
+-----END PGP SIGNATURE-----
