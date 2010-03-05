@@ -1,69 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402Ab0CEEgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 23:36:00 -0500
-Received: from gate.crashing.org ([63.228.1.57]:42126 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219Ab0CEEf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 23:35:57 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
-       Catalin Marinas <catalin.marinas@arm.com>, x0082077@ti.com,
-       sshtylyov@ru.mvista.com, tom.leiming@gmail.com, bigeasy@linutronix.de,
-       oliver@neukum.org, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       santosh.shilimkar@ti.com, Pavel Machek <pavel@ucw.cz>, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100304214030.GI13417@n2100.arm.linux.org.uk>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
-	 <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-	 <1267712512.31654.176.camel@mulgrave.site>
-	 <1267738114.22204.70.camel@pasglop>
-	 <20100304214030.GI13417@n2100.arm.linux.org.uk>
+	id S1755435Ab0CEEhE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 23:37:04 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:39319 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755282Ab0CEEhB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 23:37:01 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ken Kawasaki <ken_kawasaki@spring.nifty.jp>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Mar 2010 15:31:13 +1100
-Message-ID: <1267763473.22204.89.camel@pasglop>
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 05 Mar 2010 04:36:54 +0000
+Message-ID: <1267763815.2819.297.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH 1/2] firmware: Correct attribution of Sierra Wireless CIS
+ files
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 21:40 +0000, Russell King - ARM Linux wrote:
-> On Fri, Mar 05, 2010 at 08:28:34AM +1100, Benjamin Herrenschmidt wrote:
-> > I don't think there's a core or driver problem in this specific case. As
-> > we discussed earlier, I believe the problem is that ARM considers a
-> > fresh page out of the page cache as "clean" instead of "dirty", and
-> > inverting that like we do on powerpc will fix their problem too.
-> 
-> The only concern is that it means we treat anonymous pages as dirty
-> by default.
->
-> That's quite sub-optimal since we take care (eg) on write faults to
-> copy the page and take care of the cache issues while we do that -
+These files have nothing to do with the pcmcia-cs project and are
+distributed without any clear licence.
 
-If you do the cache handling inside your copy_user_highpage() then you
-can just set PG_arch_1 stuff there.
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+The only source I can find for these files is
+<http://www.sierrawireless.com/resources/faq/PC_Card/AirCard555/Aircard_Linux.tar> linked from <https://sierrawireless.custhelp.com/app/answers/detail/a_id/179/kw/linux>.
 
-> whether that be remapping the page to be coherent with the user
-> address, or cleaning each cache line as we copy the data.
-> 
-> Of course, the simple solution is to also arrange for PG_arch_1 to be
-> set in this case.
+David Hinds who ran the pcmcia-cs project disclaims any knowledge of
+these files.
 
-Right.
-
-Cheers,
 Ben.
+
+ firmware/WHENCE |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/firmware/WHENCE b/firmware/WHENCE
+index e8e550f..839a790 100644
+--- a/firmware/WHENCE
++++ b/firmware/WHENCE
+@@ -635,9 +635,6 @@ File: cis/MT5634ZLX.cis
+       cis/RS-COM-2P.cis
+       cis/COMpad2.cis
+       cis/COMpad4.cis
+-      cis/SW_555_SER.cis
+-      cis/SW_7xx_SER.cis
+-      cis/SW_8xx_SER.cis
+ 
+ Licence: GPL
+ 
+@@ -645,6 +642,18 @@ Originally developed by the pcmcia-cs project
+ 
+ --------------------------------------------------------------------------
+ 
++Driver: SERIAL_8250_CS - Serial PCMCIA adapter
++
++File: cis/SW_555_SER.cis
++File: cis/SW_7xx_SER.cis
++File: cis/SW_8xx_SER.cis
++
++Licence: Unknown
++
++Distributed by Sierra Wireless
++
++--------------------------------------------------------------------------
++
+ Driver: PCMCIA_SMC91C92 - SMC 91Cxx PCMCIA
+ 
+ File: ositech/Xilinx7OD.bin
+-- 
+1.6.6.2
+
 
 
