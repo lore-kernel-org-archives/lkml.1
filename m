@@ -1,54 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323Ab0CEEOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 23:14:55 -0500
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:64544 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755226Ab0CEEOx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 23:14:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Q6RrZ11wYFt34CaSbL/scAlIsyWlXCONUjO5ncjp0SGN3wkt6k8zicGGT1J49lLLDp
-         kd2UomSmiB1kg+pXgdJN/hsjtYEb0abZ+GQSymDMu2hwN4eze594Z/Vkie/sg4+jNupn
-         aARl+X7JmiVARi/LVo/JnYonnqkwgcXXbrPGw=
-MIME-Version: 1.0
-In-Reply-To: <1267710847.10871.102.camel@gandalf.stny.rr.com>
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
-	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
-Date: Fri, 5 Mar 2010 12:14:52 +0800
-Message-ID: <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: rostedt@goodmis.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1755361Ab0CEEfc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 23:35:32 -0500
+Received: from gate.crashing.org ([63.228.1.57]:42117 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755275Ab0CEEfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 23:35:31 -0500
+Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20100304214435.GJ13417@n2100.arm.linux.org.uk>
+References: <20100302172947.27766.61539.stgit@e102109-lin.cambridge.arm.com>
+	 <20100304164416.GD13417@n2100.arm.linux.org.uk>
+	 <1267727802.6526.545.camel@e102109-lin.cambridge.arm.com>
+	 <20100304214435.GJ13417@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 15:32:09 +1100
+Message-ID: <1267763529.22204.90.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 9:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Wed, 2010-03-03 at 14:04 +0800, Américo Wang wrote:
->> I am not sure if this is ftrace's fault, but it is ftrace who triggers
->> the soft lockup. On my machine, it is pretty easy, just run:
->>
->> echo function_graph > current_tracer
->>
->> I found this when 2.6.33-rc7, but forgot to report here. I just tried
->> today's
->> Linus tree, it still has this problem.
->
-> So this is not present in 2.6.33-rc6? If you know approximately when it
-> appeared, would you be able to do a git bisect on it?
->
 
-I can't say that because I didn't try -rc6.
+> As I just realised, this is going to subject all pages placed into
+> userspace with a D cache flush - even anonymous pages, and those
+> which we've been careful to deal with the cache issues already (eg,
+> via the COW page copying code.)
+> 
+> I think all the copypage functions need to set PG_dcache_clean on the
+> new pages once their copy has completed.
+> 
+> I wonder if there's any other anonymous page creating functions which
+> could do with a similar treatment...
 
-Ok, let me try to do a bisect, but since weekend is coming, I can't do
-any testing during weekend, so will try it next Monday.
+Do we do anything other than COW and zero page ? clear_user_page() I
+suppose could deal with that if you do the cache bits there.
 
-Thanks!
+Cheers,
+Ben.
+
