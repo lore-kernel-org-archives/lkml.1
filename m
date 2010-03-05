@@ -1,64 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826Ab0CEULA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:11:00 -0500
-Received: from mamba.crocodile.org ([216.218.215.112]:57625 "EHLO
-	periplum.crocodile.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755743Ab0CEUK7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:10:59 -0500
-X-Greylist: delayed 1410 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 15:10:58 EST
-From: Vadim Zaliva <lord@crocodile.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH 1/1] integer overflow issue in 'appletouch' driver
-Date: Fri, 5 Mar 2010 11:47:14 -0800
-Message-Id: <E64899AA-23A5-49D7-8C91-B94A095290E0@crocodile.org>
-Cc: linux-kernel@vger.kernel.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Mime-Version: 1.0 (Apple Message framework v1077)
-X-Mailer: Apple Mail (2.1077)
+	id S1755838Ab0CEULF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:11:05 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:50741 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755832Ab0CEULB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:11:01 -0500
+Date: Fri, 5 Mar 2010 12:10:51 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       geert@linux-m68k.org, cloos@jhcloos.com
+Subject: Re: [PATCH] v3 kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100305201051.GG6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100305025435.GA6836@linux.vnet.ibm.com> <201003050443.30431.elendil@planet.nl> <20100305052014.GA6869@linux.vnet.ibm.com> <201003051818.10486.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201003051818.10486.elendil@planet.nl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This small patch is fixing an integer overflow issue in 'appletouch' driver.
+On Fri, Mar 05, 2010 at 06:18:08PM +0100, Frans Pop wrote:
+> On Friday 05 March 2010, Paul E. McKenney wrote:
+> > But let's work out what the error strategy should be.  The below are my
+> > initial guesses, I of course must defer to those more familiar with
+> > kbuild and kconfig than am I.
+> 
+> That's not me either :-)
+> I see you've not CCed linux-kbuild@vger.k.o so far. Suggest you add them 
+> with the next version.
 
-In particular, reading data from Geyser 2 touchpads used on post Oct
-2005 Apple PowerBooks the driver was casting X and Y coordinates
-values to 'signed char'. Testing on one of such PowerBooks I have
-noticed that touchpad always generates positive values, but some of
-them are greater that 127, and thus, when cast to 'signed char' being
-interpreted as a negative.
+Ah, will do on v5.
 
-Such bigger values have been observed infrequently, closer to the
-edges of a touchpad, so the problem was not very visible. 
-Nevertheless, the patch would potentially improve touchpad
-driver accuracy.
+> > 1.	Oddball SCM conditions should not cause the build to fail.
+> > 	"Arrrgh!!!  What dot-file do I need to remove in order for
+> > 	my builds to start succeeding???"
+> 
+> Agreed.
+> 
+> > 2.	Errors should leave some hint in the .config file, rather
+> > 	than simply mysteriously omitting the version/dirty information.
+> 
+> I don't see why this should be treated any different than 
+> CONFIG_LOCALVERSION_AUTO. Either setlocalversion returns something (on 
+> stdout) and you use it, or it returns nothing and you don't.
+> 
+> With CONFIG_LOCALVERSION_AUTO errors get ignored (tested by adding 'exit 1' 
+> early in the script) and output to stderr simply gets displayed (without 
+> any real identification where it comes from).
+> 
+> If users expect the SCM version info to be there and it isn't, they will 
+> investigate.
 
+Understood, but I am concerned about the case where one person creates
+the configuration and another is looking at the .config file.
 
-diff -uNr linux-source-2.6.31.orig/drivers/input/mouse/appletouch.c linux-source-2.6.31/drivers/input/mouse/appletouch.c
---- linux-source-2.6.31.orig/drivers/input/mouse/appletouch.c	2009-09-09 15:13:59.000000000 -0700
-+++ linux-source-2.6.31/drivers/input/mouse/appletouch.c	2010-03-05 11:05:11.921394055 -0800
-@@ -205,8 +205,8 @@
- 	bool			overflow_warned;
- 	int			x_old;		/* last reported x/y, */
- 	int			y_old;		/* used for smoothing */
--	signed char		xy_cur[ATP_XSENSORS + ATP_YSENSORS];
--	signed char		xy_old[ATP_XSENSORS + ATP_YSENSORS];
-+	u8		    xy_cur[ATP_XSENSORS + ATP_YSENSORS];
-+	u8		    xy_old[ATP_XSENSORS + ATP_YSENSORS];
- 	int			xy_acc[ATP_XSENSORS + ATP_YSENSORS];
- 	int			idlecount;	/* number of empty packets */
- 	struct work_struct	work;
-@@ -531,7 +531,7 @@
- 
- 	for (i = 0; i < ATP_XSENSORS + ATP_YSENSORS; i++) {
- 		/* accumulate the change */
--		signed char change = dev->xy_old[i] - dev->xy_cur[i];
-+		int change = dev->xy_old[i] - dev->xy_cur[i];
- 		dev->xy_acc[i] -= change;
- 
- 		/* prevent down drifting */
+> > 4.      Should the splat in the .config file identify the file and
+> >         line number?  For example: "-error: scripts/confdata.c:nnnn"
+> 
+> IMHO definitely not. I think you're over-designing this. It's not really 
+> core functionality. My viewpoint is simple: a version string should 
+> contain version info, and nothing else.
 
+s/you're over-designing this/you are freaking paranoid/
 
+With that change, I plead guilty to charges as read.  But again, I am
+worried about the case where one person generates the .config file
+and someone else is reading it.  And my paranoia has proven quite useful
+over the years.  ;-)
+
+							Thanx, Paul
+
+> > After this is done, I am going to return to something easier to
+> > understand, like the Linux kernel's RCU implementation.  ;-)
+> 
+> :-)
