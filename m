@@ -1,58 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427Ab0CEQiu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:38:50 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:35224 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360Ab0CEQis (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:38:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZIUu9g37dXpzFlhCr6j2cHVrwKsw3bxsBCFy5fDXzKMQyDC4ng/73nAm9kPqSHwrXI
-         b7jy54UBPht3m2tHi2I24TsKXZWhctGxh05PDR1xNmIOj80isiG7GCGrHnfaGLbLJLdI
-         ktTEUhjMXDxwhmgNRq1iBUpxerFyb96nrmF3U=
-Date: Fri, 5 Mar 2010 17:38:41 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H . Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Archs <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 1/2] perf: Introduce new perf_save_regs() for hot regs
-	snapshot
-Message-ID: <20100305163838.GA5244@nowhere>
-References: <1267605529.25158.75.camel@laptop> <1267758486-30499-2-git-send-regression-fweisbec@gmail.com> <4B911E57.60004@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B911E57.60004@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753769Ab0CEQns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:43:48 -0500
+Received: from tenax.loup.net ([209.169.16.66]:49278 "EHLO tenax.loup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752520Ab0CEQnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:43:46 -0500
+Date: Fri, 5 Mar 2010 09:31:37 -0700
+Message-Id: <201003051631.o25GVbsD010752@alien.loup.net>
+From: Mike Hayward <hayward@loup.net>
+To: foosaa@gmail.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, linux-mm@kvack.org
+In-reply-to: <f875e2fe1003041823o507ecb36qfd7af7d27de7683d@mail.gmail.com>
+	(message from s ponnusa on Thu, 4 Mar 2010 21:23:09 -0500)
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+	 <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
+	 <201003041631.o24GVl51005720@alien.loup.net>
+	 <f875e2fe1003041012m680ffc87i50099ed011526440@mail.gmail.com>
+	 <201003050042.o250gsUC007947@alien.loup.net> <f875e2fe1003041823o507ecb36qfd7af7d27de7683d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 10:08:07AM -0500, Masami Hiramatsu wrote:
-> > +void perf_arch_save_regs(struct pt_regs *regs, unsigned long ip, int skip)
-> 
-> Hmm, why would you call it 'save_regs' ?
-> It seems that this function is just for fixing registers 
-> instead of saving it into somewhere...
-> 
-> Thank you,
+ > The data written through linux cannot be read back by any other means.
+ > Does that prove any data corruption? I wrote a signature on to a bad
+ > drive. (With all the before mentioned permutation and combinations).
+ > The program returned 0 (zero) errors and said the data was
+ > successfully written to all the sectors of the drive and it had taken
+ > 5 hrs (The sample size of the drive is 20 GB). And I tried to verify
+ > it using another program on linux. It produced read errors across a
+ > couple of million sectors after almost 13 hours of grinding the
+ > hdd.
 
+It is normal, although low probability, for what we call a 'stable'
+storage device to lose data for numerous reasons.  It detects this by
+returning io error if a checksum doesn't match.  An I/O error is not
+data corruption, it is what we would call data loss or unavailability.
 
-Hmm, save_regs() describes what it does: you pass
-a pt_regs and it saves registers inside. But it
-has also a kind of fixup thing as it also rewinds.
+ > I can understand the slow remapping process during the write
+ > operations. But what if the drive has used up all the available
+ > sectors for mapping and is slowly dying. The SMART data displays
+ > thousands of seek, read, crc errors and still linux does not notify
+ > the program which has asked it to write some data. ????
 
-I'm not sure using a fixup thing for the naming
-is correct as we are not starting with initial
-regs passed to the function (just a raw buffer).
+SMART data is not really all that standardized, and it is quite normal
+to see the drive correcting errors with rereads, reseeks, ecc, etc. so
+determining drive health really is manufacturer and model specific.
 
-What about perf_save_caller_regs() ?
+If it remaps either from it's own retry or from the operating system
+retrying, it should of course return a succesful write even if it
+takes a minute or two.  Once it is out of blocks to remap with it must
+return io error or timeout.
 
+All that being said, if a drive returns success after writing, and you
+read different data than you "successfully wrote", as opposed to an
+error, this is data corruption.  My number 1 rule of storage is "thou
+shalt not silently corrupt data".  It should be incredibly unlikely
+due to sufficiently strong checksum that silent corruption should
+occur.  If you are detecting it this frequently, clearly something is
+not working as intended.  This means the storage system is not
+sufficiently "stable" to rely upon it's own checksums and return codes
+for correctness.
+
+This is why some apps may resort to replication or to adding
+additional checksums or ecc at a higher layer, but this should
+generally be unnecessary.  I would use such techniques primarily to
+prove corruption defects in kernels, drivers, or hardware, or if, as
+Alan mentioned, I were storing an extremely large amount of data.  For
+performance reasons, my software (which does store huge amounts of
+data) relies primarily upon replication (to work around both
+unavailability and corruption) as opposed to parity techniques and
+this is effectively what you are doing to prove data corruption here.
+
+Hopefully you haven't found high probability data corruption :-) Can
+you reproduce the problem with different manufacturers or models of
+drives?  If so, the problem is most likely not in the drive.  I'd say
+that's job number one and it's easy to try.  Short of doing a white
+box inspection of the kernel, you could narrow the problem down by
+swapping out kernels (try another much older or newer linux kernel,
+and try another os) and various pieces of hardware.
+
+If everything points to the linux kernel, then you'll have to start
+instrumenting the kernel to track down where, exactly, it returns
+success after having logged ata errors.  If the write didn't
+eventually succeed after retries, but returned success to your app,
+you'll have your kernel bug and be famous :-)
+
+Or you could start there if you are confident it isn't the hardware or
+your program.  Thankfully you are using linux and have an open kernel
+data path to work with.
+
+If you prove the drive is lying, which manufacturer makes it?  You
+could call up the manufacturer with your reproducible problem.  They
+would probably like to know if their controller is corrupting.
+
+- Mike
