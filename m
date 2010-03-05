@@ -1,63 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271Ab0CEAWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 19:22:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48703 "EHLO hera.kernel.org"
+	id S1756623Ab0CEAYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 19:24:19 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:34916 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755178Ab0CEAWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 19:22:46 -0500
-Message-ID: <4B904EA8.3050709@kernel.org>
-Date: Fri, 05 Mar 2010 09:22:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1756024Ab0CEAYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 19:24:17 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] drm request 3
+Date: Thu, 4 Mar 2010 19:24:01 -0500
+User-Agent: KMail/1.13.1 (Linux/2.6.33-crc; KDE/4.4.1; x86_64; ; )
+Cc: Dave Airlie <airlied@gmail.com>,
+       Stephane Marchesin <stephane.marchesin@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <21d7e9971003041535g9dbfe46k67f64aa4219da0b8@mail.gmail.com> <alpine.LFD.2.00.1003041538380.3751@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003041538380.3751@localhost.localdomain>
 MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] improve stop_machine performance
-References: <20100304212034.GA3171@sgi.com>
-In-Reply-To: <20100304212034.GA3171@sgi.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Mar 2010 00:22:04 +0000 (UTC)
+Message-Id: <201003041924.02082.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 03/05/2010 06:20 AM, Dimitri Sivanich wrote:
-> On systems with large cpu counts, we've been seeing long bootup times
-> associated with stop_machine operations.  I've noticed that by simply
-> removing the creation of the workqueue and associated percpu variables
-> in subsequent stop_machine calls, we can reduce boot times on a
-> 1024 processor SGI UV system from 25-30 (or more) minutes down to 12
-> minutes.
+On Thursday 04 March 2010 18:53:32 Linus Torvalds wrote:
 > 
-> The attached patch does this in a simple way by removing the
-> stop_machine_destroy interface, thereby by leaving the workqueues and
-> percpu variables for later use once they are created.
+> On Fri, 5 Mar 2010, Dave Airlie wrote:
+> > 
+> > I'm not saying it doesn't happen in other drivers from time to time, but 
+> > when it does its treated as regression, for nouveau and STAGING that 
+> > isn't what the Nouveau project (which Stephane mostly speaks for) seems 
+> > to want at this stage.
 > 
-> If people are against having these areas around after boot, maybe there
-> are some alternatives that will still allow for this optimization:
+> The problem with "at this stage" is that the stage has apparently been 
+> on-going for several years. 
 > 
->  - Set a timer to go off after a configurable number of minutes, at
->    which point the workqueue areas will be deleted.
+> Even if Stepane doesn't care, people inside RedHat/Fedora must care. Are 
+> you guys simply planning on never supporting F12 with 2.6.34?  I'd expect 
+> it to be a _major_ pain to have that whole hardcoded "X and kernel must 
+> always change in lockstep".
 > 
->  - Keep the stop_machine_destroy function, but somehow run it at the tail
->    end of boot (after modules have loaded), rather than running it at
->    every stop_machine call.
+> And the sad part is, it would be so nice if the X server would just dlopen 
+> the right thing automatically, so that the low-level driver wouldn't even 
+> need to care. It already does the whole "discover which driver to load" 
+> part, wouldn't it be nice if that code had automatic versioning too, and 
+> then a low-level driver really wouldn't have to care, everything would 
+> automatically do the right thing just when the version changes.
+> 
+> Of course, the distro would still have to make all the different versions 
+> of libdrm available to users, but now updating one wouldn't screw over the 
+> others. So if you had a known-good setup with nouveau-0.0.15, you could 
+> install a nouveau-0.0.16 thing and _know_ that it won't affect that 
+> previous install at all.
+> 
+> And yeah, I realize that those version numbers are "wrong". Normal library 
+> versioning rules about patchlevel not changing semantics are obviously 
+> broken here. But maybe the rules could even try to first start with the 
+> exact version, ie do a "driver-x.y.z.so" load, then a "driver-x.y.so" 
+> load, then a "driver-x.so" load and finally a "driver.so" load.
+> 
+> But I guess that nothing even does that drmGetVersion() until the nouveau 
+> driver has already been loaded. Which kind of forces the low-level drivers 
+> to do any such versioning on their own. 
+> 
+> But wouldn't it be nice if something like this was done at a higher level, 
+> so that the drivers really wouldn't even need to care?
 
-Yeah, I can indeed imagine that creating and destroying all those
-workers on every module load during boot would be very costly if there
-are lots of CPUs.  How about sharing the migration thread so that it
-serves as one-per-cpu uninterruptible RT simple thread pool?  It's not
-like these things can run taking their turns anyway.  I'll go ahead
-and make something up.
+Why not support a _minimal_ ABI that will always let X start with nouveau?
+Having X working does not mean that all forms of acceleration have to 
+work too.  If X starts, even if is slow, users can easily check logs which
+should have a message saying 'ABI change - upgrade your ...'.
 
-Thanks.
-
--- 
-tejun
+Thoughts?
+Ed Tomlinson
