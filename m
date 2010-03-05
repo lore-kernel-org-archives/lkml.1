@@ -1,148 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927Ab0CEMDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 07:03:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:63889 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819Ab0CEMDT (ORCPT
+	id S1752111Ab0CEMDf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 07:03:35 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:4079 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996Ab0CEMDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 07:03:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:message-id:x-mailer;
-        b=ofRnzbYy0Kph0/AfNyWFpTjPJRxOST5qzm4rXsH9P0j919V0MzCtKCE6QP4WfuNr7H
-         nSANtGcPyU/fqANNK+dRzjW1hYT85lGV6HV6A8exzGO/q6aRnG9r/IyqNWqdCBDfBZ7k
-         2Umk2goB9c3GGCdzy2PblDZiyGDS8/PXfNJVQ=
-From: Maurice Dawson <mauricedawson2699@googlemail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8] Staging: comedi: fix brace and printk() coding style issues in adl_pci9111.c
-Date: Fri,  5 Mar 2010 12:03:02 +0000
-Message-Id: <1267790582-11840-1-git-send-email-mauricedawson2699@googlemail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 5 Mar 2010 07:03:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=aXN+m5MI6vNbJUosjOfNFmkuoEm34luGh/T9PE/8hX7eOQxhDZAixIHexL0AUDldo
+	yAkfAHw9g0BZgQim45Avg==
+MIME-Version: 1.0
+In-Reply-To: <4B8E3F77.6070201@cn.fujitsu.com>
+References: <4B8E3F77.6070201@cn.fujitsu.com>
+Date: Fri, 5 Mar 2010 04:03:26 -0800
+Message-ID: <6599ad831003050403v2e988723k1b6bf38d48707ab1@mail.gmail.com>
+Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy and 
+	mems_allowed
+From: Paul Menage <menage@google.com>
+To: miaox@cn.fujitsu.com
+Cc: David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch to the adl_pci9111.c file that fixes brace warnings and, printk() should include Kern_facility level warnings, found by the checkpatch.pl tool
+On Wed, Mar 3, 2010 at 2:52 AM, Miao Xie <miaox@cn.fujitsu.com> wrote:
+> if MAX_NUMNODES > BITS_PER_LONG, loading/storing task->mems_allowed or mems_allowed in
+> task->mempolicy are not atomic operations, and the kernel page allocator gets an empty
+> mems_allowed when updating task->mems_allowed or mems_allowed in task->mempolicy. So we
+> use a rwlock to protect them to fix this probelm.
 
-Signed-off-by Maurice Dawson <mauricedawson2699@googlemail.com>
----
- drivers/staging/comedi/drivers/adl_pci9111.c |   36 ++++++++++++-------------
- 1 files changed, 17 insertions(+), 19 deletions(-)
+Rather than adding locks, if the intention is just to avoid the
+allocator seeing an empty nodemask couldn't we instead do the
+equivalent of:
 
-diff --git a/drivers/staging/comedi/drivers/adl_pci9111.c b/drivers/staging/comedi/drivers/adl_pci9111.c
-index 340950d..e2092a8 100644
---- a/drivers/staging/comedi/drivers/adl_pci9111.c
-+++ b/drivers/staging/comedi/drivers/adl_pci9111.c
-@@ -1085,9 +1085,8 @@ static int pci9111_ai_insn_read(struct comedi_device *dev,
- 
- 	pci9111_ai_channel_set(CR_CHAN((&insn->chanspec)[0]));
- 
--	if ((pci9111_ai_range_get()) != CR_RANGE((&insn->chanspec)[0])) {
-+	if ((pci9111_ai_range_get()) != CR_RANGE((&insn->chanspec)[0]))
- 		pci9111_ai_range_set(CR_RANGE((&insn->chanspec)[0]));
--	}
- 
- 	pci9111_fifo_reset();
- 
-@@ -1108,11 +1107,10 @@ static int pci9111_ai_insn_read(struct comedi_device *dev,
- 
- conversion_done:
- 
--		if (resolution == PCI9111_HR_AI_RESOLUTION) {
-+		if (resolution == PCI9111_HR_AI_RESOLUTION)
- 			data[i] = pci9111_hr_ai_get_data();
--		} else {
-+		else
- 			data[i] = pci9111_ai_get_data();
--		}
- 	}
- 
- #ifdef AI_INSN_DEBUG
-@@ -1149,9 +1147,8 @@ static int pci9111_ao_insn_read(struct comedi_device *dev,
- {
- 	int i;
- 
--	for (i = 0; i < insn->n; i++) {
-+	for (i = 0; i < insn->n; i++)
- 		data[i] = dev_private->ao_readback & PCI9111_AO_RESOLUTION_MASK;
--	}
- 
- 	return i;
- }
-@@ -1240,12 +1237,13 @@ static int pci9111_attach(struct comedi_device *dev,
- 	int error, i;
- 	const struct pci9111_board *board;
- 
--	if (alloc_private(dev, sizeof(struct pci9111_private_data)) < 0) {
-+	if (alloc_private(dev, sizeof(struct pci9111_private_data)) < 0)
- 		return -ENOMEM;
--	}
-+
- 	/*  Probe the device to determine what device in the series it is. */
- 
--	printk("comedi%d: " PCI9111_DRIVER_NAME " driver\n", dev->minor);
-+	printk(KERN_ERR "comedi%d: " PCI9111_DRIVER_NAME " driver\n",
-+								dev->minor);
- 
- 	for (pci_device = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, NULL);
- 	     pci_device != NULL;
-@@ -1278,13 +1276,14 @@ static int pci9111_attach(struct comedi_device *dev,
- 		}
- 	}
- 
--	printk("comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
-+	printk(KERN_ERR "comedi%d: no supported board found! "
-+						"(req. bus/slot : %d/%d)\n",
- 	       dev->minor, it->options[0], it->options[1]);
- 	return -EIO;
- 
- found:
- 
--	printk("comedi%d: found %s (b:s:f=%d:%d:%d) , irq=%d\n",
-+	printk(KERN_ERR "comedi%d: found %s (b:s:f=%d:%d:%d) , irq=%d\n",
- 	       dev->minor,
- 	       pci9111_boards[i].name,
- 	       pci_device->bus->number,
-@@ -1320,7 +1319,7 @@ found:
- 	io_base = pci_resource_start(pci_device, 2);
- 	io_range = pci_resource_len(pci_device, 2);
- 
--	printk("comedi%d: 6503 registers at address 0x%4lx [0x%4lx]\n",
-+	printk(KERN_ERR "comedi%d: 6503 registers at address 0x%4lx [0x%4lx]\n",
- 	       dev->minor, io_base, io_range);
- 
- 	dev->iobase = io_base;
-@@ -1338,7 +1337,8 @@ found:
- 	if (pci_device->irq > 0) {
- 		if (request_irq(pci_device->irq, pci9111_interrupt,
- 				IRQF_SHARED, PCI9111_DRIVER_NAME, dev) != 0) {
--			printk("comedi%d: unable to allocate irq  %u\n",
-+			printk(KERN_ERR "comedi%d: "
-+						"unable to allocate irq  %u\n",
- 			       dev->minor, pci_device->irq);
- 			return -EINVAL;
- 		}
-@@ -1415,15 +1415,13 @@ static int pci9111_detach(struct comedi_device *dev)
- 	}
- 	/*  Release previously allocated irq */
- 
--	if (dev->irq != 0) {
-+	if (dev->irq != 0)
- 		free_irq(dev->irq, dev);
--	}
- 
- 	if (dev_private != 0 && dev_private->pci_device != 0) {
--		if (dev->iobase) {
-+		if (dev->iobase)
- 			comedi_pci_disable(dev_private->pci_device);
--		}
--		pci_dev_put(dev_private->pci_device);
-+			pci_dev_put(dev_private->pci_device);
- 	}
- 
- 	return 0;
--- 
-1.6.3.3
+current->mems_allowed |= new_mask;
+current->mems_allowed = new_mask;
 
+i.e. effectively set all new bits in the nodemask first, and then
+clear all old bits that are no longer in the new mask. The only
+downside of this is that a page allocation that races with the update
+could potentially allocate from any node in the union of the old and
+new nodemasks - but that's the case anyway for an allocation that
+races with an update, so I don't see that it's any worse.
+
+Paul
