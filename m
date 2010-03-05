@@ -1,55 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523Ab0CEV3o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:29:44 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:44566 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755088Ab0CEV3n (ORCPT
+	id S1755090Ab0CEVfr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:35:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42449 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752622Ab0CEVfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:29:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=D5A3Q4IJ+HPTy3ySHVT9+akWreIHJUgk9KHvZgffDCafNFtmXcsTPXwdKBbdfKmrWq
-         rPSoRgjWWKWEjB7GisXa+7jsvUQyGSjRTZLvrM+s7xegozxjtJnk1ssn4P2P+4MKhlsC
-         L2bOyl1Nyt1KxeWW2xZjhAgyMppunibkokw9A=
-MIME-Version: 1.0
-In-Reply-To: <10d816431003051314i3e87a2d2yab344826d14a310a@mail.gmail.com>
-References: <10d816431003051314i3e87a2d2yab344826d14a310a@mail.gmail.com>
-Date: Fri, 5 Mar 2010 13:29:42 -0800
-X-Google-Sender-Auth: 2ad3ba3fa38e33de
-Message-ID: <1f1b08da1003051329ta5b905dq69eef81aedd4f463@mail.gmail.com>
-Subject: Re: Different definition in div_sc and clocksource_cyc2ns
-From: john stultz <johnstul@us.ibm.com>
-To: Lin Mac <mkl0301@gmail.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Mar 2010 16:35:37 -0500
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+In-Reply-To: <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
+	 <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 22:35:33 +0100
+Message-ID: <1267824933.4997.9.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 1:14 PM, Lin Mac <mkl0301@gmail.com> wrote:
-> While working with the clocksource, I found that the relation of cycle
-> and nanosecond of div_sc and clocksource_cyc2ns is different.
->
-> linux-2.6.33
-> div_sc in include/linux/clockchips.h suggests that clock_ticks =
-> (nanoseconds * factor) >> shift.
+On Fri, 2010-03-05 at 13:22 -0800, Stephane Eranian wrote:
+> > The two serious ones, AJ106 and AJ68 are no fix and are listed as such
+> > in all errata I can find, including the 7[23]00 series.
+> >
+> Not E74xx. I think it would be fine to drop LBR with PEBS as the work-around
+> to AJ106.
+> 
+> > I checked the 65nm Core2Duo, Xeon 5200 and Xeon 7[23]00 spec updates.
+> > Going by that it seems the full model 15 family is broken and I'll leave
+> > the patch as is.
+> 
+> But the E74xx are okay and you are excluding them. Worst case you should
+> provide an override.
 
-> However, clocksource_cyc2ns in include/linux/clocksource.h suggest
-> nanoseconds=(cycles*mult)>>shift.
-
-You're comparing similar helper conversion functions from two
-different subsystems.
-
-Both use similar shifted math, but the div_sc() is for clockchips.h,
-which is used by the clockevents code to trigger interrupts at a
-specified time, while clocksource_cyc2ns() is for the clocksource
-code, which converts  clockosurce cycles into nanoseconds for
-timekeeping.
+>From what I can tell E74xx is model 29, which would be just fine with
+this patch, this patch only marks model 15 as broken.
 
 
-thanks
--john
+
