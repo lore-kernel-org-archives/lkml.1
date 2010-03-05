@@ -1,188 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951Ab0CEXMm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:12:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754797Ab0CEXMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:12:40 -0500
-Date: Sat, 6 Mar 2010 00:10:54 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: [PATCH,RESEND -mm 2/2] umh && creds: kill subprocess_info->cred
-	logic
-Message-ID: <20100305231054.GB22614@redhat.com>
-References: <20100226205300.GA26171@redhat.com> <20100226200357.GB16092@redhat.com> <20100226182325.GA31674@redhat.com> <20100225181500.GA18008@redhat.com> <16951.1267207238@redhat.com> <17603.1267209668@redhat.com> <20100226200313.GA16092@redhat.com> <23363.1267216958@redhat.com> <29907.1267226649@redhat.com> <20100305225243.GA21790@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100305225243.GA21790@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755858Ab0CEXRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:17:50 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:60616 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753336Ab0CEXRs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 18:17:48 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Ken Kawasaki <ken_kawasaki@spring.nifty.jp>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100305203317.c4aa5b5c.ken_kawasaki@spring.nifty.jp>
+References: <1267763815.2819.297.camel@localhost>
+	 <20100305203317.c4aa5b5c.ken_kawasaki@spring.nifty.jp>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-eo8GxZd0FFsXTWc6k6S9"
+Date: Fri, 05 Mar 2010 23:17:43 +0000
+Message-ID: <1267831063.2819.361.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: [PATCH 1/2] firmware: Correct attribution of Sierra Wireless
+ CIS files
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that nobody ever changes subprocess_info->cred we can kill this
-member and related code. ____call_usermodehelper() always runs in the
-context of freshly forked kernel thread, it has the proper ->cred
-copied from its parent kthread, keventd.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
----
+--=-eo8GxZd0FFsXTWc6k6S9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
- include/linux/cred.h |    1 
- include/linux/kmod.h |    1 
- kernel/cred.c        |   54 ---------------------------------------------------
- kernel/kmod.c        |   19 -----------------
- 4 files changed, 75 deletions(-)
+On Fri, 2010-03-05 at 20:33 +0900, Ken Kawasaki wrote:
+>=20
+> > The only source I can find for these files is
+> > <http://www.sierrawireless.com/resources/faq/PC_Card/AirCard555/Aircard=
+_Linux.tar> linked from <https://sierrawireless.custhelp.com/app/answers/de=
+tail/a_id/179/kw/linux>.
+> >=20
+>=20
+> SierraWireless provides the CIS by GPL (see URL below).
+>
+> http://sierrawireless.custhelp.com/app/answers/detail/a_id/203/related/1/=
+sno/0
 
---- mm/include/linux/cred.h~2_KILL_INFO_CRED	2010-02-26 21:45:28.000000000 +0100
-+++ mm/include/linux/cred.h	2010-02-26 22:07:38.000000000 +0100
-@@ -156,7 +156,6 @@ extern int copy_creds(struct task_struct
- extern struct cred *cred_alloc_blank(void);
- extern struct cred *prepare_creds(void);
- extern struct cred *prepare_exec_creds(void);
--extern struct cred *prepare_usermodehelper_creds(void);
- extern int commit_creds(struct cred *);
- extern void abort_creds(struct cred *);
- extern const struct cred *override_creds(const struct cred *);
---- mm/include/linux/kmod.h~2_KILL_INFO_CRED	2010-02-26 21:45:28.000000000 +0100
-+++ mm/include/linux/kmod.h	2010-02-26 22:07:38.000000000 +0100
-@@ -55,7 +55,6 @@ enum umh_wait {
- struct subprocess_info {
- 	struct work_struct work;
- 	struct completion *complete;
--	struct cred *cred;
- 	char *path;
- 	char **argv;
- 	char **envp;
---- mm/kernel/cred.c~2_KILL_INFO_CRED	2010-02-26 21:45:28.000000000 +0100
-+++ mm/kernel/cred.c	2010-02-26 22:07:38.000000000 +0100
-@@ -347,60 +347,6 @@ struct cred *prepare_exec_creds(void)
- }
- 
- /*
-- * prepare new credentials for the usermode helper dispatcher
-- */
--struct cred *prepare_usermodehelper_creds(void)
--{
--#ifdef CONFIG_KEYS
--	struct thread_group_cred *tgcred = NULL;
--#endif
--	struct cred *new;
--
--#ifdef CONFIG_KEYS
--	tgcred = kzalloc(sizeof(*new->tgcred), GFP_ATOMIC);
--	if (!tgcred)
--		return NULL;
--#endif
--
--	new = kmem_cache_alloc(cred_jar, GFP_ATOMIC);
--	if (!new)
--		return NULL;
--
--	kdebug("prepare_usermodehelper_creds() alloc %p", new);
--
--	memcpy(new, &init_cred, sizeof(struct cred));
--
--	atomic_set(&new->usage, 1);
--	set_cred_subscribers(new, 0);
--	get_group_info(new->group_info);
--	get_uid(new->user);
--
--#ifdef CONFIG_KEYS
--	new->thread_keyring = NULL;
--	new->request_key_auth = NULL;
--	new->jit_keyring = KEY_REQKEY_DEFL_DEFAULT;
--
--	atomic_set(&tgcred->usage, 1);
--	spin_lock_init(&tgcred->lock);
--	new->tgcred = tgcred;
--#endif
--
--#ifdef CONFIG_SECURITY
--	new->security = NULL;
--#endif
--	if (security_prepare_creds(new, &init_cred, GFP_ATOMIC) < 0)
--		goto error;
--	validate_creds(new);
--
--	BUG_ON(atomic_read(&new->usage) != 1);
--	return new;
--
--error:
--	put_cred(new);
--	return NULL;
--}
--
--/*
-  * Copy credentials for the new process created by fork()
-  *
-  * We share if we can, but under some circumstances we have to generate a new
---- mm/kernel/kmod.c~2_KILL_INFO_CRED	2010-02-26 21:45:28.000000000 +0100
-+++ mm/kernel/kmod.c	2010-02-26 22:07:38.000000000 +0100
-@@ -153,8 +153,6 @@ static int ____call_usermodehelper(void 
- 	struct subprocess_info *sub_info = data;
- 	int retval;
- 
--	BUG_ON(atomic_read(&sub_info->cred->usage) != 1);
--
- 	/* Unblock all signals */
- 	spin_lock_irq(&current->sighand->siglock);
- 	flush_signal_handlers(current, 1);
-@@ -162,10 +160,6 @@ static int ____call_usermodehelper(void 
- 	recalc_sigpending();
- 	spin_unlock_irq(&current->sighand->siglock);
- 
--	/* Install the credentials */
--	commit_creds(sub_info->cred);
--	sub_info->cred = NULL;
--
- 	/* We can run anywhere, unlike our parent keventd(). */
- 	set_cpus_allowed_ptr(current, cpu_all_mask);
- 
-@@ -193,8 +187,6 @@ void call_usermodehelper_freeinfo(struct
- {
- 	if (info->cleanup)
- 		(*info->cleanup)(info);
--	if (info->cred)
--		put_cred(info->cred);
- 	kfree(info);
- }
- EXPORT_SYMBOL(call_usermodehelper_freeinfo);
-@@ -250,8 +242,6 @@ static void __call_usermodehelper(struct
- 	pid_t pid;
- 	enum umh_wait wait = sub_info->wait;
- 
--	BUG_ON(atomic_read(&sub_info->cred->usage) != 1);
--
- 	/* CLONE_VFORK: wait until the usermode helper has execve'd
- 	 * successfully We need the data structures to stay around
- 	 * until that is done.  */
-@@ -374,12 +364,6 @@ struct subprocess_info *call_usermodehel
- 	sub_info->path = path;
- 	sub_info->argv = argv;
- 	sub_info->envp = envp;
--	sub_info->cred = prepare_usermodehelper_creds();
--	if (!sub_info->cred) {
--		kfree(sub_info);
--		return NULL;
--	}
--
-   out:
- 	return sub_info;
- }
-@@ -430,9 +414,6 @@ int call_usermodehelper_exec(struct subp
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	int retval = 0;
- 
--	BUG_ON(atomic_read(&sub_info->cred->usage) != 1);
--	validate_creds(sub_info->cred);
--
- 	helper_lock();
- 	if (sub_info->path[0] == '\0')
- 		goto out;
+The text 'GNU General Public License' links to GPL version *3*, and
+would also have done so in 2008 when that page was apparently first
+published.
 
+> Yes. The files below are not developed by the pcmcia-cs project
+> but provided by SierraWireless.
+
+So, assuming that these files are copyrightable, your patch to add them
+violated the conditions of the licence on at least three grounds:
+
+1. The Linux source tree does not include a copy of the GPL version 3
+2. These files are identified as licenced under 'GPL' which in the
+context of Linux implies version 2
+3. The copyright holder is not identified correctly
+
+To avoid confusing people, I do not think we should add a copy of GPLv3
+to the tree.  I will therefore submit a patch to remove these files.  I
+will submit a separate patch for linux-firmware to fix copyright
+information there.
+
+Ben.
+
+--=20
+Ben Hutchings
+Q.  Which is the greater problem in the world today, ignorance or apathy?
+A.  I don't know and I couldn't care less.
+
+--=-eo8GxZd0FFsXTWc6k6S9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIVAwUAS5GREee/yOyVhhEJAQJsQg//QEL7/4atu9n1N6XjtGlMX9grhabTKoRK
+5Gv/gTHb+GZwlynD3+gvP19qxHF6NK3EdAww7rUESoJ2lyZVNrB7FuKkA+aowsSJ
+ZyGdiWso3k8rCvY8XDf79KeXzRvkBJLJv3KDe9zQT+jW523rulyCuPZxWQFE0JpN
+bJwEpDMgKNSzOFMsNpDPTZUUvHADOApiNVdZO7r2Mr6cFWHDzqQU1kpMsO7xROQo
+0dNLcarhoPv0sn7w2QT9dRcrrkQjY+g4dGEOm3vjX+7Tvjc9GpuHjQlIO6teN2HA
+CGVGBoSMrnc6vDrp1TnWrBaQUZTKa8OlKp0MbiLfuuECcq7dR+jnEKRFLM2L3qX2
+2DS612F/cgkEHx0ms7ajgYLXiWKAO1CezXkSbwyvER5cjgRwR7Ct2hMQ39WsYXHM
+vS/YGP9LaZkbws2FRi9KbVEe3OaZ3h58MT7K1rbBJq+GVDocZS8RnWjEMU7JPKWC
+nj+q7uaHOMh7HI+bkbCq520HR6LaYydxy6TZ9SqY08GlaFQasd3corWq5vYurNa5
+j+V6T99r76q+QeBPUpgwRWL/o+9yIUrCbLsfJ0yVkdBuzUtyq7s7+UnWc+/1Xqty
+5MYxB0Fx3vas8qycp4a+BnLmYVQajUcUoBwCFuWVxGLKVGn9apLAIOqiFobyW6JM
+1F9/7wxA6Gw=
+=crqT
+-----END PGP SIGNATURE-----
+
+--=-eo8GxZd0FFsXTWc6k6S9--
