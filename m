@@ -1,132 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812Ab0CEWYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 17:24:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:44179 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348Ab0CEWX7 (ORCPT
+	id S1756160Ab0CEWZr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 17:25:47 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54073 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755337Ab0CEWZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 17:23:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
-         :content-type;
-        b=R5f07AuctxfttUbHkg/KtN24YQJBl9daXPQLMTCCJJMDy8bBP4ozYcZc4d6uIhRJEv
-         fvfGwHRuCPhWGrwHItrLM5TQhYqyTKGx08iuQkWf/3WAcLMRNB8HlByJRW4aTFtyRmFN
-         vCMSW3uWkV7ezanJHEpUPhVEhUW1eTU0Mx4mQ=
-Date: Sat, 6 Mar 2010 06:23:47 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-cc: Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, petr@vmware.com,
-       Eli Collins <ecollins@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: commit 554f76962d3a6eb5110415f1591aca83f96a84ae hangs USB vmware-7.0.1
-Message-ID: <Pine.LNX.4.64.1003060621380.6420@boston.corp.fedex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 5 Mar 2010 17:25:46 -0500
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+In-Reply-To: <bd4cb8901003051357o357ac7adt7cb56b5deb4089dd@mail.gmail.com>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
+	 <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+	 <1267824933.4997.9.camel@laptop>
+	 <bd4cb8901003051338p1c12ceacv994bad73e81093a2@mail.gmail.com>
+	 <1267825433.4997.14.camel@laptop>
+	 <bd4cb8901003051357o357ac7adt7cb56b5deb4089dd@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 23:25:43 +0100
+Message-ID: <1267827943.4997.56.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-03-05 at 13:57 -0800, Stephane Eranian wrote:
+
+> When I read AJ68, my understanding is that it's not that you do not
+> get the interrupt. It will be delayed by one event. The buffer will become
+> full. You won't overrun the buffer, you will get the interrupt at the next
+> event. On interrupt, you have to reset the PEBS position pointer anyway.
+> There is already a disconnect between the sampling period and the actual
+> instruction sampled. That's not making the situation that much worse, unless
+> I am missing something.
+
+The current code doesn't use the buffering at all, it uses single-shot
+PEBS by keeping pebs_event_reset 0 and setting a threshold of a single
+entry, so if due to AJ68 we miss a PMI it will never come.
+
+I guess we can fudge something, but at what point does the whole thing
+stop being useful?
+
+It would end up being something with fuzzy period and fuzzy location,
+which is a loss-loss situation if you ask me.
 
 
-Linux version v2.6.33-5399-gcc7889f with reiser3 and vmware-7.0.1
-
-Starting vmware just hang even before displaying the main GUI. Reverting 
-554f76962d3a6eb5110415f1591aca83f96a84ae solves the problem.
-
-It seems vmware is trying to access the USB but this commit blocks it.
-
-So, is this a vmware problem or shall this be reverted?
-
-
-Thanks,
-Jeff
-
-
-commit 554f76962d3a6eb5110415f1591aca83f96a84ae
-Author: Oliver Neukum <oliver@neukum.org>
-Date:   Wed Jan 13 15:30:47 2010 +0100
-
-     USB: Remove BKL from poll()
-
-     Replace BKL with usbfs_mutex to protect a global counter
-     and a per file data structure
-
-     Signed-off-by: Oliver Neukum <oliver@neukum.org>
-     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-diff --git a/drivers/usb/core/devices.c b/drivers/usb/core/devices.c
-index 355dffc..175529f 100644
---- a/drivers/usb/core/devices.c
-+++ b/drivers/usb/core/devices.c
-@@ -118,6 +118,7 @@ static const char *format_endpt =
-   */
-
-  static DECLARE_WAIT_QUEUE_HEAD(deviceconndiscwq);
-+/* guarded by usbfs_mutex */
-  static unsigned int conndiscevcnt;
-
-  /* this struct stores the poll state for <mountpoint>/devices pollers */
-@@ -156,7 +157,9 @@ static const struct class_info clas_info[] =
-
-  void usbfs_conn_disc_event(void)
-  {
-+	mutex_lock(&usbfs_mutex);
-  	conndiscevcnt++;
-+	mutex_unlock(&usbfs_mutex);
-  	wake_up(&deviceconndiscwq);
-  }
-
-@@ -629,42 +632,29 @@ static ssize_t usb_device_read(struct file *file, char 
-__user *buf,
-  static unsigned int usb_device_poll(struct file *file,
-  				    struct poll_table_struct *wait)
-  {
--	struct usb_device_status *st = file->private_data;
-+	struct usb_device_status *st;
-  	unsigned int mask = 0;
-
--	lock_kernel();
-+	mutex_lock(&usbfs_mutex);
-+	st = file->private_data;
-  	if (!st) {
-  		st = kmalloc(sizeof(struct usb_device_status), GFP_KERNEL);
--
--		/* we may have dropped BKL -
--		 * need to check for having lost the race */
--		if (file->private_data) {
--			kfree(st);
--			st = file->private_data;
--			goto lost_race;
--		}
--		/* we haven't lost - check for allocation failure now */
-  		if (!st) {
--			unlock_kernel();
-+			mutex_unlock(&usbfs_mutex);
-  			return POLLIN;
-  		}
-
--		/*
--		 * need to prevent the module from being unloaded, since
--		 * proc_unregister does not call the release method and
--		 * we would have a memory leak
--		 */
-  		st->lastev = conndiscevcnt;
-  		file->private_data = st;
-  		mask = POLLIN;
-  	}
--lost_race:
-+
-  	if (file->f_mode & FMODE_READ)
-  		poll_wait(file, &deviceconndiscwq, wait);
-  	if (st->lastev != conndiscevcnt)
-  		mask |= POLLIN;
-  	st->lastev = conndiscevcnt;
--	unlock_kernel();
-+	mutex_unlock(&usbfs_mutex);
-  	return mask;
-  }
 
