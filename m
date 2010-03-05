@@ -1,44 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400Ab0CEA4W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 19:56:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52688 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754189Ab0CEA4U (ORCPT
+	id S932066Ab0CEA4h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 19:56:37 -0500
+Received: from comsmtp1.singnet.com.sg ([165.21.101.74]:42413 "EHLO
+	comsmtp1.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932122Ab0CEA4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 19:56:20 -0500
-Date: Thu, 4 Mar 2010 16:56:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] device.h drivers/base/core.c Convert dev_<level>
- macros to functions
-Message-Id: <20100304165609.20849b93.akpm@linux-foundation.org>
-In-Reply-To: <f2b24d484347c083fa87856a75c1d96102af9005.1267682641.git.joe@perches.com>
-References: <cover.1267682641.git.joe@perches.com>
-	<f2b24d484347c083fa87856a75c1d96102af9005.1267682641.git.joe@perches.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Mar 2010 19:56:34 -0500
+To: info@iris.cc
+Subject: Irish 2010 Grant Winner
+Message-ID: <1267750543.4b90568f61033@arrowana.singnet.com.sg>
+Date: Fri, 05 Mar 2010 08:55:43 +0800 (SGT)
+From: =?iso-8859-1?Q?=A9Web_Unit?= <web30131@singnet.com.sg>
+Reply-To: bnl.claimdept@live.co.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+User-Agent: SingNet WebMail
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  3 Mar 2010 22:27:23 -0800 Joe Perches <joe@perches.com> wrote:
-
-> Save ~60k in a defconfig
-> 
-> Use %pV and struct va_format
-> Format arguments are verified before printk
-
-Well that doesn't work very well.
-
-drivers/net/pcmcia/pcnet_cs.c:117: error: 'dev_info' redeclared as different kind of symbol
-include/linux/device.h:645: error: previous declaration of 'dev_info' was here
-
-there are lots of other dev_info's which will fail plus perhaps
-dev_err's, etc.
-
+£1,000,000Pounds has been awarded to you in the U.KPROMO.send to this office the following:
+Names...........
+Tel..............
+Age............
+Address..........
+Occupation.........
+Country.............
+Email:bnl.claimdept@live.co.uk
