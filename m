@@ -1,70 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362Ab0CEJyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 04:54:47 -0500
-Received: from mail.pripojeni.net ([217.66.174.14]:41459 "EHLO
-	mail.pripojeni.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753980Ab0CEJyp (ORCPT
+	id S1754379Ab0CEJzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 04:55:31 -0500
+Received: from lilzmailso01.liwest.at ([212.33.55.23]:49947 "EHLO
+	lilzmailso02.liwest.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752845Ab0CEJza (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 04:54:45 -0500
-X-Greylist: delayed 2008 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 04:54:45 EST
-From: Jiri Slaby <jslaby@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Johannes Sixt <j.sixt@viscovery.net>
-Subject: [PATCH 1/1] gitignore: do not ignore include/linux/
-Date: Fri,  5 Mar 2010 10:20:45 +0100
-Message-Id: <1267780845-10547-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.7.0.1
-In-Reply-To: <4B90CBE5.9090102@viscovery.net>
-References: <4B90CBE5.9090102@viscovery.net>
+	Fri, 5 Mar 2010 04:55:30 -0500
+Message-ID: <4B90C974.2050405@viscovery.net>
+Date: Fri, 05 Mar 2010 10:05:56 +0100
+From: Johannes Sixt <j.sixt@viscovery.net>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: gitignore broken in git 1.7.0.1: slash checks leading dirs
+References: <4B90C701.3070308@gmail.com>
+In-Reply-To: <4B90C701.3070308@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux entry in .gitignore means that everything in include/linux/
-gets ignored with git 1.7.
+Jiri Slaby schrieb:
+> having 'linux' line in .gitignore makes 'include/linux/vga_switcheroo.h'
+> to be ignored
 
-Prepend a slash to entries which are toplevel to avoid that
+That's the behavior that I would expect.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Johannes Sixt <j.sixt@viscovery.net>
----
- .gitignore |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+> though the documentation says:
+> ***
+> If the pattern does not contain a slash /, git treats it as a shell
+> glob pattern and checks for a match against the pathname without
+> leading directories.
+> ***
 
-diff --git a/.gitignore b/.gitignore
-index efab0eb..fe6ebb9 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -34,16 +34,16 @@ modules.builtin
- #
- # Top-level generic files
- #
--tags
--TAGS
--linux
--vmlinux
--vmlinuz
--System.map
--Module.markers
--Module.symvers
--!.gitignore
--!.mailmap
-+/tags
-+/TAGS
-+/linux
-+/vmlinux
-+/vmlinuz
-+/System.map
-+/Module.markers
-+/Module.symvers
-+!/.gitignore
-+!/.mailmap
- 
- #
- # Generated include files
--- 
-1.7.0.1
+and this citation confirms my expectation. Note that it says "pathname",
+not "filename". 'include/linux' is a "pathname".
 
+-- Hannes
 
