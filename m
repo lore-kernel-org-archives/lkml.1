@@ -1,77 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447Ab0CESzY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 13:55:24 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:41232 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755377Ab0CESzW (ORCPT
+	id S1755498Ab0CES7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 13:59:17 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:37591 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755471Ab0CES7M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 13:55:22 -0500
+	Fri, 5 Mar 2010 13:59:12 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=M+cn7N/WI9azCb4HP6tb8ZYOXNvJeoY+/Flc6GVvnDfqSjN79x+JxE4MNPWi9stf5
+	3ZbfXdvxgQsnpohRygevg==
 MIME-Version: 1.0
-In-Reply-To: <20100305134247.EB5E.A69D9226@jp.fujitsu.com>
-References: <20100202120457.GA19605@omega> <20100304140822.GA458@redhat.com> 
-	<20100305134247.EB5E.A69D9226@jp.fujitsu.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 5 Mar 2010 10:55:06 -0800
-Message-ID: <ac3eb2511003051055g48adcbf8p3961c45c437b5156@mail.gmail.com>
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers for 
-	child processes
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       Lennart Poettering <lennart@poettering.net>,
-       linux-kernel@vger.kernel.org, Americo Wang <xiyou.wangcong@gmail.com>,
-       James Morris <jmorris@namei.org>, Kyle McMartin <kyle@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>
+In-Reply-To: <20100305154128.890278662@chello.nl>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+Date: Fri, 5 Mar 2010 10:58:40 -0800
+Message-ID: <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 20:47, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> On 02/02, Lennart Poettering wrote:
->> >
->> > This patch adds a simple flag for each process that marks it as an
->> > "anchor" process for all its children and grandchildren. If a child of
->> > such an anchor dies all its children will not be reparented to init, but
->> > instead to this anchor, escaping this anchor process is not possible. A
->> > task with this flag set hence acts is little "sub-init".
->>
->> Lennart, this patch adds a noticeable linux-only feature. I see
->> your point, but imho your idea needs the "strong" acks. I cc'ed
->> some heavyweights, if someone dislikes your idea he can nack it
->> right now.
->>
->>
->> Security. This is beyond my understanding, hopefully the cc'ed
->> experts can help.
->>
->> Should we clear ->child_anchor flags when the "sub-init" execs? Or,
->> at least, when the task changes its credentials? Probably not, but
->> dunno.
->>
->> The more problematic case is when the descendant of the "sub-init"
->> execs the setuid application. Should we allow the reparenting to
->> !/sbin/init task in this case?
->>
->> Should we clear ->pdeath_signal after reparenting to sub-init ?
->>
->> Do we need the new security_operations->task_reparent() method ?
->> Or, perhaps we can reuse ->task_wait() if we add the "parent"
->> argument?
->>
->> Something else we should think about?
+On Fri, Mar 5, 2010 at 7:39 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> This CPU has just too many handycaps to be really useful.
 >
-> I think changing reparent rule is a bit risky. instead, I propse
-> that exporting ANCHOR flag via /proc and ps parse it.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  arch/x86/kernel/cpu/perf_event.c       |    4 ++++
+>  arch/x86/kernel/cpu/perf_event_intel.c |   27 +++++++++++++++++++++++++++
+>  2 files changed, 31 insertions(+)
 >
-> What do you think?
+> Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
+> +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+> @@ -197,6 +197,7 @@ struct x86_pmu {
+>        void            (*put_event_constraints)(struct cpu_hw_events *cpuc,
+>                                                 struct perf_event *event);
+>        struct event_constraint *event_constraints;
+> +       void            (*quirks)(void);
+>
+>        void            (*cpu_prepare)(int cpu);
+>        void            (*cpu_starting)(int cpu);
+> @@ -1380,6 +1381,9 @@ void __init init_hw_perf_events(void)
+>
+>        pr_cont("%s PMU driver.\n", x86_pmu.name);
+>
+> +       if (x86_pmu.quirks)
+> +               x86_pmu.quirks();
+> +
+>        if (x86_pmu.num_events > X86_PMC_MAX_GENERIC) {
+>                WARN(1, KERN_ERR "hw perf events %d > max(%d), clipping!",
+>                     x86_pmu.num_events, X86_PMC_MAX_GENERIC);
+> Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
+> +++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+> @@ -800,6 +800,32 @@ static __initconst struct x86_pmu intel_
+>        .cpu_dying              = fini_debug_store_on_cpu,
+>  };
+>
+> +static void intel_clowertown_quirks(void)
+> +{
+> +       /*
+> +        * PEBS is unreliable due to:
+> +        *
+> +        *   AJ67  - PEBS may experience CPL leaks
+> +        *   AJ68  - PEBS PMI may be delayed by one event
+> +        *   AJ69  - GLOBAL_STATUS[62] will only be set when DEBUGCTL[12]
+> +        *   AJ106 - FREEZE_LBRS_ON_PMI doesn't work in combination with PEBS
+> +        *
+> +        * AJ67 could be worked around by restricting the OS/USR flags.
+> +        * AJ69 could be worked around by setting PMU_FREEZE_ON_PMI.
+> +        *
+> +        * AJ106 could possibly be worked around by not allowing LBR
+> +        *       usage from PEBS, including the fixup.
+> +        * AJ68  could possibly be worked around by always programming
+> +        *       a pebs_event_reset[0] value and coping with the lost events.
+> +        *
+> +        * But taken together it might just make sense to not enable PEBS on
+> +        * these chips.
+> +        */
+> +       printk(KERN_WARNING "PEBS disabled due to CPU errata.\n");
+> +       x86_pmu.pebs = 0;
+> +       x86_pmu.pebs_constraints = NULL;
+> +}
+> +
+>  static __init int intel_pmu_init(void)
+>  {
+>        union cpuid10_edx edx;
+> @@ -864,6 +890,7 @@ static __init int intel_pmu_init(void)
+>                break;
+>
+>        case 15: /* original 65 nm celeron/pentium/core2/xeon, "Merom"/"Conroe" */
+> +               x86_pmu.quirks = intel_clowertown_quirks;
 
-No, that does not help anything, as mentioned earlier. It's not about
-making 'ps' look nice, we need the signals if processes die, so we
-want to be the parent of the process to keep the usual semantics.
+That's too coarse grain!
+It is more subtle than this. Some of the errata are marked as Plan
+fix. They seem to be
+fixed in later models. Your looking at the E5xxx series errata but the
+E7xxx do not have
+the same problems.
 
-Thanks,
-Kay
+As for CPL leaking, you get that also with regular sampling when you
+execute near
+the user/kernel boundary given you have skid. Either the kernel or the
+user has to
+drop samples.
