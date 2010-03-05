@@ -1,72 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205Ab0CEB2x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 20:28:53 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:40394 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081Ab0CEB2v convert rfc822-to-8bit (ORCPT
+	id S1752875Ab0CEB3G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 20:29:06 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:40522 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608Ab0CEB3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 20:28:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ScEigQeuH82gZJ0+2YH1I33jj2zzO36kPEnjqvWlfgdOKZBoy+3x4WjnAQg466pNAV
-         3QRiYw2bS8w2ztTYrE+L6A1Yhf58fqmL1c0Ugode4OXYAWzjwVKVd2oCZ3qRI7CMLqKL
-         ryh/R2mS3YB6KYLeQ2ZmMxHmefkgrVDPs8BFg=
+	Thu, 4 Mar 2010 20:29:03 -0500
+Date: Fri, 5 Mar 2010 10:28:23 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
+Message-ID: <20100305012823.GD26618@linux-sh.org>
+References: <20100302172947.27766.61539.stgit@e102109-lin.cambridge.arm.com> <20100304164416.GD13417@n2100.arm.linux.org.uk> <1267727802.6526.545.camel@e102109-lin.cambridge.arm.com> <20100304214435.GJ13417@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1003041718090.3768@localhost.localdomain>
-References: <20100304103929.6eb81d45@jbarnes-piketon>
-	 <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
-	 <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain>
-	 <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com>
-	 <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain>
-	 <1267748927.3496.6.camel@nisroch>
-	 <alpine.LFD.2.00.1003041635280.3751@localhost.localdomain>
-	 <20100305005617.GA31883@skynet.be>
-	 <alpine.LFD.2.00.1003041702110.3659@localhost.localdomain>
-	 <alpine.LFD.2.00.1003041718090.3768@localhost.localdomain>
-Date: Fri, 5 Mar 2010 11:28:50 +1000
-Message-ID: <21d7e9971003041728u7f7477f4g16805bc1ee235e8f@mail.gmail.com>
-Subject: Re: [git pull] drm request 3
-From: Dave Airlie <airlied@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100304214435.GJ13417@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> Anyway, since I had looked at the libdrm sources, I had most of this on my
->> machine anyway, so I've compiled it all, and am going to reboot and see if
->> I can make a few symlinks work.
->>
->> IOW, right now I have this:
->>
->>    [root@nehalem ~]# cd /usr/lib64/xorg/modules/drivers/
->>    [root@nehalem drivers]# ll nouveau_drv.so*
->>    lrwxrwxrwx 1 root root      21 2010-03-04 17:00 nouveau_drv.so -> nouveau_drv.so-0.0.16
->>    -rwxr-xr-x 1 root root  343784 2010-03-04 16:59 nouveau_drv.so-0.0.15
->>    -rwxr-xr-x 1 root root 1698805 2010-03-04 16:59 nouveau_drv.so-0.0.16
->
-> Naah, I just end up with a really screwed up screen with that. I probably
-> did something wrong in the configuration phase or something. I'll look for
-> the precompiled ones, and hope they don't have some other odd
-> dependencies.
+On Thu, Mar 04, 2010 at 09:44:35PM +0000, Russell King - ARM Linux wrote:
+> On Thu, Mar 04, 2010 at 06:36:42PM +0000, Catalin Marinas wrote:
+> > ARM: Assume new page cache pages have dirty D-cache
+> > 
+> > From: Catalin Marinas <catalin.marinas@arm.com>
+> > 
+> > There are places in Linux where writes to newly allocated page cache
+> > pages happen without a subsequent call to flush_dcache_page() (several
+> > PIO drivers including USB HCD). This patch changes the meaning of
+> > PG_arch_1 to be PG_dcache_clean and always flush the D-cache for a newly
+> > mapped page in update_mmu_cache().
+> > 
+> > The patch also sets the PG_arch_1 bit in the DMA cache maintenance
+> > function to avoid additional cache flushing in update_mmu_cache().
+> 
+> As I just realised, this is going to subject all pages placed into
+> userspace with a D cache flush - even anonymous pages, and those
+> which we've been careful to deal with the cache issues already (eg,
+> via the COW page copying code.)
+> 
+> I think all the copypage functions need to set PG_dcache_clean on the
+> new pages once their copy has completed.
+> 
+> I wonder if there's any other anonymous page creating functions which
+> could do with a similar treatment...
 
-Looks like libdrm_nouveau didn't get updated along with nouveau.
-
-We don't have mesa in F12 so that won't matter.
-
-wget http://kojipkgs.fedoraproject.org/packages/libdrm/2.4.18/1.fc13/src/libdrm-2.4.18-1.fc13.src.rpm
-rpmbuild --rebuild libdrm-2.4.18-1.fc13.src.rpm
-
-rpm -Uvh ~/rpmbuild/RPMS/libdrm-2.4.18-1.fc13.x86_64.rpm
-~/rpmbuild/RPMS/libdrm-devel-2.4.18-1.fc13.x86_64.rpm
-
-wget http://kojipkgs.fedoraproject.org/packages/xorg-x11-drv-nouveau/0.0.16/2.20100218git2964702.fc13/src/xorg-x11-drv-nouveau-0.0.16-2.20100218git2964702.fc13.src.rpm
-rebuild + install.
-
-Dave.
+In the anonymous page case, flush_anon_page() is always called prior to
+flush_dcache_page(), so flush_anon_page() could just set PG_dcache_clean
+to work around that. That would handle get_user_pages(), too.
