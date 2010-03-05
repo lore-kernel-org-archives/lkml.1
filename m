@@ -1,46 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137Ab0CEK36 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 05:29:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:49020 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754881Ab0CEK35 (ORCPT
+	id S1755187Ab0CEKnf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 05:43:35 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:40135 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028Ab0CEKnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 05:29:57 -0500
+	Fri, 5 Mar 2010 05:43:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=kaKCRKny29SBgDTFaqLWKMU84cZ+LZx2f5OZv0SYx2cZ5Q/KSEMUK1HPCLj/PQUcqo
-         GvyMmuUlzSac+PInjznZJx0J1NjWiBnsv69tn19KsTR7Pwhoq8AKzcC5x6KGnH/kQVMI
-         BMLhOl/KS2wcjnU6ArCW1Leb23U/DQ6e8O7S8=
+        h=x-authentication-warning:to:cc:subject:references:from:date
+         :in-reply-to:message-id:lines:user-agent:mime-version:content-type;
+        b=U3dFkgj+woje3CuV8lTRBabF8GwH9UXVuQyiVFONCJzU9vyMzx+WgP+wiQQS2g1yCK
+         FQafg3AYMsN3WAq5R4/QW912L9l+oYfO+P/N7TBsTODxyAb6NIuimigFzDrY+OuPqJwA
+         eeJBNqr/54kQAS49sw2jmzvWiGTzxSaSmK1Ys=
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Johannes Sixt <j.sixt@viscovery.net>
+Subject: Re: [PATCH 1/1] gitignore: do not ignore include/linux/
+References: <4B90CBE5.9090102@viscovery.net>
+	<1267780845-10547-1-git-send-email-jslaby@suse.cz>
+From: Jakub Narebski <jnareb@gmail.com>
+Date: Fri, 05 Mar 2010 02:43:29 -0800 (PST)
+In-Reply-To: <1267780845-10547-1-git-send-email-jslaby@suse.cz>
+Message-ID: <m3pr3jkq26.fsf@localhost.localdomain>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-In-Reply-To: <4B868701.3010904@asladvancedsys.in>
-References: <4B868701.3010904@asladvancedsys.in>
-Date: Fri, 5 Mar 2010 11:29:55 +0100
-X-Google-Sender-Auth: 278c455c2b1e9c2d
-Message-ID: <3efb10971003050229na0fd4fbl128a890b0cf245c0@mail.gmail.com>
-Subject: Re: Info on AT91 patches against mainline kernel
-From: Remy Bohmer <linux@bohmer.net>
-To: Ravi Kumar Kulkarni <ravikulkarni@asladvancedsys.in>
-Cc: linux-kernel@vger.kernel.org, Andrew Victor <linux@maxim.org.za>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jiri Slaby <jslaby@suse.cz> writes:
 
-2010/2/25 Ravi Kumar Kulkarni <ravikulkarni@asladvancedsys.in>:
-> Hi all,
-> I want some info on the status of AT91 Patches against the mailine kernel
-> tree.I'm having a AT91 SOC board AT91SAM9261. The Note on their website
-> (wwwdotlinux4samdotorg)says to get a kernel up on the board we have to apply
-> the AT91 patch set maintained by Andrew Victor which is located at
-> (http://maxim.org.za/at91_26.html) . There are only patches upto 2.6.31. so
-> does tat mean i cannot compile the latest mainline kernel (2.6.33) for my
+> linux entry in .gitignore means that everything in include/linux/
+> gets ignored with git 1.7.
+> 
+> Prepend a slash to entries which are toplevel to avoid that
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Johannes Sixt <j.sixt@viscovery.net>
+> ---
+>  .gitignore |   20 ++++++++++----------
+>  1 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/.gitignore b/.gitignore
+> index efab0eb..fe6ebb9 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -34,16 +34,16 @@ modules.builtin
+>  #
+>  # Top-level generic files
+>  #
+> -tags
+> -TAGS
+> -linux
+> -vmlinux
+> -vmlinuz
+> -System.map
+> -Module.markers
+> -Module.symvers
+> -!.gitignore
+> -!.mailmap
+> +/tags
+> +/TAGS
+> +/linux
+> +/vmlinux
+> +/vmlinuz
+> +/System.map
+> +/Module.markers
+> +/Module.symvers
+> +!/.gitignore
+> +!/.mailmap
+>  
+>  #
+>  # Generated include files
 
-You do not necessarily need the at91-patchset from Andrew.
-2.6.33 works fine on at91sam9261 without it...
+Actually you want to *not ignore* .gitignore and .mailmap (and
+.gitattributes which is missing here) anywhere, not only as top-level
+file.  So .gitignore and .mailmap should not be prepended with slash.
 
-Remy
+   #
+   # Top-level generic files
+   #
+  -tags
+  -TAGS
+  -linux
+  -vmlinux
+  -vmlinuz
+  -System.map
+  -Module.markers
+  -Module.symvers
+  +/tags
+  +/TAGS
+  +/linux
+  +/vmlinux
+  +/vmlinuz
+  +/System.map
+  +/Module.markers
+  +/Module.symvers
+   !.gitignore
+   !.mailmap
+
+
+-- 
+Jakub Narebski
+Poland
+ShadeHawk on #git
