@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328Ab0CERrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:47:35 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:27018 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039Ab0CERrc (ORCPT
+	id S1755358Ab0CERrl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:47:41 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:20499 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323Ab0CERrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:47:32 -0500
-Subject: [PATCH v2 2/7] vsprintf: clarify comments for printf_spec flags
+	Fri, 5 Mar 2010 12:47:37 -0500
+Subject: [PATCH v2 3/7] vsprintf: move %pR resource printf_specs off the stack
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Len Brown <lenb@kernel.org>
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        Adam Belay <abelay@mit.edu>
-Date: Fri, 05 Mar 2010 10:47:31 -0700
-Message-ID: <20100305174731.21946.83296.stgit@bob.kio>
+Date: Fri, 05 Mar 2010 10:47:37 -0700
+Message-ID: <20100305174736.21946.52726.stgit@bob.kio>
 In-Reply-To: <20100305174656.21946.93874.stgit@bob.kio>
 References: <20100305174656.21946.93874.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -26,28 +26,102 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add clues about what the SMALL and SPECIAL flags do.
+This adds separate I/O and memory specs, so we don't have to change the
+field width in a shared spec, which then lets us make all the specs const
+and static, since they never change.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 ---
 
- lib/vsprintf.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ lib/vsprintf.c |   45 ++++++++++++++++++++++++---------------------
+ 1 files changed, 24 insertions(+), 21 deletions(-)
 
 
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index af4aaa6..55d81e3 100644
+index 55d81e3..4d58d28 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -381,8 +381,8 @@ static noinline char *put_dec(char *buf, unsigned long long num)
- #define PLUS	4		/* show plus */
- #define SPACE	8		/* space if plus */
- #define LEFT	16		/* left justified */
--#define SMALL	32		/* Must be 32 == 0x20 */
--#define SPECIAL	64		/* 0x */
-+#define SMALL	32		/* use lowercase in hex (must be 32 == 0x20) */
-+#define SPECIAL	64		/* prefix hex with "0x", octal with "0" */
+@@ -597,22 +597,29 @@ static char *resource_string(char *buf, char *end, struct resource *res,
+ #ifndef MEM_RSRC_PRINTK_SIZE
+ #define MEM_RSRC_PRINTK_SIZE	10
+ #endif
+-	struct printf_spec hex_spec = {
++	static const struct printf_spec io_spec = {
+ 		.base = 16,
++		.field_width = IO_RSRC_PRINTK_SIZE,
+ 		.precision = -1,
+ 		.flags = SPECIAL | SMALL | ZEROPAD,
+ 	};
+-	struct printf_spec dec_spec = {
++	static const struct printf_spec mem_spec = {
++		.base = 16,
++		.field_width = MEM_RSRC_PRINTK_SIZE,
++		.precision = -1,
++		.flags = SPECIAL | SMALL | ZEROPAD,
++	};
++	static const struct printf_spec dec_spec = {
+ 		.base = 10,
+ 		.precision = -1,
+ 		.flags = 0,
+ 	};
+-	struct printf_spec str_spec = {
++	static const struct printf_spec str_spec = {
+ 		.field_width = -1,
+ 		.precision = 10,
+ 		.flags = LEFT,
+ 	};
+-	struct printf_spec flag_spec = {
++	static const struct printf_spec flag_spec = {
+ 		.base = 16,
+ 		.precision = -1,
+ 		.flags = SPECIAL | SMALL,
+@@ -628,35 +635,31 @@ static char *resource_string(char *buf, char *end, struct resource *res,
+ 		     2*RSRC_BUF_SIZE + FLAG_BUF_SIZE + RAW_BUF_SIZE)];
  
- enum format_type {
- 	FORMAT_TYPE_NONE, /* Just a string part */
+ 	char *p = sym, *pend = sym + sizeof(sym);
+-	int size = -1, addr = 0;
+ 	int decode = (fmt[0] == 'R') ? 1 : 0;
+-
+-	if (res->flags & IORESOURCE_IO) {
+-		size = IO_RSRC_PRINTK_SIZE;
+-		addr = 1;
+-	} else if (res->flags & IORESOURCE_MEM) {
+-		size = MEM_RSRC_PRINTK_SIZE;
+-		addr = 1;
+-	}
++	const struct printf_spec *specp;
+ 
+ 	*p++ = '[';
+-	if (res->flags & IORESOURCE_IO)
++	if (res->flags & IORESOURCE_IO) {
+ 		p = string(p, pend, "io  ", str_spec);
+-	else if (res->flags & IORESOURCE_MEM)
++		specp = &io_spec;
++	} else if (res->flags & IORESOURCE_MEM) {
+ 		p = string(p, pend, "mem ", str_spec);
+-	else if (res->flags & IORESOURCE_IRQ)
++		specp = &mem_spec;
++	} else if (res->flags & IORESOURCE_IRQ) {
+ 		p = string(p, pend, "irq ", str_spec);
+-	else if (res->flags & IORESOURCE_DMA)
++		specp = &dec_spec;
++	} else if (res->flags & IORESOURCE_DMA) {
+ 		p = string(p, pend, "dma ", str_spec);
+-	else {
++		specp = &dec_spec;
++	} else {
+ 		p = string(p, pend, "??? ", str_spec);
++		specp = &mem_spec;
+ 		decode = 0;
+ 	}
+-	hex_spec.field_width = size;
+-	p = number(p, pend, res->start, addr ? hex_spec : dec_spec);
++	p = number(p, pend, res->start, *specp);
+ 	if (res->start != res->end) {
+ 		*p++ = '-';
+-		p = number(p, pend, res->end, addr ? hex_spec : dec_spec);
++		p = number(p, pend, res->end, *specp);
+ 	}
+ 	if (decode) {
+ 		if (res->flags & IORESOURCE_MEM_64)
 
