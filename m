@@ -1,26 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755426Ab0CEEk4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 23:40:56 -0500
-Received: from THUNK.ORG ([69.25.196.29]:50089 "EHLO thunker.thunk.org"
+	id S1755502Ab0CEEnK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 23:43:10 -0500
+Received: from THUNK.ORG ([69.25.196.29]:50117 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755330Ab0CEEkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 23:40:55 -0500
-Date: Thu, 4 Mar 2010 23:40:54 -0500
+	id S1755330Ab0CEEnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 23:43:06 -0500
+Date: Thu, 4 Mar 2010 23:43:05 -0500
 From: tytso@mit.edu
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] X doesn't work with 2.6.33 (can't find any input
- devices)
-Message-ID: <20100305044054.GB5747@thunk.org>
-Mail-Followup-To: tytso@mit.edu, David Miller <davem@davemloft.net>,
-	linux-kernel@vger.kernel.org
-References: <20100303151720.GA3191@thunk.org>
- <20100303.072007.170106625.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, lvm-devel@redhat.com
+Subject: Re: [2.6.33 REGRESSION BUG] Can't boot lvm on root (Ubuntu 9.10
+ userspace) with 2.6.33
+Message-ID: <20100305044305.GC5747@thunk.org>
+Mail-Followup-To: tytso@mit.edu, linux-kernel@vger.kernel.org,
+	lvm-devel@redhat.com
+References: <E1Nmppq-0000sA-E1@closure.thunk.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100303.072007.170106625.davem@davemloft.net>
+In-Reply-To: <E1Nmppq-0000sA-E1@closure.thunk.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
@@ -29,34 +27,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 07:20:07AM -0800, David Miller wrote:
-> From: tytso@mit.edu
-> Date: Wed, 3 Mar 2010 10:17:20 -0500
+On Wed, Mar 03, 2010 at 09:46:02AM -0500, Theodore Ts'o wrote:
 > 
-> > It worked just *fine* using 2.6.33-rc4.  I have no xorg.conf file (X
-> > is autoconfiguring itself) and I'm using an Ubuntu 9.10 userspace.
+> The last kernel I could boot was 2.6.33-rc4, so this might be a
+> regression.   As near as I can tell, this udev rule isn't firing:
 > 
-> X uses udev events to find input devices these days, so it's probably
-> the same problem preventing your lvm devices from showing up correctly
-> from initramfs.
+> SUBSYSTEM=="block", ACTION=="add|change", ENV{ID_FS_TYPE}=="lvm*|LVM*", \
+> 	RUN+="watershed sh -c '/sbin/lvm vgscan; /sbin/lvm vgchange -a y'"
+> 
+> So nothing is showing up in /dev/mapper, and so the root can't be
+> mounted.  After 45 seconds, it drops me into the initramfs shell, and if
+> I manually run "lvm vgscan" and "lvm vgscange -ay", everything is back,
+> but then I can't figure out how to restart the boot process from inside
+> a failed initramfs.   And of course, the initramfs environment is so
+> crappy that there are no debugging aids --- not even a working pager.
+> 
+> Did I mention how much I hate the whole initramfs with dynamic udev
+> rules as a design?
 
-It uses libhal, I believe to find input devices and I was finally able
-to work around the problem by configuring an manually recreated
-xorg.conf file with the magic option:
+So the workaround I've found for this is to use the magic boot command
+line option: 
 
-Section "ServerFlags"
-	Option "AllowEmptyInput" "off"
-EndSection
+     break=premount
 
-... and then making sure that the kbd and mouse input drivers were
-installed.  There is definitely something wrong though if sometime
-between 2;6.33-rc4 and 2.6.33 we've made some incompatible sysfs
-change that breaks hal on Ubuntu 9.10 (which is still the latest
-Ubuntu community release), such that people can't test 2.6.33 kernels
-using it --- at least not easily.
+And then at the initramfs prompt, enter the command "lvm2 vgchange
+-ay", followed by control-D.  
 
-See Linus's complaints over the nouveau driver; it's the same
-principle; something is really broken.
+Then you'll run into the hal/X11 regression, where I've documented the
+workaround I had to use for that.
 
-							- Ted
+So I can at least test during the merge window, but it would be nice
+if these regressions could get fixed in a real way.
 
+   	 	      	    	      	   - Ted
