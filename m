@@ -1,58 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751626Ab0CEMBE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 07:01:04 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56970 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751258Ab0CEMBB (ORCPT
+	id S1751927Ab0CEMDU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 07:03:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:63889 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819Ab0CEMDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 07:01:01 -0500
-Date: Fri, 5 Mar 2010 12:03:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: s ponnusa <foosaa@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Mark Lord <kernel@teksavvy.com>,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
- program
-Message-ID: <20100305120355.6b161572@lxorguk.ukuu.org.uk>
-In-Reply-To: <f875e2fe1003041811p5aa934ecob90836a8d0a6b605@mail.gmail.com>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	<20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	<87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
-	<4B8FC6AC.4060801@teksavvy.com>
-	<f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-	<4B8FF2C3.1060808@teksavvy.com>
-	<f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-	<4B90655B.4000005@gmail.com>
-	<f875e2fe1003041811p5aa934ecob90836a8d0a6b605@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 07:03:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:message-id:x-mailer;
+        b=ofRnzbYy0Kph0/AfNyWFpTjPJRxOST5qzm4rXsH9P0j919V0MzCtKCE6QP4WfuNr7H
+         nSANtGcPyU/fqANNK+dRzjW1hYT85lGV6HV6A8exzGO/q6aRnG9r/IyqNWqdCBDfBZ7k
+         2Umk2goB9c3GGCdzy2PblDZiyGDS8/PXfNJVQ=
+From: Maurice Dawson <mauricedawson2699@googlemail.com>
+To: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 8/8] Staging: comedi: fix brace and printk() coding style issues in adl_pci9111.c
+Date: Fri,  5 Mar 2010 12:03:02 +0000
+Message-Id: <1267790582-11840-1-git-send-email-mauricedawson2699@googlemail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> cannot be read back by any other means. And the program which wrote
-> the data is unaware of the error that has happened at the lower level.
-> But the error log clearly has the issue caught but is trying to handle
-> differently.
+Patch to the adl_pci9111.c file that fixes brace warnings and, printk() should include Kern_facility level warnings, found by the checkpatch.pl tool
 
-This is standard behaviour on pretty much every OS. If each write was
-back verified by the OS you wouldn't get any work done due fact it took
-so long to do any I/O and all I/O was synchronoous.
+Signed-off-by Maurice Dawson <mauricedawson2699@googlemail.com>
+---
+ drivers/staging/comedi/drivers/adl_pci9111.c |   36 ++++++++++++-------------
+ 1 files changed, 17 insertions(+), 19 deletions(-)
 
-Where it matters you can mount some file systems synchronous, you can do
-synchronous I/O (O_SYNC) or you can use and check fsync/fdatasync results
-which should give you pretty good coverage providing barriers are enabled.
+diff --git a/drivers/staging/comedi/drivers/adl_pci9111.c b/drivers/staging/comedi/drivers/adl_pci9111.c
+index 340950d..e2092a8 100644
+--- a/drivers/staging/comedi/drivers/adl_pci9111.c
++++ b/drivers/staging/comedi/drivers/adl_pci9111.c
+@@ -1085,9 +1085,8 @@ static int pci9111_ai_insn_read(struct comedi_device *dev,
+ 
+ 	pci9111_ai_channel_set(CR_CHAN((&insn->chanspec)[0]));
+ 
+-	if ((pci9111_ai_range_get()) != CR_RANGE((&insn->chanspec)[0])) {
++	if ((pci9111_ai_range_get()) != CR_RANGE((&insn->chanspec)[0]))
+ 		pci9111_ai_range_set(CR_RANGE((&insn->chanspec)[0]));
+-	}
+ 
+ 	pci9111_fifo_reset();
+ 
+@@ -1108,11 +1107,10 @@ static int pci9111_ai_insn_read(struct comedi_device *dev,
+ 
+ conversion_done:
+ 
+-		if (resolution == PCI9111_HR_AI_RESOLUTION) {
++		if (resolution == PCI9111_HR_AI_RESOLUTION)
+ 			data[i] = pci9111_hr_ai_get_data();
+-		} else {
++		else
+ 			data[i] = pci9111_ai_get_data();
+-		}
+ 	}
+ 
+ #ifdef AI_INSN_DEBUG
+@@ -1149,9 +1147,8 @@ static int pci9111_ao_insn_read(struct comedi_device *dev,
+ {
+ 	int i;
+ 
+-	for (i = 0; i < insn->n; i++) {
++	for (i = 0; i < insn->n; i++)
+ 		data[i] = dev_private->ao_readback & PCI9111_AO_RESOLUTION_MASK;
+-	}
+ 
+ 	return i;
+ }
+@@ -1240,12 +1237,13 @@ static int pci9111_attach(struct comedi_device *dev,
+ 	int error, i;
+ 	const struct pci9111_board *board;
+ 
+-	if (alloc_private(dev, sizeof(struct pci9111_private_data)) < 0) {
++	if (alloc_private(dev, sizeof(struct pci9111_private_data)) < 0)
+ 		return -ENOMEM;
+-	}
++
+ 	/*  Probe the device to determine what device in the series it is. */
+ 
+-	printk("comedi%d: " PCI9111_DRIVER_NAME " driver\n", dev->minor);
++	printk(KERN_ERR "comedi%d: " PCI9111_DRIVER_NAME " driver\n",
++								dev->minor);
+ 
+ 	for (pci_device = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, NULL);
+ 	     pci_device != NULL;
+@@ -1278,13 +1276,14 @@ static int pci9111_attach(struct comedi_device *dev,
+ 		}
+ 	}
+ 
+-	printk("comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
++	printk(KERN_ERR "comedi%d: no supported board found! "
++						"(req. bus/slot : %d/%d)\n",
+ 	       dev->minor, it->options[0], it->options[1]);
+ 	return -EIO;
+ 
+ found:
+ 
+-	printk("comedi%d: found %s (b:s:f=%d:%d:%d) , irq=%d\n",
++	printk(KERN_ERR "comedi%d: found %s (b:s:f=%d:%d:%d) , irq=%d\n",
+ 	       dev->minor,
+ 	       pci9111_boards[i].name,
+ 	       pci_device->bus->number,
+@@ -1320,7 +1319,7 @@ found:
+ 	io_base = pci_resource_start(pci_device, 2);
+ 	io_range = pci_resource_len(pci_device, 2);
+ 
+-	printk("comedi%d: 6503 registers at address 0x%4lx [0x%4lx]\n",
++	printk(KERN_ERR "comedi%d: 6503 registers at address 0x%4lx [0x%4lx]\n",
+ 	       dev->minor, io_base, io_range);
+ 
+ 	dev->iobase = io_base;
+@@ -1338,7 +1337,8 @@ found:
+ 	if (pci_device->irq > 0) {
+ 		if (request_irq(pci_device->irq, pci9111_interrupt,
+ 				IRQF_SHARED, PCI9111_DRIVER_NAME, dev) != 0) {
+-			printk("comedi%d: unable to allocate irq  %u\n",
++			printk(KERN_ERR "comedi%d: "
++						"unable to allocate irq  %u\n",
+ 			       dev->minor, pci_device->irq);
+ 			return -EINVAL;
+ 		}
+@@ -1415,15 +1415,13 @@ static int pci9111_detach(struct comedi_device *dev)
+ 	}
+ 	/*  Release previously allocated irq */
+ 
+-	if (dev->irq != 0) {
++	if (dev->irq != 0)
+ 		free_irq(dev->irq, dev);
+-	}
+ 
+ 	if (dev_private != 0 && dev_private->pci_device != 0) {
+-		if (dev->iobase) {
++		if (dev->iobase)
+ 			comedi_pci_disable(dev_private->pci_device);
+-		}
+-		pci_dev_put(dev_private->pci_device);
++			pci_dev_put(dev_private->pci_device);
+ 	}
+ 
+ 	return 0;
+-- 
+1.6.3.3
 
-It still won't catch a lot of cases because you sometimes see
-
-- sectors being corrupted/dying that were not written by near to it
-- writes that the drive thinks were successful and reports that way but
-  turn out not to be readable
-
-Alan
