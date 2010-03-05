@@ -1,93 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206Ab0CERmH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:42:07 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:41473 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754648Ab0CERmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:42:06 -0500
-Date: Fri, 5 Mar 2010 11:42:03 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: [PATCH] x86: Intel microcode loader performance improvement
-Message-ID: <20100305174203.GA19638@sgi.com>
+	id S1755216Ab0CERmm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:42:42 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:6471 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267Ab0CERml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 12:42:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rqf7FCed9Pg3LYEDPb3RNQ4q9Z05nsB+HuWHfOXJkrB5Hi0DkCAKcNzb/Lyx+DIeg9
+         APRp9sHK0sfK/txsoTeV4gMLbCB9MKloqheOQULAy2h812T/ddUqEhqha8E12uaujnIL
+         HU7kjOun+pAAUklQbQyvhmbFYisRxY2E4czzs=
+Message-ID: <4B91428E.6070006@garzik.org>
+Date: Fri, 05 Mar 2010 12:42:38 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Daniel Stone <daniel@fooishbar.org>, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, skeggsb@gmail.com, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: [git pull] drm request 3
+References: <1267748927.3496.6.camel@nisroch> <20100305064955.GA6453@elte.hu> <20100305123834.0d9c6277@lxorguk.ukuu.org.uk> <20100305.063718.211238119.davem@davemloft.net> <20100305151754.GB2505@tempa>
+In-Reply-To: <20100305151754.GB2505@tempa>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've noticed that on large SGI UV system configurations, running
-microcode.ctl can take very long periods of time.  This is due to
-the large number of vmalloc/vfree calls made by the Intel
-generic_load_microcode() logic.
+On 03/05/2010 10:17 AM, Daniel Stone wrote:
+> On Fri, Mar 05, 2010 at 06:37:18AM -0800, David Miller wrote:
+>> If it effects such a large number of people, which this noveau thing
+>> does, it's entirely relevant to everyone.  And the way it's breaking
+>> and making kernel development difficult for so many people matters to
+>> us.
+>
+> Maybe the lesson to be learned from all this is, 'if the developers
+> don't want something merged because they're not ready and forsee huge
+> problems in the future, actually listen to them instead of blindly
+> ramming it in regardless'? But maybe that's just me.
 
-By reusing allocated space, the following patch reduces the time
-to run microcode.ctl on a 1024 cpu system from approximately 80
-seconds down to 1 or 2 seconds.
+That particular horse left the barn when Fedora shipped nouveau in a 
+stable release, not when Linus merged it into his tree.
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+	Jeff
 
----
 
- arch/x86/kernel/microcode_intel.c |   22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
 
-Index: linux/arch/x86/kernel/microcode_intel.c
-===================================================================
---- linux.orig/arch/x86/kernel/microcode_intel.c
-+++ linux/arch/x86/kernel/microcode_intel.c
-@@ -343,10 +343,11 @@ static enum ucode_state generic_load_mic
- 				int (*get_ucode_data)(void *, const void *, size_t))
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
-+	u8 *ucode_ptr = data, *new_mc = NULL, *mc = NULL;
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover = size;
- 	enum ucode_state state = UCODE_OK;
-+	unsigned int curr_mc_size = 0;
- 
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
-@@ -361,9 +362,15 @@ static enum ucode_state generic_load_mic
- 			break;
- 		}
- 
--		mc = vmalloc(mc_size);
--		if (!mc)
--			break;
-+		/* For performance reasons, reuse mc area when possible */
-+		if (!mc || mc_size > curr_mc_size) {
-+			if (mc)
-+				vfree(mc);
-+			mc = vmalloc(mc_size);
-+			if (!mc)
-+				break;
-+			curr_mc_size = mc_size;
-+		}
- 
- 		if (get_ucode_data(mc, ucode_ptr, mc_size) ||
- 		    microcode_sanity_check(mc) < 0) {
-@@ -376,13 +383,16 @@ static enum ucode_state generic_load_mic
- 				vfree(new_mc);
- 			new_rev = mc_header.rev;
- 			new_mc  = mc;
--		} else
--			vfree(mc);
-+			mc = NULL;	/* trigger new vmalloc */
-+		}
- 
- 		ucode_ptr += mc_size;
- 		leftover  -= mc_size;
- 	}
- 
-+	if (mc)
-+		vfree(mc);
-+
- 	if (leftover) {
- 		if (new_mc)
- 			vfree(new_mc);
