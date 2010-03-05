@@ -1,68 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893Ab0CECqO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 21:46:14 -0500
-Received: from mail.perches.com ([173.55.12.10]:1402 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754666Ab0CECqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 21:46:13 -0500
-Subject: Re: [PATCH 2/2] device.h drivers/base/core.c Convert dev_<level>
- macros to functions
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-In-Reply-To: <20100304170030.f97c6630.akpm@linux-foundation.org>
-References: <cover.1267682641.git.joe@perches.com>
-	 <f2b24d484347c083fa87856a75c1d96102af9005.1267682641.git.joe@perches.com>
-	 <20100304165609.20849b93.akpm@linux-foundation.org>
-	 <20100304170030.f97c6630.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Mar 2010 18:46:11 -0800
-Message-ID: <1267757171.12993.111.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1754910Ab0CECs4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 21:48:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52782 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754843Ab0CECsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 21:48:55 -0500
+Message-ID: <4B906FAA.3040808@cn.fujitsu.com>
+Date: Fri, 05 Mar 2010 10:42:50 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+CC: Vivek Goyal <vgoyal@redhat.com>, jens.axboe@oracle.com,
+       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 2/2 V3] io-controller: Document for blkio.weight_device
+References: <4B8DFFD7.2000908@cn.fujitsu.com> <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com> <4B906BDF.3090308@cn.fujitsu.com> <4B907006.1010309@oss.ntt.co.jp>
+In-Reply-To: <4B907006.1010309@oss.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dOn Thu, 2010-03-04 at 17:00 -0800, Andrew Morton wrote:
-> On Thu, 4 Mar 2010 16:56:09 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Wed,  3 Mar 2010 22:27:23 -0800 Joe Perches <joe@perches.com> wrote:
-> > > Save ~60k in a defconfig
-> > > Use %pV and struct va_format
-> > > Format arguments are verified before printk
-> > Well that doesn't work very well.
-> > 
-> > drivers/net/pcmcia/pcnet_cs.c:117: error: 'dev_info' redeclared as different kind of symbol
-> > include/linux/device.h:645: error: previous declaration of 'dev_info' was here
-> > 
-> > there are lots of other dev_info's which will fail plus perhaps
-> > dev_err's, etc.
-> > 
-> btw, this may be kludgeable aroundable by doing
+Takuya Yoshikawa wrote:
+> Hi, thank you for fixing ...
 > 
-> int _dev_info(const struct device *dev, const char *fmt, ...);
+> Gui Jianfeng wrote:
+>> +- blkio.weight_device
+>> +    - One can specify per cgroup per device rules using this interface.
+>> +      These rules override the default value of group weight as
+>> specified
+>> +      by blkio.weight.
+>> +
+>> +      Following is the format.
+>> +
+>> +      #echo dev_maj:dev_minor weight >
+>> /pach/to/cgroup/blkio.weight_device
 > 
-> #define dev_info(...) _dev_info(...)
-> 
-> which will use the preprocessor's separation of `foo' from `foo()' to
-> fix things up.
-> 
-> But it would be better to rename all those dev_info's to device_info or
-> whatever, IMO.
+> You deleted wrong character!  We need 't' not 'c'.
 
-Perhaps using the function name _dev_info() and adding
-the macro above is an acceptable workaround until the
-dev_info struct names or local variable names could be
-renamed if necessary.
-
-dev_err and dev_warn exist in source comments only and
-don't seem to be a problem.
-
-David Miller?  Do you have an opinion on the renaming
-of dev_info local variables and structs?
+OOPS, Sorry :(
 
