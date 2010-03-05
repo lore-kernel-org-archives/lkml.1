@@ -1,101 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953Ab0CEHbF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 02:31:05 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:52221 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754813Ab0CEHbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 02:31:03 -0500
-Date: Fri, 5 Mar 2010 08:30:59 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
-	checks
-Message-ID: <20100305073059.GI5768@kernel.dk>
-References: <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org> <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com> <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com> <20100304121931.GB5768@kernel.dk> <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
+	id S1752135Ab0CEHgO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 02:36:14 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:63757 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195Ab0CEHgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 02:36:12 -0500
+Date: Thu, 4 Mar 2010 23:36:09 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Bret Towe <magnade@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       reiserfs-devel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: reiserfs issue with 2.6.32.8
+In-Reply-To: <dda83e781003041453q365896c1y3d12f3b49f3387b7@mail.gmail.com>
+Message-ID: <alpine.DEB.2.01.1003042248100.3144@bogon.housecafe.de>
+References: <dda83e781002141023t2abe95b8w83f59d6f411f68a2@mail.gmail.com>  <alpine.DEB.2.01.1002142229470.28195@bogon.housecafe.de>  <dda83e781002232131i53b59c8eu7192257fc4e4f3e0@mail.gmail.com>  <alpine.DEB.2.01.1002232249440.28195@bogon.housecafe.de> 
+ <dda83e781003031900x3ca243d9kba1df3a8b0e04105@mail.gmail.com>  <alpine.DEB.2.01.1003041335540.3144@bogon.housecafe.de> <dda83e781003041453q365896c1y3d12f3b49f3387b7@mail.gmail.com>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX18T7VXiCI2DyobkAyPfspJspl0AvldbsHt0pDR
+ tzrLDxgHKBSr+mlSWVE89FSqOGV8YLZqVkduBDu+m9bL8w3pM5
+ yrFyEXFI/qHUySkVspGyQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04 2010, Mikulas Patocka wrote:
-> > > I think it should be redesigned in this way:
-> > > * the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
-> > > * the code for splitting bios should be just at one place --- in the 
-> > > generic block layer and it should work with all drivers. I.e.
-> > > q->make_request_fn will return that the request is too big for the given 
-> > > driver and the generic code will allocate few another bios from 
-> > > per-request_queue mempool and split the bio.
-> > > * then, we would fix the raid1 bug and we would also simplify md and dm 
-> > > --- remove the splitting code.
-> > 
-> > The design certainly isn't perfect, but neither is the one that you
-> > suggest. For instance, what would the point of building bigger bios just
-> > to split them _everytime_ be? That's not good design, and it's certainly
-> > not helping performance much.
+On Thu, 4 Mar 2010 at 14:53, Bret Towe wrote:
+> > If there are still no issues after some time, maybe we can then close the
+> > bugzilla ticket?
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=15309
 > 
-> The point for building a big bio and splitting it is code size reduction.
-> 
-> You must realize that you need to split the request anyway. If the caller 
-> needs to read/write M sectors and the device can process at most N 
-> sectors, where N<M, then the i/o must be split. You can't get rid of that 
-> split.
+> how long would you consider 'some time'?
 
-If we consider the basic (and mosted used) file system IO path, then
-those 'M' sectors will usually be submitted in units that are smaller
-than 'N' anyway. It would be silly to allocate a bio for 'N' sectors
-(those get big), only to split it up again shortly.
+Well, until you're confident that these "reiserfs issues" are gone. After 
+all, it's your bugreport and nobody was able to reproduce it yet - so it's 
+up to you to decide when to close it :-)
 
-The point is not to build it too big to begin with, and keep the
-splitting as the slow path. That's how it was originally designed, and
-it'll surely stay that way. Doing the split handling in generic code is
-a good idea, it definitely should be. But I'm never going to make
-splitting a normal part of IO operations just because we allow
-arbitrarily large bios, sorry but that's insane.
+If the problems reappear with newer kernels, we can always open a new 
+report.
 
-> Now, the question is, where this splitting happens. Currently, the 
-> splitting happens in the issuers of the bio (for example dm-io, which is a 
-> big chunk of code written just to work around the uncertain bio size 
-> limits) as well as in the consumers of the bio (md, dm and request-based 
-> drivers, if their maximum transfer size < PAGE_SIZE).
-> 
-> What I'm proposing is to put that bio splitting just in one place and 
-> remove it from both the issuers and the consumers of the bio.
-
-Agree on that, we can make that generic (and should).
-
-> There is just one case, where it is not desirable to create larger 
-> requests than the physical transfer size because of performance --- that 
-> is page cache readahead. That could use the current approach of querying 
-> the queue for limits and not stuffing more data than the device can 
-> handle.
-> 
-> In all the other (non-readahead) cases, the caller is waiting for all the 
-> data anyway, there is no performance problem with creating a larger 
-> requests and splitting them.
-
-But this I still think is crazy, sorry.
-
-> > Alasdair had an idea for doing a map/unmap like interface instead, which
-> > I think is a lot better. I don't think he ever coded it up, though.
-> > Perhaps talk to him, if you want to improve our situation in this area.
-> 
-> It would increase code size, not reduce it.
-
-What kind of answer is that?
-
-> BTW. see fs/bio.c:bio_split --- it uses a shared mempool. It can deadlock 
-> if the devices depend on each other. You need to use per-queue mempool.
-
-Only if you need to split the same original bio twice on the same IO
-path.
-
+Christian.
 -- 
-Jens Axboe
+BOFH excuse #393:
 
+Interference from the Van Allen Belt.
