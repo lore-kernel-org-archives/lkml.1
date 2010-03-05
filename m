@@ -1,107 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254Ab0CEUjz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:39:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56885 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106Ab0CEUjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:39:54 -0500
-Message-ID: <4B916BD6.8010701@kernel.org>
-Date: Fri, 05 Mar 2010 12:38:46 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1754584Ab0CEUk0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:40:26 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:48836 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751755Ab0CEUkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:40:25 -0500
+From: Alex Elder <aelder@sgi.com>
+Message-Id: <201003052040.o25KeH1g013314@stout.americas.sgi.com>
+Date: Fri, 05 Mar 2010 14:40:17 -0600
+To: torvalds@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.34-rc1
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Greg Thelen <gthelen@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/bootmem: introduce bootmem_default_goal
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> 	<20100305032106.GA12065@cmpxchg.org> <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com> <4B915074.4020704@kernel.org>
-In-Reply-To: <4B915074.4020704@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-if you don't want to drop
-|  bootmem: avoid DMA32 zone by default
+As I mentioned in my first pull request, this is the second
+set of XFS commits for 2.6.34-rc1.  A little later than I'd
+hoped (sorry).
 
-today mainline tree actually DO NOT need that patch according to print out ...
+					-Alex
 
-please apply this one too.
+The following changes since commit 9467c4fdd66f6810cecef0f1173330f3c6e67d45:
+  Linus Torvalds (1):
+        Merge branch 'write_inode2' of git://git.kernel.org/.../viro/vfs-2.6
 
-[PATCH] x86/bootmem: introduce bootmem_default_goal
+are available in the git repository at:
 
-don't punish the 64bit systems with less 4G RAM.
-they should use _pa(MAX_DMA_ADDRESS) at first pass instead of failback...
+  git://oss.sgi.com/xfs/xfs for-linus
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Alex Elder (1):
+      Merge branch 'for-2.6.34-rc1-batch2' into for-linus
 
----
- arch/x86/kernel/setup.c |   13 +++++++++++++
- include/linux/bootmem.h |    3 ++-
- mm/bootmem.c            |    4 ++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+Christoph Hellwig (14):
+      xfs: fix dquota trace format
+      xfs: merge xfs_lrw.c into xfs_file.c
+      xfs: remove wrappers for read/write file operations
+      xfs: remove wrapper for the fsync file operation
+      xfs: implement optimized fdatasync
+      xfs: fix inode pincount check in fsync
+      xfs: fix xfs_fsblock_t tracing
+      xfs: split xfs_bmap_btalloc
+      xfs: stop passing opaque handles to xfs_log.c routines
+      xfs: factor common xfs_trans_bjoin code
+      xfs: kill xfs_lrw.h
+      xfs: cleanup xfs_iunpin_wait/xfs_iunpin_nowait
+      xfs: remove xfs_ipin/xfs_iunpin
+      xfs: fix locking for inode cache radix tree tag updates
 
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -686,6 +686,18 @@ static void __init trim_bios_range(void)
- 	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
- }
- 
-+#ifdef MAX_DMA32_PFN
-+static void __init set_bootmem_default_goal(void)
-+{
-+	if (max_pfn_mapped < MAX_DMA32_PFN)
-+		bootmem_default_goal = __pa(MAX_DMA_ADDRESS);
-+}
-+#else
-+static void __init set_bootmem_default_goal(void)
-+{
-+}
-+#endif
-+
- /*
-  * Determine if we were loaded by an EFI loader.  If so, then we have also been
-  * passed the efi memmap, systab, etc., so we should use these data structures
-@@ -931,6 +943,7 @@ void __init setup_arch(char **cmdline_p)
- 		max_low_pfn = max_pfn;
- 	}
- #endif
-+	set_bootmem_default_goal();
- 
- 	/*
- 	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
-Index: linux-2.6/include/linux/bootmem.h
-===================================================================
---- linux-2.6.orig/include/linux/bootmem.h
-+++ linux-2.6/include/linux/bootmem.h
-@@ -104,7 +104,8 @@ extern void *__alloc_bootmem_low_node(pg
- 				      unsigned long goal);
- 
- #ifdef MAX_DMA32_PFN
--#define BOOTMEM_DEFAULT_GOAL	(MAX_DMA32_PFN << PAGE_SHIFT)
-+extern unsigned long bootmem_default_goal;
-+#define BOOTMEM_DEFAULT_GOAL	bootmem_default_goal
- #else
- #define BOOTMEM_DEFAULT_GOAL	__pa(MAX_DMA_ADDRESS)
- #endif
-Index: linux-2.6/mm/bootmem.c
-===================================================================
---- linux-2.6.orig/mm/bootmem.c
-+++ linux-2.6/mm/bootmem.c
-@@ -25,6 +25,10 @@ unsigned long max_low_pfn;
- unsigned long min_low_pfn;
- unsigned long max_pfn;
- 
-+#ifdef MAX_DMA32_PFN
-+unsigned long bootmem_default_goal = (MAX_DMA32_PFN << PAGE_SHIFT);
-+#endif
-+
- #ifdef CONFIG_CRASH_DUMP
- /*
-  * If we have booted due to a crash, max_pfn will be a very low value. We need
+Dave Chinner (6):
+      xfs: Non-blocking inode locking in IO completion
+      xfs: Fix a build warning in xfs_aops.c
+      xfs: check for more work before sleeping in xfssyncd
+      xfs: truncate delalloc extents when IO fails in writeback
+      xfs: Increase the default size of the reserved blocks pool
+      xfs: return inode fork offset in bulkstat for fsr
+
+Eric Sandeen (1):
+      xfs: increase readdir buffer size
+
+ fs/xfs/Makefile              |    1 -
+ fs/xfs/linux-2.6/xfs_aops.c  |  221 +++++++++---
+ fs/xfs/linux-2.6/xfs_file.c  |  854 +++++++++++++++++++++++++++++++++++++++---
+ fs/xfs/linux-2.6/xfs_iops.c  |   10 +
+ fs/xfs/linux-2.6/xfs_linux.h |    1 -
+ fs/xfs/linux-2.6/xfs_lrw.c   |  796 ---------------------------------------
+ fs/xfs/linux-2.6/xfs_lrw.h   |   29 --
+ fs/xfs/linux-2.6/xfs_sync.c  |   10 +-
+ fs/xfs/linux-2.6/xfs_trace.c |   16 -
+ fs/xfs/linux-2.6/xfs_trace.h |   22 +-
+ fs/xfs/xfs_bmap.c            |  220 ++++++-----
+ fs/xfs/xfs_fs.h              |    3 +-
+ fs/xfs/xfs_iget.c            |   19 +-
+ fs/xfs/xfs_inode.c           |   68 +---
+ fs/xfs/xfs_inode.h           |    3 +-
+ fs/xfs/xfs_inode_item.c      |   18 +-
+ fs/xfs/xfs_itable.c          |    2 +
+ fs/xfs/xfs_log.c             |  106 +++---
+ fs/xfs/xfs_log.h             |   16 +-
+ fs/xfs/xfs_mount.c           |   69 +++-
+ fs/xfs/xfs_mount.h           |    2 +
+ fs/xfs/xfs_trans.c           |    2 +-
+ fs/xfs/xfs_trans.h           |    2 +-
+ fs/xfs/xfs_trans_buf.c       |  216 ++++--------
+ fs/xfs/xfs_vnodeops.c        |  107 ------
+ fs/xfs/xfs_vnodeops.h        |   15 +-
+ 26 files changed, 1344 insertions(+), 1484 deletions(-)
+ delete mode 100644 fs/xfs/linux-2.6/xfs_lrw.c
+ delete mode 100644 fs/xfs/linux-2.6/xfs_lrw.h
