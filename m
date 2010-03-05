@@ -1,71 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603Ab0CERDb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:03:31 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44324 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753880Ab0CERDa (ORCPT
+	id S1754954Ab0CERDg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:03:36 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:47132 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754641Ab0CERDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:03:30 -0500
-Date: Fri, 5 Mar 2010 17:04:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, daniel@fooishbar.org,
-       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu
-Subject: Re: [git pull] drm request 3
-Message-ID: <20100305170414.46acfb8f@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.1003050832250.3788@localhost.localdomain>
-References: <20100305151754.GB2505@tempa>
-	<20100305.072612.186421758.davem@davemloft.net>
-	<20100305154009.GC2505@tempa>
-	<20100305.074835.159078083.davem@davemloft.net>
-	<20100305160217.663413eb@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.1003050810140.3788@localhost.localdomain>
-	<20100305162327.084d4038@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.1003050832250.3788@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 12:03:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V/YC+GRPXx/qbSFPQkL5nIIjvGXyR75tbzlL4lmAF4jooSKrCt4KqsAjBiQ7eeiemS
+         XDhQFUmBT6qGL/uufpzWs/Jh/1gYQj6bYXjdih8yiZFU1Lr7V+CxJCoCqTutlpZzeX0m
+         xgq1rZbwSofvCduJw3MTEh2pPJ3xr5FU2MIE4=
+Date: Fri, 5 Mar 2010 18:03:33 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH 2/2] perf: Walk through the relevant events only
+Message-ID: <20100305170331.GB5244@nowhere>
+References: <1267772426-5944-1-git-send-regression-fweisbec@gmail.com> <1267772426-5944-2-git-send-regression-fweisbec@gmail.com> <1267781969.16716.55.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267781969.16716.55.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Look at who I screamed at. Dave Airlie. The guy who works for Red Hat. The 
-> guy who is, as far as I know, effectively in charge of that whole 
-> integration. Yeah, I realize that there are other people (Kyle?) involved, 
-> and maybe Dave isn't as central as I think he is, but I learnt from last 
-> time that the nouveau guys don't seem to care.
-
-Ok "screamed about" is perhaps better wording. Why should the Nouveau
-guys care ? You've forced their hand, you've demanded stuff they
-said they didn't want to do and then you've bitched about things they
-said they would do. Actually I think they've been quite restrained. I'd
-probably have proposed a licence change to make it only work on FreeBSD
-and Solaris given that treatment ;)
-
-> Even if you need to change the interface, I've actually looked at the 
-> patch in question (have you, Alan?),
-
-Yes but I read it somewhat differently.
-
-Someone who never made a commitment to stability decided to do the
-logical thing. They deleted all the old broken interfaces, they cleaned
-up their ioctls numbering and they tided up afterwards. I read it as the
-action of someone who simply doesnt acknowledge that you have a right to
-control their development and is continuing to work in the way they
-intended.
-
-You can only see it as malicious if you assume they ever had some reason
-to keep compatibility or had promised it somewhere. Quite the reverse
-happened, and they never asked to be upstream in the first place.
+On Fri, Mar 05, 2010 at 10:39:29AM +0100, Peter Zijlstra wrote:
+> On Fri, 2010-03-05 at 08:00 +0100, Frederic Weisbecker wrote:
+> > Each time a trace event triggers, we walk through the entire
+> > list of events from the active contexts to find the perf events
+> > that match the current one.
+> > 
+> > This is wasteful. To solve this, we maintain a per cpu list of
+> > the active perf events for each running trace events and we
+> > directly commit to these.
+> 
+> Right, so this seems a little trace specific. I once thought about using
+> a hash table to do this for all software events. It also keeps it all
+> nicely inside perf_event.[ch].
 
 
-	"But the fact is, at least from my standpoint, I'd really
-	hope that anything I had written would be used in ways I asked
-	people to"
-				- Linus Torvalds, 2004
+Right. We could have a per cpu type:event_id based hlist that would
+cover trace events and other software events.
 
+That would do the trick more generically wrt perf.
 
+Now isn't the problem more in the fact that most of the swevents
+should be tracepoints?
+
+This is the case for most of them. Only PERF_COUNT_SW_CPU_CLOCK
+and PERF_COUNT_SW_TASK_CLOCK seem to be the exception, and they
+manage their own path by calling perf_event_overflow() directly.
+
+And as you guess, turning them into tracepoints would benefit
+to everyone. We'll have interesting trace events in fault paths,
+we won't have zillions of hooks in the same place (in the context
+switch, we have the usual tracepoint plus the perf call).
+And eventually the off-case is better optimized, and further
+optimizations there (jmp/nop patching/whatever) will propagate
+to all tracepoint users.
+
+Finally, we would have only one path to maintain for the swevents.
 
