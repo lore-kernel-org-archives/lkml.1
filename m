@@ -1,95 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373Ab0CESKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 13:10:14 -0500
-Received: from mga10.intel.com ([192.55.52.92]:32065 "EHLO
+	id S1755384Ab0CESP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 13:15:28 -0500
+Received: from mga10.intel.com ([192.55.52.92]:59362 "EHLO
 	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754199Ab0CESKM (ORCPT
+	with ESMTP id S1755188Ab0CESP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 13:10:12 -0500
+	Fri, 5 Mar 2010 13:15:27 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,588,1262592000"; 
-   d="scan'208";a="546456520"
-Date: Fri, 5 Mar 2010 19:11:17 +0100
+   d="scan'208";a="546458100"
+Date: Fri, 5 Mar 2010 19:16:32 +0100
 From: Samuel Ortiz <sameo@linux.intel.com>
-To: Denis Turischev <denis@compulab.co.il>
-Cc: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
-Subject: Re: sch_gpio: fix compilation warning "ignoring return value of
- gpiochip_remove"
-Message-ID: <20100305181117.GA5615@sortiz.org>
-References: <20100303162252.e7cf0e43.sfr@canb.auug.org.au>
- <4B8E2CE9.3050001@compulab.co.il>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Denis Turischev <denis@compulab.co.il>
+Subject: Re: [PATCH -next] mfd/lpc_sch: fix related depends/selects, fix
+ build error
+Message-ID: <20100305181632.GB5615@sortiz.org>
+References: <20100305181358.9adfe089.sfr@canb.auug.org.au>
+ <4B9142AA.9040801@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B8E2CE9.3050001@compulab.co.il>
+In-Reply-To: <4B9142AA.9040801@oracle.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Denis,
+Hi Randy,
 
-On Wed, Mar 03, 2010 at 11:33:29AM +0200, Denis Turischev wrote:
-> Signed-off-by: Denis Turischev <denis@compulab.co.il>
-I modified this patch as you were leaking some resources releasing.
+On Fri, Mar 05, 2010 at 09:43:06AM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> LPC_SCH is selected by GPI_SCH and I2C_ISCH, even when PCI is not
+> enabled, but LPC_SCH depends on PCI, so make GPI_SCH and I2C_ISCH
+> also depend on PCI.
+> 
+> Those 2 selects also need to select what LPC_SCH selects,
+> since kconfig does not follow selects.
+Thanks, patch applied.
 
 Cheers,
 Samuel.
 
+
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Denis Turischev <denis@compulab.co.il>
 > ---
->  drivers/gpio/sch_gpio.c |   25 +++++++++++++++++++++----
->  1 files changed, 21 insertions(+), 4 deletions(-)
+>  drivers/gpio/Kconfig       |    3 ++-
+>  drivers/i2c/busses/Kconfig |    2 ++
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/gpio/sch_gpio.c b/drivers/gpio/sch_gpio.c
-> index 761071a..a89c02d 100644
-> --- a/drivers/gpio/sch_gpio.c
-> +++ b/drivers/gpio/sch_gpio.c
-> @@ -229,7 +229,12 @@ static int __devinit sch_gpio_probe(struct platform_device *pdev)
->  	return 0;
+> --- linux-next-20100305.orig/drivers/gpio/Kconfig
+> +++ linux-next-20100305/drivers/gpio/Kconfig
+> @@ -87,7 +87,8 @@ config GPIO_VR41XX
+>  
+>  config GPIO_SCH
+>  	tristate "Intel SCH GPIO"
+> -	depends on GPIOLIB
+> +	depends on GPIOLIB && PCI
+> +	select MFD_CORE
+>  	select LPC_SCH
+>  	help
+>  	  Say yes here to support GPIO interface on Intel Poulsbo SCH.
+> --- linux-next-20100305.orig/drivers/i2c/busses/Kconfig
+> +++ linux-next-20100305/drivers/i2c/busses/Kconfig
+> @@ -105,6 +105,8 @@ config I2C_I801
+>  
+>  config I2C_ISCH
+>  	tristate "Intel SCH SMBus 1.0"
+> +	depends on PCI
+> +	select MFD_CORE
+>  	select LPC_SCH
+>  	help
+>  	  Say Y here if you want to use SMBus controller on the Intel SCH
 > 
->  err_sch_gpio_resume:
-> -	gpiochip_remove(&sch_gpio_core);
-> +	err = gpiochip_remove(&sch_gpio_core);
-> +	if (err) {
-> +		dev_err(&pdev->dev, "%s failed, %d\n",
-> +				"gpiochip_remove()", err);
-> +		return err;
-> +	}
-> 
->  err_sch_gpio_core:
->  	release_region(res->start, resource_size(res));
-> @@ -240,11 +245,23 @@ err_sch_gpio_core:
-> 
->  static int __devexit sch_gpio_remove(struct platform_device *pdev)
->  {
-> +	int err_c, err_r;
->  	struct resource *res;
->  	if (gpio_ba) {
-> -		gpiochip_remove(&sch_gpio_core);
-> -		gpiochip_remove(&sch_gpio_resume);
-> -
-> +		err_c = gpiochip_remove(&sch_gpio_core);
-> +		
-> +		err_r = gpiochip_remove(&sch_gpio_resume);
-> +
-> +		if (err_c) {
-> +			dev_err(&pdev->dev, "%s failed, %d\n",
-> +					"gpiochip_remove()", err_c);
-> +			return err_c;
-> +		}
-> +		if (err_r) {
-> +			dev_err(&pdev->dev, "%s failed, %d\n",
-> +					"gpiochip_remove()", err_r);
-> +			return err_r;
-> +		}
->  		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> 
->  		release_region(res->start, resource_size(res));
 > -- 
-> 1.6.3.3
-> 
+> ~Randy
 
 -- 
 Intel Open Source Technology Centre
