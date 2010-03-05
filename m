@@ -1,126 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188Ab0CESn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 13:43:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35687 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754151Ab0CESnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 13:43:25 -0500
-Message-ID: <4B915074.4020704@kernel.org>
-Date: Fri, 05 Mar 2010 10:41:56 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1755398Ab0CESoQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 13:44:16 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:41789 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754151Ab0CESoP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 13:44:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=S0uUW6yf1Gy5kVoEFB0LDyEoFAE2ptPxlA1uMd2YH8wzL9vJGrJ1MBRLTmEvOxPcMW
+         X5AbRcYsfzxHO7WcTegVasQ1GIWxN/b29f/lMOHuoEI6wHZLBW+u20N6go5YWkbLEIeZ
+         ltQDDZWUJTJQX1ItybpAT/N72nL3fp0ksqxG4=
+Date: Fri, 5 Mar 2010 19:43:59 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+Message-ID: <20100305184358.GG5244@nowhere>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com> <1267710847.10871.102.camel@gandalf.stny.rr.com> <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com> <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com> <1267801603.10871.1725.camel@gandalf.stny.rr.com> <20100305171614.GC5244@nowhere> <1267814100.10871.1780.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Greg Thelen <gthelen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-CC: Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> 	<20100305032106.GA12065@cmpxchg.org> <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
-In-Reply-To: <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267814100.10871.1780.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/2010 09:17 PM, Greg Thelen wrote:
-> On Thu, Mar 4, 2010 at 7:21 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
->> On Thu, Mar 04, 2010 at 01:21:41PM -0800, Greg Thelen wrote:
->>> On several systems I am seeing a boot panic if I use mmotm
->>> (stamp-2010-03-02-18-38).  If I remove
->>> bootmem-avoid-dma32-zone-by-default.patch then no panic is seen.  I
->>> find that:
->>> * 2.6.33 boots fine.
->>> * 2.6.33 + mmotm w/o bootmem-avoid-dma32-zone-by-default.patch: boots fine.
->>> * 2.6.33 + mmotm (including
->>> bootmem-avoid-dma32-zone-by-default.patch): panics.
-...
+On Fri, Mar 05, 2010 at 01:35:00PM -0500, Steven Rostedt wrote:
+> On Fri, 2010-03-05 at 18:16 +0100, Frederic Weisbecker wrote:
 > 
-> Note: mmotm has been recently updated to stamp-2010-03-04-18-05.  I
-> re-tested with 'make defconfig' to confirm the panic with this later
-> mmotm.
+> > It's true it has a high overhead, but not to the point of
+> > making the whole system unusable. We are supposed to be even
+> > far from that. I'm currently able to turn on the function graph
+> > tracer and use firefox without problems. It's just a bit slower
+> > but it's far from a visible starvation.
+> > 
+> > And Li seems to see the same thing.
+> > For now I can not test, but I will try this week-end.
+> 
+> Americo said he's seen the issue as far back as 2.6.32. So perhaps some
+> CPUs take a bigger hit from the function graph tracer than others. I
+> have several different boxes that I can try. I've seen noticeable slow
+> downs but never something that cripples the box.
+> 
+> The only time that I've seen it cripple the box is when LOCKDEP_DEBUG
+> was set (which according to Americo's config it was not). But that's
+> because LOCKDEP_DEBUG updates a global variable every time interrupts
+> are enabled or disabled. This caused a huge cache line bouncing with the
+> function graph tracer since it caused this variable to be updated 4
+> times for every function call!
 
-please check
 
-[PATCH] early_res: double check with updated goal in alloc_memory_core_early
 
-Johannes Weiner pointed out that new early_res replacement for alloc_bootmem_node
-change the behavoir about goal.
-original bootmem one will try go further regardless of goal.
+Ouch...that's the hardirqs_off_events/redundant_hardirqs_off variables?
+Those should be clearly made per cpu.
 
-and it will break his patch about default goal from MAX_DMA to MAX_DMA32...
-also broke uncommon machines with <=16M of memory.
-(really? our x86 kernel still can run on 16M system?)
-
-so try again with update goal.
-
-Reported-by: Greg Thelen <gthelen@google.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- mm/bootmem.c |   28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/mm/bootmem.c
-===================================================================
---- linux-2.6.orig/mm/bootmem.c
-+++ linux-2.6/mm/bootmem.c
-@@ -170,6 +170,28 @@ void __init free_bootmem_late(unsigned l
- }
- 
- #ifdef CONFIG_NO_BOOTMEM
-+static void * __init ___alloc_memory_core_early(pg_data_t *pgdat, u64 size,
-+						 u64 align, u64 goal, u64 limit)
-+{
-+	void *ptr;
-+	unsigned long end_pfn;
-+
-+	ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
-+					 goal, limit);
-+	if (ptr)
-+		return ptr;
-+
-+	/* check goal according  */
-+	end_pfn = pgdat->node_start_pfn + pgdat->node_spanned_pages;
-+	if ((end_pfn << PAGE_SHIFT) < (goal + size)) {
-+		goal = pgdat->node_start_pfn << PAGE_SHIFT;
-+		ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
-+						 goal, limit);
-+	}
-+
-+	return ptr;
-+}
-+
- static void __init __free_pages_memory(unsigned long start, unsigned long end)
- {
- 	int i;
-@@ -836,7 +858,7 @@ void * __init __alloc_bootmem_node(pg_da
- 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
- 
- #ifdef CONFIG_NO_BOOTMEM
--	return __alloc_memory_core_early(pgdat->node_id, size, align,
-+	return  ___alloc_memory_core_early(pgdat, size, align,
- 					 goal, -1ULL);
- #else
- 	return ___alloc_bootmem_node(pgdat->bdata, size, align, goal, 0);
-@@ -920,7 +942,7 @@ void * __init __alloc_bootmem_node_nopan
- 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
- 
- #ifdef CONFIG_NO_BOOTMEM
--	ptr =  __alloc_memory_core_early(pgdat->node_id, size, align,
-+	ptr =  ___alloc_memory_core_early(pgdat, size, align,
- 						 goal, -1ULL);
- #else
- 	ptr = alloc_arch_preferred_bootmem(pgdat->bdata, size, align, goal, 0);
-@@ -980,7 +1002,7 @@ void * __init __alloc_bootmem_low_node(p
- 		return kzalloc_node(size, GFP_NOWAIT, pgdat->node_id);
- 
- #ifdef CONFIG_NO_BOOTMEM
--	return __alloc_memory_core_early(pgdat->node_id, size, align,
-+	return ___alloc_memory_core_early(pgdat, size, align,
- 				goal, ARCH_LOW_ADDRESS_LIMIT);
- #else
- 	return ___alloc_bootmem_node(pgdat->bdata, size, align,
