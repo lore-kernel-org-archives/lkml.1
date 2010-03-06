@@ -1,52 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752257Ab0CFXPU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 18:15:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56221 "EHLO ogre.sisk.pl"
+	id S1752652Ab0CFXUc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 18:20:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58316 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751948Ab0CFXPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 18:15:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] More PM updates for 2.6.34
-Date: Sun, 7 Mar 2010 00:17:51 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Mark Brown <broonie@sirena.org.uk>
+	id S1751987Ab0CFXUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 18:20:31 -0500
+Message-ID: <4B92E296.1040804@zytor.com>
+Date: Sat, 06 Mar 2010 15:17:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "colin.king@canonical.com" <colin.king@canonical.com>
+Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
+References: <1267665799-670-1-git-send-email-shaohua.li@intel.com> <20100305005932.GA22675@sli10-desk.sh.intel.com> <201003052155.26292.rjw@sisk.pl> <201003062254.46584.rjw@sisk.pl>
+In-Reply-To: <201003062254.46584.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003070017.51319.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 03/06/2010 01:54 PM, Rafael J. Wysocki wrote:
+> 
+> Peter, are you going to take it or should I handle it?
+> 
 
-Please pull more power management updates for 2.6.34 from:
+I'll take it after -rc1.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+	-hpa
 
-There are two patches in this set.  The first one is a missing documentation
-update and the second one adds generic power management callbacks for the
-subsystems that only need to execute device drivers' callbacks (embedded people
-requested that and I think it's going to be immediately useful to them).
-
-
- Documentation/power/runtime_pm.txt |   93 ++++++++++++++
- drivers/base/power/Makefile        |    1 +
- drivers/base/power/generic_ops.c   |  233 ++++++++++++++++++++++++++++++++++++
- include/linux/pm.h                 |   51 +++++++-
- include/linux/pm_runtime.h         |    6 +
- 5 files changed, 378 insertions(+), 6 deletions(-)
-
----------------
-
-Rafael J. Wysocki (2):
-      PM / Runtime: Document power.runtime_auto and related functions
-      PM: Provide generic subsystem-level callbacks
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
