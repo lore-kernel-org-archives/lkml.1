@@ -1,83 +1,177 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035Ab0CFA20 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 19:28:26 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:46779 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751014Ab0CFA2Z (ORCPT
+	id S1752292Ab0CFA3P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 19:29:15 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:43239 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014Ab0CFA3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 19:28:25 -0500
-Date: Sat, 6 Mar 2010 03:28:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-Message-ID: <20100306002823.GA22095@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
- <20100205203236.GC1475@oksana.dev.rtsoft.ru>
- <fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com>
- <20100209191620.GA24539@oksana.dev.rtsoft.ru>
- <20100305120015.a2008f46.akpm@linux-foundation.org>
- <fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com>
- <20100305123527.d6d68e56.akpm@linux-foundation.org>
- <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
+	Fri, 5 Mar 2010 19:29:13 -0500
+X-SpamScore: 0
+X-BigFish: VPS0(zzab9bhzz1202hzzz2fh6bh2a8h61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B91A1D1.2020208@am.sony.com>
+Date: Fri, 5 Mar 2010 16:29:05 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/2] ftrace - add notrace to sched_clock on various arm platforms
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 04:47:06PM -0700, Grant Likely wrote:
-[...]
-> >> I'm not really very comfortable with the whole
-> >> approach being taken.  And, while I acked the first patch in the
-> >> series, that patch isn't needed by anything except patches 2, 3 & 4.
+Add notrace attribute to sched_clock, and
+subsidiary clock routines, to avoid
+recursion within ftrace.
 
-But you didn't answer my replies, ie were sitting silent like for
-a month? So you didn't give my any chance to make them comfortable
-to you.
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+---
+ arch/arm/mach-mmp/time.c       |    2 +-
+ arch/arm/mach-pxa/time.c       |    2 +-
+ arch/arm/mach-realview/core.c  |    2 +-
+ arch/arm/mach-sa1100/generic.c |    2 +-
+ arch/arm/mach-versatile/core.c |    2 +-
+ arch/arm/plat-omap/common.c    |   14 +++++++-------
+ arch/arm/plat-omap/io.c        |    2 +-
+ 7 files changed, 13 insertions(+), 13 deletions(-)
 
-Is there any punishment ready for that? ;-) I see one: apply
-these patches, and rework this stuff as you like when you have some
-time? Or tell me your idea, and I'll do the rework for you, in
-2.6.35.
+--- a/arch/arm/mach-mmp/time.c
++++ b/arch/arm/mach-mmp/time.c
+@@ -72,7 +72,7 @@ static inline uint32_t timer_read(void)
+ 	return __raw_readl(TIMERS_VIRT_BASE + TMR_CVWR(0));
+ }
 
-But in the meantime, these patches can be nicely used to support
-I2C/SPI GPIO controllers.
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	unsigned long long v = cnt32_to_63(timer_read());
+ 	return (v * tcr2ns_scale) >> TCR2NS_SCALE_FACTOR;
+--- a/arch/arm/mach-pxa/time.c
++++ b/arch/arm/mach-pxa/time.c
+@@ -51,7 +51,7 @@ static void __init set_oscr2ns_scale(uns
+ 		oscr2ns_scale++;
+ }
 
-> >> Also, the OF stuff is a moving target at the moment with all the
-> >> rework is being undertaken.  I'd rather let this series sit out for
-> >> another merge cycle so that the underlying OF stuff can settle down.
-> >
-> > OK, please take it up on-list?
-> 
-> Okay.  I'm making this reply on list.
-> 
-> Anton, as I've stated before, I'm not thrilled with the approach.
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	unsigned long long v = cnt32_to_63(OSCR);
+ 	return (v * oscr2ns_scale) >> OSCR2NS_SCALE_FACTOR;
+--- a/arch/arm/mach-realview/core.c
++++ b/arch/arm/mach-realview/core.c
+@@ -82,7 +82,7 @@ void __init realview_adjust_zones(int no
+  * This is the RealView sched_clock implementation.  This has
+  * a resolution of 41.7ns, and a maximum value of about 179s.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	unsigned long long v;
 
-Again, great timing for telling that, I must say. Yes, you said
-it once with some minor arguments (doubts and questions), to which
-I replied long ago. Then nothing.
+--- a/arch/arm/mach-sa1100/generic.c
++++ b/arch/arm/mach-sa1100/generic.c
+@@ -119,7 +119,7 @@ unsigned int sa11x0_getspeed(unsigned in
+  *
+  *  ( * 1E9 / 3686400 => * 78125 / 288)
+  */
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	unsigned long long v = cnt32_to_63(OSCR);
 
-> Combine that with the changes being made to drivers/of right now and
-> the addition device tree to ARM and other architectures, my preference
-> is to let this patch series lie fallow for one more merge cycle so
-> that things can settle out in the OF infrastructure code.
+--- a/arch/arm/mach-versatile/core.c
++++ b/arch/arm/mach-versatile/core.c
+@@ -238,7 +238,7 @@ void __init versatile_map_io(void)
+  * long as there is always less than 89 seconds between successive
+  * calls to this function.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	unsigned long long v = cnt32_to_63(readl(VERSATILE_REFCOUNTER));
 
-How exactly OF rework affects these patches? And why some rework
-should be used as an excuse for not adding a hardware support?
+--- a/arch/arm/plat-omap/common.c
++++ b/arch/arm/plat-omap/common.c
+@@ -101,7 +101,7 @@ EXPORT_SYMBOL(omap_get_var_config);
+ #include <linux/clocksource.h>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+ #ifdef CONFIG_ARCH_OMAP16XX
+-static cycle_t omap16xx_32k_read(struct clocksource *cs)
++static cycle_t notrace omap16xx_32k_read(struct clocksource *cs)
+ {
+ 	return omap_readl(OMAP16XX_TIMER_32K_SYNCHRONIZED);
+ }
+@@ -110,7 +110,7 @@ static cycle_t omap16xx_32k_read(struct
+ #endif
+
+ #ifdef CONFIG_ARCH_OMAP2420
+-static cycle_t omap2420_32k_read(struct clocksource *cs)
++static cycle_t notrace omap2420_32k_read(struct clocksource *cs)
+ {
+ 	return omap_readl(OMAP2420_32KSYNCT_BASE + 0x10);
+ }
+@@ -119,7 +119,7 @@ static cycle_t omap2420_32k_read(struct
+ #endif
+
+ #ifdef CONFIG_ARCH_OMAP2430
+-static cycle_t omap2430_32k_read(struct clocksource *cs)
++static cycle_t notrace omap2430_32k_read(struct clocksource *cs)
+ {
+ 	return omap_readl(OMAP2430_32KSYNCT_BASE + 0x10);
+ }
+@@ -128,7 +128,7 @@ static cycle_t omap2430_32k_read(struct
+ #endif
+
+ #ifdef CONFIG_ARCH_OMAP3
+-static cycle_t omap34xx_32k_read(struct clocksource *cs)
++static cycle_t notrace omap34xx_32k_read(struct clocksource *cs)
+ {
+ 	return omap_readl(OMAP3430_32KSYNCT_BASE + 0x10);
+ }
+@@ -137,7 +137,7 @@ static cycle_t omap34xx_32k_read(struct
+ #endif
+
+ #ifdef CONFIG_ARCH_OMAP4
+-static cycle_t omap44xx_32k_read(struct clocksource *cs)
++static cycle_t notrace omap44xx_32k_read(struct clocksource *cs)
+ {
+ 	return omap_readl(OMAP4430_32KSYNCT_BASE + 0x10);
+ }
+@@ -149,7 +149,7 @@ static cycle_t omap44xx_32k_read(struct
+  * Kernel assumes that sched_clock can be called early but may not have
+  * things ready yet.
+  */
+-static cycle_t omap_32k_read_dummy(struct clocksource *cs)
++static cycle_t notrace omap_32k_read_dummy(struct clocksource *cs)
+ {
+ 	return 0;
+ }
+@@ -167,7 +167,7 @@ static struct clocksource clocksource_32
+  * Returns current time from boot in nsecs. It's OK for this to wrap
+  * around for now, as it's just a relative time stamp.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long notrace sched_clock(void)
+ {
+ 	return clocksource_cyc2ns(clocksource_32k.read(&clocksource_32k),
+ 				  clocksource_32k.mult, clocksource_32k.shift);
+--- a/arch/arm/plat-omap/io.c
++++ b/arch/arm/plat-omap/io.c
+@@ -159,7 +159,7 @@ u16 omap_readw(u32 pa)
+ }
+ EXPORT_SYMBOL(omap_readw);
+
+-u32 omap_readl(u32 pa)
++u32 notrace omap_readl(u32 pa)
+ {
+ 	if (cpu_class_is_omap1())
+ 		return __raw_readl(OMAP1_IO_ADDRESS(pa));
+
