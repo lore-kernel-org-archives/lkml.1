@@ -1,35 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607Ab0CHR20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 12:28:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38476 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753401Ab0CHR2Q (ORCPT
+	id S1754720Ab0CHR2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 12:28:41 -0500
+Received: from ppp173-197.broadband.gorge.net ([209.216.173.197]:37106 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754391Ab0CHR2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 12:28:16 -0500
-Date: Mon, 8 Mar 2010 09:28:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Greg KH <gregkh@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] driver core patches for 2.6.33-git
-In-Reply-To: <20100308141234.GA2911@kroah.com>
-Message-ID: <alpine.LFD.2.00.1003080926480.3989@localhost.localdomain>
-References: <20100302230933.GA32287@kroah.com> <20100308141234.GA2911@kroah.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Mar 2010 12:28:34 -0500
+X-Greylist: delayed 3560 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 12:28:34 EST
+Date: Sat, 6 Mar 2010 20:52:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: tytso@mit.edu
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100306205235.2e4dacb4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100306204953.GG6000@thunk.org>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	<alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+	<alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+	<1267889034.24025.4.camel@segulix>
+	<alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
+	<1267902406.24025.50.camel@segulix>
+	<alpine.LFD.2.00.1003061127060.31447@localhost.localdomain>
+	<20100306204953.GG6000@thunk.org>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.7; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> They want the benefits of lots of testers, without wanting to be
+> courteous to those testers.
 
+Except for the small rather important detail that the Nouveau developers
+didn't ask for it to be merged in the first place.
 
-On Mon, 8 Mar 2010, Greg KH wrote:
-> 
-> Please pull from:
-> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
-
-Forgot to push out?
-
-		Linus
