@@ -1,65 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430Ab0CFLjG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 06:39:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:27020 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182Ab0CFLjB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 06:39:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=XsekLrphkEPNPQg/m6zMwXeNGoOFEmhI+AwYtTAb4i4j2mP9aLaI+X3O77XgQ72eGx
-         ESI2mQ21HAF7p282pEwr+SgMelM+Iv4di4V7pUexI1MoI0UgrLAvl1VqYNr2OG0YmNqG
-         zJ8bzpRn6hqLeCHHxhM52f0AV/hy/5us4176Q=
-Date: Sat, 6 Mar 2010 14:38:26 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Scott Moreau <oreaus@gmail.com>, linux-input@vger.kernel.org,
+	id S1752343Ab0CFL6A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 06:58:00 -0500
+Received: from cable-static-49-187.intergga.ch ([157.161.49.187]:55520 "EHLO
+	mail.ffwll.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160Ab0CFL57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 06:57:59 -0500
+X-Greylist: delayed 417 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 06:57:58 EST
+X-Spam-ASN: 
+X-Spam-Hammy: 0.000-+--H*Ad:D*sourceforge.net,
+	0.000-+--H*Ad:D*lists.sourceforge.net, 0.000-+--H*Ad:D*kernel.org
+X-Spam-Spammy: 0.980-+--HTo:U*daniel.vetter, 0.958-+--H*Ad:U*daniel.vetter,
+	0.957-+--H*r:mail.ffwll.ch
+Date: Sat, 6 Mar 2010 12:50:54 +0100
+From: Daniel Vetter <daniel@ffwll.ch>
+To: Dan Carpenter <error27@gmail.com>, David Airlie <airlied@linux.ie>,
+       Eric Anholt <eric@anholt.net>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+       maximlevitsky@gmail.com, Chris Wilson <chris@chris-wilson.co.uk>,
+       Luca Barbieri <luca@luca-barbieri.com>, dri-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [patch] joystick: off by one error
-Message-ID: <20100306113826.GO4958@bicker>
+Subject: Re: [patch] i915: fix small leak on error path
+Message-ID: <20100306115054.GA3462@viiv.ffwll.ch>
 Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Scott Moreau <oreaus@gmail.com>, linux-input@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <20100306110944.GG4958@bicker>
+	David Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
+	maximlevitsky@gmail.com, Chris Wilson <chris@chris-wilson.co.uk>,
+	Luca Barbieri <luca@luca-barbieri.com>,
+	dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+References: <20100306110539.GD4958@bicker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100306110944.GG4958@bicker>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100306110539.GD4958@bicker>
+X-Operating-System: Linux viiv 2.6.33-05070-g64ba992 
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 02:09:44PM +0300, Dan Carpenter wrote:
-> This fixes a smatch warning:
-> drivers/input/joystick/gamecon.c +838 gc_setup_pad(23) error: buffer overflow 'gc_names' 10 <= 10
+Oh, dang. Thanks for catching this. Eric, please merge.
+
+Cc: stable@kernel.org (for .33)
+Reviewed-by: Daniel Vetter <daniel@ffwll.ch>
+
+On Sat, Mar 06, 2010 at 02:05:39PM +0300, Dan Carpenter wrote:
+> We should free "params" before returning.
 > 
-
-Crap.  I already sent this patch.  I'm really sorry about that.
-
-I will fix my QC process to not do this again.
-
-regards,
-dan carpenter
-
 > Signed-off-by: Dan Carpenter <error27@gmail.com>
 > 
-> diff --git a/drivers/input/joystick/gamecon.c b/drivers/input/joystick/gamecon.c
-> index ae998d9..7a55714 100644
-> --- a/drivers/input/joystick/gamecon.c
-> +++ b/drivers/input/joystick/gamecon.c
-> @@ -819,7 +819,7 @@ static int __init gc_setup_pad(struct gc *gc, int idx, int pad_type)
->  	int i;
->  	int err;
+> diff --git a/drivers/gpu/drm/i915/intel_overlay.c b/drivers/gpu/drm/i915/intel_overlay.c
+> index d355d1d..60595fc 100644
+> --- a/drivers/gpu/drm/i915/intel_overlay.c
+> +++ b/drivers/gpu/drm/i915/intel_overlay.c
+> @@ -1068,14 +1068,18 @@ int intel_overlay_put_image(struct drm_device *dev, void *data,
 >  
-> -	if (pad_type < 1 || pad_type > GC_MAX) {
-> +	if (pad_type < 1 || pad_type >= GC_MAX) {
->  		pr_err("Pad type %d unknown\n", pad_type);
->  		return -EINVAL;
->  	}
+>  	drmmode_obj = drm_mode_object_find(dev, put_image_rec->crtc_id,
+>                          DRM_MODE_OBJECT_CRTC);
+> -	if (!drmmode_obj)
+> -		return -ENOENT;
+> +	if (!drmmode_obj) {
+> +		ret = -ENOENT;
+> +		goto out_free;
+> +	}
+>  	crtc = to_intel_crtc(obj_to_crtc(drmmode_obj));
+>  
+>  	new_bo = drm_gem_object_lookup(dev, file_priv,
+>  			put_image_rec->bo_handle);
+> -	if (!new_bo)
+> -		return -ENOENT;
+> +	if (!new_bo) {
+> +		ret = -ENOENT;
+> +		goto out_free;
+> +	}
+>  
+>  	mutex_lock(&dev->mode_config.mutex);
+>  	mutex_lock(&dev->struct_mutex);
+> @@ -1165,6 +1169,7 @@ out_unlock:
+>  	mutex_unlock(&dev->struct_mutex);
+>  	mutex_unlock(&dev->mode_config.mutex);
+>  	drm_gem_object_unreference_unlocked(new_bo);
+> +out_free:
+>  	kfree(params);
+>  
+>  	return ret;
+
+-- 
+Daniel Vetter
+Mail: daniel@ffwll.ch
+Mobile: +41 (0)79 365 57 48
