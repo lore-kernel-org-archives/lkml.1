@@ -1,63 +1,233 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941Ab0CFSDP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 13:03:15 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56529 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586Ab0CFSDN (ORCPT
+	id S1753955Ab0CFSE5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 13:04:57 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:38143 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753586Ab0CFSEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 13:03:13 -0500
-Date: Sat, 6 Mar 2010 18:03:13 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: walt <w41ter@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: "Switch !O_CREAT case to use of do_last()" causes segfault in
- glibc
-Message-ID: <20100306180313.GE30031@ZenIV.linux.org.uk>
-References: <4B92944E.8080209@gmail.com>
- <20100306175917.GD30031@ZenIV.linux.org.uk>
+	Sat, 6 Mar 2010 13:04:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=xH92QC+GHni3BSz0FwFkWllIdSiDM8cnpXUQInzCHntE3srPL3fs6mxyIRi/mb1/VP
+         UuLYIhZUnVRh09Y3afH2XLguY/9F3oUJ6I2+XlerJ3ppqffUPy1q61H0/kQOqgShKb2w
+         L1REO9TT5REmzgccbaJwpDMkglqo+sGKYYBBs=
+Message-ID: <4B9298DF.3070507@gmail.com>
+Date: Sat, 06 Mar 2010 19:03:11 +0100
+From: Marco Stornelli <marco.stornelli@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; it; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100306175917.GD30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Linux Embedded <linux-embedded@vger.kernel.org>
+Subject: [PATCH]: Ram oops/panic logger
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 05:59:18PM +0000, Al Viro wrote:
-> On Sat, Mar 06, 2010 at 09:43:42AM -0800, walt wrote:
-> > Hi Al,
-> > commit 1f36f774b22a0ceb7dd33eca626746c81a97b6a5
-> > Author: Al Viro <viro@zeniv.linux.org.uk>
-> > Date:   Sat Dec 26 10:56:19 2009 -0500
-> > 
-> >     Switch !O_CREAT case to use of do_last()
-> > 
-> >     ... and now we have all intents crap well localized
-> > 
-> > This commit is triggering a segfault when I try to open a spreadsheet in
-> > openoffice:
-> > 
-> > Program received signal SIGSEGV, Segmentation fault.
-> > 0x00007ffff6d13129 in __readdir (dirp=0x0) at ../sysdeps/unix/readdir.c:45
-> > 45      ../sysdeps/unix/readdir.c: No such file or directory.
-> >         in ../sysdeps/unix/readdir.c
-> > (gdb) bt
-> > #0  0x00007ffff6d13129 in __readdir (dirp=0x0) at ../sysdeps/unix/readdir.c:45
-> > #1  0x00007ffff1dc58b0 in ?? () from /usr/lib/libicuuc.so.42
-> > #2  0x00007ffff1dc591d in ?? () from /usr/lib/libicuuc.so.42
-> > #3  0x00007ffff1dc5d7e in uprv_tzname_4_2 () from /usr/lib/libicuuc.so.42
-> > #4  0x00007fffd7f73601 in icu_4_2::TimeZone::initDefault() () from /usr/lib/libicui18n.so.42
-> > #5  0x00007fffd7f738c5 in icu_4_2::TimeZone::createDefault() () from /usr/lib/libicui18n.so.42
-> > #6  0x00007fffd7f6e5c9 in icu_4_2::Calendar::createInstance(icu_4_2::Locale const&, UErrorCode&) ()
-> >    from /usr/lib/libicui18n.so.42
-> 
-> Very interesting.  Could you give the relevant parts of strace (or reproduce
-> it with something less monumental than openoffice)?
+Ramoops, like mtdoops, can log oops/panic information but in RAM. It can
+be used with persistent RAM for systems without flash support. In
+addition, for this systems, with this driver, it's no more needed
+add to the kernel the mtd subsystem with advantage in footprint.
 
-_Really_ interesting; it doesn't look like an oops - smells like an attempt
-to do opendir() that fails for some reason, goes unnoticed and resulting
-FILE * (i.e. NULL) is fed to readdir()?
+Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+--
 
-What does it attempt to open?
+diff -Nuar linux-2.6.33-orig/drivers/char/Kconfig linux-2.6.33/drivers/char/Kconfig
+--- linux-2.6.33-orig/drivers/char/Kconfig	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/char/Kconfig	2010-02-28 10:47:29.000000000 +0100
+@@ -1105,5 +1105,12 @@
+ 
+ source "drivers/s390/char/Kconfig"
+ 
++config RAMOOPS
++	tristate "Log panic/oops to a RAM buffer"
++	default n
++	help
++	  This enables panic and oops messages to be logged to a circular
++	  buffer in RAM where it can be read back at some later point.
++
+ endmenu
+ 
+diff -Nuar linux-2.6.33-orig/drivers/char/Makefile linux-2.6.33/drivers/char/Makefile
+--- linux-2.6.33-orig/drivers/char/Makefile	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/char/Makefile	2010-02-28 10:49:17.000000000 +0100
+@@ -107,6 +107,7 @@
+ obj-$(CONFIG_TCG_TPM)		+= tpm/
+ 
+ obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
++obj-$(CONFIG_RAMOOPS)		+= ramoops.o
+ 
+ obj-$(CONFIG_JS_RTC)		+= js-rtc.o
+ js-rtc-y = rtc.o
+diff -Nuar linux-2.6.33-orig/drivers/char/ramoops.c linux-2.6.33/drivers/char/ramoops.c
+--- linux-2.6.33-orig/drivers/char/ramoops.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33/drivers/char/ramoops.c	2010-03-06 13:36:31.000000000 +0100
+@@ -0,0 +1,163 @@
++/*
++ * RAM Oops/Panic logger
++ *
++ * Copyright (C) 2009 Marco Stornelli <marco.stornelli@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/kmsg_dump.h>
++#include <linux/time.h>
++#include <linux/io.h>
++#include <linux/ioport.h>
++
++#define RAMOOPS_KERNMSG_HDR "===="
++#define RAMOOPS_HEADER_SIZE   (5 + sizeof(struct timeval))
++
++#define RECORD_SIZE 4096
++
++static ulong mem_address;
++module_param(mem_address, ulong, 0600);
++MODULE_PARM_DESC(mem_address,
++		"start of reserved RAM used to store oops/panic logs");
++
++static ulong mem_size;
++module_param(mem_size, ulong, 0600);
++MODULE_PARM_DESC(mem_size,
++		"size of reserved RAM used to store oops/panic logs");
++
++static int dump_oops = 1;
++module_param(dump_oops, int, 0600);
++MODULE_PARM_DESC(dump_oops,
++		"set to 1 to dump oopses, 0 to only dump panics (default 1)");
++
++static struct ramoops_context {
++	struct kmsg_dumper dump;
++	void *virt_addr;
++	phys_addr_t phys_addr;
++	unsigned long size;
++	int count;
++	int max_count;
++} oops_cxt;
++
++static void ramoops_do_dump(struct kmsg_dumper *dumper,
++		enum kmsg_dump_reason reason, const char *s1, unsigned long l1,
++		const char *s2, unsigned long l2)
++{
++	struct ramoops_context *cxt = container_of(dumper,
++			struct ramoops_context, dump);
++	unsigned long s1_start, s2_start;
++	unsigned long l1_cpy, l2_cpy;
++	int res;
++	char *buf;
++	struct timeval timestamp;
++
++	/* Only dump oopses if dump_oops is set */
++	if (reason == KMSG_DUMP_OOPS && !dump_oops)
++		return;
++
++	buf = (char *)(cxt->virt_addr + (cxt->count * RECORD_SIZE));
++	memset(buf, '\0', RECORD_SIZE);
++	res = sprintf(buf, "%s", RAMOOPS_KERNMSG_HDR);
++	buf += res;
++	do_gettimeofday(&timestamp);
++	res = sprintf(buf, "%lu.%lu\n", (long)timestamp.tv_sec, (long)timestamp.tv_usec);
++	buf += res;
++
++	l2_cpy = min(l2, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE));
++	l1_cpy = min(l1, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE) - l2_cpy);
++
++	s2_start = l2 - l2_cpy;
++	s1_start = l1 - l1_cpy;
++
++	memcpy(buf, s1 + s1_start, l1_cpy);
++	memcpy(buf + l1_cpy, s2 + s2_start, l2_cpy);
++
++	cxt->count = (cxt->count + 1) % cxt->max_count;
++}
++
++static int __init ramoops_init(void)
++{
++	struct ramoops_context *cxt = &oops_cxt;
++	int err = -EINVAL;
++
++	if (!mem_size) {
++		printk(KERN_ERR "Invalid size specification");
++		goto fail3;
++	}
++
++	rounddown_pow_of_two(mem_size);
++
++	if (mem_size < RECORD_SIZE) {
++		printk(KERN_ERR "size too small");
++		goto fail3;
++	}
++
++	cxt->max_count = mem_size / RECORD_SIZE;
++	cxt->count = 0;
++	cxt->size = mem_size;
++	cxt->phys_addr = mem_address;
++
++	err = request_mem_region(cxt->phys_addr, cxt->size, "ramoops");
++	if (!err) {
++		printk(KERN_ERR "ramoops: request mem region failed");
++		err = -EINVAL;
++		goto fail3;
++	}
++
++	cxt->virt_addr = ioremap(cxt->phys_addr,  cxt->size);
++	if (!cxt->virt_addr) {
++		printk(KERN_ERR "ramoops: ioremap failed");
++		goto fail2;
++	}
++
++	cxt->dump.dump = ramoops_do_dump;
++	err = kmsg_dump_register(&cxt->dump);
++	if (err) {
++		printk(KERN_ERR "ramoops: registering kmsg dumper failed");
++		goto fail1;
++	}
++
++	return 0;
++
++fail1:
++	iounmap(cxt->virt_addr);
++fail2:
++	release_mem_region(cxt->phys_addr, cxt->size);
++fail3:
++	return err;
++}
++
++static void __exit ramoops_exit(void)
++{
++	struct ramoops_context *cxt = &oops_cxt;
++
++	if (kmsg_dump_unregister(&cxt->dump) < 0)
++		printk(KERN_WARNING "ramoops: could not unregister kmsg_dumper\n");
++
++	iounmap(cxt->virt_addr);
++	release_mem_region(cxt->phys_addr, cxt->size);
++}
++
++
++module_init(ramoops_init);
++module_exit(ramoops_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Marco Stornelli <marco.stornelli@gmail.com>");
++MODULE_DESCRIPTION("RAM Oops/Panic logger/driver");
+
