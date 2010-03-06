@@ -1,108 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956Ab0CFCtB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:49:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14713 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752205Ab0CFCs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 21:48:59 -0500
-Date: Sat, 6 Mar 2010 02:48:52 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [git pull] device-mapper patches for 2.6.34
-Message-ID: <20100306024852.GP6208@agk-dp.fab.redhat.com>
-Mail-Followup-To: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+	id S1754027Ab0CFCwP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 21:52:15 -0500
+Received: from foo.birdnet.se ([213.88.146.6]:48580 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752774Ab0CFCwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 21:52:14 -0500
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 21:52:13 EST
+Message-ID: <20100306024450.29072.qmail@stuge.se>
+Date: Sat, 6 Mar 2010 03:44:50 +0100
+From: Peter Stuge <peter@stuge.se>
+To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@osdl.org, akpm@osdl.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
+	deprecation)
+Mail-Followup-To: linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	torvalds@osdl.org, akpm@osdl.org,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Jaswinder Singh Rajput <jaswinder@kernel.org>
+References: <20100303075944.GA23354@comet.dominikbrodowski.net> <20100303083010.GA22928@flint.arm.linux.org.uk> <20100305120746.646126b9@lxorguk.ukuu.org.uk> <20100305214159.GB2994@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100305214159.GB2994@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lost the mailing lists there somehow - forwarding!
+Russell King wrote:
+> > Do any graphical environments even support the ancient user space
+> > pcmcica helper stuff ?
+> 
+> I believe so - the platform I have is based around the Open Embedded
+> stuff, and there's a button on the desktop which communicates with the
+> kernel via the PCMCIA ioctls.  One of the things it offers is to allow
+> media (eg, CF) to be safely ejected without ending up pulling the card
+> out while the FS is still mounted.
 
-Alasdair
+So if you upgrade that system to a kernel without that call I guess
+you may have to either also upgrade that GUI software, or install a
+.so to wrap ioctl() and provide backwards compatibility for the app?
 
------ Forwarded message from Alasdair G Kergon <agk@redhat.com> -----
 
-Date: Sat, 6 Mar 2010 02:45:07 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-Subject: [git pull] device-mapper patches for 2.6.34
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jonathan Brassow <jbrassow@redhat.com>,
-	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-	Mike Snitzer <snitzer@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Nikanth Karthikesan <knikanth@suse.de>,
-	Takahiro Yasui <tyasui@redhat.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Milan Broz <mbroz@redhat.com>, Babu Moger <babu.moger@lsi.com>,
-	Chandra Seetharaman <chandra.seetharaman@us.ibm.com>,
-	Dave Wysochanski <dwysocha@redhat.com>,
-	Josef Bacik <josef@redhat.com>,
-	Mike Anderson <andmike@linux.vnet.ibm.com>,
-	Nikanth Karthikesan <knikanth@novell.com>,
-	Peter Rajnoha <prajnoha@redhat.com>
-
-Please pull from:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
-
-to get the following device-mapper fixes and minor updates for inclusion in 2.6.34:
- 
-Kiyoshi Ueda (5):
-      dm table: remove dm_get from dm_table_get_md
-      dm mpath: avoid storing private suspended state
-      dm mpath: hold io until all pg_inits completed
-      dm mpath: wait for pg_init completion when suspending
-      dm mpath: refactor pg_init
-
-Mike Snitzer (3):
-      dm: document when snapshot has finished merging
-      dm ioctl: only issue uevent on resume if state changed
-      dm: eliminate some holes data structures
-
-Mikulas Patocka (2):
-      dm raid1: always return error if all legs fail
-      dm: free dm_io before bio_endio not after
-
-Moger, Babu (2):
-      dm mpath: pass struct pgpath to pg init done
-      dm mpath: skip activate_path for failed paths
-
-Nikanth Karthikesan (1):
-      dm table: remove unused dm_get_device range parameters
-
-Peter Rajnoha (1):
-      dm ioctl: introduce flag indicating uevent was generated
-
-Takahiro Yasui (1):
-      dm raid1: fix deadlock when suspending failed device
-
- Documentation/device-mapper/snapshot.txt |   44 ++++++++++++
- drivers/md/dm-crypt.c                    |    3 +-
- drivers/md/dm-delay.c                    |    8 +-
- drivers/md/dm-ioctl.c                    |   24 ++++---
- drivers/md/dm-linear.c                   |    3 +-
- drivers/md/dm-log.c                      |    3 +-
- drivers/md/dm-mpath.c                    |  111 +++++++++++++++++++-----------
- drivers/md/dm-raid1.c                    |   53 ++++++++------
- drivers/md/dm-snap.c                     |   34 ++++-----
- drivers/md/dm-stripe.c                   |    3 +-
- drivers/md/dm-table.c                    |   12 +--
- drivers/md/dm-uevent.c                   |    7 +--
- drivers/md/dm.c                          |   25 ++-----
- drivers/md/dm.h                          |    4 +-
- include/linux/device-mapper.h            |    5 +-
- include/linux/dm-io.h                    |    4 +-
- include/linux/dm-ioctl.h                 |    9 ++-
- 17 files changed, 212 insertions(+), 140 deletions(-)
-
-Thanks,
-Alasdair.
-
------ End forwarded message -----
+//Peter
