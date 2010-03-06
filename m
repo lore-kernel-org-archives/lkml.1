@@ -1,77 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566Ab0CFLVt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 06:21:49 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:42671 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150Ab0CFLVr (ORCPT
+	id S1753430Ab0CFLjG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 06:39:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:27020 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182Ab0CFLjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 06:21:47 -0500
+	Sat, 6 Mar 2010 06:39:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=eGRNJRlo2RIgjpOaYx9iZNfn4DYFtRJK9H1+l1OXqScm+2bn2MBhQD9tuH/UEI5Vxe
-         eM3J67HW78gtur6UNKI/mGXBZdQxbl2RH4bJaaYl8v6Wecqi4l/YeQkLXv9uGWIoARIV
-         vhku9wS1CNg3sLTjSG08nchMIkp9G5VsPRl5M=
-Date: Sat, 6 Mar 2010 14:21:25 +0300
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=XsekLrphkEPNPQg/m6zMwXeNGoOFEmhI+AwYtTAb4i4j2mP9aLaI+X3O77XgQ72eGx
+         ESI2mQ21HAF7p282pEwr+SgMelM+Iv4di4V7pUexI1MoI0UgrLAvl1VqYNr2OG0YmNqG
+         zJ8bzpRn6hqLeCHHxhM52f0AV/hy/5us4176Q=
+Date: Sat, 6 Mar 2010 14:38:26 +0300
 From: Dan Carpenter <error27@gmail.com>
-To: Mimi Zohar <zohar@us.ibm.com>
-Cc: James Morris <jmorris@namei.org>, Eric Paris <eparis@redhat.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "J.R. Okajima" <hooanon05@yahoo.co.jp>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [patch] security: ima_file_mmap() don't just return zero
-Message-ID: <20100306112125.GN4958@bicker>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Scott Moreau <oreaus@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [patch] joystick: off by one error
+Message-ID: <20100306113826.GO4958@bicker>
 Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Mimi Zohar <zohar@us.ibm.com>, James Morris <jmorris@namei.org>,
-	Eric Paris <eparis@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-	"J.R. Okajima" <hooanon05@yahoo.co.jp>,
-	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Scott Moreau <oreaus@gmail.com>, linux-input@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <20100306110944.GG4958@bicker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100306110944.GG4958@bicker>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems like we should return an error here.  That's what the comment
-says we should do.
+On Sat, Mar 06, 2010 at 02:09:44PM +0300, Dan Carpenter wrote:
+> This fixes a smatch warning:
+> drivers/input/joystick/gamecon.c +838 gc_setup_pad(23) error: buffer overflow 'gc_names' 10 <= 10
+> 
 
-I also removed an out of date comment.  It wasn't needed and seemed likely
-to get out of date again.
+Crap.  I already sent this patch.  I'm really sorry about that.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
----
-This was found with a static checker and I have only compile tested it.
-The callers all seem to use the return code, but please review carefully.
-The code has been like this since the module was merged.
+I will fix my QC process to not do this again.
 
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index 294b005..90d5314 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -260,18 +260,17 @@ out:
-  * policy decision.
-  *
-  * Return 0 on success, an error code on failure.
-- * (Based on the results of appraise_measurement().)
-  */
- int ima_file_mmap(struct file *file, unsigned long prot)
- {
--	int rc;
-+	int rc = 0;
- 
- 	if (!file)
- 		return 0;
- 	if (prot & PROT_EXEC)
- 		rc = process_measurement(file, file->f_dentry->d_name.name,
- 					 MAY_EXEC, FILE_MMAP);
--	return 0;
-+	return rc;
- }
- 
- /**
+regards,
+dan carpenter
+
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> 
+> diff --git a/drivers/input/joystick/gamecon.c b/drivers/input/joystick/gamecon.c
+> index ae998d9..7a55714 100644
+> --- a/drivers/input/joystick/gamecon.c
+> +++ b/drivers/input/joystick/gamecon.c
+> @@ -819,7 +819,7 @@ static int __init gc_setup_pad(struct gc *gc, int idx, int pad_type)
+>  	int i;
+>  	int err;
+>  
+> -	if (pad_type < 1 || pad_type > GC_MAX) {
+> +	if (pad_type < 1 || pad_type >= GC_MAX) {
+>  		pr_err("Pad type %d unknown\n", pad_type);
+>  		return -EINVAL;
+>  	}
