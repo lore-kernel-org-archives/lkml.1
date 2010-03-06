@@ -1,31 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043Ab0CFGzj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 01:55:39 -0500
-Received: from xyzzy.farnsworth.org ([65.39.95.219]:36159 "EHLO
-	xyzzy.farnsworth.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272Ab0CFGzh (ORCPT
+	id S1752250Ab0CFHjL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 02:39:11 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:37367 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381Ab0CFHjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 01:55:37 -0500
-X-Greylist: delayed 2305 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 01:55:37 EST
-To: linux-kernel@vger.kernel.org
-X-Newsgroups: local.lists.linux-kernel
-In-Reply-To: <hmra63$898$1@xyzzy.farnsworth.org>
-References: <20100305154009.GC2505@tempa>
-	<20100305.074835.159078083.davem@davemloft.net>
-	<20100305160434.GE2505@tempa>
-Organization: 
-Message-Id: <E1NnnJv-00007s-AI@xyzzy.farnsworth.org>
-From: Dale Farnsworth <dale@farnsworth.org>
-Date: Fri, 05 Mar 2010 23:17:03 -0700
-Subject: Re: [git pull] drm request 3
+	Sat, 6 Mar 2010 02:39:05 -0500
+Message-ID: <4B920694.7060402@in.ibm.com>
+Date: Sat, 06 Mar 2010 13:09:00 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: -next March 3: Boot failure on x86 (Oops)
+References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com> <4B8F0CD0.1040507@kernel.org> <4B8F43DD.10002@in.ibm.com> <4B909FC5.8020800@kernel.org> <4B90A031.8090306@kernel.org> <4B90E07A.5090302@in.ibm.com> <4B910623.9020707@kernel.org>
+In-Reply-To: <4B910623.9020707@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> read() still works the same way it did 30 years ago last time I
-> checked.
+Tejun Heo wrote:
+>
+> I'm having very difficult time imagining how 22b737f4 could have
+> affected this as the patch is identical transformation of the previous
+> code.  Also, 833af842 was released with 2.6.32 and stayed that way, so
+> it really looks like a memory overrun / random corruption thing.  Can
+> you please retry with kmalloc debug stuff turned on?
+>   
+With latest git (2.6.33-git11) the machine boots fine. So as you
+mentioned this could be a memory overrun / random corruption issue.
 
-seek() doesn't.  :)
+I will try few more boots with latest / old git snapshots, and will
+try to collect debug information on recreation.
 
--Dale
+Thanks
+-Sachin
+
+> Thanks.
+>
+>   
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
