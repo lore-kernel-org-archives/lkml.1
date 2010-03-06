@@ -1,95 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968Ab0CFD2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 22:28:16 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:47220 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205Ab0CFD2P (ORCPT
+	id S1754255Ab0CFDpi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 22:45:38 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:57354 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753584Ab0CFDph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 22:28:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kW6guWUfRxlBPmZxABxEgiQJiP+yDjgDYpps56GLckc7VuNTMGYfR4MejWj6zOJPvf
-         kvHUC58cGo++EgHdU5dz5N7h5VGsm/tzOzYFec2fae8iCNBGTmiAYtdM5EREk2T2bhe0
-         33Q68iqIneVi0ooYCM8zm605ZU+tEc8wKPVCM=
-Date: Sat, 6 Mar 2010 04:28:13 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/2] ftrace - add ftrace function_graph support on ARM
-Message-ID: <20100306032811.GI5244@nowhere>
-References: <4B91A25E.5030707@am.sony.com>
+	Fri, 5 Mar 2010 22:45:37 -0500
+Message-ID: <4B91CFE0.8000705@vmware.com>
+Date: Fri, 05 Mar 2010 19:45:36 -0800
+From: Petr Vandrovec <petr@vmware.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15 (Ubuntu-1.1.15+nobinonly-0ubuntu2)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B91A25E.5030707@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Chua <jeff.tw.chua@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: commit 554f76962d3a6eb5110415f1591aca83f96a84ae hangs USB for
+ vmware 7.0.1
+References: <Pine.LNX.4.64.1003060606480.6040@boston.corp.fedex.com> <alpine.LFD.2.00.1003051438280.3906@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003051438280.3906@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 04:31:26PM -0800, Tim Bird wrote:
-> +++ b/arch/arm/kernel/ftrace_graph.c
-> @@ -0,0 +1,46 @@
-> +/*
-> + * function graph tracing support.
-> + *
-> + * Copyright (C) 2009 Tim Bird <tim.bird@am.sony.com>
-> + *
-> + * For licencing details, see COPYING.
-> + *
-> + * Defines routine needed for ARM return trampoline for tracing
-> + * function exits.
-> + */
-> +
-> +#include <linux/ftrace.h>
-> +
-> +/*
-> + * Hook the return address and push it in the stack of return addrs
-> + * in current thread info.
-> + */
-> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
-> +			   unsigned long frame_pointer)
-> +{
-> +	unsigned long old;
-> +
-> +	struct ftrace_graph_ent trace;
-> +	unsigned long return_hooker = (unsigned long)
-> +				&return_to_handler;
-> +
-> +	if (unlikely(atomic_read(&current->tracing_graph_pause)))
-> +		return;
-> +
-> +	old = *parent;
-> +	*parent = return_hooker;
-> +
-> +	if (ftrace_push_return_trace(old, self_addr, &trace.depth,
-> +		    frame_pointer) == -EBUSY) {
-> +		*parent = old;
-> +		return;
-> +	}
-> +
-> +	trace.func = self_addr;
-> +
-> +	/* Only trace if the calling function expects to */
-> +	if (!ftrace_graph_entry(&trace)) {
-> +		current->curr_ret_stack--;
-> +		*parent = old;
-> +	}
-> +}
+Linus Torvalds wrote:
+> 
+> On Sat, 6 Mar 2010, Jeff Chua wrote:
+>> Linux version v2.6.33-5399-gcc7889f with reiser3 and vmware-7.0.1
+>>
+>> Starting vmware just hang even before displaying the main GUI. Reverting
+>> 554f76962d3a6eb5110415f1591aca83f96a84ae solves the problem.
+>>
+>> It seems vmware is trying to access the USB but this commit blocks it.
+>>
+>> So, is this a vmware problem or shall this be reverted?
 
+Hello,
+    does your box hang, or is it just vmware process that is hung?  I've 
+noticed that my box here at work has this change too, and I do not see 
+any hang - neither in kernel, or in GUI startup, nor in test sample:
 
+open("/proc/bus/usb/devices", O_RDWR)   = 3
+poll([{fd=3, events=POLLIN}], 1, 5000)  = 1 ([{fd=3, revents=POLLIN}])
+poll([{fd=3, events=POLLIN}], 1, 5000)  = 0 (Timeout)
+exit_group(0)                           = ?
+petr-dev3:/tmp# uname -a
+Linux petr-dev3 2.6.33-64-05079-g6517b45-dirty #51 SMP PREEMPT Thu Mar 4 
+20:29:55 PST 2010 x86_64 GNU/Linux
 
+							Petr
 
-This could have been done in ftrace.c
+[Removed Eli from CC.  He left.]
 
-Other than that,
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks.
+> 
+> It's almost certainly a deadlock through some path that wasn't tested.
+> 
+> Can you enable lockdep on that kernel when you run vmware, which should 
+> give us a nice callchain etc, and hopefully make it very obvious what goes 
+> on.
+> 
+> Reverting it is obviously an option, but with some more info maybe there's 
+> a better solution.
+> 
+> (It may be that the deadlock is obvious to Oliver/Greg even without any 
+> lockdep chains, of course, but still worth trying, I suspect)
+> 
+> 		Linus
 
