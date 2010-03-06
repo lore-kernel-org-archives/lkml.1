@@ -1,63 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752699Ab0CFKAk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 05:00:40 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:61681 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455Ab0CFKAi (ORCPT
+	id S1752737Ab0CFKZM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 05:25:12 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:14641 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355Ab0CFKZK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 05:00:38 -0500
-Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20100305211629.GF4885@n2100.arm.linux.org.uk>
-References: <20100304214435.GJ13417@n2100.arm.linux.org.uk>
-	 <1267807960.2581.5.camel@e102109-lin.cambridge.arm.com>
-	 <20100305211629.GF4885@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Sat, 06 Mar 2010 10:00:22 +0000
-Message-ID: <1267869622.4280.5.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2010 10:00:24.0178 (UTC) FILETIME=[D6F35520:01CABD13]
+	Sat, 6 Mar 2010 05:25:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=L43GmsIHkcJbmlfOsLDUAifY8zOlzfa6oSlarbjWE+8YOyKl8PVUl+Evo/2S2+ODPi
+         nMThlJ3qD45v55QtKDKypCGNbqvlAEzCM3LamuVwArzh3G2mtDLr4HlFpr/GxdGjL4MY
+         xvVIjTVLJiKIt2G/UkyQZerEkxPOayZCzUO7s=
+MIME-Version: 1.0
+In-Reply-To: <19346.6765.457769.167118@pilspetsen.it.uu.se>
+References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com> 
+	<19346.6765.457769.167118@pilspetsen.it.uu.se>
+From: dave b <db.pub.mail@gmail.com>
+Date: Sat, 6 Mar 2010 21:24:49 +1100
+Message-ID: <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com>
+Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-05 at 21:16 +0000, Russell King - ARM Linux wrote:
-> On Fri, Mar 05, 2010 at 04:52:40PM +0000, Catalin Marinas wrote:
-> > As Ben said, I think we can set PG_dcache_clean in the
-> > clear/copy_user_page() functions. My doubt with these functions is the
-> > highmem cases where kunmap_atomic() only flushes the D-cache in one
-> > situation, the other just calling kunmap_high() which doesn't seem to do
-> > anything to the caches.
-> 
-> In which case you're totally missing the point with these functions.
-> The copy_user_page and clear_user_page functions specifically do tricks
-> to ensure that they can avoid additional cache maintainence - or any
-> cache maintainence at all.
-> 
-> For instance, on aliasing VIPT, they will map the user page in using
-> the same colour as the ultimate userspace address, ensuring that any
-> cache lines created will be visible to the userspace application.
+I had already reported it to debian -
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=572653
 
-I was more thinking for the non-aliasing VIPT case where we could defer
-the flushing until update_mmu_cache(). But I'm fine with just setting
-PG_dcache_clean in these functions to avoid checks on non-aliasing vs.
-aliasing VIPT.
+I have cc'ed linux-arm-kernel into this email.
 
-> So what kunmap_atomic() does with caches is not really relevant to the
-> coherency issue.
 
-The relevant part is that if highmem is enabled, copy_user_page() does
-not flush the D-cache, leaving it to kunmap_atomic(). Does this latter
-function flush the D-cache in all the relevant situations?
 
--- 
-Catalin
-
+On 6 March 2010 20:03, Mikael Pettersson <mikpe@it.uu.se> wrote:
+> dave b writes:
+>  > Hi have now successfully built a 2.6.33 kernel on a linkstation pro
+>  > v2. This is an arm device. It is currently running debianÂ  lenny
+>  > armel.
+>  >
+>  >
+>  > I compiledÂ  (make) zImage, then did a make modules which failed on the
+>  > first two rounds of compiling the modules -
+>  >
+>  > "fs/afs/super.c: In function â€˜afs_test_superâ€™:
+>  > fs/afs/super.c:278: internal compiler error: Segmentation fault
+>  > Please submit a full bug report,
+>  > with preprocessed source if appropriate.
+>  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
+>  > This was the error encountered on the attempt at compiling the
+>  > modules.
+>  >
+>  > "crypto/gcm.c: In function â€˜crypto_gcm_setauthsizeâ€™:
+>  > crypto/gcm.c:152: internal compiler error: Segmentation fault
+>  > Please submit a full bug report,
+>  > with preprocessed source if appropriate.
+>  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
+>  > make[1]: *** [crypto/gcm.o] Error 1"
+>  > This was the error the on the second attempt at compiling the modules.
+>  >
+>  > The 3rd attempt at building the modules was successful...
+>  >
+>  > The device boots and runs fine with this kernel and modules appear to work.
+>  > [root@nas ~]# uname -a
+>  > Linux nas 2.6.33 #1 Fri Mar 5 23:54:51 EST 2010 armv5tel GNU/Linux
+>  >
+>  >
+>  > *SO* is this a gcc bug or is it related to the changes to the build
+>  > process on arm?
+>  >
+>  >
+>  >
+>  > gcc -v
+>  > Using built-in specs.
+>  > Target: arm-linux-gnueabi
+>  > Configured with: ../src/configure -v --with-pkgversion='Debian
+>  > 4.3.2-1.1' --with-bugurl=file:///usr/share/doc/gcc-4.3/README.Bugs
+>  > --enable-languages=c,c++,fortran,objc,obj-c++ --prefix=/usr
+>  > --enable-shared --with-system-zlib --libexecdir=/usr/lib
+>  > --without-included-gettext --enable-threads=posix --enable-nls
+>  > --with-gxx-include-dir=/usr/include/c++/4.3 --program-suffix=-4.3
+>  > --enable-clocale=gnu --enable-libstdcxx-debug --enable-objc-gc
+>  > --enable-mpfr --disable-libssp --disable-sjlj-exceptions
+>  > --enable-checking=release --build=arm-linux-gnueabi
+>  > --host=arm-linux-gnueabi --target=arm-linux-gnueabi
+>  > Thread model: posix
+>  > gcc version 4.3.2 (Debian 4.3.2-1.1)
+>
+> GCC bug. Report it to Debian, just like it asked you to.
+>
+> In theory it could be flaky hardware or a kernel/CPU combination
+> with cache coherency issues, but in those cases I'd have expected
+> many more failures.
+>
+> The ARM kernel mailing list is linux-arm-kernel@lists.infradead.org.
+>
