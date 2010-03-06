@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103Ab0CFSYc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 13:24:32 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45454 "EHLO
+	id S1754091Ab0CFSc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 13:32:57 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38473 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753946Ab0CFSYb (ORCPT
+	with ESMTP id S1751499Ab0CFScz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 13:24:31 -0500
-Date: Sat, 6 Mar 2010 18:24:30 +0000
+	Sat, 6 Mar 2010 13:32:55 -0500
+Date: Sat, 6 Mar 2010 18:32:54 +0000
 From: Al Viro <viro@ZenIV.linux.org.uk>
 To: walt <w41ter@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: "Switch !O_CREAT case to use of do_last()" causes segfault in
  glibc
-Message-ID: <20100306182430.GF30031@ZenIV.linux.org.uk>
+Message-ID: <20100306183254.GG30031@ZenIV.linux.org.uk>
 References: <4B92944E.8080209@gmail.com>
  <20100306175917.GD30031@ZenIV.linux.org.uk>
  <20100306180313.GE30031@ZenIV.linux.org.uk>
@@ -40,18 +40,6 @@ On Sat, Mar 06, 2010 at 10:20:41AM -0800, walt wrote:
 > 
 > open("/usr/share/zoneinfo/", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 47
 > open("/usr/share/zoneinfo/MST7MDT", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 48
-> open("/usr/share/zoneinfo/MST7MDT/", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOTDIR (Not a directory)
-> --- SIGSEGV (Segmentation fault) @ 0 (0) ---
 
-Oho...  And what do you have in /usr/share/zoneinfo?  I.e. what is MST7MDT?
-
-BTW, icu is buggy, regardless of apparent bug introduced in the kernel -
-common/putil.c:searchForTZFile() does
-
-    DIR* dirp = opendir(path);
-...
-    while((dirEntry = readdir(dirp)) != NULL) {
-
-with no references to dirp in between (no checks for errors, etc.), so it'll
-segfault on any number of situations (e.g. directory in question being
-unreadable for you).
+Now that is interesting.  Looks like it has managed to lose O_DIRECTORY check
+in the open without trailing slash and (properly) barfed with / added.
