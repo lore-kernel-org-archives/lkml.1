@@ -1,19 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584Ab0CFWLm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 17:11:42 -0500
-Received: from mail.perches.com ([173.55.12.10]:1470 "EHLO mail.perches.com"
+	id S1753947Ab0CFWa6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 17:30:58 -0500
+Received: from mail.perches.com ([173.55.12.10]:1475 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744Ab0CFWLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 17:11:41 -0500
-Subject: [PATCH] scripts/checkpatch.pl: Change long line warning to 105
- chars
+	id S1751640Ab0CFWa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 17:30:57 -0500
+Subject: Re: [RESEND PATCH 0/2] Make functions of dev_<level> macros,
+ recursive vsnprintf
 From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
+References: <cover.1267682641.git.joe@perches.com>
+	 <20100304143837.af39845d.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
+	 <1267911399.849.39.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Mar 2010 14:11:39 -0800
-Message-ID: <1267913499.849.45.camel@Joe-Laptop.home>
+Date: Sat, 06 Mar 2010 14:30:54 -0800
+Message-ID: <1267914654.849.81.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -21,58 +29,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Made the length test a variable for easier bike shedding.
+On Sat, 2010-03-06 at 14:03 -0800, Linus Torvalds wrote:
+> On Sat, 6 Mar 2010, Joe Perches wrote:
+> > Is that an ack, a nack or a get the hell out?
+> It's mostly an Ack. I think the concept is great. I'd love to have some 
+> way to limit recursion,
 
-Also add --strict tests for longer than 80 chars and more
-than 6 leading tabs
+Maybe limit the %pV recursion depth to 1 with something like:
+(in vsprintf.c: pointer() )
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- scripts/checkpatch.pl |   24 ++++++++++++++++++------
- 1 files changed, 18 insertions(+), 6 deletions(-)
+	case 'V': {
+		char *rtn;
+		static int rcount++;
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index a4d7434..2c5f30c 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -30,6 +30,10 @@ my $root;
- my %debug;
- my $help = 0;
- 
-+# Code style warnings
-+my $style_long_line = 105;
-+my $style_max_leading_tabs = 6;
-+
- sub help {
- 	my ($exitcode) = @_;
- 
-@@ -1385,13 +1389,21 @@ sub process {
- # check we are in a valid source file if not then ignore this hunk
- 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
- 
--#80 column limit
--		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
-+#Line too long
-+		if ($line =~ /^\+/ &&
-+		    $prevrawline !~ /\/\*\*/ &&
- 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
--		    $line !~ /^\+\s*$logFunctions\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
--		    $length > 80)
--		{
--			WARN("line over 80 characters\n" . $herecurr);
-+		    $line !~ /^\+\s*$logFunctions\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/) {
-+			if ($length > $style_long_line) {
-+				WARN("line over $style_long_line characters\n" . $herecurr);
-+			} elsif ($length > 80) {
-+				CHK("line over 80 characters\n" . $herecurr);
-+			}
-+		}
-+
-+#too many leading tabs - deep leading indent
-+		if ($line =~ /^\+\t{$style_max_leading_tabs,}(?!(.*,$|.*\);$))/) {
-+			CHK("Too many leading tabs.  Consider restructuring code\n" . $herecurr);
- 		}
- 
- # check for spaces before a quoted newline
+		if (rcount > 1) {	/* Don't recurse more than once */
+			rcount--;
+			break;		/* Use print the pointer */
+		}
+		rtn = buf + vsnprintf(buf, end - buf,
+				      ((struct va_format *)ptr)->fmt,
+				      *(((struct va_format *)ptr)->va));
+		rcount--;
+		return rtn;
+	}
+	
+> and I'd also love to see some actual numbers of 
+> how deep the vsnprintf stack frame is, but I don't see how to do the 
+> first, and I'm hoping the second isn't too horrible.
 
+I believe it's the arguments, a long long, a couple of pointers,
+and a struct printf_spec.  Not too bad.
 
