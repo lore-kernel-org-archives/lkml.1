@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998Ab0CFSQa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 13:16:30 -0500
-Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:55529 "EHLO
+	id S1754063Ab0CFSRq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 13:17:46 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:55536 "EHLO
 	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952Ab0CFSQ2 (ORCPT
+	with ESMTP id S1753970Ab0CFSRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 13:16:28 -0500
+	Sat, 6 Mar 2010 13:17:44 -0500
 From: Samir Bellabes <sam@synack.fr>
 To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
@@ -16,10 +16,10 @@ Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
 Subject: Re: [RFC v2 00/10] snet: Security for NETwork syscalls
 References: <1267561394-13626-1-git-send-email-sam@synack.fr>
 	<201003030156.o231udx1023055@www262.sakura.ne.jp>
-Date: Sat, 06 Mar 2010 19:16:26 +0100
+Date: Sat, 06 Mar 2010 19:17:42 +0100
 In-Reply-To: <201003030156.o231udx1023055@www262.sakura.ne.jp> (Tetsuo Handa's
 	message of "Wed, 03 Mar 2010 10:56:39 +0900")
-Message-ID: <m2eijxqps5.fsf@ssh.synack.fr>
+Message-ID: <m2aaulqpq1.fsf@ssh.synack.fr>
 User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,186 +29,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> writes:
 
-> Regarding [RFC v2 04/10] snet: introduce snet_core
-> +static __init int snet_init(void)
-> +{
-> +	int ret;
-> +
-> +	pr_debug("initializing: event_hash_size=%u "
-> +		 "verdict_hash_size=%u verdict_delay=%usecs "
-> +		 "default_policy=%s\n",
-> +		 snet_evh_size, snet_vdh_size, snet_verdict_delay,
-> +		 snet_verdict_name(snet_verdict_policy));
+> Regarding [RFC v2 05/10] snet: introduce snet_event
+> +static rwlock_t snet_evh_lock = __RW_LOCK_UNLOCKED();
 >
-> Why not to stop here if snet_evh_size == 0 or snet_vdh_size == 0 in order to
-> avoid "division by 0".
+> You can use "static DEFINE_RWLOCK(snet_evh_lock);".
+>
+> +int snet_event_is_registered(const enum snet_syscall syscall, const u8 protocol)
+>
+> Maybe rcu_read_lock() is better than rw spinlock because this function is
+> frequently called.
 
-indeed. I applied this patch 
+here is the patch.
+thank you Tetsuo
 
->From 593614c92a1f2058c014fa674c67f434b24b26e4 Mon Sep 17 00:00:00 2001
+>From 34715d4d900aee2d3759e3008313b65dc2f130fd Mon Sep 17 00:00:00 2001
 From: Samir Bellabes <sam@synack.fr>
-Date: Sat, 6 Mar 2010 17:32:51 +0100
-Subject: [PATCH 2/3] snet: adding checks for bad configuration values
-
-this patch adds some checks on boot parameters and runtime configurations for:
- - snet_verdict_policy, snet_verdict_delay and snet_vdh_size
- - snet_evh_size
- - snet_ticket_delay and snet_ticket_mode
+Date: Sat, 6 Mar 2010 15:44:42 +0100
+Subject: [PATCH 1/3] snet: use proper rwlock_t declaration
 
 Noticed by Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
 Signed-off-by: Samir Bellabes <sam@synack.fr>
 ---
- include/linux/snet.h         |    1 +
- security/snet/snet_core.c    |    6 ++++++
- security/snet/snet_event.c   |    6 ++++++
- security/snet/snet_netlink.c |   27 ++++++++++++++++++++-------
- security/snet/snet_ticket.c  |   12 ++++++++++++
- security/snet/snet_verdict.c |   12 ++++++++++++
- 6 files changed, 57 insertions(+), 7 deletions(-)
+ security/snet/snet_event.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/snet.h b/include/linux/snet.h
-index 739601d..e6e2d52 100644
---- a/include/linux/snet.h
-+++ b/include/linux/snet.h
-@@ -41,6 +41,7 @@ enum snet_ticket_mode {
- 	SNET_TICKET_OFF = 0,
- 	SNET_TICKET_FIX,
- 	SNET_TICKET_EXTEND,
-+	SNET_TICKET_INVALID,
- };
- 
- /* genetlink commands */
-diff --git a/security/snet/snet_core.c b/security/snet/snet_core.c
-index 9f2eb2e..949ecaa 100644
---- a/security/snet/snet_core.c
-+++ b/security/snet/snet_core.c
-@@ -42,6 +42,12 @@ static __init int snet_init(void)
- 		 snet_evh_size, snet_vdh_size, snet_verdict_delay,
- 		 snet_verdict_name(snet_verdict_policy));
- 
-+	if (snet_verdict_policy >= SNET_VERDICT_INVALID) {
-+		printk(KERN_ERR "snet: bad snet_verdict_policy\n");
-+		ret = -EINVAL;
-+		goto event_failed;
-+	}
-+
- 	ret = snet_event_init();
- 	if (ret < 0)
- 		goto event_failed;
 diff --git a/security/snet/snet_event.c b/security/snet/snet_event.c
-index 5f708d0..5693aac 100644
+index 9e3f7d2..5f708d0 100644
 --- a/security/snet/snet_event.c
 +++ b/security/snet/snet_event.c
-@@ -165,6 +165,12 @@ int snet_event_init(void)
- {
- 	int err = 0, i = 0;
+@@ -9,7 +9,7 @@
+ #include "snet_utils.h"
  
-+	if (snet_evh_size == 0) {
-+		printk(KERN_ERR "snet: bad snet_evh_size value\n");
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
- 	snet_evh = kzalloc(sizeof(struct list_head) * snet_evh_size,
- 			     GFP_KERNEL);
- 	if (!snet_evh) {
-diff --git a/security/snet/snet_netlink.c b/security/snet/snet_netlink.c
-index b0dd163..937b0fc 100644
---- a/security/snet/snet_netlink.c
-+++ b/security/snet/snet_netlink.c
-@@ -363,25 +363,38 @@ out:
- static int snet_nl_config(struct sk_buff *skb,
- 			  struct genl_info *info)
- {
--	int ret = -EINVAL;
-+	int ret = 0;
+ static struct list_head *snet_evh;
+-static rwlock_t snet_evh_lock = __RW_LOCK_UNLOCKED();
++static DEFINE_RWLOCK(snet_evh_lock);
  
- 	atomic_set(&snet_nl_seq, info->snd_seq);
- 
- 	if (info->attrs[SNET_A_VERDICT_DELAY]) {
--		snet_verdict_delay = nla_get_u32(info->attrs[SNET_A_VERDICT_DELAY]);
-+		unsigned int new = nla_get_u32(info->attrs[SNET_A_VERDICT_DELAY]);
-+		if (new == 0) {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		snet_verdict_delay = new;
- 		pr_debug("snet_nl_config: verdict_delay=%u\n", snet_verdict_delay);
--		ret = 0;
- 	}
- 	if (info->attrs[SNET_A_TICKET_DELAY]) {
--		snet_ticket_delay = nla_get_u32(info->attrs[SNET_A_TICKET_DELAY]);
-+		unsigned int new = nla_get_u32(info->attrs[SNET_A_TICKET_DELAY]);
-+		if (new == 0) {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		snet_ticket_delay = new;
- 		pr_debug("snet_nl_config: ticket_delay=%u\n", snet_ticket_delay);
--		ret = 0;
- 	}
- 	if (info->attrs[SNET_A_TICKET_MODE]) {
--		snet_ticket_mode = nla_get_u32(info->attrs[SNET_A_TICKET_MODE]);
-+		unsigned int new = nla_get_u32(info->attrs[SNET_A_TICKET_MODE]);
-+		if (new >= SNET_TICKET_INVALID) {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		snet_ticket_mode = new;
- 		pr_debug("snet_nl_config: ticket_mode=%u\n", snet_ticket_mode);
--		ret = 0;
- 	}
-+out:
- 	return ret;
- }
- 
-diff --git a/security/snet/snet_ticket.c b/security/snet/snet_ticket.c
-index 62ced7b..80a1b0f 100644
---- a/security/snet/snet_ticket.c
-+++ b/security/snet/snet_ticket.c
-@@ -158,6 +158,18 @@ int snet_ticket_init(void)
- 	struct cred *cred = (struct cred *) current->real_cred;
- 	struct snet_task_security *tsec = NULL;
- 
-+	if (snet_ticket_mode >= SNET_TICKET_INVALID) {
-+		printk(KERN_ERR "snet: bad snet_ticket_mode\n");
-+		return -EINVAL;
-+	}
-+
-+	if ((snet_ticket_mode == SNET_TICKET_FIX ||
-+	    snet_ticket_mode == SNET_TICKET_EXTEND) &&
-+	    (snet_ticket_delay == 0)) {
-+		printk(KERN_ERR "snet: bad snet_ticket_delay\n");
-+		return -EINVAL;
-+	}
-+
- 	tsec = kzalloc(sizeof(struct snet_task_security), GFP_KERNEL);
- 	if (tsec == NULL)
- 		return -ENOMEM;
-diff --git a/security/snet/snet_verdict.c b/security/snet/snet_verdict.c
-index 480a7f8..ba35d19 100644
---- a/security/snet/snet_verdict.c
-+++ b/security/snet/snet_verdict.c
-@@ -156,6 +156,18 @@ int snet_verdict_init(void)
- {
- 	int err = 0, i = 0;
- 
-+	if (snet_vdh_size == 0) {
-+		printk(KERN_ERR "snet: bad snet_vdh_size value\n");
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (snet_verdict_delay == 0) {
-+		printk(KERN_ERR "snet: bad snet_verdict_delay value\n");
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
- 	snet_vdh = kzalloc(sizeof(struct list_head) * snet_vdh_size,
- 			  GFP_KERNEL);
- 	if (!snet_vdh) {
+ struct snet_event_entry {
+ 	struct list_head list;
 -- 
 1.6.3.3
 
