@@ -1,46 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529Ab0CFVAt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 16:00:49 -0500
-Received: from wolff.to ([65.117.131.163]:55582 "HELO wolff.to"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754499Ab0CFVAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 16:00:47 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 16:00:46 EST
-Date: Sat, 6 Mar 2010 14:53:41 -0600
-From: Bruno Wolff III <bruno@wolff.to>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL V2] Squashfs updates for 2.6.34-rc1
-Message-ID: <20100306205341.GA28316@wolff.to>
-References: <4B91317D.7000205@lougher.demon.co.uk>
+	id S1754506Ab0CFVFk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 16:05:40 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:40817 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751449Ab0CFVFi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 16:05:38 -0500
+Date: Sat, 6 Mar 2010 16:05:37 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       <linux-input@vger.kernel.org>, <linux-hotplug@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with remote-wakeup settings
+In-Reply-To: <201003062154.02199.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.1003061601520.23895-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B91317D.7000205@lougher.demon.co.uk>
-User-Agent: Mutt/1.5.20 (2009-12-10)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 16:29:49 +0000,
-  Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> Hi Linus,
-> 
-> Please consider pulling the following revised Squashfs update for 2.6.34-rc1.
-> I have removed all the lzma/bunzip2/inflate/lzo code changes (which as far as I
-> know were the blocking issue previously).
-> 
-> What remains in the pull request is a clean-up/refactoring of the zlib
-> wrapper code, outline knowledge of lzma/lzo compressed filesystems (unsupported,
-> but it gives users an understandable error message when they try to mount them),
-> and some trivial code tidying.
+On Sat, 6 Mar 2010, Rafael J. Wysocki wrote:
 
-I saw that Linus pulled this and some earlier related packages. I am not sure
-if I should expect working lzma squashfs in 2.6.34 right now, or if I still
-need to wait a bit?
+> > It's not difficult in theory to tie together the WoL setting and the
+> > wakeup flag:
+> > 
+> > 	If ethtool changes the WoL setting, the driver's ioctl handler
+> > 	should make the corresponding change to the wakeup flag.
+> > 
+> > 	If ethtool queries the WoL setting, the ioctl handler should
+> > 	check the wakeup flag.  If the flag is off, it should report 
+> > 	that WoL is disabled; if the flag is on, it should report that 
+> > 	WoL is enabled.  (The same check should be made in the suspend
+> > 	routine.)
+> 
+> That's done this way already in all drivers I know, but we need a hook
+> from wake_store() back to the driver.
 
-P.S.
-Thanks for working on this!
+What for?  wake_store() can't be called during a sleep transition
+(because tasks are frozen) or while the system is asleep.  And if it is
+called at any other time, the driver doesn't need to know until either
+its ioctl handler or its suspend method runs.
+
+Alan Stern
+
