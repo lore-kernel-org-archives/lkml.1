@@ -1,61 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394Ab0CFO04 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 09:26:56 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:31520 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068Ab0CFO0z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 09:26:55 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -2.479
-Message-ID: <4B92662A.4080604@tremplin-utc.net>
-Date: Sat, 06 Mar 2010 15:26:50 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
+	id S1753356Ab0CFOoZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 09:44:25 -0500
+Received: from mail.in-ulm.de ([217.10.8.10]:59004 "HELO mail.in-ulm.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753185Ab0CFOoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 09:44:24 -0500
+Date: Sat, 6 Mar 2010 15:44:22 +0100
+From: Christian Ehrhardt <uni@c--e.de>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Rik van Riel <riel@redhat.com>, Christian Ehrhardt <lk@c--e.de>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] rmap: Fix Bugzilla Bug #5493
+Message-ID: <20100306144422.GI17078@lisa.in-ulm.de>
+References: <20100305093834.GG17078@lisa.in-ulm.de> <4B9110ED.5000703@redhat.com> <20100306010212.GH17078@lisa.in-ulm.de> <20100306020048.GA16967@cmpxchg.org>
 MIME-Version: 1.0
-To: Samu Onkalo <samu.p.onkalo@nokia.com>, Andrew Morton <akpm@osdl.org>
-CC: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts
-References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100306020048.GA16967@cmpxchg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 16-02-10 12:09, Samu Onkalo schreef:
-> This patch set replaces my previous one.
-> (see http://www.spinics.net/lists/kernel/msg994446.html)
-> 
-> Power control of the chip is dropped out since it requires more work.
-> Runtime-pm support was requested and that takes some time to implement
-> and test. I'll send it as a separate patch.
-> 
-> patches 1 - 3 are not touched compared to patch set 1 and they
-> are marked as tested-by Daniel Mack <daniel@caiaq.de> and
-> acked-by Éric Piel <eric.piel@tremplin-utc.net>.
-> Patch 4 is marked as tested-by Daniel Mack <daniel@caiaq.de>.
-> 
-:
-> 
-> Samu Onkalo (6):
->   lis3: Add missing constants for 8bit device
->   lis3: Separate configuration function for 8 bit device
->   lis3: Introduce platform data for second ff / wu unit
->   lis3: Add skeletons for interrupt handlers
->   lis3: Interrupt handlers for 8bit wakeup and click events
->   lis3: Setup poll interval limits
-(sorry for the delay, I was on holidays)
 
-Just had a look at the patches and they seem fine, so here is my
-Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
+Hi,
 
-Andrew, would you mind to pick this series of patches to replace the
-dropped one yesterday?
+On Sat, Mar 06, 2010 at 03:00:48AM +0100, Johannes Weiner wrote:
+> What's with expand_stack()?  This changes the radix index or the heap
+> index, depending on the direction in which the stack grows, but it
+> does not adjust the tree and so its order is violated.  Did you make
+> sure that this is fine?
 
-Thanks,
-Eric
+Ooops! Thanks for the hint. Not only expand stack but also vma_adjust
+(aka vma_merge) need to update the tree, I guess.
+
+However, it is somewhat odd that this did not trigger anything in
+my tests. I guess I have to come up with a testcase that properly
+checks this case.
+
+      regards   Christian
+
