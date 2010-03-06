@@ -1,40 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966Ab0CFNHs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 08:07:48 -0500
-Received: from mr011.hansenet.de ([85.183.254.144]:42629 "EHLO
-	mr011.hansenet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529Ab0CFNHr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 08:07:47 -0500
-From: Thomas Koeller <thomas@koeller.dyndns.org>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: DMA using data buffer vmapped in kernel space
-Date: Sat, 6 Mar 2010 14:07:12 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.32.5; KDE/4.4.0; x86_64; ; )
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <201003042211.28569.thomas@koeller.dyndns.org> <20100304213634.GH13417@n2100.arm.linux.org.uk>
-In-Reply-To: <20100304213634.GH13417@n2100.arm.linux.org.uk>
+	id S1752851Ab0CFNgq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 08:36:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48459 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751066Ab0CFNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 08:36:44 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+laYFN0eyltf08ElZdSxFtgWrqoNmuViZdP4+zZK
+	TG+++RgVGfyiUr
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH] mfd/ucb1x00: Fix build failure for collie_defconfig caused by missing include
+Date: Sat, 6 Mar 2010 14:36:38 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.27-05415-g69a8594; KDE/4.3.5; x86_64; ; )
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201003061407.12698.thomas@koeller.dyndns.org>
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003061436.38544.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.56000000000000005
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 4. März 2010 22:36:34 schrieb Russell King - ARM Linux:
-> Cache maintainence is done using virtual addresses for L1, and
-> physical addresses for L2.  There's the need for virtual addresses
-> to be translatable to physical addresses, which is only true for
-> the kernel direct mapped region (pages between PAGE_OFFSET and
-> high_memory).
+From: Peter Huewe <peterhuewe@gmx.de>
 
-Isn't the mapping created by vmap() sufficient for the virt/phys
-translation? In which way is this case different from a buffer
-passed in from user space, where the constituent pages are not
-in the directly mapped kernel region either?
+This patch fixes a build failure[1], by adding the missing semaphore.h include
 
-tk
+References:
+[1] http://kisskb.ellerman.id.au/kisskb/buildresult/2234322/
+
+Patch against linux-next as of 20100306
+Applies smoothly to Linus' tree as well.
+The build failure happens to be only in linux-next yet.
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+KernelVersion: 2.6.33-linux-next-20100306
+
+ drivers/mfd/ucb1x00-core.c  |    1 +
+ include/linux/mfd/ucb1x00.h |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mfd/ucb1x00-core.c b/drivers/mfd/ucb1x00-core.c
+index 252b741..b281217 100644
+--- a/drivers/mfd/ucb1x00-core.c
++++ b/drivers/mfd/ucb1x00-core.c
+@@ -27,6 +27,7 @@
+ #include <linux/mutex.h>
+ #include <linux/mfd/ucb1x00.h>
+ #include <linux/gpio.h>
++#include <linux/semaphore.h>
+ 
+ #include <mach/dma.h>
+ #include <mach/hardware.h>
+diff --git a/include/linux/mfd/ucb1x00.h b/include/linux/mfd/ucb1x00.h
+index aa9c378..4321f04 100644
+--- a/include/linux/mfd/ucb1x00.h
++++ b/include/linux/mfd/ucb1x00.h
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/mfd/mcp.h>
+ #include <linux/gpio.h>
++#include <linux/semaphore.h>
+ 
+ #define UCB_IO_DATA	0x00
+ #define UCB_IO_DIR	0x01
+-- 
+1.6.4.4
 
