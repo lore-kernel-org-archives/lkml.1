@@ -1,69 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751611Ab0CFGoO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 01:44:14 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:40115 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750821Ab0CFGoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 01:44:09 -0500
-Date: Sat, 6 Mar 2010 07:43:59 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
- governor
-Message-ID: <20100306064359.GC28759@elf.ucw.cz>
-References: <20100303000849.278509000@intel.com>
- <4B8DADB9.1040302@xenotime.net>
- <20100303215453.GG2579@ucw.cz>
- <1267662469.16916.1020.camel@localhost.localdomain>
- <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
- <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
- <20100305204029.GB20554@elf.ucw.cz>
- <20100305205522.GA15489@srcf.ucam.org>
- <20100305211329.GC20554@elf.ucw.cz>
- <20100305224909.GA21853@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100305224909.GA21853@srcf.ucam.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1751843Ab0CFGqX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 01:46:23 -0500
+Received: from mail.perches.com ([173.55.12.10]:1450 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272Ab0CFGqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 01:46:21 -0500
+Subject: [PATCH resend] net/sunrpc: Remove uses of NIPQUAD, use %pI4
+From: Joe Perches <joe@perches.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-nfs <linux-nfs@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 22:46:20 -0800
+Message-ID: <1267857980.849.22.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2010-03-05 22:49:09, Matthew Garrett wrote:
-> On Fri, Mar 05, 2010 at 10:13:30PM +0100, Pavel Machek wrote:
-> > On Fri 2010-03-05 20:55:22, Matthew Garrett wrote:
-> > > On Fri, Mar 05, 2010 at 09:40:29PM +0100, Pavel Machek wrote:
-> > > 
-> > > > That can be only true if it does not give benefits period... AC and
-> > > > battery power are quite different scenarios.
-> > > 
-> > > No, they're not.
-> > 
-> > Yes, they are.
-> > 
-> > Would you care to elaborate? I may very well want top power on AC
-> > power, and max powersavings on battery; most people do.
-> 
-> You may want that. But power constraints aren't limited to battery, and 
-> being on battery doesn't inherently mean that you're power constrained. 
-> Mixing these concepts results in all kinds of issues.
+Originally submitted Jan 1, 2010
+http://patchwork.kernel.org/patch/71221/
 
-That's of course true.
+Convert NIPQUAD to the %pI4 format extension where possible
+Convert %02x%02x%02x%02x/NIPQUAD to %08x/ntohl
 
-But if something gives so limited benefit that it does not make sense
-to tweak between power constrained and not-power-constrained
-environments (I used AC and battery as an example), it is useless.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/sunrpc/xprtrdma/transport.c |    3 +--
+ net/sunrpc/xprtsock.c           |    5 ++---
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/net/sunrpc/xprtrdma/transport.c b/net/sunrpc/xprtrdma/transport.c
+index 7018eef..83d339f 100644
+--- a/net/sunrpc/xprtrdma/transport.c
++++ b/net/sunrpc/xprtrdma/transport.c
+@@ -165,8 +165,7 @@ xprt_rdma_format_addresses(struct rpc_xprt *xprt)
+ 
+ 	xprt->address_strings[RPC_DISPLAY_PROTO] = "rdma";
+ 
+-	(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+-				NIPQUAD(sin->sin_addr.s_addr));
++	(void)snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+ 	xprt->address_strings[RPC_DISPLAY_HEX_ADDR] = kstrdup(buf, GFP_KERNEL);
+ 
+ 	(void)snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 3d739e5..86234bc 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -297,12 +297,11 @@ static void xs_format_common_peer_addresses(struct rpc_xprt *xprt)
+ 	switch (sap->sa_family) {
+ 	case AF_INET:
+ 		sin = xs_addr_in(xprt);
+-		(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+-					NIPQUAD(sin->sin_addr.s_addr));
++		snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+ 		break;
+ 	case AF_INET6:
+ 		sin6 = xs_addr_in6(xprt);
+-		(void)snprintf(buf, sizeof(buf), "%pi6", &sin6->sin6_addr);
++		snprintf(buf, sizeof(buf), "%pi6", &sin6->sin6_addr);
+ 		break;
+ 	default:
+ 		BUG();
+
+
