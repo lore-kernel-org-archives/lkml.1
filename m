@@ -1,45 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719Ab0CFVdk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 16:33:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56089 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821Ab0CFVdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 16:33:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [Q] How to tell we're using the KMS (during suspend/resume) outside the graphics driver
-Date: Sat, 6 Mar 2010 22:36:09 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+	id S1753969Ab0CFVfO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 16:35:14 -0500
+Received: from lazybastard.de ([212.112.238.170]:55351 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311Ab0CFVfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 16:35:13 -0500
+X-Greylist: delayed 1798 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 16:35:13 EST
+Date: Sat, 6 Mar 2010 22:35:01 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Please pull logfs tree
+Message-ID: <20100306213501.GB21570@logfs.org>
+References: <20100306210459.GA21570@logfs.org> <alpine.LFD.2.00.1003061319530.31447@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003062236.09801.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.1003061319530.31447@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 6 March 2010 13:26:46 -0800, Linus Torvalds wrote:
+> On Sat, 6 Mar 2010, Jörn Engel wrote:
+> > 
+> > 1) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs.git
+> > and apply the patch at the bottom yourself.
+> 
+> Not quite - it needs to be applied while merging, rather than applied 
+> separately. It's a conflict, even though it's not a data-conflict, but a 
+> semantic one.
+> 
+> But that's trivial enough. "git pull --no-commit" + fixup + "git commit" 
+> is trivially done, now that I was fore-warned. Thanks.
+> 
+> > 2) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34
+> > A tree with the patch applied that won't work standalone but will work
+> > after being pulled into your tree (tested locally).
+> 
+> No, that's horrible. Unbisectable. Not that anybody probably cares in this 
+> case, but it's fundamentally wrong to merge something that doesn't work 
+> before the merge.
+> 
+> > 3) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34_alternative
+> > A tree that merged your tree and the logfs tree, then has the patch
+> > applied.  Works standalone but has an additional merge commit.
+> 
+> That's ok, but I already did the trivial merge, which actually had another 
+> conflict too (which showed up as a real data conflict on the Kconfig 
+> file).
 
-For at least two reasons it would be beneficial for some code outisde the
-graphics driver(s) to know if the KMS are used.
+Ok, learned something new again.  Thank you for doing the trivial merge
+that would have taken me days to figure out. :)
 
-First, in the non-KMS (ie. UMS) case we probably wouldn't want to call
-acpi_video_resume(), because that has a potential to mess up with the GPU
-(it actually is known to do that on at least one system).
+Jörn
 
-Second, in the KMS case, we'd be able to skip the kernel VT switch, because
-the KMS driver uses its own framebuffer anyway.
-
-So, is there any reasonable way to check that from the outside of the graphics
-driver?  It should be general enough to cover the cases when there are two
-graphics adapters with different drivers in the system and so forth.
-
-Rafael
+-- 
+Beware of bugs in the above code; I have only proved it correct, but
+not tried it.
+-- Donald Knuth
