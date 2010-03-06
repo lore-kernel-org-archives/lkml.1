@@ -1,58 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753688Ab0CFV1H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 16:27:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43901 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751311Ab0CFV1D (ORCPT
+	id S1753576Ab0CFVah (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 16:30:37 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50859 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377Ab0CFVaf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 16:27:03 -0500
-Date: Sat, 6 Mar 2010 13:26:46 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Please pull logfs tree
-In-Reply-To: <20100306210459.GA21570@logfs.org>
-Message-ID: <alpine.LFD.2.00.1003061319530.31447@localhost.localdomain>
-References: <20100306210459.GA21570@logfs.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 6 Mar 2010 16:30:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=D6JmU5j1fMnblYaQS3yw/kk7OTxgEpGk4PDHM5ymvjrm55OubDBVZTjlSIuZXz5rg9
+         DzHx+C8wkNrbLA7oQEz6mwCmHXm6U+PzBKk84N9FrVJ1BjW6XMpDHCpk7n+jGyHYKClc
+         wWtuyQs+V/S+u2qPEzhV3Qle2xT1Ihh6gu29w=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+In-Reply-To: <20100306112125.GN4958@bicker>
+References: <20100306112125.GN4958@bicker>
+Date: Sat, 6 Mar 2010 16:30:33 -0500
+Message-ID: <ea6602021003061330j56132f8er73e27f017e6b9d09@mail.gmail.com>
+Subject: Re: [patch] security: ima_file_mmap() don't just return zero
+From: Vikram Dhillon <dhillonv10@gmail.com>
+To: Dan Carpenter <error27@gmail.com>, Mimi Zohar <zohar@us.ibm.com>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@redhat.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "J.R. Okajima" <hooanon05@yahoo.co.jp>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 6, 2010 at 6:21 AM, Dan Carpenter <error27@gmail.com> wrote:
+> It seems like we should return an error here.  That's what the comment
+> says we should do.
+>
+> I also removed an out of date comment.  It wasn't needed and seemed likely
+> to get out of date again.
+>
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> ---
+> This was found with a static checker and I have only compile tested it.
+> The callers all seem to use the return code, but please review carefully.
+> The code has been like this since the module was merged.
+>
+> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+> index 294b005..90d5314 100644
+> --- a/security/integrity/ima/ima_main.c
+> +++ b/security/integrity/ima/ima_main.c
+> @@ -260,18 +260,17 @@ out:
+>  * policy decision.
+>  *
+>  * Return 0 on success, an error code on failure.
+> - * (Based on the results of appraise_measurement().)
+>  */
+>  int ima_file_mmap(struct file *file, unsigned long prot)
+>  {
+> -       int rc;
+> +       int rc = 0;
+>
+>        if (!file)
+>                return 0;
+>        if (prot & PROT_EXEC)
+>                rc = process_measurement(file, file->f_dentry->d_name.name,
+>                                         MAY_EXEC, FILE_MMAP);
+> -       return 0;
+> +       return rc;
+>  }
+>
+>  /**
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
+Looks good, and nice work here :)
 
-On Sat, 6 Mar 2010, J�rn Engel wrote:
-> 
-> 1) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs.git
-> and apply the patch at the bottom yourself.
+Acked-by: Vikram Dhillon <dhillonv10@gmail.com>
 
-Not quite - it needs to be applied while merging, rather than applied 
-separately. It's a conflict, even though it's not a data-conflict, but a 
-semantic one.
+-- 
+Regards,
+Vikram Dhillon
 
-But that's trivial enough. "git pull --no-commit" + fixup + "git commit" 
-is trivially done, now that I was fore-warned. Thanks.
-
-> 2) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34
-> A tree with the patch applied that won't work standalone but will work
-> after being pulled into your tree (tested locally).
-
-No, that's horrible. Unbisectable. Not that anybody probably cares in this 
-case, but it's fundamentally wrong to merge something that doesn't work 
-before the merge.
-
-> 3) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34_alternative
-> A tree that merged your tree and the logfs tree, then has the patch
-> applied.  Works standalone but has an additional merge commit.
-
-That's ok, but I already did the trivial merge, which actually had another 
-conflict too (which showed up as a real data conflict on the Kconfig 
-file).
-
-		Linus
+~~~
+There are lots of Linux users who don't care how the kernel works, but
+only want to use it. That is a tribute to how good Linux is.
+-- Linus Torvalds
