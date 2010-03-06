@@ -1,83 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166Ab0CFKtj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 05:49:39 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:49582 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015Ab0CFKti (ORCPT
+	id S1753272Ab0CFKtu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 05:49:50 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53208 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216Ab0CFKtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 05:49:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=iLsJPtuCbLdCBTMz9UF4yre1wrfdWxPTNhG5Pf8+cUSFLLR0HiCk5SN7C52gOrBZPr
-         Wugj7z4eesYMeadXtLwEAvO87blnFmBSiTobvy/cIa+fmaqM1EiI4kpFNaTKKEtgjdp5
-         ogN33DMR+n7gphLYRMZoOLD6QLFBKoA8/+c1U=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Serge Hallyn <serue@us.ibm.com>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH] sysfs/file: move NULL checks to where they make sense and can occur
-Date: Fri,  5 Mar 2010 07:46:00 -0300
-Message-Id: <2fcd155e7b67ba2d41de0a5a0751b3091bf849d8.1267785770.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.7.0.1.164.gbe2f
+	Sat, 6 Mar 2010 05:49:47 -0500
+Date: Sat, 6 Mar 2010 10:49:46 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>
+Subject: Re: Selinux going crazy in 2.6.34-rc0
+Message-ID: <20100306104946.GB30031@ZenIV.linux.org.uk>
+References: <20100306102919.GA2341@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100306102919.GA2341@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... avoiding checking for NULL 2 times in a row when we already have a page.
-
-It decreases code size:
-text    data     bss     dec     hex filename
-4246      48    4136    8430    20ee fs/sysfs/file-BEFORE.o
-4214      48    4136    8398    20ce fs/sysfs/file-AFTER.o
-
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- fs/sysfs/file.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index dc30d9e..962b190 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -79,10 +79,11 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
- 	int ret = 0;
- 	ssize_t count;
+On Sat, Mar 06, 2010 at 02:29:19AM -0800, Dmitry Torokhov wrote:
+> Hi,
+> 
+> Selinux generates insane amounts of denial messages like the following
+> over and over again:
  
--	if (!buffer->page)
--		buffer->page = (char *) get_zeroed_page(GFP_KERNEL);
--	if (!buffer->page)
--		return -ENOMEM;
-+	if (!buffer->page) {
-+		buffer->page = (char *)get_zeroed_page(GFP_KERNEL);
-+		if (!buffer->page)
-+			return -ENOMEM;
-+	}
+> type=SYSCALL msg=audit(1267870752.587:23084): arch=c000003e syscall=0 success=no exit=-13 a0=5 a1=2049af0 a2=400 a3=0 items=0 ppid=1 pid=1807 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="polkitd" exe="/usr/libexec/polkit-1/polkitd" subj=system_u:system_r:policykit_t:s0-s0:c0.c1023 key=(null)
+> type=AVC msg=audit(1267870752.587:23085): avc:  denied  { ioctl } for pid=1807 comm="polkitd" path="anon_inode:inotify" dev=anon_inodefs ino=839 scontext=system_u:system_r:policykit_t:s0-s0:c0.c1023 tcontext=system_u:object_r:anon_inodefs_t:s0 tclass=file
+> type=SYSCALL msg=audit(1267870752.587:23085): arch=c000003e syscall=16 success=no exit=-13 a0=5 a1=541b a2=7fff7b494bec a3=0 items=0 ppid=1 pid=1807 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="polkitd" exe="/usr/libexec/polkit-1/polkitd" subj=system_u:system_r:policykit_t:s0-s0:c0.c1023 key=(null)
+> type=AVC msg=audit(1267870752.587:23086): avc:  denied  { read } for pid=1807 comm="polkitd" path="anon_inode:inotify" dev=anon_inodefs ino=839 scontext=system_u:system_r:policykit_t:s0-s0:c0.c1023 tcontext=system_u:object_r:anon_inodefs_t:s0 tclass=file
+> type=SYSCALL msg=audit(1267870752.587:23086): arch=c000003e syscall=0 success=no exit=-13 a0=5 a1=2049af0 a2=400 a3=0 items=0 ppid=1 pid=1807 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="polkitd" exe="/usr/libexec/polkit-1/polkitd" subj=system_u:system_r:policykit_t:s0-s0:c0.c1023 key=(null)
+> type=AVC msg=audit(1267870752.587:23087): avc:  denied  { ioctl } for pid=1807 comm="polkitd" path="anon_inode:inotify" dev=anon_inodefs ino=839 scontext=system_u:system_r:policykit_t:s0-s0:c0.c1023 tcontext=system_u:object_r:anon_inodefs_t:s0 tclass=file
+> type=SYSCALL msg=audit(1267870752.587:23087): arch=c000003e syscall=16 success=no exit=-13 a0=5 a1=541b a2=7fff7b494bec a3=0 items=0 ppid=1 pid=1807 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="polkitd" exe="/usr/libexec/polkit-1/polkitd" subj=system_u:system_r:policykit_t:s0-s0:c0.c1023 key=(null)
  
- 	/* need attr_sd for attr and ops, its parent for kobj */
- 	if (!sysfs_get_active_two(attr_sd))
-@@ -167,10 +168,11 @@ fill_write_buffer(struct sysfs_buffer * buffer, const char __user * buf, size_t
- {
- 	int error;
- 
--	if (!buffer->page)
-+	if (!buffer->page) {
- 		buffer->page = (char *)get_zeroed_page(GFP_KERNEL);
--	if (!buffer->page)
--		return -ENOMEM;
-+		if (!buffer->page)
-+			return -ENOMEM;
-+	}
- 
- 	if (count >= PAGE_SIZE)
- 		count = PAGE_SIZE - 1;
--- 
-1.7.0.1.164.gbe2f
-
+Interesting...  That smells like a selinux policy that needed recognition
+of inotify file descriptors and got b0rken by
+commit c44dcc56d2b5c79ba3063d20f76e5347e2e418f6
+that switched inotify to use of anon_inodes.  Could you check if that's the
+trigger?
