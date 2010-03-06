@@ -1,113 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151Ab0CFTGz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 14:06:55 -0500
-Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:51444 "HELO
-	relay2.ptmail.sapo.pt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1750888Ab0CFTGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 14:06:54 -0500
-X-AntiVirus: PTMail-AV 0.3-0.95.1
-X-Scan-Status: AV clean (0.01333 seconds);
- AS clean (0.43096 seconds);
-Subject: Re: [git pull] drm request 3
-From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-	 <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
-	 <1267889034.24025.4.camel@segulix>
-	 <alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
-Content-Type: multipart/signed; micalg="sha1"; protocol="application/x-pkcs7-signature"; boundary="=-A3b+TJ3Gsf0F9tRx4RWN"
-Date: Sat, 06 Mar 2010 19:06:46 +0000
-Message-ID: <1267902406.24025.50.camel@segulix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+	id S1752318Ab0CFTIJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 14:08:09 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:58437 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839Ab0CFTII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 14:08:08 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-mtd@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [mtd, nandsim] Fix typo: struct nandsin_geometry
+Date: Sat, 06 Mar 2010 20:08:00 +0100
+Message-ID: <87aaul1d67.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Actually, this embedded struct (together with nandsim_regs) could as well
+remain nameless...
 
---=-A3b+TJ3Gsf0F9tRx4RWN
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Ferenc Wagner <wferi@niif.hu>
+---
+ drivers/mtd/nand/nandsim.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-On Sat, 2010-03-06 at 09:40 -0800, Linus Torvalds wrote:
-> Why are people making excuses for bad programming and bad technology?
-
-Is not bad technology is new technology, the API have to change faster ,
-unless you want wait 2 years until get "stable" . =20
-
-
---=20
-S=C3=A9rgio M. B.
-
---=-A3b+TJ3Gsf0F9tRx4RWN
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIKJjCCBMww
-ggQ1oAMCAQICEByunWua9OYvIoqj2nRhbB4wDQYJKoZIhvcNAQEFBQAwXzELMAkGA1UEBhMCVVMx
-FzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAxIFB1YmxpYyBQcmltYXJ5
-IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTA1MTAyODAwMDAwMFoXDTE1MTAyNzIzNTk1OVow
-gd0xCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVyaVNp
-Z24gVHJ1c3QgTmV0d29yazE7MDkGA1UECxMyVGVybXMgb2YgdXNlIGF0IGh0dHBzOi8vd3d3LnZl
-cmlzaWduLmNvbS9ycGEgKGMpMDUxHjAcBgNVBAsTFVBlcnNvbmEgTm90IFZhbGlkYXRlZDE3MDUG
-A1UEAxMuVmVyaVNpZ24gQ2xhc3MgMSBJbmRpdmlkdWFsIFN1YnNjcmliZXIgQ0EgLSBHMjCCASIw
-DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMnfrOfq+PgDFMQAktXBfjbCPO98chXLwKuMPRyV
-zm8eECw/AO2XJua2x+atQx0/pIdHR0w+VPhs+Mf8sZ69MHC8l7EDBeqV8a1AxUR6SwWi8mD81zpl
-Yu//EHuiVrvFTnAt1qIfPO2wQuhejVchrKaZ2RHp0hoHwHRHQgv8xTTq/ea6JNEdCBU3otdzzwFB
-L2OyOj++pRpu9MlKWz2VphW7NQIZ+dTvvI8OcXZZu0u2Ptb8Whb01g6J8kn+bAztFenZiHWcec5g
-J925rXXOL3OVekA6hXVJsLjfaLyrzROChRFQo+A8C67AClPN1zBvhTJGG+RJEMJs4q8fef/btLUC
-AwEAAaOCAYQwggGAMBIGA1UdEwEB/wQIMAYBAf8CAQAwRAYDVR0gBD0wOzA5BgtghkgBhvhFAQcX
-ATAqMCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy52ZXJpc2lnbi5jb20vcnBhMAsGA1UdDwQEAwIB
-BjARBglghkgBhvhCAQEEBAMCAQYwLgYDVR0RBCcwJaQjMCExHzAdBgNVBAMTFlByaXZhdGVMYWJl
-bDMtMjA0OC0xNTUwHQYDVR0OBBYEFBF9Xhl9PATfamzWoooaPzHYO5RSMDEGA1UdHwQqMCgwJqAk
-oCKGIGh0dHA6Ly9jcmwudmVyaXNpZ24uY29tL3BjYTEuY3JsMIGBBgNVHSMEejB4oWOkYTBfMQsw
-CQYDVQQGEwJVUzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xNzA1BgNVBAsTLkNsYXNzIDEgUHVi
-bGljIFByaW1hcnkgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHmCEQDNun9W8N/kvFT+IqyzcqpVMA0G
-CSqGSIb3DQEBBQUAA4GBALEv2ZbhkqLugWDlyCog++FnLNYAmFOjAhvpkEv4GESfD0b3+qD+0x0Y
-o9K/HOzWGZ9KTUP4yru+E4BJBd0hczNXwkJavvoAk7LmBDGRTl088HMFN2Prv4NZmP1m3umGMpqS
-KTw6rlTaphJRsY/IytNHeObbpR6HBuPRFMDCIfa6MIIFUjCCBDqgAwIBAgIQR1EjLo11SMVTA80p
-knVk3jANBgkqhkiG9w0BAQUFADCB3TELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJ
-bmMuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1
-c2UgYXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNTEeMBwGA1UECxMVUGVyc29u
-YSBOb3QgVmFsaWRhdGVkMTcwNQYDVQQDEy5WZXJpU2lnbiBDbGFzcyAxIEluZGl2aWR1YWwgU3Vi
-c2NyaWJlciBDQSAtIEcyMB4XDTA5MTAxNDAwMDAwMFoXDTEwMTAxNDIzNTk1OVowggEbMRcwFQYD
-VQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazFGMEQG
-A1UECxM9d3d3LnZlcmlzaWduLmNvbS9yZXBvc2l0b3J5L1JQQSBJbmNvcnAuIGJ5IFJlZi4sTElB
-Qi5MVEQoYyk5ODEeMBwGA1UECxMVUGVyc29uYSBOb3QgVmFsaWRhdGVkMTMwMQYDVQQLEypEaWdp
-dGFsIElEIENsYXNzIDEgLSBOZXRzY2FwZSBGdWxsIFNlcnZpY2UxGDAWBgNVBAMUD1PpcmdpbyBN
-LiBCYXN0bzEoMCYGCSqGSIb3DQEJARYZc2VyZ2lvQHNlcmdpb21iLm5vLWlwLm9yZzCCASIwDQYJ
-KoZIhvcNAQEBBQADggEPADCCAQoCggEBAMVAWjpcQZG3VYww6hys8eRI3OBmitMUuUEzSMzHsepw
-SlEflJwPkyUTtR6KAjR4O5DCmnAk+jh+4aw8o/4mB7LnT4di/6+9d6n4M0uGG1O2umsJhCgW3FFu
-Ct4CpvccghEfFREQea0SEgzhH67dyS0uGg479CkUGpUNPbEtScXMedFpDdTOfdFXN1WH5/KH6IJn
-pEdtXG9ocKCyiPjRFBYRRQlmHQWVEAgg7W+m56qOZrHOybZU12UpHoaPuuM2lpZga3YzN4Xrw7Ga
-6alz4mrayjKDNuvGFG/QlJWOdEH/cfY8BhHR/ooxGkmuSm/RXn8sT9FaUqJ8Om8G7iB3EaMCAwEA
-AaOBzDCByTAJBgNVHRMEAjAAMEQGA1UdIAQ9MDswOQYLYIZIAYb4RQEHFwEwKjAoBggrBgEFBQcC
-ARYcaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYTALBgNVHQ8EBAMCBaAwHQYDVR0lBBYwFAYI
-KwYBBQUHAwQGCCsGAQUFBwMCMEoGA1UdHwRDMEEwP6A9oDuGOWh0dHA6Ly9JbmRDMURpZ2l0YWxJ
-RC1jcmwudmVyaXNpZ24uY29tL0luZEMxRGlnaXRhbElELmNybDANBgkqhkiG9w0BAQUFAAOCAQEA
-WOXGaEhavFt5IscCSIF7pvu7YHvmLl8gYS5E0MQCqE2dkMzirvQRS4oUYwwzQn3GPmRmNArdW6jl
-m8COhm7RMbOgzetr4bXw2wBFG/aKN62nnr/qstLkyg+hEnkzlx7A1YNPq8Q38ZLBAqfLujSMQlL3
-ekLz1gVHqK5D/6ILLgFRiEWylDsSjTulc3DRjO3S3wupZta2UfFVKnOgC911UlSMy1vxWHGjuvL/
-Ilsi1cCj6HAHJppbCJ/Tqzts+jNpQmGhIug7yQHzk+wuPizHBpXPGxADRktMhxTPA4zaORxYoFjs
-opTgXjYE0wf2oMEFl3jNNYO7zCelwlqlYb6TDDGCAnkwggJ1AgEBMIHyMIHdMQswCQYDVQQGEwJV
-UzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xHzAdBgNVBAsTFlZlcmlTaWduIFRydXN0IE5ldHdv
-cmsxOzA5BgNVBAsTMlRlcm1zIG9mIHVzZSBhdCBodHRwczovL3d3dy52ZXJpc2lnbi5jb20vcnBh
-IChjKTA1MR4wHAYDVQQLExVQZXJzb25hIE5vdCBWYWxpZGF0ZWQxNzA1BgNVBAMTLlZlcmlTaWdu
-IENsYXNzIDEgSW5kaXZpZHVhbCBTdWJzY3JpYmVyIENBIC0gRzICEEdRIy6NdUjFUwPNKZJ1ZN4w
-CQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEw
-MDMwNjE5MDY0NlowIwYJKoZIhvcNAQkEMRYEFD2Zv1Qgj720EgasfUfgvpbTx97ZMA0GCSqGSIb3
-DQEBAQUABIIBABC2dEkfjp9sMD4/7FBSKyisiK/u5kYETxU5p0ms5t9jgjvadh+MNL9bcOp+qIPw
-hjRGltdIaj5wRYaI+A30MybYYSVeewcN2DIwFCKChupG1mIXduwc+zvVaM/RHJvqR6SrtSBnLUT8
-FJE4rVzGO1BjM1GjF8oGd3dk+RXaz2bLSpNAz40zH+mBXc9OypbChbvKPqpvZg0ABQ1lYf6zf26f
-QqdOrJKtYV/mBX4wqmMdvcWl2R/cHoajFcPre37CkO8PjKe/7FWyCL2UfZqEYBlZqCEBKdKodE41
-0o5HmoC9uNHGp1t89tvKsVqD8RsMWpz5grWFcUSZGElDbIGdA7cAAAAAAAA=
-
-
---=-A3b+TJ3Gsf0F9tRx4RWN--
+diff --git a/drivers/mtd/nand/nandsim.c b/drivers/mtd/nand/nandsim.c
+index 7281000..803ae12 100644
+--- a/drivers/mtd/nand/nandsim.c
++++ b/drivers/mtd/nand/nandsim.c
+@@ -312,7 +312,7 @@ struct nandsim {
+ 	union ns_mem buf;
+ 
+ 	/* NAND flash "geometry" */
+-	struct nandsin_geometry {
++	struct nandsim_geometry {
+ 		uint64_t totsz;     /* total flash size, bytes */
+ 		uint32_t secsz;     /* flash sector (erase block) size, bytes */
+ 		uint pgsz;          /* NAND flash page size, bytes */
+-- 
+1.5.6.5
 
