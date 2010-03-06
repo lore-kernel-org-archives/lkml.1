@@ -1,83 +1,143 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178Ab0CFBp6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 20:45:58 -0500
-Received: from relay1-d.mail.gandi.net ([217.70.183.193]:49414 "EHLO
-	relay1-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721Ab0CFBp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 20:45:57 -0500
-Date: Fri, 5 Mar 2010 17:45:13 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH tip/core/rcu 1/3] ftrace: replace
- read_barrier_depends() with rcu_dereference_raw()
-Message-ID: <20100306014513.GA13858@feather>
-References: <20100305230256.GA9410@linux.vnet.ibm.com>
- <1267830207-9474-1-git-send-email-paulmck@linux.vnet.ibm.com>
- <1267838945.10871.1786.camel@gandalf.stny.rr.com>
+	id S1753313Ab0CFBwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 20:52:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50850 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721Ab0CFBwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 20:52:06 -0500
+Message-ID: <4B91B4EF.5090502@kernel.org>
+Date: Fri, 05 Mar 2010 17:50:39 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267838945.10871.1786.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Greg Thelen <gthelen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
+References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com> <4B915074.4020704@kernel.org> <20100305235812.GA15249@cmpxchg.org>
+In-Reply-To: <20100305235812.GA15249@cmpxchg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 08:29:05PM -0500, Steven Rostedt wrote:
-> On Fri, 2010-03-05 at 15:03 -0800, Paul E. McKenney wrote:
-> > Replace the calls to read_barrier_depends() in ftrace_list_func() with
-> > rcu_dereference_raw() to improve readability.  The reason that we use
-> > rcu_dereference_raw() here is that removed entries are never freed,
-> > instead they are simply leaked.  This is one of a very few cases where
-> > use of rcu_dereference_raw() is the long-term right answer.  And I don't
-> > yet know of any others.  ;-)
-> > 
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
+On 03/05/2010 03:58 PM, Johannes Weiner wrote:
+> Hello Yinghai,
 > 
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
+> On Fri, Mar 05, 2010 at 10:41:56AM -0800, Yinghai Lu wrote:
+>> On 03/04/2010 09:17 PM, Greg Thelen wrote:
+>>> On Thu, Mar 4, 2010 at 7:21 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+>>>> On Thu, Mar 04, 2010 at 01:21:41PM -0800, Greg Thelen wrote:
+>>>>> On several systems I am seeing a boot panic if I use mmotm
+>>>>> (stamp-2010-03-02-18-38).  If I remove
+>>>>> bootmem-avoid-dma32-zone-by-default.patch then no panic is seen.  I
+>>>>> find that:
+>>>>> * 2.6.33 boots fine.
+>>>>> * 2.6.33 + mmotm w/o bootmem-avoid-dma32-zone-by-default.patch: boots fine.
+>>>>> * 2.6.33 + mmotm (including
+>>>>> bootmem-avoid-dma32-zone-by-default.patch): panics.
+>> ...
+>>>
+>>> Note: mmotm has been recently updated to stamp-2010-03-04-18-05.  I
+>>> re-tested with 'make defconfig' to confirm the panic with this later
+>>> mmotm.
+>>
+>> please check
+>>
+>> [PATCH] early_res: double check with updated goal in alloc_memory_core_early
+>>
+>> Johannes Weiner pointed out that new early_res replacement for alloc_bootmem_node
+>> change the behavoir about goal.
+>> original bootmem one will try go further regardless of goal.
+>>
+>> and it will break his patch about default goal from MAX_DMA to MAX_DMA32...
+>> also broke uncommon machines with <=16M of memory.
+>> (really? our x86 kernel still can run on 16M system?)
+>>
+>> so try again with update goal.
 > 
-> Thanks Paul!
+> Thanks for the patch, it seems to be correct.
 > 
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
+> However, I have a more generic question about it, regarding the future of the
+> early_res allocator.
 > 
-> >  
-> > @@ -154,8 +159,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
-> >  	 * the ops->next pointer is valid before another CPU sees
-> >  	 * the ops pointer included into the ftrace_list.
-> >  	 */
-> > -	smp_wmb();
-> > -	ftrace_list = ops;
-> > +	rcu_assign_pointer(ftrace_list, ops);
-> 
-> [ Off topic ]
-> 
-> I looked at rcu_assign_pointer() and it is:
-> 
-> #define rcu_assign_pointer(p, v) \
-> 	({ \
-> 		if (!__builtin_constant_p(v) || \
-> 		    ((v) != NULL)) \
-> 			smp_wmb(); \
-> 		(p) = (v); \
-> 	})
-> 
-> My question is, why that crazy if? The only time that will fail is if we
-> are assigning the constant NULL to p. What makes NULL so important here?
-> Can't there be a case when assigning NULL to p will require that wmb()?
+> Did you plan on keeping the bootmem API for longer?  Because my impression was,
+> emulating it is a temporary measure until all users are gone and bootmem can
+> be finally dropped.
 
-The barrier ensures that the reader can't see the new p and the old
-*p.  Since you can't look at *NULL, that concern doesn't apply.
+that depends on every arch maintainer.
 
-- Josh Triplett
+user can compare them on x86 to check if...
+
+next step will be make fw_mem_map to generiaized and combine them with lmb.
+
+> 
+> But then this would require some sort of handling of 'user does not need DMA[32]
+> memory, so avoid it' and 'user can only use DMA[32] memory' in the early_res
+> allocator as well.
+> 
+> I ask this specifically because you move this fix into the bootmem compatibility
+> code while there is not yet a way to tell early_res the same thing, so switching
+> a user that _needs_ to specify this requirement from bootmem to early_res is not
+> yet possible, is it?
+
+just let caller set the goal.
+
+> 
+>> Reported-by: Greg Thelen <gthelen@google.com>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  mm/bootmem.c |   28 +++++++++++++++++++++++++---
+>>  1 file changed, 25 insertions(+), 3 deletions(-)
+>>
+>> Index: linux-2.6/mm/bootmem.c
+>> ===================================================================
+>> --- linux-2.6.orig/mm/bootmem.c
+>> +++ linux-2.6/mm/bootmem.c
+>> @@ -170,6 +170,28 @@ void __init free_bootmem_late(unsigned l
+>>  }
+>>  
+>>  #ifdef CONFIG_NO_BOOTMEM
+>> +static void * __init ___alloc_memory_core_early(pg_data_t *pgdat, u64 size,
+>> +						 u64 align, u64 goal, u64 limit)
+>> +{
+>> +	void *ptr;
+>> +	unsigned long end_pfn;
+>> +
+>> +	ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
+>> +					 goal, limit);
+>> +	if (ptr)
+>> +		return ptr;
+>> +
+>> +	/* check goal according  */
+>> +	end_pfn = pgdat->node_start_pfn + pgdat->node_spanned_pages;
+>> +	if ((end_pfn << PAGE_SHIFT) < (goal + size)) {
+>> +		goal = pgdat->node_start_pfn << PAGE_SHIFT;
+>> +		ptr = __alloc_memory_core_early(pgdat->node_id, size, align,
+>> +						 goal, limit);
+>> +	}
+>> +
+>> +	return ptr;
+> 
+> I think it would make sense to move the parameter check before doing the
+> allocation.  Then you save the second call.
+
+I am trying to avoid the second call.
+please check another patch about "introduce bootmem_default_goal : don't punish 64bit system without 4g ram"
+
+> 
+> And a second nitpick: naming the inner function __foo and the outer one ___foo seems
+> confusing to me.  Could you maybe rename the wrapper? bootmem_compat_alloc_early() or
+> something like that?
+
+ok.
+
+Thanks
+
+Yinghai
