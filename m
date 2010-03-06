@@ -1,109 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871Ab0CFDzT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 22:55:19 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:59452 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313Ab0CFDzR convert rfc822-to-8bit (ORCPT
+	id S1752248Ab0CFEEf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 23:04:35 -0500
+Received: from mail-qy0-f199.google.com ([209.85.221.199]:47665 "EHLO
+	mail-qy0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047Ab0CFEEd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 22:55:17 -0500
+	Fri, 5 Mar 2010 23:04:33 -0500
+X-Greylist: delayed 355 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 23:04:33 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type
+         :content-transfer-encoding;
+        b=SzeY4rcTgT/zROa8BY6i/SPwJ+ZdWWtBQgcJEhCoXXc1w1em5YxHK2rZNKOHYJ6gZe
+         LpAgYCj/QRU2HGxTyK1hErdUvL6mUOITGtuK9QXNohOvyl5orDb8nwtFmBxHNqVU1Wqa
+         vGlrijtxsH8LkoYaEixeC5RfJZuIrtZR8rIOE=
 MIME-Version: 1.0
-In-Reply-To: <20100306002823.GA22095@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru> <20100205203236.GC1475@oksana.dev.rtsoft.ru> 
-	<fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com> 
-	<20100209191620.GA24539@oksana.dev.rtsoft.ru> <20100305120015.a2008f46.akpm@linux-foundation.org> 
-	<fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com> 
-	<20100305123527.d6d68e56.akpm@linux-foundation.org> <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com> 
-	<20100306002823.GA22095@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 5 Mar 2010 20:54:56 -0700
-X-Google-Sender-Auth: a5462f316c124281
-Message-ID: <fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-To: avorontsov@ru.mvista.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+From: dave b <db.pub.mail@gmail.com>
+Date: Sat, 6 Mar 2010 14:58:18 +1100
+Message-ID: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
+Subject: weirdness with compiling a 2.6.33 kernel on arm debian
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 5:28 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Fri, Mar 05, 2010 at 04:47:06PM -0700, Grant Likely wrote:
-> [...]
->> >> I'm not really very comfortable with the whole
->> >> approach being taken. �And, while I acked the first patch in the
->> >> series, that patch isn't needed by anything except patches 2, 3 & 4.
->
-> But you didn't answer my replies, ie were sitting silent like for
-> a month? So you didn't give my any chance to make them comfortable
-> to you.
+Hi have now successfully built a 2.6.33 kernel on a linkstation pro
+v2. This is an arm device. It is currently running debian  lenny
+armel.
 
-The last version of the patches were posted on Feb 8.  -rc8 was
-released on Feb 12.  For changes to common code, that is a little late
-for getting queued up for the merge window.  If it was a subsystem
-that I maintain, say SPI, then I doubt I would have picked it up for
-2.6.34.
 
-But I am not the GPIO maintainer.  I've stated my case, I'm not fond
-of the approach, and I'd rather have another merge cycle before
-committing to the method of making OF gpio bindings more generic.  I
-missed your request to merge this via the powerpc tree and I had
-higher priority concerns, so I really didn't think much of it.  I
-assumed that David would look at the arguments and make his own
-decision.
+I compiled  (make) zImage, then did a make modules which failed on the
+first two rounds of compiling the modules -
 
-For the record, my main concerns are:
-- Now that I see the implementation, I think that it is too complex.
-The bus notifiers really aren't needed and it can be done with much
-lower impact on the core gpiolib code.
-- Using notifiers adds an unnecessary race condition, however unlikely.
+"fs/afs/super.c: In function ‘afs_test_super’:
+fs/afs/super.c:278: internal compiler error: Segmentation fault
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
+This was the error encountered on the attempt at compiling the
+modules.
 
-> Is there any punishment ready for that? ;-) I see one: apply
-> these patches, and rework this stuff as you like when you have some
-> time?
+"crypto/gcm.c: In function ‘crypto_gcm_setauthsize’:
+crypto/gcm.c:152: internal compiler error: Segmentation fault
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
+make[1]: *** [crypto/gcm.o] Error 1"
+This was the error the on the second attempt at compiling the modules.
 
-Changes to common code don't work that way.  Sometimes things just
-don't get enough attention and they wait another cycle, get reworked,
-or get dropped entirely.
+The 3rd attempt at building the modules was successful...
 
-> Or tell me your idea, and I'll do the rework for you, in
-> 2.6.35.
->
-> But in the meantime, these patches can be nicely used to support
-> I2C/SPI GPIO controllers.
+The device boots and runs fine with this kernel and modules appear to work.
+[root@nas ~]# uname -a
+Linux nas 2.6.33 #1 Fri Mar 5 23:54:51 EST 2010 armv5tel GNU/Linux
 
-...and anyone who need it immediately is welcome to pull your changes
-into their private tree.  Skipping a cycle is not the end of the
-world.
 
->> Combine that with the changes being made to drivers/of right now and
->> the addition device tree to ARM and other architectures, my preference
->> is to let this patch series lie fallow for one more merge cycle so
->> that things can settle out in the OF infrastructure code.
->
-> How exactly OF rework affects these patches?
+*SO* is this a gcc bug or is it related to the changes to the build
+process on arm?
 
-For one, the device node pointer is moving out of archdata into
-'struct device' proper and I've got patches adding OF hooks into the
-core of the platform bus.  If those patches look good to GregKH, then
-I'll be pursing the same pattern for the other bus types (i2c, spi,
-etc), and it will be further argument for putting the OF hooks
-directly into gpiolib instead of using a notifier.  I'll be posting
-the patches as soon as the merge window closes.
 
-> And why some rework
-> should be used as an excuse for not adding a hardware support?
 
-If this was a standalone device driver then I'd agree.  However, this
-is an infrastructure change.  Infrastructure changes get more scrutiny
-and are always harder to merge.  Especially just before the merge
-window opens with very little linux-next exposure.
-
-g.
+gcc -v
+Using built-in specs.
+Target: arm-linux-gnueabi
+Configured with: ../src/configure -v --with-pkgversion='Debian
+4.3.2-1.1' --with-bugurl=file:///usr/share/doc/gcc-4.3/README.Bugs
+--enable-languages=c,c++,fortran,objc,obj-c++ --prefix=/usr
+--enable-shared --with-system-zlib --libexecdir=/usr/lib
+--without-included-gettext --enable-threads=posix --enable-nls
+--with-gxx-include-dir=/usr/include/c++/4.3 --program-suffix=-4.3
+--enable-clocale=gnu --enable-libstdcxx-debug --enable-objc-gc
+--enable-mpfr --disable-libssp --disable-sjlj-exceptions
+--enable-checking=release --build=arm-linux-gnueabi
+--host=arm-linux-gnueabi --target=arm-linux-gnueabi
+Thread model: posix
+gcc version 4.3.2 (Debian 4.3.2-1.1)
