@@ -1,63 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360Ab0CFMLt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 07:11:49 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:49206 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750908Ab0CFMLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 07:11:47 -0500
-X-Greylist: delayed 1976 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 07:11:47 EST
-Message-ID: <4B923EC6.7090809@dgreaves.com>
-Date: Sat, 06 Mar 2010 11:38:46 +0000
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	id S1752640Ab0CFMlX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 07:41:23 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:60170 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019Ab0CFMlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 07:41:20 -0500
+From: Samir Bellabes <sam@synack.fr>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       jamal <hadi@cyberus.ca>, Patrick McHardy <kaber@trash.net>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Neil Horman <nhorman@tuxdriver.com>,
+       Grzegorz Nosek <root@localdomain.pl>
+Subject: Re: [RFC v2 10/10] snet: introduce snet_utils
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
+	<1267561394-13626-11-git-send-email-sam@synack.fr>
+	<alpine.LSU.2.01.1003031854530.23267@obet.zrqbmnf.qr>
+Date: Sat, 06 Mar 2010 13:41:18 +0100
+In-Reply-To: <alpine.LSU.2.01.1003031854530.23267@obet.zrqbmnf.qr> (Jan
+	Engelhardt's message of "Wed, 3 Mar 2010 18:55:22 +0100 (CET)")
+Message-ID: <m2tystr5ap.fsf@ssh.synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: mdadm FAQ - see http://raid.wiki.kernel.org/
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <20100216115036.0f6b7bb6@notabene.brown> <alpine.DEB.2.00.1002160807370.31195@p34.internal.lan> <20100216200938.GK16347@lapse.rw.madduck.net>
-In-Reply-To: <20100216200938.GK16347@lapse.rw.madduck.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
+Jan Engelhardt <jengelh@medozas.de> writes:
 
-I've not been active here for a long time - sorry :)
+> On Tuesday 2010-03-02 21:23, Samir Bellabes wrote:
+>
+>>This patch provides helper functions for other subsystems
+>
+> What subsystems would that be? (Just trying to prevent premature code 
+> bloat.)
 
-The linux raid wiki at OSDL (http://linux-raid.osdl.org/) was 'migrated' to a
-drupal system during some Linux Foundation changes - clearly not suitable for
-these kind of docs.
+snet_verdict_name() is used in :
+ - security/snet/snet_core.c
+ - security/snet/snet_ticket_helper.c
 
-I spoke to maddog at kernel.org some months ago and we are now part of the
-managed kernel wiki farm (which the osdl wiki pre-dated in case anyone wonders
-why we didn't start out there).
+snet_syscall_name() is used in :
+ - security/snet/snet_event.c
+ - security/snet/snet_netlink.c
+ - security/snet/snet_ticket_helper.c
 
-I've asked osdl to redirect the current url to the kernel.org wiki but I think
-this home should last us a while ;)
+this functions are used for debug.
 
-so:
+in the same time, I found an unused function declaration in security/snet/snet_utils.h:
+int snet_data_fill(struct sk_buff *skb_rsp, struct snet_info *info);
+I deleted it.
 
-hi martin..
-
-martin f krafft wrote:
-> also sprach Justin Piszcz <jpiszcz@lucidpixels.com> [2010.02.17.0214 +1300]:
->> Thanks for the response, this is exactly what I was looking for
->> and probably should be put in a FAQ.
-> 
-> I'd be more than happy to push my FAQ[0], possibly fused with my
-> "recipes", upstream and would welcome anyone who wanted to help out.
-> 
-> 0. http://git.debian.org/?p=pkg-mdadm/mdadm.git;a=blob;f=debian/FAQ;hb=HEAD
-> 1. http://git.debian.org/?p=pkg-mdadm/mdadm.git;a=blob;f=debian/README.recipes;hb=HEAD
-
-See:
-  http://raid.wiki.kernel.org/
-
-David
-
--- 
-"Don't worry, you'll be fine; I saw it work in a cartoon once..."
+Thanks Jan,
+sam
