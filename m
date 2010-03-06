@@ -1,61 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649Ab0CFVWj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 16:22:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56072 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820Ab0CFVWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 16:22:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Problems with remote-wakeup settings
-Date: Sat, 6 Mar 2010 22:25:09 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       linux-input@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <Pine.LNX.4.44L0.1003061601520.23895-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003061601520.23895-100000@netrider.rowland.org>
+	id S1753688Ab0CFV1H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 16:27:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43901 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751311Ab0CFV1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 16:27:03 -0500
+Date: Sat, 6 Mar 2010 13:26:46 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Please pull logfs tree
+In-Reply-To: <20100306210459.GA21570@logfs.org>
+Message-ID: <alpine.LFD.2.00.1003061319530.31447@localhost.localdomain>
+References: <20100306210459.GA21570@logfs.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003062225.09514.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 06 March 2010, Alan Stern wrote:
-> On Sat, 6 Mar 2010, Rafael J. Wysocki wrote:
+
+
+On Sat, 6 Mar 2010, Jörn Engel wrote:
 > 
-> > > It's not difficult in theory to tie together the WoL setting and the
-> > > wakeup flag:
-> > > 
-> > > 	If ethtool changes the WoL setting, the driver's ioctl handler
-> > > 	should make the corresponding change to the wakeup flag.
-> > > 
-> > > 	If ethtool queries the WoL setting, the ioctl handler should
-> > > 	check the wakeup flag.  If the flag is off, it should report 
-> > > 	that WoL is disabled; if the flag is on, it should report that 
-> > > 	WoL is enabled.  (The same check should be made in the suspend
-> > > 	routine.)
-> > 
-> > That's done this way already in all drivers I know, but we need a hook
-> > from wake_store() back to the driver.
-> 
-> What for?  wake_store() can't be called during a sleep transition
-> (because tasks are frozen) or while the system is asleep.  And if it is
-> called at any other time, the driver doesn't need to know until either
-> its ioctl handler or its suspend method runs.
+> 1) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs.git
+> and apply the patch at the bottom yourself.
 
-Right.
+Not quite - it needs to be applied while merging, rather than applied 
+separately. It's a conflict, even though it's not a data-conflict, but a 
+semantic one.
 
-That means, though, that the network adapter drivers' "get WoL" routines
-should check should_wakeup too.  They don't do that right now, but IMO it's
-reasonable to request that they be modified.
+But that's trivial enough. "git pull --no-commit" + fixup + "git commit" 
+is trivially done, now that I was fore-warned. Thanks.
 
-Adding netdev to the Cc list.
+> 2) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34
+> A tree with the patch applied that won't work standalone but will work
+> after being pulled into your tree (tested locally).
 
-Rafael
+No, that's horrible. Unbisectable. Not that anybody probably cares in this 
+case, but it's fundamentally wrong to merge something that doesn't work 
+before the merge.
+
+> 3) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34_alternative
+> A tree that merged your tree and the logfs tree, then has the patch
+> applied.  Works standalone but has an additional merge commit.
+
+That's ok, but I already did the trivial merge, which actually had another 
+conflict too (which showed up as a real data conflict on the Kconfig 
+file).
+
+		Linus
