@@ -1,71 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857Ab0CFCQF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:16:05 -0500
-Received: from relay4-v.mail.gandi.net ([217.70.178.78]:41302 "EHLO
-	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761Ab0CFCQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 21:16:03 -0500
-Date: Fri, 5 Mar 2010 18:15:48 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH tip/core/rcu 1/3] ftrace: replace
- read_barrier_depends() with rcu_dereference_raw()
-Message-ID: <20100306021548.GB13858@feather>
-References: <20100305230256.GA9410@linux.vnet.ibm.com>
- <1267830207-9474-1-git-send-email-paulmck@linux.vnet.ibm.com>
- <1267838945.10871.1786.camel@gandalf.stny.rr.com>
- <20100306014513.GA13858@feather>
- <1267840669.10871.1790.camel@gandalf.stny.rr.com>
+	id S1753479Ab0CFCU3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 21:20:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11033 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752205Ab0CFCU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 21:20:28 -0500
+Date: Sat, 6 Mar 2010 02:20:15 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Neil Brown <neilb@suse.de>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+	checks
+Message-ID: <20100306022015.GU27852@agk-dp.fab.redhat.com>
+Mail-Followup-To: Neil Brown <neilb@suse.de>,
+	device-mapper development <dm-devel@redhat.com>,
+	Dmitry Monakhov <dmonakhov@openvz.org>,
+	Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+	Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
+References: <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com> <20100304121931.GB5768@kernel.dk> <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com> <20100305073059.GI5768@kernel.dk> <20100306085651.1a571571@notabene.brown> <20100305222748.GT27852@agk-dp.fab.redhat.com> <20100306105237.0a8621ed@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267840669.10871.1790.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100306105237.0a8621ed@notabene.brown>
+Organization: Red Hat UK Ltd. Registered in England and Wales, number
+	03798903. Registered Office: Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 1TE.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 08:57:49PM -0500, Steven Rostedt wrote:
-> On Fri, 2010-03-05 at 17:45 -0800, Josh Triplett wrote:
-> 
-> > > #define rcu_assign_pointer(p, v) \
-> > > 	({ \
-> > > 		if (!__builtin_constant_p(v) || \
-> > > 		    ((v) != NULL)) \
-> > > 			smp_wmb(); \
-> > > 		(p) = (v); \
-> > > 	})
-> > > 
-> > > My question is, why that crazy if? The only time that will fail is if we
-> > > are assigning the constant NULL to p. What makes NULL so important here?
-> > > Can't there be a case when assigning NULL to p will require that wmb()?
-> > 
-> > The barrier ensures that the reader can't see the new p and the old
-> > *p.  Since you can't look at *NULL, that concern doesn't apply.
-> 
-> Thanks for the explanation.
-> 
-> Question 2)
-> 
-> Then why the !__builtin_constant_p(v)?
-> 
-> If v is NULL, then the same should apply even if it is not a constant?
-> What am I missing?
+On Sat, Mar 06, 2010 at 10:52:37AM +1100, Neil Brown wrote:
+> But my first suggestion, that splitting could be made easier, still stands.
 
-Checking for __builtin_constant_p(v) ensures that this test happens at
-compile time, and thus no conditional occurs at runtime.  Together with
-the assumption of compiler constant folding and dead code elimination,
-this test means "if you can tell at compile time that the call assigns
-NULL, emit no barrier, otherwise emit a barrier".  Under no
-circumstances will this macro actually emit conditional code.
+In full agreement we should try to make it easier.
 
-- Josh Triplett
+> And do you honour merge_bvec_fn's of underlying devices?  A quick grep
+> suggests you do only for dm-linear and dm-crypt.  
+
+We implemented it to address some specific performance problems reported by
+people using those targets.  So far there hasn't been any pressing need to
+implement it for other targets.
+
+> This suggests to me that it
+> is actually a hard interface to support completely in a stacked device, so we
+> might be better off without it.
+
+All this code is hard - but very useful.  The direction I want to explore when
+I finally get some time to work on this is one which will probably make more
+use of, and extend, merge_bvec.
+
+> that it makes sense to only require that the lowest level does the
+> splitting, as that is where the specifics on what might be required exists.
+
+We have a hybrid model at the moment - some stuff dealt with top-down, other
+stuff bottom-up.  This thread describes just one of several problems related to
+this.  In the next incarnation of device-mapper I hope we'll find a way to
+eliminate all of them together.  Maybe I'll finally get time later this year to
+start working on these ideas properly.
+
+Alasdair
+
