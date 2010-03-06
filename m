@@ -1,39 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172Ab0CFWtU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 17:49:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60980 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632Ab0CFWtT (ORCPT
+	id S1754257Ab0CFWxI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 17:53:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55882 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751640Ab0CFWxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 17:49:19 -0500
-Date: Sat, 6 Mar 2010 17:49:14 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Helge Deller <deller@gmx.de>
-Cc: John Stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 04/14] parisc: Convert parisc to use
-	read/update_persistent_clock
-Message-ID: <20100306224914.GL12443@bombadil.infradead.org>
-References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com> <1267675049-12337-2-git-send-email-johnstul@us.ibm.com> <1267675049-12337-3-git-send-email-johnstul@us.ibm.com> <1267675049-12337-4-git-send-email-johnstul@us.ibm.com> <1267675049-12337-5-git-send-email-johnstul@us.ibm.com> <4B92D9DE.7030705@gmx.de>
+	Sat, 6 Mar 2010 17:53:06 -0500
+Date: Sat, 6 Mar 2010 14:52:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joe Perches <joe@perches.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
+Subject: Re: [RESEND PATCH 0/2] Make functions of dev_<level> macros, recursive
+ vsnprintf
+In-Reply-To: <1267914654.849.81.camel@Joe-Laptop.home>
+Message-ID: <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
+References: <cover.1267682641.git.joe@perches.com>  <20100304143837.af39845d.akpm@linux-foundation.org>  <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>  <1267911399.849.39.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
+ <1267914654.849.81.camel@Joe-Laptop.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B92D9DE.7030705@gmx.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 11:40:30PM +0100, Helge Deller wrote:
-> Works nicely.
->
-> Thanks, John.
->
-> Acked-by: Helge Deller <deller@gmx.de>
->
 
-Thanks Helge, added your annotation.
 
-regards, Kyle
+On Sat, 6 Mar 2010, Joe Perches wrote:
+> 
+> Maybe limit the %pV recursion depth to 1 with something like:
+> (in vsprintf.c: pointer() )
+
+Nope. Think about concurrent users.
+
+The thing is, you have to hide it in local storage. We could make it 
+thread-local (not cpu-local), but even that interacts badly with 
+interrupts.
+
+The only really workable approach would be to have a stack slot that is 
+created by the externally visible routines (and initialized to zero), and 
+those then passe the address of that as an argument to the lower levels, 
+and then the recursion happens entirely within those lower level functions 
+that update the value.
+
+So it's doable, it's just not pretty.
+
+> > and I'd also love to see some actual numbers of > > how deep the vsnprintf stack frame is, but I don't see how to do the 
+> > first, and I'm hoping the second isn't too horrible.
+> 
+> I believe it's the arguments, a long long, a couple of pointers,
+> and a struct printf_spec.  Not too bad.
+
+I'm not convinced. We pass that 'printf_spec' around a lot, including 
+nesting. Not as a pointer, either.
+
+(Bjorn Helgaas has a patch that gets rid of _some_ of the stack usage, but 
+not nearly all).
+
+		Linus
