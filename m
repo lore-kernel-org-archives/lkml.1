@@ -1,59 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854Ab0CFRmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 12:42:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53682 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751532Ab0CFRmt (ORCPT
+	id S1753866Ab0CFRtW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 12:49:22 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:37949 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753728Ab0CFRtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 12:42:49 -0500
-Date: Sat, 6 Mar 2010 09:40:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <1267889034.24025.4.camel@segulix>
-Message-ID: <alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>  <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain> <1267889034.24025.4.camel@segulix>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 6 Mar 2010 12:49:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=n1IYiVpudMaodaUNx+U3vidvoTD71iPIexr6J3B7H2tRKfT3Wt6kgIsSNbjw9REgwJ
+         Bv6kglC69SczXX+1dIC9NSlwEeRgSuk5+5CVZCGBSTAoJ8QJVMZiKEz0V0hJXf0G0hvV
+         eFBYTAXtrAomRoJB3pWkxSn/JytkcPwt7939Q=
+Message-ID: <4B92944E.8080209@gmail.com>
+Date: Sat, 06 Mar 2010 09:43:42 -0800
+From: walt <w41ter@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.3a3pre) Gecko/20100304 Shredder/3.2a1pre
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Al Viro <viro@zeniv.linux.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: "Switch !O_CREAT case to use of do_last()" causes segfault in glibc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Al,
+commit 1f36f774b22a0ceb7dd33eca626746c81a97b6a5
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Sat Dec 26 10:56:19 2009 -0500
+
+     Switch !O_CREAT case to use of do_last()
+
+     ... and now we have all intents crap well localized
+
+This commit is triggering a segfault when I try to open a spreadsheet in
+openoffice:
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff6d13129 in __readdir (dirp=0x0) at ../sysdeps/unix/readdir.c:45
+45      ../sysdeps/unix/readdir.c: No such file or directory.
+         in ../sysdeps/unix/readdir.c
+(gdb) bt
+#0  0x00007ffff6d13129 in __readdir (dirp=0x0) at ../sysdeps/unix/readdir.c:45
+#1  0x00007ffff1dc58b0 in ?? () from /usr/lib/libicuuc.so.42
+#2  0x00007ffff1dc591d in ?? () from /usr/lib/libicuuc.so.42
+#3  0x00007ffff1dc5d7e in uprv_tzname_4_2 () from /usr/lib/libicuuc.so.42
+#4  0x00007fffd7f73601 in icu_4_2::TimeZone::initDefault() () from /usr/lib/libicui18n.so.42
+#5  0x00007fffd7f738c5 in icu_4_2::TimeZone::createDefault() () from /usr/lib/libicui18n.so.42
+#6  0x00007fffd7f6e5c9 in icu_4_2::Calendar::createInstance(icu_4_2::Locale const&, UErrorCode&) ()
+    from /usr/lib/libicui18n.so.42
 
 
-On Sat, 6 Mar 2010, Sergio Monteiro Basto wrote:
-> 
-> You shouldn't expect, by now, upgrade drm kernel without update libdrm
-> or at least recompile libdrm.
+Here is readdir.c:445 (from glibc-2.11):
 
-Why?
+#ifndef NOT_IN_libc
+   __libc_lock_lock (dirp->lock);
+#endif
 
-Why shouldn't I expect that? I already outlined exactly _how_ it could be 
-done.
-
-Why are people saying that technology has to suck?
-
-> So when you saw a error message "driver nouveau 0.0.n+1 and have 0.0.n"
-> is completely right. 
-
-No. It's _not_ right. The code knows what is wrong. Considering it a fatal 
-error is _stupid_ and bad technology, when it could have just fixed it.
-
-> Is not a perfect world, but as talked on xorg mailing list, some time
-> ago, we do not have resources to test it in all versions.
-> Is better focus on just one combination.
-
-This is not about "testing all versions". It's fine to have just one 
-combination. But why the hell doesn't it _load_ that one combination 
-instead of just dying?
-
-IOW, there is a check for a version. It could - instead of dying - just 
-dlopen() the right version instead. 
-
-Why are people making excuses for bad programming and bad technology? 
-
-			Linus
+Thanks.
