@@ -1,48 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0CFRPX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 12:15:23 -0500
-Received: from www84.your-server.de ([213.133.104.84]:47622 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751640Ab0CFRPV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 12:15:21 -0500
-Subject: Re: [PATCH] fix race condition in drivers/base/dd.c
-From: Stefani Seibold <stefani@seibold.net>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100306165736.GA24154@suse.de>
-References: <1267894214.18869.1.camel@wall-e>
-	 <20100306165736.GA24154@suse.de>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 06 Mar 2010 18:15:41 +0100
-Message-ID: <1267895741.19406.7.camel@wall-e>
+	id S1753741Ab0CFRTK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 12:19:10 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:55798 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753049Ab0CFRTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 12:19:08 -0500
+Date: Sat, 6 Mar 2010 09:18:49 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: xiaohui.xin@intel.com
+Cc: netdev@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mst@redhat.com, jdike@c2.user-mode-linux.org,
+       Zhao Yu <yzhao81@gmail.com>
+Subject: Re: [PATCH v1 3/3] Let host NIC driver to DMA to guest user space.
+Message-ID: <20100306091849.0e5d2a66@s6510>
+In-Reply-To: <1267868318-19268-4-git-send-email-xiaohui.xin@intel.com>
+References: <1267868318-19268-1-git-send-email-xiaohui.xin@intel.com>
+	<1267868318-19268-2-git-send-email-xiaohui.xin@intel.com>
+	<1267868318-19268-3-git-send-email-xiaohui.xin@intel.com>
+	<1267868318-19268-4-git-send-email-xiaohui.xin@intel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 06.03.2010, 08:57 -0800 schrieb Greg KH:
-> On Sat, Mar 06, 2010 at 05:50:14PM +0100, Stefani Seibold wrote:
-> > This patch fix a potential race condition in the driver_bound() function
-> > in the file driver/base/dd.c. 
-> > 
-> > The broadcast of the BUS_NOTIFY_BOUND_DRIVER notifier should be done
-> > after adding the new device to the driver list. Otherwise notifier
-> > listener will fail if they use functions like usb_find_interface().
-> > 
-> > The patch is against kernel 2.6.33. Please merge it.
+On Sat,  6 Mar 2010 17:38:38 +0800
+xiaohui.xin@intel.com wrote:
+
+> From: Xin Xiaohui <xiaohui.xin@intel.com>
 > 
-> Looks good, are there bugs caused by this problem today that require
-> this patch to be backported to the -stable kernels?
+> The patch let host NIC driver to receive user space skb,
+> then the driver has chance to directly DMA to guest user
+> space buffers thru single ethX interface.
+> 
+> Signed-off-by: Xin Xiaohui <xiaohui.xin@intel.com>
+> Signed-off-by: Zhao Yu <yzhao81@gmail.com>
+> Sigend-off-by: Jeff Dike <jdike@c2.user-mode-linux.org>
+> ---
+>  include/linux/netdevice.h |   76 ++++++++++++++++++++++++++++++++++++++++++-
+>  include/linux/skbuff.h    |   30 +++++++++++++++--
+>  net/core/dev.c            |   32 ++++++++++++++++++
+>  net/core/skbuff.c         |   79 +++++++++++++++++++++++++++++++++++++++++----
+>  4 files changed, 205 insertions(+), 12 deletions(-)
 > 
 
-No, there is no problem in the stable kernel. There was only a problem
-with one of my out of tree driver.
-
-Stefani
-
-
+There are too many ifdef's in this implementation.
+I would prefer to see a few functions (with stub for the non-ifdef case),
+like the network namespace code.
