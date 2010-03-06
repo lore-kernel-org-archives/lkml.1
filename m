@@ -1,70 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156Ab0CFSlM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 13:41:12 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50430 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351Ab0CFSlK (ORCPT
+	id S1754184Ab0CFSsG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 13:48:06 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:56851 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098Ab0CFSsB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 13:41:10 -0500
-Date: Sat, 6 Mar 2010 18:41:07 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, walt <w41ter@gmail.com>
-Subject: Re: "Switch !O_CREAT case to use of do_last()" causes segfault in
- glibc
-Message-ID: <20100306184107.GH30031@ZenIV.linux.org.uk>
-References: <4B92944E.8080209@gmail.com>
- <20100306175917.GD30031@ZenIV.linux.org.uk>
- <20100306180313.GE30031@ZenIV.linux.org.uk>
- <4B929CF9.8010506@gmail.com>
- <20100306183254.GG30031@ZenIV.linux.org.uk>
+	Sat, 6 Mar 2010 13:48:01 -0500
+From: Samir Bellabes <sam@synack.fr>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, hadi@cyberus.ca, kaber@trash.net,
+       zbr@ioremap.net, nhorman@tuxdriver.com, root@localdomain.pl,
+       linux-security-module@vger.kernel.org
+Subject: Re: [RFC v2 00/10] snet: Security for NETwork syscalls
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
+	<201003030156.o231udx1023055@www262.sakura.ne.jp>
+Date: Sat, 06 Mar 2010 19:47:56 +0100
+In-Reply-To: <201003030156.o231udx1023055@www262.sakura.ne.jp> (Tetsuo Handa's
+	message of "Wed, 03 Mar 2010 10:56:39 +0900")
+Message-ID: <m2vdd9p9r7.fsf@ssh.synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100306183254.GG30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 06:32:54PM +0000, Al Viro wrote:
-> On Sat, Mar 06, 2010 at 10:20:41AM -0800, walt wrote:
-> > On 03/06/2010 10:03 AM, Al Viro wrote:
-> > 
-> > >_Really_ interesting; it doesn't look like an oops - smells like an attempt
-> > >to do opendir() that fails for some reason, goes unnoticed and resulting
-> > >FILE * (i.e. NULL) is fed to readdir()?
-> > >
-> > >What does it attempt to open?
-> > 
-> > Ah, this may help:
-> > 
-> > open("/usr/share/zoneinfo/", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 47
-> > open("/usr/share/zoneinfo/MST7MDT", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 48
-> 
-> Now that is interesting.  Looks like it has managed to lose O_DIRECTORY check
-> in the open without trailing slash and (properly) barfed with / added.
+Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> writes:
 
-OK, I can reproduce it.  Give me a few, I'll see...
+> Regarding [RFC v2 09/10] snet: introduce snet_ticket
+> +enum snet_verdict snet_ticket_check(struct snet_info *info)
+> +{
+> +       struct snet_ticket *st = NULL;
+> +       unsigned int h = 0, verdict = SNET_VERDICT_NONE;
+> +       struct list_head *l = NULL;
+> +       struct snet_task_security *tsec = NULL;
+> +
+> +       if (snet_ticket_mode == SNET_TICKET_OFF)
+> +               goto out;
+> +
+> +       tsec = (struct snet_task_security*) current_security();
+> +
+> +       h = jhash_2words(info->syscall, info->protocol, 0) % HSIZE;
+> +       l = &tsec->hash[h];
+> +
+> +       read_lock_bh(&tsec->lock);
+>
+> Credentials are allocated for copy-on-write basis.
+> Sharing "tsec" among multiple "struct task_struct" is what you intended?
 
-AAARGH.
+No, there is no shared "tsec".
+snet_ticket_check() is called from the process context. So "tsec" is
+a pointer to the "void *security" pointer from its own "struct
+task_struct".
 
-Fix a dumb typo - use of & instead of &&
+every task_struct have a "tsec" allocated to its "void *security"
+pointer. 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
+I will take a second look on how to access the credentials COW.
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 3d9d2f9..48e60a1 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1656,7 +1656,7 @@ static struct file *do_last(struct nameidata *nd, struct path *path,
- 		if (path->dentry->d_inode->i_op->follow_link)
- 			return NULL;
- 		error = -ENOTDIR;
--		if (*want_dir & !path->dentry->d_inode->i_op->lookup)
-+		if (*want_dir && !path->dentry->d_inode->i_op->lookup)
- 			goto exit_dput;
- 		path_to_nameidata(path, nd);
- 		audit_inode(pathname, nd->path.dentry);
+> Regards.
+
+Tetsuo, thank you again for reviewing.
+sam
