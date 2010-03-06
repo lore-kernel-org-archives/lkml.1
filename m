@@ -1,62 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947Ab0CFWa6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 17:30:58 -0500
-Received: from mail.perches.com ([173.55.12.10]:1475 "EHLO mail.perches.com"
+	id S1754024Ab0CFWjH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 17:39:07 -0500
+Received: from thunk.org ([69.25.196.29]:51207 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640Ab0CFWa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 17:30:57 -0500
-Subject: Re: [RESEND PATCH 0/2] Make functions of dev_<level> macros,
- recursive vsnprintf
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-References: <cover.1267682641.git.joe@perches.com>
-	 <20100304143837.af39845d.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
-	 <1267911399.849.39.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Mar 2010 14:30:54 -0800
-Message-ID: <1267914654.849.81.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751632Ab0CFWjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 17:39:04 -0500
+Date: Sat, 6 Mar 2010 17:38:51 -0500
+From: tytso@mit.edu
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100306223851.GH6000@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>,
+	linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+ <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+ <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+ <1267889034.24025.4.camel@segulix>
+ <alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
+ <1267902406.24025.50.camel@segulix>
+ <alpine.LFD.2.00.1003061127060.31447@localhost.localdomain>
+ <20100306204953.GG6000@thunk.org>
+ <20100306205235.2e4dacb4@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100306205235.2e4dacb4@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-06 at 14:03 -0800, Linus Torvalds wrote:
-> On Sat, 6 Mar 2010, Joe Perches wrote:
-> > Is that an ack, a nack or a get the hell out?
-> It's mostly an Ack. I think the concept is great. I'd love to have some 
-> way to limit recursion,
+On Sat, Mar 06, 2010 at 08:52:35PM +0000, Alan Cox wrote:
+> > They want the benefits of lots of testers, without wanting to be
+> > courteous to those testers.
+> 
+> Except for the small rather important detail that the Nouveau developers
+> didn't ask for it to be merged in the first place.
+> 
 
-Maybe limit the %pV recursion depth to 1 with something like:
-(in vsprintf.c: pointer() )
+*Someone* on the Red Hat/Fedora team made the decision to make it
+available on a very popular distribution to get more testing.  And
+they did it without putting in the necessary versioning so that kernel
+testers could test upstream kernels.  That, in my book, is an
+anti-social thing to do.  Fedora isn't alone, of course; Ubuntu does
+this as well, and worse yet, with proprietary binary drivers.  But
+just because Ubuntu does something worse, doesn't mean that Fedora
+should get a free pass for what they did.
 
-	case 'V': {
-		char *rtn;
-		static int rcount++;
-
-		if (rcount > 1) {	/* Don't recurse more than once */
-			rcount--;
-			break;		/* Use print the pointer */
-		}
-		rtn = buf + vsnprintf(buf, end - buf,
-				      ((struct va_format *)ptr)->fmt,
-				      *(((struct va_format *)ptr)->va));
-		rcount--;
-		return rtn;
-	}
-	
-> and I'd also love to see some actual numbers of 
-> how deep the vsnprintf stack frame is, but I don't see how to do the 
-> first, and I'm hoping the second isn't too horrible.
-
-I believe it's the arguments, a long long, a couple of pointers,
-and a struct printf_spec.  Not too bad.
-
+						- Ted
