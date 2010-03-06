@@ -1,48 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027Ab0CFCwP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:52:15 -0500
-Received: from foo.birdnet.se ([213.88.146.6]:48580 "HELO foo.birdnet.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752774Ab0CFCwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 21:52:14 -0500
-X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Mar 2010 21:52:13 EST
-Message-ID: <20100306024450.29072.qmail@stuge.se>
-Date: Sat, 6 Mar 2010 03:44:50 +0100
-From: Peter Stuge <peter@stuge.se>
-To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@osdl.org, akpm@osdl.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
-	deprecation)
-Mail-Followup-To: linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	torvalds@osdl.org, akpm@osdl.org,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Jaswinder Singh Rajput <jaswinder@kernel.org>
-References: <20100303075944.GA23354@comet.dominikbrodowski.net> <20100303083010.GA22928@flint.arm.linux.org.uk> <20100305120746.646126b9@lxorguk.ukuu.org.uk> <20100305214159.GB2994@flint.arm.linux.org.uk>
+	id S1753968Ab0CFD2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 22:28:16 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:47220 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205Ab0CFD2P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 22:28:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kW6guWUfRxlBPmZxABxEgiQJiP+yDjgDYpps56GLckc7VuNTMGYfR4MejWj6zOJPvf
+         kvHUC58cGo++EgHdU5dz5N7h5VGsm/tzOzYFec2fae8iCNBGTmiAYtdM5EREk2T2bhe0
+         33Q68iqIneVi0ooYCM8zm605ZU+tEc8wKPVCM=
+Date: Sat, 6 Mar 2010 04:28:13 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/2] ftrace - add ftrace function_graph support on ARM
+Message-ID: <20100306032811.GI5244@nowhere>
+References: <4B91A25E.5030707@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100305214159.GB2994@flint.arm.linux.org.uk>
+In-Reply-To: <4B91A25E.5030707@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> > Do any graphical environments even support the ancient user space
-> > pcmcica helper stuff ?
-> 
-> I believe so - the platform I have is based around the Open Embedded
-> stuff, and there's a button on the desktop which communicates with the
-> kernel via the PCMCIA ioctls.  One of the things it offers is to allow
-> media (eg, CF) to be safely ejected without ending up pulling the card
-> out while the FS is still mounted.
+On Fri, Mar 05, 2010 at 04:31:26PM -0800, Tim Bird wrote:
+> +++ b/arch/arm/kernel/ftrace_graph.c
+> @@ -0,0 +1,46 @@
+> +/*
+> + * function graph tracing support.
+> + *
+> + * Copyright (C) 2009 Tim Bird <tim.bird@am.sony.com>
+> + *
+> + * For licencing details, see COPYING.
+> + *
+> + * Defines routine needed for ARM return trampoline for tracing
+> + * function exits.
+> + */
+> +
+> +#include <linux/ftrace.h>
+> +
+> +/*
+> + * Hook the return address and push it in the stack of return addrs
+> + * in current thread info.
+> + */
+> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
+> +			   unsigned long frame_pointer)
+> +{
+> +	unsigned long old;
+> +
+> +	struct ftrace_graph_ent trace;
+> +	unsigned long return_hooker = (unsigned long)
+> +				&return_to_handler;
+> +
+> +	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+> +		return;
+> +
+> +	old = *parent;
+> +	*parent = return_hooker;
+> +
+> +	if (ftrace_push_return_trace(old, self_addr, &trace.depth,
+> +		    frame_pointer) == -EBUSY) {
+> +		*parent = old;
+> +		return;
+> +	}
+> +
+> +	trace.func = self_addr;
+> +
+> +	/* Only trace if the calling function expects to */
+> +	if (!ftrace_graph_entry(&trace)) {
+> +		current->curr_ret_stack--;
+> +		*parent = old;
+> +	}
+> +}
 
-So if you upgrade that system to a kernel without that call I guess
-you may have to either also upgrade that GUI software, or install a
-.so to wrap ioctl() and provide backwards compatibility for the app?
 
 
-//Peter
+
+This could have been done in ftrace.c
+
+Other than that,
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+Thanks.
+
