@@ -1,39 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872Ab0CFWEa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 17:04:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59440 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751834Ab0CFWE3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 17:04:29 -0500
-Date: Sat, 6 Mar 2010 14:04:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Please pull logfs tree
-In-Reply-To: <20100306213501.GB21570@logfs.org>
-Message-ID: <alpine.LFD.2.00.1003061403110.31447@localhost.localdomain>
-References: <20100306210459.GA21570@logfs.org> <alpine.LFD.2.00.1003061319530.31447@localhost.localdomain> <20100306213501.GB21570@logfs.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	id S1753584Ab0CFWLm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 17:11:42 -0500
+Received: from mail.perches.com ([173.55.12.10]:1470 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751744Ab0CFWLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 17:11:41 -0500
+Subject: [PATCH] scripts/checkpatch.pl: Change long line warning to 105
+ chars
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 06 Mar 2010 14:11:39 -0800
+Message-ID: <1267913499.849.45.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Made the length test a variable for easier bike shedding.
+
+Also add --strict tests for longer than 80 chars and more
+than 6 leading tabs
+
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ scripts/checkpatch.pl |   24 ++++++++++++++++++------
+ 1 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index a4d7434..2c5f30c 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -30,6 +30,10 @@ my $root;
+ my %debug;
+ my $help = 0;
+ 
++# Code style warnings
++my $style_long_line = 105;
++my $style_max_leading_tabs = 6;
++
+ sub help {
+ 	my ($exitcode) = @_;
+ 
+@@ -1385,13 +1389,21 @@ sub process {
+ # check we are in a valid source file if not then ignore this hunk
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ 
+-#80 column limit
+-		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
++#Line too long
++		if ($line =~ /^\+/ &&
++		    $prevrawline !~ /\/\*\*/ &&
+ 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
+-		    $line !~ /^\+\s*$logFunctions\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
+-		    $length > 80)
+-		{
+-			WARN("line over 80 characters\n" . $herecurr);
++		    $line !~ /^\+\s*$logFunctions\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/) {
++			if ($length > $style_long_line) {
++				WARN("line over $style_long_line characters\n" . $herecurr);
++			} elsif ($length > 80) {
++				CHK("line over 80 characters\n" . $herecurr);
++			}
++		}
++
++#too many leading tabs - deep leading indent
++		if ($line =~ /^\+\t{$style_max_leading_tabs,}(?!(.*,$|.*\);$))/) {
++			CHK("Too many leading tabs.  Consider restructuring code\n" . $herecurr);
+ 		}
+ 
+ # check for spaces before a quoted newline
 
 
-On Sat, 6 Mar 2010, Jörn Engel wrote:
-> 
-> Ok, learned something new again.  Thank you for doing the trivial merge
-> that would have taken me days to figure out. :)
-
-Heh. I do those things day in and day out. That was a really easy merge. 
-And I'm happy you pointed it out beforehand, so that we didn't get a 
-separate commit and non-bisectable history.
-
-			Linus
