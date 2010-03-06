@@ -1,46 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319Ab0CFLEe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 06:04:34 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:60226 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964Ab0CFLEd (ORCPT
+	id S1753206Ab0CFLER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 06:04:17 -0500
+Received: from iron1.emtelworld.com ([196.192.81.95]:17713 "EHLO
+	iron1.emtelworld.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741Ab0CFLEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 06:04:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=jJuzo9uY7blj4mMsl4Ap4b15Vo7Qx86SzjymNirNym1sQlWburlPP/7j+BuM3YUp8e
-         cyINk9KcLExiy1jFnV5o5LSE4a/8EcRYKR25KiGLbfHZl111qgDTjBt2HIckbZmY6jSw
-         CDFK+Sm1ywwHY2NDbo0gMXzxfiXPUTJXlXVH0=
-Date: Sat, 6 Mar 2010 14:04:14 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Dave Airlie <airlied@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: vga_switcheroo: locking question in vga_switcheroo_debugfs_write()
-Message-ID: <20100306110414.GB4958@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 6 Mar 2010 06:04:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAG7FkUvEwFEh/2dsb2JhbACbS3OnXY0ihHgEgxI
+From: Michael Tate <michael.tate@wanadoo.fr>
+To: gregkh@suse.de, alan@linux.intel.com, o.hartmann@telovital.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Michael Tate <michael.tate@wanadoo.fr>
+Subject: [PATCH 2/2] staging: et131x: Fix brace coding style issues.
+Date: Sat,  6 Mar 2010 15:03:57 +0400
+Message-Id: <1267873437-10245-1-git-send-email-michael.tate@wanadoo.fr>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+This revised patch fixes 2 brace coding style issues reported by checkpatch.pl
+One warning line > 80 chars not resolved on maintainers advice.
 
-drivers/gpu/vga/vga_switcheroo.c +362 vga_switcheroo_debugfs_write(101)
-   277          mutex_lock(&vgasr_mutex);
-   278
-   279          if (!vgasr_priv.active)
-   280                  return -EINVAL;
+Signed-off-by: Michael Tate <michael.tate@wanadoo.fr>
+---
+ drivers/staging/et131x/et131x_isr.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-Is there a reason we return with the lock held here?  The other returns
-from this function don't have the lock held.  I looked through the rest
-of the file but didn't see any clues.
+diff --git a/drivers/staging/et131x/et131x_isr.c b/drivers/staging/et131x/et131x_isr.c
+index f6d452d..336c192 100644
+--- a/drivers/staging/et131x/et131x_isr.c
++++ b/drivers/staging/et131x/et131x_isr.c
+@@ -238,14 +238,12 @@ void et131x_isr_handler(struct work_struct *work)
+ 	 * exit.
+ 	 */
+ 	/* Handle all the completed Transmit interrupts */
+-	if (status & ET_INTR_TXDMA_ISR) {
++	if (status & ET_INTR_TXDMA_ISR)
+ 		et131x_handle_send_interrupt(etdev);
+-	}
+ 
+ 	/* Handle all the completed Receives interrupts */
+-	if (status & ET_INTR_RXDMA_XFR_DONE) {
++	if (status & ET_INTR_RXDMA_XFR_DONE)
+ 		et131x_handle_recv_interrupt(etdev);
+-	}
+ 
+ 	status &= 0xffffffd7;
+ 
+-- 
+1.6.3.3
 
-regards,
-dan carpenter
