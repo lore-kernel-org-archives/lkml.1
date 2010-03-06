@@ -1,42 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715Ab0CFXtI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 18:49:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50628 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751581Ab0CFXtE (ORCPT
+	id S1752962Ab0CFXxJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 18:53:09 -0500
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:53175 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028Ab0CFXxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 18:49:04 -0500
-Date: Sat, 6 Mar 2010 15:48:51 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Joe Perches <joe@perches.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-Subject: Re: [RESEND PATCH 0/2] Make functions of dev_<level> macros, recursive
- vsnprintf
-In-Reply-To: <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
-References: <cover.1267682641.git.joe@perches.com>  <20100304143837.af39845d.akpm@linux-foundation.org>  <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>  <1267911399.849.39.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-  <1267914654.849.81.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>  <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain> <1267918554.849.89.camel@Joe-Laptop.home>
- <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 6 Mar 2010 18:53:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=bA/xiKMVG0lyZJV3XOd3mqe0qVqOanGILqwf6hhum3QieSMjFdqt7Sj0ezElMgxa6l
+         zZxmwybqpg7gb0OBu///XrEBNqsCrIHRVK7nJri6qSq5sBmfugmxnwMf+wV5R6pUOROF
+         WxHltWwXtQwiysEppH0iCuGW/vRLdL9sNLxHA=
+From: Niels Egberts <niels.egberts@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Niels Egberts <niels.egberts@gmail.com>
+Subject: [PATCH] Power: fix brace coding style issue in pda_power.c This is a patch to the pda_power.c file that fixes up a brace warning found by the checkpatch.pl tool Signed-off-by: Niels Egberts <niels.egberts@gmail.com>
+Date: Sun,  7 Mar 2010 00:52:56 +0100
+Message-Id: <1267919576-15566-1-git-send-email-niels.egberts@gmail.com>
+X-Mailer: git-send-email 1.7.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+---
+ drivers/power/pda_power.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+index a232de6..9d7f091 100644
+--- a/drivers/power/pda_power.c
++++ b/drivers/power/pda_power.c
+@@ -305,9 +305,9 @@ static int pda_power_probe(struct platform_device *pdev)
+ 
+ #ifdef CONFIG_USB_OTG_UTILS
+ 	transceiver = otg_get_transceiver();
+-	if (transceiver && !pdata->is_usb_online) {
++	if (transceiver && !pdata->is_usb_online)
+ 		pdata->is_usb_online = otg_is_usb_online;
+-	}
++
+ #endif
+ 
+ 	if (pdata->is_usb_online) {
+-- 
+1.7.0
 
-On Sat, 6 Mar 2010, Linus Torvalds wrote:
->
-> width: 5 (make it 6 bits and signed)
-> precision: 5 (make it 6 bits, and signed)
-
-Oh, actually, no, we do that whole left-justification with the flags, we 
-don't need that signed stuff. We do need one special value for the "no 
-width, no precision", though.
-
-		Linus
