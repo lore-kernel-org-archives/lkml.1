@@ -1,233 +1,214 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955Ab0CFSE5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 13:04:57 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:38143 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586Ab0CFSEz (ORCPT
+	id S1753998Ab0CFSQa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 13:16:30 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:55529 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952Ab0CFSQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 13:04:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=xH92QC+GHni3BSz0FwFkWllIdSiDM8cnpXUQInzCHntE3srPL3fs6mxyIRi/mb1/VP
-         UuLYIhZUnVRh09Y3afH2XLguY/9F3oUJ6I2+XlerJ3ppqffUPy1q61H0/kQOqgShKb2w
-         L1REO9TT5REmzgccbaJwpDMkglqo+sGKYYBBs=
-Message-ID: <4B9298DF.3070507@gmail.com>
-Date: Sat, 06 Mar 2010 19:03:11 +0100
-From: Marco Stornelli <marco.stornelli@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; it; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Sat, 6 Mar 2010 13:16:28 -0500
+From: Samir Bellabes <sam@synack.fr>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, hadi@cyberus.ca, kaber@trash.net,
+       zbr@ioremap.net, nhorman@tuxdriver.com, root@localdomain.pl,
+       linux-security-module@vger.kernel.org
+Subject: Re: [RFC v2 00/10] snet: Security for NETwork syscalls
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
+	<201003030156.o231udx1023055@www262.sakura.ne.jp>
+Date: Sat, 06 Mar 2010 19:16:26 +0100
+In-Reply-To: <201003030156.o231udx1023055@www262.sakura.ne.jp> (Tetsuo Handa's
+	message of "Wed, 03 Mar 2010 10:56:39 +0900")
+Message-ID: <m2eijxqps5.fsf@ssh.synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Linux Embedded <linux-embedded@vger.kernel.org>
-Subject: [PATCH]: Ram oops/panic logger
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ramoops, like mtdoops, can log oops/panic information but in RAM. It can
-be used with persistent RAM for systems without flash support. In
-addition, for this systems, with this driver, it's no more needed
-add to the kernel the mtd subsystem with advantage in footprint.
+Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> writes:
 
-Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
---
+> Regarding [RFC v2 04/10] snet: introduce snet_core
+> +static __init int snet_init(void)
+> +{
+> +	int ret;
+> +
+> +	pr_debug("initializing: event_hash_size=%u "
+> +		 "verdict_hash_size=%u verdict_delay=%usecs "
+> +		 "default_policy=%s\n",
+> +		 snet_evh_size, snet_vdh_size, snet_verdict_delay,
+> +		 snet_verdict_name(snet_verdict_policy));
+>
+> Why not to stop here if snet_evh_size == 0 or snet_vdh_size == 0 in order to
+> avoid "division by 0".
 
-diff -Nuar linux-2.6.33-orig/drivers/char/Kconfig linux-2.6.33/drivers/char/Kconfig
---- linux-2.6.33-orig/drivers/char/Kconfig	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/char/Kconfig	2010-02-28 10:47:29.000000000 +0100
-@@ -1105,5 +1105,12 @@
+indeed. I applied this patch 
+
+>From 593614c92a1f2058c014fa674c67f434b24b26e4 Mon Sep 17 00:00:00 2001
+From: Samir Bellabes <sam@synack.fr>
+Date: Sat, 6 Mar 2010 17:32:51 +0100
+Subject: [PATCH 2/3] snet: adding checks for bad configuration values
+
+this patch adds some checks on boot parameters and runtime configurations for:
+ - snet_verdict_policy, snet_verdict_delay and snet_vdh_size
+ - snet_evh_size
+ - snet_ticket_delay and snet_ticket_mode
+
+Noticed by Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+
+Signed-off-by: Samir Bellabes <sam@synack.fr>
+---
+ include/linux/snet.h         |    1 +
+ security/snet/snet_core.c    |    6 ++++++
+ security/snet/snet_event.c   |    6 ++++++
+ security/snet/snet_netlink.c |   27 ++++++++++++++++++++-------
+ security/snet/snet_ticket.c  |   12 ++++++++++++
+ security/snet/snet_verdict.c |   12 ++++++++++++
+ 6 files changed, 57 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/snet.h b/include/linux/snet.h
+index 739601d..e6e2d52 100644
+--- a/include/linux/snet.h
++++ b/include/linux/snet.h
+@@ -41,6 +41,7 @@ enum snet_ticket_mode {
+ 	SNET_TICKET_OFF = 0,
+ 	SNET_TICKET_FIX,
+ 	SNET_TICKET_EXTEND,
++	SNET_TICKET_INVALID,
+ };
  
- source "drivers/s390/char/Kconfig"
+ /* genetlink commands */
+diff --git a/security/snet/snet_core.c b/security/snet/snet_core.c
+index 9f2eb2e..949ecaa 100644
+--- a/security/snet/snet_core.c
++++ b/security/snet/snet_core.c
+@@ -42,6 +42,12 @@ static __init int snet_init(void)
+ 		 snet_evh_size, snet_vdh_size, snet_verdict_delay,
+ 		 snet_verdict_name(snet_verdict_policy));
  
-+config RAMOOPS
-+	tristate "Log panic/oops to a RAM buffer"
-+	default n
-+	help
-+	  This enables panic and oops messages to be logged to a circular
-+	  buffer in RAM where it can be read back at some later point.
-+
- endmenu
- 
-diff -Nuar linux-2.6.33-orig/drivers/char/Makefile linux-2.6.33/drivers/char/Makefile
---- linux-2.6.33-orig/drivers/char/Makefile	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/char/Makefile	2010-02-28 10:49:17.000000000 +0100
-@@ -107,6 +107,7 @@
- obj-$(CONFIG_TCG_TPM)		+= tpm/
- 
- obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
-+obj-$(CONFIG_RAMOOPS)		+= ramoops.o
- 
- obj-$(CONFIG_JS_RTC)		+= js-rtc.o
- js-rtc-y = rtc.o
-diff -Nuar linux-2.6.33-orig/drivers/char/ramoops.c linux-2.6.33/drivers/char/ramoops.c
---- linux-2.6.33-orig/drivers/char/ramoops.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33/drivers/char/ramoops.c	2010-03-06 13:36:31.000000000 +0100
-@@ -0,0 +1,163 @@
-+/*
-+ * RAM Oops/Panic logger
-+ *
-+ * Copyright (C) 2009 Marco Stornelli <marco.stornelli@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/kmsg_dump.h>
-+#include <linux/time.h>
-+#include <linux/io.h>
-+#include <linux/ioport.h>
-+
-+#define RAMOOPS_KERNMSG_HDR "===="
-+#define RAMOOPS_HEADER_SIZE   (5 + sizeof(struct timeval))
-+
-+#define RECORD_SIZE 4096
-+
-+static ulong mem_address;
-+module_param(mem_address, ulong, 0600);
-+MODULE_PARM_DESC(mem_address,
-+		"start of reserved RAM used to store oops/panic logs");
-+
-+static ulong mem_size;
-+module_param(mem_size, ulong, 0600);
-+MODULE_PARM_DESC(mem_size,
-+		"size of reserved RAM used to store oops/panic logs");
-+
-+static int dump_oops = 1;
-+module_param(dump_oops, int, 0600);
-+MODULE_PARM_DESC(dump_oops,
-+		"set to 1 to dump oopses, 0 to only dump panics (default 1)");
-+
-+static struct ramoops_context {
-+	struct kmsg_dumper dump;
-+	void *virt_addr;
-+	phys_addr_t phys_addr;
-+	unsigned long size;
-+	int count;
-+	int max_count;
-+} oops_cxt;
-+
-+static void ramoops_do_dump(struct kmsg_dumper *dumper,
-+		enum kmsg_dump_reason reason, const char *s1, unsigned long l1,
-+		const char *s2, unsigned long l2)
-+{
-+	struct ramoops_context *cxt = container_of(dumper,
-+			struct ramoops_context, dump);
-+	unsigned long s1_start, s2_start;
-+	unsigned long l1_cpy, l2_cpy;
-+	int res;
-+	char *buf;
-+	struct timeval timestamp;
-+
-+	/* Only dump oopses if dump_oops is set */
-+	if (reason == KMSG_DUMP_OOPS && !dump_oops)
-+		return;
-+
-+	buf = (char *)(cxt->virt_addr + (cxt->count * RECORD_SIZE));
-+	memset(buf, '\0', RECORD_SIZE);
-+	res = sprintf(buf, "%s", RAMOOPS_KERNMSG_HDR);
-+	buf += res;
-+	do_gettimeofday(&timestamp);
-+	res = sprintf(buf, "%lu.%lu\n", (long)timestamp.tv_sec, (long)timestamp.tv_usec);
-+	buf += res;
-+
-+	l2_cpy = min(l2, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE));
-+	l1_cpy = min(l1, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE) - l2_cpy);
-+
-+	s2_start = l2 - l2_cpy;
-+	s1_start = l1 - l1_cpy;
-+
-+	memcpy(buf, s1 + s1_start, l1_cpy);
-+	memcpy(buf + l1_cpy, s2 + s2_start, l2_cpy);
-+
-+	cxt->count = (cxt->count + 1) % cxt->max_count;
-+}
-+
-+static int __init ramoops_init(void)
-+{
-+	struct ramoops_context *cxt = &oops_cxt;
-+	int err = -EINVAL;
-+
-+	if (!mem_size) {
-+		printk(KERN_ERR "Invalid size specification");
-+		goto fail3;
++	if (snet_verdict_policy >= SNET_VERDICT_INVALID) {
++		printk(KERN_ERR "snet: bad snet_verdict_policy\n");
++		ret = -EINVAL;
++		goto event_failed;
 +	}
 +
-+	rounddown_pow_of_two(mem_size);
-+
-+	if (mem_size < RECORD_SIZE) {
-+		printk(KERN_ERR "size too small");
-+		goto fail3;
-+	}
-+
-+	cxt->max_count = mem_size / RECORD_SIZE;
-+	cxt->count = 0;
-+	cxt->size = mem_size;
-+	cxt->phys_addr = mem_address;
-+
-+	err = request_mem_region(cxt->phys_addr, cxt->size, "ramoops");
-+	if (!err) {
-+		printk(KERN_ERR "ramoops: request mem region failed");
+ 	ret = snet_event_init();
+ 	if (ret < 0)
+ 		goto event_failed;
+diff --git a/security/snet/snet_event.c b/security/snet/snet_event.c
+index 5f708d0..5693aac 100644
+--- a/security/snet/snet_event.c
++++ b/security/snet/snet_event.c
+@@ -165,6 +165,12 @@ int snet_event_init(void)
+ {
+ 	int err = 0, i = 0;
+ 
++	if (snet_evh_size == 0) {
++		printk(KERN_ERR "snet: bad snet_evh_size value\n");
 +		err = -EINVAL;
-+		goto fail3;
++		goto out;
 +	}
 +
-+	cxt->virt_addr = ioremap(cxt->phys_addr,  cxt->size);
-+	if (!cxt->virt_addr) {
-+		printk(KERN_ERR "ramoops: ioremap failed");
-+		goto fail2;
+ 	snet_evh = kzalloc(sizeof(struct list_head) * snet_evh_size,
+ 			     GFP_KERNEL);
+ 	if (!snet_evh) {
+diff --git a/security/snet/snet_netlink.c b/security/snet/snet_netlink.c
+index b0dd163..937b0fc 100644
+--- a/security/snet/snet_netlink.c
++++ b/security/snet/snet_netlink.c
+@@ -363,25 +363,38 @@ out:
+ static int snet_nl_config(struct sk_buff *skb,
+ 			  struct genl_info *info)
+ {
+-	int ret = -EINVAL;
++	int ret = 0;
+ 
+ 	atomic_set(&snet_nl_seq, info->snd_seq);
+ 
+ 	if (info->attrs[SNET_A_VERDICT_DELAY]) {
+-		snet_verdict_delay = nla_get_u32(info->attrs[SNET_A_VERDICT_DELAY]);
++		unsigned int new = nla_get_u32(info->attrs[SNET_A_VERDICT_DELAY]);
++		if (new == 0) {
++			ret = -EINVAL;
++			goto out;
++		}
++		snet_verdict_delay = new;
+ 		pr_debug("snet_nl_config: verdict_delay=%u\n", snet_verdict_delay);
+-		ret = 0;
+ 	}
+ 	if (info->attrs[SNET_A_TICKET_DELAY]) {
+-		snet_ticket_delay = nla_get_u32(info->attrs[SNET_A_TICKET_DELAY]);
++		unsigned int new = nla_get_u32(info->attrs[SNET_A_TICKET_DELAY]);
++		if (new == 0) {
++			ret = -EINVAL;
++			goto out;
++		}
++		snet_ticket_delay = new;
+ 		pr_debug("snet_nl_config: ticket_delay=%u\n", snet_ticket_delay);
+-		ret = 0;
+ 	}
+ 	if (info->attrs[SNET_A_TICKET_MODE]) {
+-		snet_ticket_mode = nla_get_u32(info->attrs[SNET_A_TICKET_MODE]);
++		unsigned int new = nla_get_u32(info->attrs[SNET_A_TICKET_MODE]);
++		if (new >= SNET_TICKET_INVALID) {
++			ret = -EINVAL;
++			goto out;
++		}
++		snet_ticket_mode = new;
+ 		pr_debug("snet_nl_config: ticket_mode=%u\n", snet_ticket_mode);
+-		ret = 0;
+ 	}
++out:
+ 	return ret;
+ }
+ 
+diff --git a/security/snet/snet_ticket.c b/security/snet/snet_ticket.c
+index 62ced7b..80a1b0f 100644
+--- a/security/snet/snet_ticket.c
++++ b/security/snet/snet_ticket.c
+@@ -158,6 +158,18 @@ int snet_ticket_init(void)
+ 	struct cred *cred = (struct cred *) current->real_cred;
+ 	struct snet_task_security *tsec = NULL;
+ 
++	if (snet_ticket_mode >= SNET_TICKET_INVALID) {
++		printk(KERN_ERR "snet: bad snet_ticket_mode\n");
++		return -EINVAL;
 +	}
 +
-+	cxt->dump.dump = ramoops_do_dump;
-+	err = kmsg_dump_register(&cxt->dump);
-+	if (err) {
-+		printk(KERN_ERR "ramoops: registering kmsg dumper failed");
-+		goto fail1;
++	if ((snet_ticket_mode == SNET_TICKET_FIX ||
++	    snet_ticket_mode == SNET_TICKET_EXTEND) &&
++	    (snet_ticket_delay == 0)) {
++		printk(KERN_ERR "snet: bad snet_ticket_delay\n");
++		return -EINVAL;
 +	}
 +
-+	return 0;
+ 	tsec = kzalloc(sizeof(struct snet_task_security), GFP_KERNEL);
+ 	if (tsec == NULL)
+ 		return -ENOMEM;
+diff --git a/security/snet/snet_verdict.c b/security/snet/snet_verdict.c
+index 480a7f8..ba35d19 100644
+--- a/security/snet/snet_verdict.c
++++ b/security/snet/snet_verdict.c
+@@ -156,6 +156,18 @@ int snet_verdict_init(void)
+ {
+ 	int err = 0, i = 0;
+ 
++	if (snet_vdh_size == 0) {
++		printk(KERN_ERR "snet: bad snet_vdh_size value\n");
++		err = -EINVAL;
++		goto out;
++	}
 +
-+fail1:
-+	iounmap(cxt->virt_addr);
-+fail2:
-+	release_mem_region(cxt->phys_addr, cxt->size);
-+fail3:
-+	return err;
-+}
++	if (snet_verdict_delay == 0) {
++		printk(KERN_ERR "snet: bad snet_verdict_delay value\n");
++		err = -EINVAL;
++		goto out;
++	}
 +
-+static void __exit ramoops_exit(void)
-+{
-+	struct ramoops_context *cxt = &oops_cxt;
-+
-+	if (kmsg_dump_unregister(&cxt->dump) < 0)
-+		printk(KERN_WARNING "ramoops: could not unregister kmsg_dumper\n");
-+
-+	iounmap(cxt->virt_addr);
-+	release_mem_region(cxt->phys_addr, cxt->size);
-+}
-+
-+
-+module_init(ramoops_init);
-+module_exit(ramoops_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Marco Stornelli <marco.stornelli@gmail.com>");
-+MODULE_DESCRIPTION("RAM Oops/Panic logger/driver");
+ 	snet_vdh = kzalloc(sizeof(struct list_head) * snet_vdh_size,
+ 			  GFP_KERNEL);
+ 	if (!snet_vdh) {
+-- 
+1.6.3.3
 
