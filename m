@@ -1,19 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915Ab0CFQtz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 11:49:55 -0500
-Received: from www84.your-server.de ([213.133.104.84]:34618 "EHLO
+	id S1753084Ab0CFQuk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 11:50:40 -0500
+Received: from www84.your-server.de ([213.133.104.84]:34641 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281Ab0CFQty (ORCPT
+	with ESMTP id S1751170Ab0CFQuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 11:49:54 -0500
-Subject: [PATCH] fix race condition in drivers/base/dd.c
+	Sat, 6 Mar 2010 11:50:39 -0500
+Subject: [PATCH] fix PHY polling system blocking
 From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 06 Mar 2010 17:50:14 +0100
-Message-ID: <1267894214.18869.1.camel@wall-e>
+Date: Sat, 06 Mar 2010 17:50:58 +0100
+Message-ID: <1267894258.18869.2.camel@wall-e>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -22,36 +21,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fix a potential race condition in the driver_bound() function
-in the file driver/base/dd.c. 
+This patch fix the PHY poller, which can block the whole system. On a
+Freescale PPC 834x this result in a delay of 450 us due the slow
+communication with the PHY chip.
 
-The broadcast of the BUS_NOTIFY_BOUND_DRIVER notifier should be done
-after adding the new device to the driver list. Otherwise notifier
-listener will fail if they use functions like usb_find_interface().
+For PHY chips without interrupts, the status of the ethernet will be
+polled every 2 sec. The poll function will read some register of the MII
+PHY. The time between the sending the MII_READ_COMMAND and receiving the
+result is more the 100 us on a PPC 834x.
+   
+The patch modifies the poller a lit bit. Only a link status state change
+will result in a successive detection of the connection type. The poll
+cycle on the other hand will be increased to every seconds.
+
+Together this patch will prevent a blocking of nearly 400 us every two
+seconds of the whole system on a PPC 834x.
 
 The patch is against kernel 2.6.33. Please merge it.
 
 Signed-off-by: Stefani Seibold <stefani@seibold.net>
 ---
- dd.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ phy.c        |    5 ++---
+ phy_device.c |   12 +++++++++---
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
---- linux-2.6.33.orig/drivers/base/dd.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/base/dd.c	2010-02-28 20:25:06.595037275 +0100
-@@ -40,11 +40,11 @@ static void driver_bound(struct device *
- 	pr_debug("driver: '%s': %s: bound to device '%s'\n", dev_name(dev),
- 		 __func__, dev->driver->name);
+diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net//phy/phy.c
+--- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/net//phy/phy.c	2010-02-28 22:53:14.725464101 +0100
+@@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
+ 		case PHY_RUNNING:
+ 			/* Only register a CHANGE if we are
+ 			 * polling */
+-			if (PHY_POLL == phydev->irq)
+-				phydev->state = PHY_CHANGELINK;
+-			break;
++			if (PHY_POLL != phydev->irq)
++				break;
+ 		case PHY_CHANGELINK:
+ 			err = phy_read_status(phydev);
  
-+	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
-+
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 					     BUS_NOTIFY_BOUND_DRIVER, dev);
--
--	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
+diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net//phy/phy_device.c
+--- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/net//phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
+@@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
+ 	dev->speed = 0;
+ 	dev->duplex = -1;
+ 	dev->pause = dev->asym_pause = 0;
+-	dev->link = 1;
++	dev->link = 0;
+ 	dev->interface = PHY_INTERFACE_MODE_GMII;
+ 
+ 	dev->autoneg = AUTONEG_ENABLE;
+@@ -694,10 +694,16 @@ int genphy_update_link(struct phy_device
+ 	if (status < 0)
+ 		return status;
+ 
+-	if ((status & BMSR_LSTATUS) == 0)
++	if ((status & BMSR_LSTATUS) == 0) {
++		if (phydev->link==0)
++			return 1;
+ 		phydev->link = 0;
+-	else
++	}
++	else {
++		if (phydev->link==1)
++			return 1;
+ 		phydev->link = 1;
++	}
+ 
+ 	return 0;
  }
- 
- static int driver_sysfs_add(struct device *dev)
 
 
 
