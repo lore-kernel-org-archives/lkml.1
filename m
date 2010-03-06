@@ -1,67 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753479Ab0CFCU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:20:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11033 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752205Ab0CFCU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 21:20:28 -0500
-Date: Sat, 6 Mar 2010 02:20:15 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Neil Brown <neilb@suse.de>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Dmitry Monakhov <dmonakhov@openvz.org>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
-Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
-	checks
-Message-ID: <20100306022015.GU27852@agk-dp.fab.redhat.com>
-Mail-Followup-To: Neil Brown <neilb@suse.de>,
-	device-mapper development <dm-devel@redhat.com>,
-	Dmitry Monakhov <dmonakhov@openvz.org>,
-	Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-	Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
-References: <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com> <20100304121931.GB5768@kernel.dk> <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com> <20100305073059.GI5768@kernel.dk> <20100306085651.1a571571@notabene.brown> <20100305222748.GT27852@agk-dp.fab.redhat.com> <20100306105237.0a8621ed@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100306105237.0a8621ed@notabene.brown>
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753887Ab0CFCWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 21:22:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42247 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574Ab0CFCWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 21:22:18 -0500
+X-Authority-Analysis: v=1.0 c=1 a=3IAYLJztYTcA:10 a=z6gsHLkEAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=RY0-oH0baFgWoP8I8YoA:9 a=tCGPFsiiZfuuvyiQq38A:7 a=pcC0JbDfk26np8PZoL0cJaWmeykA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100306022216.313742085@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 05 Mar 2010 21:21:44 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: [PATCH 4/4] function-graph: Add tracing_thresh support to function_graph tracer
+References: <20100306022140.320536991@goodmis.org>
+Content-Disposition: inline; filename=0004-function-graph-Add-tracing_thresh-support-to-functio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 10:52:37AM +1100, Neil Brown wrote:
-> But my first suggestion, that splitting could be made easier, still stands.
+From: Tim Bird <tim.bird@am.sony.com>
 
-In full agreement we should try to make it easier.
+Add support for tracing_thresh to the function_graph tracer.  This
+version of this feature isolates the checks into new entry and
+return functions, to avoid adding more conditional code into the
+main function_graph paths.
 
-> And do you honour merge_bvec_fn's of underlying devices?  A quick grep
-> suggests you do only for dm-linear and dm-crypt.  
+When the tracing_thresh is set and the function graph tracer is
+enabled, only the functions that took longer than the time in
+microseconds that was set in tracing_thresh are recorded. To do this
+efficiently, only the function exits are recorded:
 
-We implemented it to address some specific performance problems reported by
-people using those targets.  So far there hasn't been any pressing need to
-implement it for other targets.
+ [tracing]# echo 100 > tracing_thresh
+ [tracing]# echo function_graph > current_tracer
+ [tracing]# cat trace
+ # tracer: function_graph
+ #
+ # CPU  DURATION                  FUNCTION CALLS
+ # |     |   |                     |   |   |   |
+  1) ! 119.214 us  |  } /* smp_apic_timer_interrupt */
+  1)   <========== |
+  0) ! 101.527 us  |              } /* __rcu_process_callbacks */
+  0) ! 126.461 us  |            } /* rcu_process_callbacks */
+  0) ! 145.111 us  |          } /* __do_softirq */
+  0) ! 149.667 us  |        } /* do_softirq */
+  0) ! 168.817 us  |      } /* irq_exit */
+  0) ! 248.254 us  |    } /* smp_apic_timer_interrupt */
 
-> This suggests to me that it
-> is actually a hard interface to support completely in a stacked device, so we
-> might be better off without it.
+Also, add support for specifying tracing_thresh on the kernel
+command line.  When used like so: "tracing_thresh=200 ftrace=function_graph"
+this can be used to analyse system startup.  It is important to disable
+tracing soon after boot, in order to avoid losing the trace data.
 
-All this code is hard - but very useful.  The direction I want to explore when
-I finally get some time to work on this is one which will probably make more
-use of, and extend, merge_bvec.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+LKML-Reference: <4B87098B.4040308@am.sony.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace.c                 |   20 ++++++++++++++++++--
+ kernel/trace/trace.h                 |    3 ++-
+ kernel/trace/trace_functions_graph.c |   25 +++++++++++++++++++++++--
+ 3 files changed, 43 insertions(+), 5 deletions(-)
 
-> that it makes sense to only require that the lowest level does the
-> splitting, as that is where the specifics on what might be required exists.
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 6efd5cb..ababedb 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -374,6 +374,21 @@ static int __init set_buf_size(char *str)
+ }
+ __setup("trace_buf_size=", set_buf_size);
+ 
++static int __init set_tracing_thresh(char *str)
++{
++	unsigned long threshhold;
++	int ret;
++
++	if (!str)
++		return 0;
++	ret = strict_strtoul(str, 0, &threshhold);
++	if (ret < 0)
++		return 0;
++	tracing_thresh = threshhold * 1000;
++	return 1;
++}
++__setup("tracing_thresh=", set_tracing_thresh);
++
+ unsigned long nsecs_to_usecs(unsigned long nsecs)
+ {
+ 	return nsecs / 1000;
+@@ -579,9 +594,10 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
+ static arch_spinlock_t ftrace_max_lock =
+ 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
+ 
++unsigned long __read_mostly	tracing_thresh;
++
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ unsigned long __read_mostly	tracing_max_latency;
+-unsigned long __read_mostly	tracing_thresh;
+ 
+ /*
+  * Copy the new maximum trace into the separate maximum-trace
+@@ -4248,10 +4264,10 @@ static __init int tracer_init_debugfs(void)
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ 	trace_create_file("tracing_max_latency", 0644, d_tracer,
+ 			&tracing_max_latency, &tracing_max_lat_fops);
++#endif
+ 
+ 	trace_create_file("tracing_thresh", 0644, d_tracer,
+ 			&tracing_thresh, &tracing_max_lat_fops);
+-#endif
+ 
+ 	trace_create_file("README", 0444, d_tracer,
+ 			NULL, &tracing_readme_fops);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index fd05bca..1bc8cd1 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -396,9 +396,10 @@ extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
+ 
+ extern unsigned long nsecs_to_usecs(unsigned long nsecs);
+ 
++extern unsigned long tracing_thresh;
++
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ extern unsigned long tracing_max_latency;
+-extern unsigned long tracing_thresh;
+ 
+ void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
+ void update_max_tr_single(struct trace_array *tr,
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index 7b1f246..e9df04b 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -237,6 +237,14 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
+ 	return ret;
+ }
+ 
++int trace_graph_thresh_entry(struct ftrace_graph_ent *trace)
++{
++	if (tracing_thresh)
++		return 1;
++	else
++		return trace_graph_entry(trace);
++}
++
+ static void __trace_graph_return(struct trace_array *tr,
+ 				struct ftrace_graph_ret *trace,
+ 				unsigned long flags,
+@@ -290,13 +298,26 @@ void set_graph_array(struct trace_array *tr)
+ 	smp_mb();
+ }
+ 
++void trace_graph_thresh_return(struct ftrace_graph_ret *trace)
++{
++	if (tracing_thresh &&
++	    (trace->rettime - trace->calltime < tracing_thresh))
++		return;
++	else
++		trace_graph_return(trace);
++}
++
+ static int graph_trace_init(struct trace_array *tr)
+ {
+ 	int ret;
+ 
+ 	set_graph_array(tr);
+-	ret = register_ftrace_graph(&trace_graph_return,
+-				    &trace_graph_entry);
++	if (tracing_thresh)
++		ret = register_ftrace_graph(&trace_graph_thresh_return,
++					    &trace_graph_thresh_entry);
++	else
++		ret = register_ftrace_graph(&trace_graph_return,
++					    &trace_graph_entry);
+ 	if (ret)
+ 		return ret;
+ 	tracing_start_cmdline_record();
+-- 
+1.7.0
 
-We have a hybrid model at the moment - some stuff dealt with top-down, other
-stuff bottom-up.  This thread describes just one of several problems related to
-this.  In the next incarnation of device-mapper I hope we'll find a way to
-eliminate all of them together.  Maybe I'll finally get time later this year to
-start working on these ideas properly.
-
-Alasdair
 
