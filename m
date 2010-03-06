@@ -1,85 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392Ab0CFJDz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 04:03:55 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:36499 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752143Ab0CFJDv convert rfc822-to-8bit (ORCPT
+	id S1752552Ab0CFJEd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 04:04:33 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:34782 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488Ab0CFJER convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 04:03:51 -0500
+	Sat, 6 Mar 2010 04:04:17 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Subject: Re: commit 554f76962d3a6eb5110415f1591aca83f96a84ae hangs USB for vmware 7.0.1
+Date: Sat, 6 Mar 2010 10:03:50 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-0.1-default; KDE/4.3.5; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Chua <jeff.tw.chua@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, petr@vmware.com,
+       Eli Collins <ecollins@vmware.com>
+References: <Pine.LNX.4.64.1003060606480.6040@boston.corp.fedex.com> <alpine.LFD.2.00.1003051438280.3906@localhost.localdomain> <b6a2187b1003052122w105851abhd54a32f77aef22c4@mail.gmail.com>
+In-Reply-To: <b6a2187b1003052122w105851abhd54a32f77aef22c4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <19346.6765.457769.167118@pilspetsen.it.uu.se>
-Date: Sat, 6 Mar 2010 10:03:41 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: dave b <db.pub.mail@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
-In-Reply-To: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
-References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Message-Id: <201003061003.50671.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dave b writes:
- > Hi have now successfully built a 2.6.33 kernel on a linkstation pro
- > v2. This is an arm device. It is currently running debian  lenny
- > armel.
- > 
- > 
- > I compiled  (make) zImage, then did a make modules which failed on the
- > first two rounds of compiling the modules -
- > 
- > "fs/afs/super.c: In function ‘afs_test_super’:
- > fs/afs/super.c:278: internal compiler error: Segmentation fault
- > Please submit a full bug report,
- > with preprocessed source if appropriate.
- > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
- > This was the error encountered on the attempt at compiling the
- > modules.
- > 
- > "crypto/gcm.c: In function ‘crypto_gcm_setauthsize’:
- > crypto/gcm.c:152: internal compiler error: Segmentation fault
- > Please submit a full bug report,
- > with preprocessed source if appropriate.
- > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
- > make[1]: *** [crypto/gcm.o] Error 1"
- > This was the error the on the second attempt at compiling the modules.
- > 
- > The 3rd attempt at building the modules was successful...
- > 
- > The device boots and runs fine with this kernel and modules appear to work.
- > [root@nas ~]# uname -a
- > Linux nas 2.6.33 #1 Fri Mar 5 23:54:51 EST 2010 armv5tel GNU/Linux
- > 
- > 
- > *SO* is this a gcc bug or is it related to the changes to the build
- > process on arm?
- > 
- > 
- > 
- > gcc -v
- > Using built-in specs.
- > Target: arm-linux-gnueabi
- > Configured with: ../src/configure -v --with-pkgversion='Debian
- > 4.3.2-1.1' --with-bugurl=file:///usr/share/doc/gcc-4.3/README.Bugs
- > --enable-languages=c,c++,fortran,objc,obj-c++ --prefix=/usr
- > --enable-shared --with-system-zlib --libexecdir=/usr/lib
- > --without-included-gettext --enable-threads=posix --enable-nls
- > --with-gxx-include-dir=/usr/include/c++/4.3 --program-suffix=-4.3
- > --enable-clocale=gnu --enable-libstdcxx-debug --enable-objc-gc
- > --enable-mpfr --disable-libssp --disable-sjlj-exceptions
- > --enable-checking=release --build=arm-linux-gnueabi
- > --host=arm-linux-gnueabi --target=arm-linux-gnueabi
- > Thread model: posix
- > gcc version 4.3.2 (Debian 4.3.2-1.1)
+Am Samstag, 6. M�rz 2010 06:22:48 schrieb Jeff Chua:
+> It seems to hang trying to read from /proc/bus/usb/devices.
+> 
+> So, next I just try to "cat /proc/bus/usb/devices" and it hangs as well.
+> 
+> Reverting the commit makes "cat /proc/bus/usb/devices" works again.
+> 
+> Does this happen to me only?
 
-GCC bug. Report it to Debian, just like it asked you to.
+As far as I can tell, yes. I cannot replicate it.
 
-In theory it could be flaky hardware or a kernel/CPU combination
-with cache coherency issues, but in those cases I'd have expected
-many more failures.
+Please get me at least a sysrq-T trace.
+There's no obvious place usb_device_read() takes usbfs_mutex.
 
-The ARM kernel mailing list is linux-arm-kernel@lists.infradead.org.
+	Regards
+		Oliver
