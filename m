@@ -1,45 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463Ab0CFTax (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 14:30:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58681 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752604Ab0CFTaw (ORCPT
+	id S1751727Ab0CFTcc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 14:32:32 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42134 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904Ab0CFTcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 14:30:52 -0500
-Date: Sat, 6 Mar 2010 11:28:16 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <1267902406.24025.50.camel@segulix>
-Message-ID: <alpine.LFD.2.00.1003061127060.31447@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>  <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>  <1267889034.24025.4.camel@segulix>  <alpine.LFD.2.00.1003060937370.31447@localhost.localdomain>
- <1267902406.24025.50.camel@segulix>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 6 Mar 2010 14:32:31 -0500
+Date: Sat, 6 Mar 2010 19:31:27 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Thomas Koeller <thomas@koeller.dyndns.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: DMA using data buffer vmapped in kernel space
+Message-ID: <20100306193127.GA13262@n2100.arm.linux.org.uk>
+References: <201003042211.28569.thomas@koeller.dyndns.org> <20100304213634.GH13417@n2100.arm.linux.org.uk> <201003061407.12698.thomas@koeller.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201003061407.12698.thomas@koeller.dyndns.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 6 Mar 2010, Sergio Monteiro Basto wrote:
-
-> On Sat, 2010-03-06 at 09:40 -0800, Linus Torvalds wrote:
-> > Why are people making excuses for bad programming and bad technology?
+On Sat, Mar 06, 2010 at 02:07:12PM +0100, Thomas Koeller wrote:
+> Am Donnerstag, 4. März 2010 22:36:34 schrieb Russell King - ARM Linux:
+> > Cache maintainence is done using virtual addresses for L1, and
+> > physical addresses for L2.  There's the need for virtual addresses
+> > to be translatable to physical addresses, which is only true for
+> > the kernel direct mapped region (pages between PAGE_OFFSET and
+> > high_memory).
 > 
-> Is not bad technology is new technology, the API have to change faster ,
-> unless you want wait 2 years until get "stable" .  
+> Isn't the mapping created by vmap() sufficient for the virt/phys
+> translation? In which way is this case different from a buffer
+> passed in from user space, where the constituent pages are not
+> in the directly mapped kernel region either?
 
-F*ck me, but people are being dense.
+No different.
 
-With my suggestion, people could change the API _more_, because it 
-wouldn't be as painful.
+The requirement is that dma_map_single() is passed a virtual address
+in the kernel direct-mapped memory region, which is translatable using
+virt_to_phys() and friends.
 
-This is not about "change the ABI or not". This is about "since you change 
-the ABI, do it _well_, so that it doesn't hurt people as much".
-
-		Linus
+Anything which requires a page table lookup to obtain the physical
+address is just not acceptable - that requires taking locks and other
+messy things, plus is grossly inefficient.
