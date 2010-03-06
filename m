@@ -1,90 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752343Ab0CFL6A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 06:58:00 -0500
-Received: from cable-static-49-187.intergga.ch ([157.161.49.187]:55520 "EHLO
-	mail.ffwll.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160Ab0CFL57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 06:57:59 -0500
-X-Greylist: delayed 417 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 06:57:58 EST
-X-Spam-ASN: 
-X-Spam-Hammy: 0.000-+--H*Ad:D*sourceforge.net,
-	0.000-+--H*Ad:D*lists.sourceforge.net, 0.000-+--H*Ad:D*kernel.org
-X-Spam-Spammy: 0.980-+--HTo:U*daniel.vetter, 0.958-+--H*Ad:U*daniel.vetter,
-	0.957-+--H*r:mail.ffwll.ch
-Date: Sat, 6 Mar 2010 12:50:54 +0100
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Dan Carpenter <error27@gmail.com>, David Airlie <airlied@linux.ie>,
-       Eric Anholt <eric@anholt.net>, Daniel Vetter <daniel.vetter@ffwll.ch>,
-       maximlevitsky@gmail.com, Chris Wilson <chris@chris-wilson.co.uk>,
-       Luca Barbieri <luca@luca-barbieri.com>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [patch] i915: fix small leak on error path
-Message-ID: <20100306115054.GA3462@viiv.ffwll.ch>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	David Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-	maximlevitsky@gmail.com, Chris Wilson <chris@chris-wilson.co.uk>,
-	Luca Barbieri <luca@luca-barbieri.com>,
-	dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
-References: <20100306110539.GD4958@bicker>
+	id S1752360Ab0CFMLt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 07:11:49 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:49206 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750908Ab0CFMLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 07:11:47 -0500
+X-Greylist: delayed 1976 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Mar 2010 07:11:47 EST
+Message-ID: <4B923EC6.7090809@dgreaves.com>
+Date: Sat, 06 Mar 2010 11:38:46 +0000
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100306110539.GD4958@bicker>
-X-Operating-System: Linux viiv 2.6.33-05070-g64ba992 
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: mdadm FAQ - see http://raid.wiki.kernel.org/
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <20100216115036.0f6b7bb6@notabene.brown> <alpine.DEB.2.00.1002160807370.31195@p34.internal.lan> <20100216200938.GK16347@lapse.rw.madduck.net>
+In-Reply-To: <20100216200938.GK16347@lapse.rw.madduck.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh, dang. Thanks for catching this. Eric, please merge.
+Hi all
 
-Cc: stable@kernel.org (for .33)
-Reviewed-by: Daniel Vetter <daniel@ffwll.ch>
+I've not been active here for a long time - sorry :)
 
-On Sat, Mar 06, 2010 at 02:05:39PM +0300, Dan Carpenter wrote:
-> We should free "params" before returning.
+The linux raid wiki at OSDL (http://linux-raid.osdl.org/) was 'migrated' to a
+drupal system during some Linux Foundation changes - clearly not suitable for
+these kind of docs.
+
+I spoke to maddog at kernel.org some months ago and we are now part of the
+managed kernel wiki farm (which the osdl wiki pre-dated in case anyone wonders
+why we didn't start out there).
+
+I've asked osdl to redirect the current url to the kernel.org wiki but I think
+this home should last us a while ;)
+
+so:
+
+hi martin..
+
+martin f krafft wrote:
+> also sprach Justin Piszcz <jpiszcz@lucidpixels.com> [2010.02.17.0214 +1300]:
+>> Thanks for the response, this is exactly what I was looking for
+>> and probably should be put in a FAQ.
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> I'd be more than happy to push my FAQ[0], possibly fused with my
+> "recipes", upstream and would welcome anyone who wanted to help out.
 > 
-> diff --git a/drivers/gpu/drm/i915/intel_overlay.c b/drivers/gpu/drm/i915/intel_overlay.c
-> index d355d1d..60595fc 100644
-> --- a/drivers/gpu/drm/i915/intel_overlay.c
-> +++ b/drivers/gpu/drm/i915/intel_overlay.c
-> @@ -1068,14 +1068,18 @@ int intel_overlay_put_image(struct drm_device *dev, void *data,
->  
->  	drmmode_obj = drm_mode_object_find(dev, put_image_rec->crtc_id,
->                          DRM_MODE_OBJECT_CRTC);
-> -	if (!drmmode_obj)
-> -		return -ENOENT;
-> +	if (!drmmode_obj) {
-> +		ret = -ENOENT;
-> +		goto out_free;
-> +	}
->  	crtc = to_intel_crtc(obj_to_crtc(drmmode_obj));
->  
->  	new_bo = drm_gem_object_lookup(dev, file_priv,
->  			put_image_rec->bo_handle);
-> -	if (!new_bo)
-> -		return -ENOENT;
-> +	if (!new_bo) {
-> +		ret = -ENOENT;
-> +		goto out_free;
-> +	}
->  
->  	mutex_lock(&dev->mode_config.mutex);
->  	mutex_lock(&dev->struct_mutex);
-> @@ -1165,6 +1169,7 @@ out_unlock:
->  	mutex_unlock(&dev->struct_mutex);
->  	mutex_unlock(&dev->mode_config.mutex);
->  	drm_gem_object_unreference_unlocked(new_bo);
-> +out_free:
->  	kfree(params);
->  
->  	return ret;
+> 0. http://git.debian.org/?p=pkg-mdadm/mdadm.git;a=blob;f=debian/FAQ;hb=HEAD
+> 1. http://git.debian.org/?p=pkg-mdadm/mdadm.git;a=blob;f=debian/README.recipes;hb=HEAD
+
+See:
+  http://raid.wiki.kernel.org/
+
+David
 
 -- 
-Daniel Vetter
-Mail: daniel@ffwll.ch
-Mobile: +41 (0)79 365 57 48
+"Don't worry, you'll be fine; I saw it work in a cartoon once..."
