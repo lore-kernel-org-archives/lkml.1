@@ -1,70 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787Ab0CFCWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:22:20 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42247 "EHLO
+	id S1753657Ab0CFCWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 21:22:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42067 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447Ab0CFCWQ (ORCPT
+	with ESMTP id S1753440Ab0CFCWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Mar 2010 21:22:16 -0500
-X-Authority-Analysis: v=1.0 c=1 a=Syq3WAq7A58A:10 a=20KFwNOVAAAA:8 a=meVymXHHAAAA:8 a=2xOch9Zi1-IkwRud8PYA:9 a=d-fT41exfg2Ge7qDqZ6RgnWKYQAA:4 a=jEp0ucaQiEUA:10 a=jeBq3FmKZ4MA:10
+X-Authority-Analysis: v=1.0 c=1 a=vpcBPqZSyogA:10 a=VwQbUJbxAAAA:8 a=Og6RQVrphs0t1ay90HMA:9 a=94lbaSumNrp7hBCRFEd3k3gbMYIA:4
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20100306022215.678161487@goodmis.org>
+Message-Id: <20100306022140.320536991@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 05 Mar 2010 21:21:42 -0500
+Date: Fri, 05 Mar 2010 21:21:40 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/4] function-graph: Use comment notation for func names of dangling }
-References: <20100306022140.320536991@goodmis.org>
-Content-Disposition: inline; filename=0002-function-graph-Use-comment-notation-for-func-names-o.patch
+Subject: [PATCH 0/4][GIT PULL] tracing: updates and fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
 
-When a '}' does not have a matching function start, the name is printed
-within parenthesis. But this makes it confusing between ending '}'
-and function starts. This patch makes the function name appear in C comment
-notation.
+Ingo,
 
-Old view:
- 3)   1.281 us    |            } (might_fault)
- 3)   3.620 us    |          } (filldir)
- 3)   5.251 us    |        } (call_filldir)
- 3)               |        call_filldir() {
- 3)               |          filldir() {
+Please pull the latest tip/tracing/core tree, which can be found at:
 
-New view:
- 3)   1.281 us    |            } /* might_fault */
- 3)   3.620 us    |          } /* filldir */
- 3)   5.251 us    |        } /* call_filldir */
- 3)               |        call_filldir() {
- 3)               |          filldir() {
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
 
-Requested-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_functions_graph.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index e998a82..7b1f246 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -920,7 +920,7 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	} else {
--		ret = trace_seq_printf(s, "} (%ps)\n", (void *)trace->func);
-+		ret = trace_seq_printf(s, "} /* %ps */\n", (void *)trace->func);
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
--- 
-1.7.0
+Arnaldo Carvalho de Melo (1):
+      tracing: Update the comm field in the right variable in update_max_tr
 
+Steven Rostedt (2):
+      function-graph: Fix unused reference to ftrace_set_func()
+      function-graph: Use comment notation for func names of dangling '}'
+
+Tim Bird (1):
+      function-graph: Add tracing_thresh support to function_graph tracer
+
+----
+ kernel/trace/ftrace.c                |    6 ++----
+ kernel/trace/trace.c                 |   24 ++++++++++++++++++++----
+ kernel/trace/trace.h                 |    3 ++-
+ kernel/trace/trace_functions_graph.c |   27 ++++++++++++++++++++++++---
+ 4 files changed, 48 insertions(+), 12 deletions(-)
 
