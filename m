@@ -1,100 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382Ab0CFCAy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 21:00:54 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:48138 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751721Ab0CFCAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 21:00:53 -0500
-Date: Sat, 6 Mar 2010 03:00:48 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Christian Ehrhardt <uni@c--e.de>
-Cc: Rik van Riel <riel@redhat.com>, Christian Ehrhardt <lk@c--e.de>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] rmap: Fix Bugzilla Bug #5493
-Message-ID: <20100306020048.GA16967@cmpxchg.org>
-References: <20100305093834.GG17078@lisa.in-ulm.de> <4B9110ED.5000703@redhat.com> <20100306010212.GH17078@lisa.in-ulm.de>
-Mime-Version: 1.0
+	id S1752857Ab0CFCQF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 21:16:05 -0500
+Received: from relay4-v.mail.gandi.net ([217.70.178.78]:41302 "EHLO
+	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761Ab0CFCQD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 21:16:03 -0500
+Date: Fri, 5 Mar 2010 18:15:48 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH tip/core/rcu 1/3] ftrace: replace
+ read_barrier_depends() with rcu_dereference_raw()
+Message-ID: <20100306021548.GB13858@feather>
+References: <20100305230256.GA9410@linux.vnet.ibm.com>
+ <1267830207-9474-1-git-send-email-paulmck@linux.vnet.ibm.com>
+ <1267838945.10871.1786.camel@gandalf.stny.rr.com>
+ <20100306014513.GA13858@feather>
+ <1267840669.10871.1790.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100306010212.GH17078@lisa.in-ulm.de>
+In-Reply-To: <1267840669.10871.1790.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christian,
+On Fri, Mar 05, 2010 at 08:57:49PM -0500, Steven Rostedt wrote:
+> On Fri, 2010-03-05 at 17:45 -0800, Josh Triplett wrote:
+> 
+> > > #define rcu_assign_pointer(p, v) \
+> > > 	({ \
+> > > 		if (!__builtin_constant_p(v) || \
+> > > 		    ((v) != NULL)) \
+> > > 			smp_wmb(); \
+> > > 		(p) = (v); \
+> > > 	})
+> > > 
+> > > My question is, why that crazy if? The only time that will fail is if we
+> > > are assigning the constant NULL to p. What makes NULL so important here?
+> > > Can't there be a case when assigning NULL to p will require that wmb()?
+> > 
+> > The barrier ensures that the reader can't see the new p and the old
+> > *p.  Since you can't look at *NULL, that concern doesn't apply.
+> 
+> Thanks for the explanation.
+> 
+> Question 2)
+> 
+> Then why the !__builtin_constant_p(v)?
+> 
+> If v is NULL, then the same should apply even if it is not a constant?
+> What am I missing?
 
-On Sat, Mar 06, 2010 at 02:02:12AM +0100, Christian Ehrhardt wrote:
-> diff --git a/arch/arm/mm/fault-armv.c b/arch/arm/mm/fault-armv.c
-> index c9b97e9..4b8d01f 100644
-> --- a/arch/arm/mm/fault-armv.c
-> +++ b/arch/arm/mm/fault-armv.c
-> @@ -117,7 +117,8 @@ make_coherent(struct address_space *mapping, struct vm_area_struct *vma,
->  	 * cache coherency.
->  	 */
->  	flush_dcache_mmap_lock(mapping);
-> -	vma_prio_tree_foreach(mpnt, &iter, &mapping->i_mmap, pgoff, pgoff) {
-> +	vma_prio_tree_foreach(mpnt, struct vm_area_struct, shared, &iter,
-> +				&mapping->i_mmap, pgoff, pgoff) {
+Checking for __builtin_constant_p(v) ensures that this test happens at
+compile time, and thus no conditional occurs at runtime.  Together with
+the assumption of compiler constant folding and dead code elimination,
+this test means "if you can tell at compile time that the call assigns
+NULL, emit no barrier, otherwise emit a barrier".  Under no
+circumstances will this macro actually emit conditional code.
 
-How about vma_file_tree_foreach() vs. vma_anon_tree_foreach()?  I found that
-to be more descriptive (and it fits the users into a single line again ;).
-
->  #define INIT_PRIO_TREE_ROOT(ptr)	__INIT_PRIO_TREE_ROOT(ptr, 0)
-> -#define INIT_RAW_PRIO_TREE_ROOT(ptr)	__INIT_PRIO_TREE_ROOT(ptr, 1)
-> +#define INIT_SHARED_PRIO_TREE_ROOT(ptr)	__INIT_PRIO_TREE_ROOT(ptr, 1)
-> +#define INIT_ANON_PRIO_TREE_ROOT(ptr)	__INIT_PRIO_TREE_ROOT(ptr, 2)
-
-SHARED vs. PRIVATE?
-
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -207,7 +207,7 @@ static void __remove_shared_vm_struct(struct vm_area_struct *vma,
->  	if (unlikely(vma->vm_flags & VM_NONLINEAR))
->  		list_del_init(&vma->shared.vm_set.list);
->  	else
-> -		vma_prio_tree_remove(vma, &mapping->i_mmap);
-> +		vma_prio_tree_remove(&vma->shared, &mapping->i_mmap);
->  	flush_dcache_mmap_unlock(mapping);
->  }
->  
-> @@ -430,7 +430,7 @@ static void __vma_link_file(struct vm_area_struct *vma)
->  		if (unlikely(vma->vm_flags & VM_NONLINEAR))
->  			vma_nonlinear_insert(vma, &mapping->i_mmap_nonlinear);
->  		else
-> -			vma_prio_tree_insert(vma, &mapping->i_mmap);
-> +			vma_prio_tree_insert(&vma->shared, &mapping->i_mmap);
->  		flush_dcache_mmap_unlock(mapping);
->  	}
->  }
-> @@ -593,9 +593,9 @@ again:			remove_next = 1 + (end > next->vm_end);
->  
->  	if (root) {
->  		flush_dcache_mmap_lock(mapping);
-> -		vma_prio_tree_remove(vma, root);
-> +		vma_prio_tree_remove(&vma->shared, root);
->  		if (adjust_next)
-> -			vma_prio_tree_remove(next, root);
-> +			vma_prio_tree_remove(&next->shared, root);
->  	}
->  
->  	vma->vm_start = start;
-> @@ -608,8 +608,8 @@ again:			remove_next = 1 + (end > next->vm_end);
->  
->  	if (root) {
->  		if (adjust_next)
-> -			vma_prio_tree_insert(next, root);
-> -		vma_prio_tree_insert(vma, root);
-> +			vma_prio_tree_insert(&next->shared, root);
-> +		vma_prio_tree_insert(&vma->shared, root);
->  		flush_dcache_mmap_unlock(mapping);
->  	}
-
-What's with expand_stack()?  This changes the radix index or the heap
-index, depending on the direction in which the stack grows, but it
-does not adjust the tree and so its order is violated.  Did you make
-sure that this is fine?
-  
-	Hannes
-
+- Josh Triplett
