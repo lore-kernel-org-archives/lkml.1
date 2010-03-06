@@ -1,101 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251Ab0CFVjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 16:39:21 -0500
-Received: from lazybastard.de ([212.112.238.170]:50767 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463Ab0CFVjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 16:39:20 -0500
-Date: Sat, 6 Mar 2010 22:04:59 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Linus <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Please pull logfs tree
-Message-ID: <20100306210459.GA21570@logfs.org>
+	id S1752963Ab0CFVwU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 16:52:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56118 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751449Ab0CFVwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 16:52:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Shaohua Li <shaohua.li@intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
+Date: Sat, 6 Mar 2010 22:54:46 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "colin.king@canonical.com" <colin.king@canonical.com>
+References: <1267665799-670-1-git-send-email-shaohua.li@intel.com> <20100305005932.GA22675@sli10-desk.sh.intel.com> <201003052155.26292.rjw@sisk.pl>
+In-Reply-To: <201003052155.26292.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003062254.46584.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-in principle this should be a simple pull request.  But as Stephen
-noted, the logfs tree conflicts with a patch from hch and I am unsure
-how best to proceed.
-
-On Mon, 1 March 2010 16:04:45 +1100, Stephen Rothwell wrote:
+On Friday 05 March 2010, Rafael J. Wysocki wrote:
+> On Friday 05 March 2010, Shaohua Li wrote:
+> > On Fri, Mar 05, 2010 at 03:49:46AM +0800, Rafael J. Wysocki wrote:
+> > > On Thursday 04 March 2010, Shaohua Li wrote:
+> ...
+> > > 
+> > > In that case please also remove the turning GPE off down the road.
+> > 
+> >     i386: do a global tlb flush in S4 resume
+> > 
+> >     Colin reported a strange oops in S4 resume code path (see below). The test
+> >     system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+> >     The oops always happen a virtual address 0xc03ff000, which is mapped to the
+> >     last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+> > 
+> >     EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+> >     EIP is at copy_loop+0xe/0x15
+> >     EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+> >     ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+> >      DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> >     ...
+> >     ...
+> >     CR2: 00000000c03ff000
+> > 
+> >     Tested-by: Colin Ian King <colin.king@canonical.com>
+> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > 
+> > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+> > index b641388..ad47dae 100644
+> > --- a/arch/x86/power/hibernate_asm_32.S
+> > +++ b/arch/x86/power/hibernate_asm_32.S
+> > @@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
+> >  	ret
+> >  
+> >  ENTRY(restore_image)
+> > +	movl	mmu_cr4_features, %ecx
+> >  	movl	resume_pg_dir, %eax
+> >  	subl	$__PAGE_OFFSET, %eax
+> >  	movl	%eax, %cr3
+> >  
+> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > +	andl	$~(X86_CR4_PGE), %ecx
+> > +	movl	%ecx, %cr4;  # turn off PGE
+> > +	movl	%cr3, %eax;  # flush TLB
+> > +	movl	%eax, %cr3
+> > +1:
+> >  	movl	restore_pblist, %edx
+> >  	.p2align 4,,7
+> >  
+> > @@ -54,16 +61,8 @@ done:
+> >  	movl	$swapper_pg_dir, %eax
+> >  	subl	$__PAGE_OFFSET, %eax
+> >  	movl	%eax, %cr3
+> > -	/* Flush TLB, including "global" things (vmalloc) */
+> >  	movl	mmu_cr4_features, %ecx
+> >  	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > -	movl	%ecx, %edx
+> > -	andl	$~(X86_CR4_PGE), %edx
+> > -	movl	%edx, %cr4;  # turn off PGE
+> > -1:
+> > -	movl	%cr3, %eax;  # flush TLB
+> > -	movl	%eax, %cr3
 > 
-> I am carrying a few merge fixup patches in linux-next that I thought you
-> might want a heads up about.  Hopefully, these will be fixed before you
-> see them, but just in case, here they are (in no particular order).
+> Now that's too much removed.  We actually _want_ to do the TLB flush here,
+> but not unset PGE, because it's been unset already.
 > 
-> This could also be taken as a reminder to the respective maintiners that
-> they may want to do a merge of your tree before asking you to pull theirs.
+> So, the above two lines should not be removed.
 > 
-> [...]
-> 
-> 5) The vfs[9] tree modifies the write_inode method API (commit
-> 716c28c0bc8bcbdd26e819f38dfc8fdfaafc0289 "pass writeback_control to
-> ->write_inode") and the logfs[10] tree adds a write_inode method (commit
-> 5db53f3e80dee2d9dff5e534f9e9fe1db17c9936 "[LogFS] add new flash file
-> system"), so:
+> Also, I'd remove the first jecxz and keep the second one.
 
-I see three solutions that are remotely sane.
+Scratch that, the patch is fine, because we load cr3 right before that.
+Sorry for the noise.
 
-1) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs.git
-and apply the patch at the bottom yourself.
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-2) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34
-A tree with the patch applied that won't work standalone but will work
-after being pulled into your tree (tested locally).
+Peter, are you going to take it or should I handle it?
 
-3) pull git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs_for_2.6.34_alternative
-A tree that merged your tree and the logfs tree, then has the patch
-applied.  Works standalone but has an additional merge commit.
-
-I would slightly prefer option 2), but you surely know better.
-
-PS: And trees 2) and 3) haven't made it over from master.kernel.org yet.
-    Not sure if I made a mistake or simply have to wait longer.
-
-Jörn
-
--- 
-Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it.
--- Brian W. Kernighan
-
->From aaaa4c850bbe2e02aca24b681180258d1671b15e Mon Sep 17 00:00:00 2001
-From: Joern Engel <joern@logfs.org>
-Date: Sat, 6 Mar 2010 21:25:08 +0100
-Subject: [PATCH] [LogFS] Follow write_inode changes
-
-Commit a9185b41a4f84971b930c519f0c63bd450c4810d changed the
-write_inode prototype.
----
- fs/logfs/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/logfs/inode.c b/fs/logfs/inode.c
-index 6d08b37..33ec1ae 100644
---- a/fs/logfs/inode.c
-+++ b/fs/logfs/inode.c
-@@ -282,7 +282,7 @@ struct inode *logfs_read_meta_inode(struct super_block *sb, u64 ino)
- 	return inode;
- }
- 
--static int logfs_write_inode(struct inode *inode, int do_sync)
-+static int logfs_write_inode(struct inode *inode, struct writeback_control *wbc)
- {
- 	int ret;
- 	long flags = WF_LOCK;
--- 
-1.6.6.1
-
+Rafael
