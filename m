@@ -1,46 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585Ab0CGRrr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 12:47:47 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:53036 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754473Ab0CGRrq (ORCPT
+	id S1754606Ab0CGRvq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 12:51:46 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59049 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752619Ab0CGRvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 12:47:46 -0500
-Subject: block: blk-timeout.c possible mishandling of jiffies wrap?
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Mar 2010 17:47:44 +0000
-Message-ID: <1267984064.2115.50.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Mar 2010 12:51:45 -0500
+Date: Sun, 7 Mar 2010 17:51:44 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dan Carpenter <error27@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Julia Lawall <julia@diku.dk>,
+       Dmitry Torokhov <dtor@mail.ru>, Wolfram Sang <w.sang@pengutronix.de>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [patch] regulator: handle kcalloc() failure
+Message-ID: <20100307175144.GB27785@opensource.wolfsonmicro.com>
+References: <20100307123645.GB6469@bicker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100307123645.GB6469@bicker>
+X-Cookie: Is this really happening?
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Sun, Mar 07, 2010 at 03:36:45PM +0300, Dan Carpenter wrote:
+> Return -ENOMEM if kcalloc() fails
+> 
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-In blk_rq_timed_out_timer() in blk-timeout.c the comment at line 129
-says that the request deadline can never be zero as that gets fixed in
-blk_add_timer.
-
-However commit 7838c15b8dd18e78a523513749e5b54bda07b0cb
-removed the line that bumped deadline if zero.
-
-So now AFAICT there's nothing to prevent deadline being zero, and
-blk_rq_timed_out_timer may not always do the right thing when jiffies is
-about to wrap.
-
-There was a next_set flag in blk_rq_timed_out_timer but that's been
-removed too.
-
-Do you have any preferred fix? A next_set flag or a deadline bump or
-something else?
-
-regards
-Richard
-
-
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
