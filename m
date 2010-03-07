@@ -1,127 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758Ab0CGTsf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 14:48:35 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:37358 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184Ab0CGTse convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 14:48:34 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Subject: Re: [PATCH] FS: NTFS: fix whitespace and pointer issues in mst.c
-Mime-Version: 1.0 (Apple Message framework v1077)
+	id S1754788Ab0CGT5H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 14:57:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19394 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754643Ab0CGT5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 14:57:03 -0500
+Date: Sun, 7 Mar 2010 20:55:43 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Dan Carpenter <error27@gmail.com>, akpm@linux-foundation.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       James Morris <jmorris@namei.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, "Helight.Xu" <helight.xu@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] proc: cleanup: remove unused assignments
+Message-ID: <20100307195543.GB18616@redhat.com>
+References: <20100306111859.GM4958@bicker>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-In-Reply-To: <1267962651-11217-1-git-send-email-mali0037@gmail.com>
-Date: Sun, 7 Mar 2010 19:48:30 +0000
-Cc: ntfs-dev <linux-ntfs-dev@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <AEB82EA4-852A-40AC-BF8C-8D836038D134@cam.ac.uk>
-References: <1267962651-11217-1-git-send-email-mali0037@gmail.com>
-To: Stewart Malik <mali0037@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+Content-Disposition: inline
+In-Reply-To: <20100306111859.GM4958@bicker>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NAK.
+On 03/06, Dan Carpenter wrote:
+>
+> I removed 3 unused assignments.  The first two get reset on the first
+> statement of their functions.  For "err" in root.c we don't return an
+> error and we don't use the variable again.
 
-What pointer issues are you talking about?!?  Your patch only changes the whitespace in the type casts and I like it how it is at the moment, I don't like type casts with a space in them.
+Looks like the obviously nice cleanup to me.
 
-The "if ( size..." change to "if (size..." is fine.  No idea how that happened.  I never put space after a bracket normally!
-
-Best regards,
-
-	Anton
-
-On 7 Mar 2010, at 11:50, Stewart Malik wrote:
-
-> ---
-> fs/ntfs/mst.c |   18 +++++++++---------
-> 1 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/fs/ntfs/mst.c b/fs/ntfs/mst.c
-> index 5a858d8..097a4c9 100644
-> --- a/fs/ntfs/mst.c
-> +++ b/fs/ntfs/mst.c
-> @@ -49,13 +49,13 @@ int post_read_mst_fixup(NTFS_RECORD *b, const u32 size)
-> 	/* Decrement usa_count to get number of fixups. */
-> 	usa_count = le16_to_cpu(b->usa_count) - 1;
-> 	/* Size and alignment checks. */
-> -	if ( size & (NTFS_BLOCK_SIZE - 1)	||
-> +	if (size & (NTFS_BLOCK_SIZE - 1)	||
-> 	     usa_ofs & 1			||
-> 	     usa_ofs + (usa_count * 2) > size	||
-> 	     (size >> NTFS_BLOCK_SIZE_BITS) != usa_count)
-> 		return 0;
-> 	/* Position of usn in update sequence array. */
-> -	usa_pos = (u16*)b + usa_ofs/sizeof(u16);
-> +	usa_pos = (u16 *)b + usa_ofs/sizeof(u16);
-> 	/*
-> 	 * The update sequence number which has to be equal to each of the
-> 	 * u16 values before they are fixed up. Note no need to care for
-> @@ -67,7 +67,7 @@ int post_read_mst_fixup(NTFS_RECORD *b, const u32 size)
-> 	/*
-> 	 * Position in protected data of first u16 that needs fixing up.
-> 	 */
-> -	data_pos = (u16*)b + NTFS_BLOCK_SIZE/sizeof(u16) - 1;
-> +	data_pos = (u16 *)b + NTFS_BLOCK_SIZE/sizeof(u16) - 1;
-> 	/*
-> 	 * Check for incomplete multi sector transfer(s).
-> 	 */
-> @@ -85,7 +85,7 @@ int post_read_mst_fixup(NTFS_RECORD *b, const u32 size)
-> 	}
-> 	/* Re-setup the variables. */
-> 	usa_count = le16_to_cpu(b->usa_count) - 1;
-> -	data_pos = (u16*)b + NTFS_BLOCK_SIZE/sizeof(u16) - 1;
-> +	data_pos = (u16 *)b + NTFS_BLOCK_SIZE/sizeof(u16) - 1;
-> 	/* Fixup all sectors. */
-> 	while (usa_count--) {
-> 		/*
-> @@ -135,13 +135,13 @@ int pre_write_mst_fixup(NTFS_RECORD *b, const u32 size)
-> 	/* Decrement usa_count to get number of fixups. */
-> 	usa_count = le16_to_cpu(b->usa_count) - 1;
-> 	/* Size and alignment checks. */
-> -	if ( size & (NTFS_BLOCK_SIZE - 1)	||
-> +	if (size & (NTFS_BLOCK_SIZE - 1)	||
-> 	     usa_ofs & 1			||
-> 	     usa_ofs + (usa_count * 2) > size	||
-> 	     (size >> NTFS_BLOCK_SIZE_BITS) != usa_count)
-> 		return -EINVAL;
-> 	/* Position of usn in update sequence array. */
-> -	usa_pos = (le16*)((u8*)b + usa_ofs);
-> +	usa_pos = (le16 *)((u8 *)b + usa_ofs);
-> 	/*
-> 	 * Cyclically increment the update sequence number
-> 	 * (skipping 0 and -1, i.e. 0xffff).
-> @@ -152,7 +152,7 @@ int pre_write_mst_fixup(NTFS_RECORD *b, const u32 size)
-> 	le_usn = cpu_to_le16(usn);
-> 	*usa_pos = le_usn;
-> 	/* Position in data of first u16 that needs fixing up. */
-> -	data_pos = (le16*)b + NTFS_BLOCK_SIZE/sizeof(le16) - 1;
-> +	data_pos = (le16 *)b + NTFS_BLOCK_SIZE/sizeof(le16) - 1;
-> 	/* Fixup all sectors. */
-> 	while (usa_count--) {
-> 		/*
-> @@ -184,10 +184,10 @@ void post_write_mst_fixup(NTFS_RECORD *b)
-> 	u16 usa_count = le16_to_cpu(b->usa_count) - 1;
-> 
-> 	/* Position of usn in update sequence array. */
-> -	usa_pos = (le16*)b + usa_ofs/sizeof(le16);
-> +	usa_pos = (le16 *)b + usa_ofs/sizeof(le16);
-> 
-> 	/* Position in protected data of first u16 that needs fixing up. */
-> -	data_pos = (le16*)b + NTFS_BLOCK_SIZE/sizeof(le16) - 1;
-> +	data_pos = (le16 *)b + NTFS_BLOCK_SIZE/sizeof(le16) - 1;
-> 
-> 	/* Fixup all sectors. */
-> 	while (usa_count--) {
-
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+>
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index a731084..875d636 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2434,7 +2434,7 @@ static struct dentry *proc_base_instantiate(struct inode *dir,
+>  	const struct pid_entry *p = ptr;
+>  	struct inode *inode;
+>  	struct proc_inode *ei;
+> -	struct dentry *error = ERR_PTR(-EINVAL);
+> +	struct dentry *error;
+>
+>  	/* Allocate the inode */
+>  	error = ERR_PTR(-ENOMEM);
+> @@ -2784,7 +2784,7 @@ out:
+>
+>  struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
+>  {
+> -	struct dentry *result = ERR_PTR(-ENOENT);
+> +	struct dentry *result;
+>  	struct task_struct *task;
+>  	unsigned tgid;
+>  	struct pid_namespace *ns;
+> diff --git a/fs/proc/root.c b/fs/proc/root.c
+> index 757c069..4258384 100644
+> --- a/fs/proc/root.c
+> +++ b/fs/proc/root.c
+> @@ -110,7 +110,6 @@ void __init proc_root_init(void)
+>  	if (err)
+>  		return;
+>  	proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
+> -	err = PTR_ERR(proc_mnt);
+>  	if (IS_ERR(proc_mnt)) {
+>  		unregister_filesystem(&proc_fs_type);
+>  		return;
 
