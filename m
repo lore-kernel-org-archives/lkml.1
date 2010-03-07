@@ -1,52 +1,196 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135Ab0CGMGP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 07:06:15 -0500
-Received: from solo.fdn.fr ([80.67.169.19]:40893 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618Ab0CGMGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 07:06:13 -0500
-Date: Sun, 7 Mar 2010 13:06:04 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, mgarski@post.pl, linux-input@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>, Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH] Route kbd leds through the generic leds layer (3rd version)
-Message-ID: <20100307120604.GE5203@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	mgarski@post.pl, linux-input@vger.kernel.org,
-	Vojtech Pavlik <vojtech@suse.cz>,
-	Richard Purdie <rpurdie@rpsys.net>
-References: <20100224012010.GA4062@const> <20100225013840.GA5519@const.homenet.telecomitalia.it> <20100225102056.GG10823@core.coreip.homeip.net> <20100225214403.GB9378@const.homenet.telecomitalia.it> <20100226035448.GA16797@core.coreip.homeip.net> <20100226103505.GB3992@const.homenet.telecomitalia.it> <20100306065457.GE28759@elf.ucw.cz> <20100306123058.GE5203@const.famille.thibault.fr> <20100307082519.GC1987@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100307082519.GC1987@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
+	id S1753518Ab0CGMMH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 07:12:07 -0500
+Received: from smtp134.mail.ukl.yahoo.com ([77.238.184.65]:20877 "HELO
+	smtp134.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753176Ab0CGMMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 07:12:01 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.es;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
+  b=Ml2oq7qQje87p9dFffkFosi/6JSEFyW/GDbiEwgRr7oeVDnPZa/5OWgKSDFVKD+CyrE4H76bsqRhJaR45+qipatu1InjSceIK/WR4qQc8WBmoALcGuwuMPYkxK1RQgBTbci1qbJU1HaZeKl1fgFYvrt1aGeChBbMKNXycX424UY=  ;
+X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
+X-YMail-OSG: 5ySD3y8VM1ltPUh_zRcdd7k2PbWVoiP4oXBjEsX.LQkvMKeBjcHPAU3L0o5DS822WbeyMFHx7jYEHmfP0igO8f7M90hP7Cj7YzJ7RyUwevtqzkWac49tnNeQnrx1A19dJlxBiAmL.jiEAIx35gh32.QC7_rE13pFH1BPi8cRiNEHXxz71doGGoEh3au2nVjtB5Vo.RMugL7.bnD41k4E24zOsRsS6utpQ76_WEk9fhtXR1RmalfovilKJHx2XHo5lxh.mrLze_7tJyfGBIMcdG.AD5jEvMbcUw--
+X-Yahoo-Newman-Property: ymail-3
+From: Albert Herranz <albert_herranz@yahoo.es>
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, linux-ia64@vger.kernel.org
+Subject: [RFC PATCH v3 04/11] swiotlb: support NOT_COHERENT_CACHE PowerPC platforms
+Date: Sun,  7 Mar 2010 13:11:45 +0100
+Message-Id: <1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es>
+References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek, le Sun 07 Mar 2010 09:25:19 +0100, a écrit :
-> But you mentioned having per-keyboard led would be quite easy, it does
-> not seem to be controversial, so perhaps that's way to go, first?
+The current SWIOTLB code does not support NOT_COHERENT_CACHE platforms.
+This patch adds support for NOT_COHERENT_CACHE platforms to SWIOTLB by
+adding two platform specific functions swiotlb_dma_sync_page() and
+swiotlb_dma_sync() which can be used to explicitly manage cache coherency.
 
-Thinking more about it, what about the following:
+On PowerPC these functions are mapped to their corresponding
+__dma_sync_page() and __dma_sync() functions.
+On other architectures using SWIOTLB these functions are optimized out.
 
-keyboard numlock trigger -> input numlock led -> input numlock trigger -> input keyboard led
+This will be used later to support SWIOTLB on the Nintendo Wii video game
+console.
 
-Userland applications which want to redirect leds for (a priori) all
-keyboards change the trigger used by the input numlock led. Userland
-applications which want to redirect leds for a particular keyboard can
-change the trigger user by the particular input keyboard led.
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+CC: x86@kernel.org
+CC: linux-ia64@vger.kernel.org
+---
+ arch/ia64/include/asm/swiotlb.h    |   10 ++++++++++
+ arch/powerpc/include/asm/swiotlb.h |    3 +++
+ arch/x86/include/asm/swiotlb.h     |   10 ++++++++++
+ lib/swiotlb.c                      |   30 ++++++++++++++++++++++++------
+ 4 files changed, 47 insertions(+), 6 deletions(-)
 
-Samuel
+diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
+index f0acde6..6722090 100644
+--- a/arch/ia64/include/asm/swiotlb.h
++++ b/arch/ia64/include/asm/swiotlb.h
+@@ -14,4 +14,14 @@ static inline void pci_swiotlb_init(void)
+ }
+ #endif
+ 
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
++{
++}
++
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
++{
++}
++
+ #endif /* ASM_IA64__SWIOTLB_H */
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 8979d4c..603b343 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -22,4 +22,7 @@ int __init swiotlb_setup_bus_notifier(void);
+ 
+ extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+ 
++#define swiotlb_dma_sync_page __dma_sync_page
++#define swiotlb_dma_sync __dma_sync
++
+ #endif /* __ASM_SWIOTLB_H */
+diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+index 8085277..e5f6d9c 100644
+--- a/arch/x86/include/asm/swiotlb.h
++++ b/arch/x86/include/asm/swiotlb.h
+@@ -20,4 +20,14 @@ static inline void pci_swiotlb_init(void)
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
++{
++}
++
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
++{
++}
++
+ #endif /* _ASM_X86_SWIOTLB_H */
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 94db5df..8f2dad9 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -346,10 +346,13 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			local_irq_save(flags);
+ 			buffer = kmap_atomic(pfn_to_page(pfn),
+ 					     KM_BOUNCE_READ);
+-			if (dir == DMA_TO_DEVICE)
++			if (dir == DMA_TO_DEVICE) {
+ 				memcpy(dma_addr, buffer + offset, sz);
+-			else
++				swiotlb_dma_sync(dma_addr, sz, dir);
++			} else {
++				swiotlb_dma_sync(dma_addr, sz, dir);
+ 				memcpy(buffer + offset, dma_addr, sz);
++			}
+ 			kunmap_atomic(buffer, KM_BOUNCE_READ);
+ 			local_irq_restore(flags);
+ 
+@@ -359,10 +362,14 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			offset = 0;
+ 		}
+ 	} else {
+-		if (dir == DMA_TO_DEVICE)
++		if (dir == DMA_TO_DEVICE) {
+ 			memcpy(dma_addr, phys_to_virt(phys), size);
+-		else
++			swiotlb_dma_sync(dma_addr, size, dir);
++
++		} else {
++			swiotlb_dma_sync(dma_addr, size, dir);
+ 			memcpy(phys_to_virt(phys), dma_addr, size);
++		}
+ 	}
+ }
+ 
+@@ -542,6 +549,8 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+ 	}
+ }
+ 
++#ifndef CONFIG_NOT_COHERENT_CACHE
++
+ void *
+ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		       dma_addr_t *dma_handle, gfp_t flags)
+@@ -606,6 +615,8 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+ }
+ EXPORT_SYMBOL(swiotlb_free_coherent);
+ 
++#endif /* !CONFIG_NOT_COHERENT_CACHE */
++
+ static void
+ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+ {
+@@ -652,8 +663,10 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * we can safely return the device addr and not worry about bounce
+ 	 * buffering it.
+ 	 */
+-	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
++	if (dma_capable(dev, dev_addr, size) && !swiotlb_force) {
++		swiotlb_dma_sync_page(page, offset, size, dir);
+ 		return dev_addr;
++	}
+ 
+ 	/*
+ 	 * Oh well, have to allocate and map a bounce buffer.
+@@ -739,6 +752,8 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+ 		return;
+ 	}
+ 
++	swiotlb_dma_sync(phys_to_virt(paddr), size, dir);
++
+ 	if (dir != DMA_FROM_DEVICE)
+ 		return;
+ 
+@@ -835,8 +850,11 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 				return 0;
+ 			}
+ 			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+-		} else
++		} else {
++			swiotlb_dma_sync_page(sg_page(sg), sg->offset,
++					      sg->length, dir);
+ 			sg->dma_address = dev_addr;
++		}
+ 		sg->dma_length = sg->length;
+ 	}
+ 	return nelems;
+-- 
+1.6.3.3
+
