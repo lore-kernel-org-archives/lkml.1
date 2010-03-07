@@ -1,55 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600Ab0CGLXw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 06:23:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44756 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751047Ab0CGLXv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 06:23:51 -0500
-Date: Sun, 7 Mar 2010 03:23:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: don.mullis@gmail.com, david@fromorbit.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: modules, "modules" and CONFIG_LIST_SORT
-In-Reply-To: <20100307091223.GA4895@x200>
-Message-ID: <alpine.LFD.2.00.1003070320370.4033@localhost.localdomain>
-References: <20100307091223.GA4895@x200>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752844Ab0CGL0l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 06:26:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30393 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889Ab0CGL0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 06:26:40 -0500
+Date: Sun, 7 Mar 2010 13:18:16 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: xiaohui.xin@intel.com
+Cc: netdev@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, jdike@c2.user-mode-linux.org
+Subject: Re: [PATCH v1 2/3] Provides multiple submits and asynchronous
+	notifications.
+Message-ID: <20100307111816.GC20004@redhat.com>
+References: <1267868318-19268-1-git-send-email-xiaohui.xin@intel.com> <1267868318-19268-2-git-send-email-xiaohui.xin@intel.com> <1267868318-19268-3-git-send-email-xiaohui.xin@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267868318-19268-3-git-send-email-xiaohui.xin@intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +/* The structure to notify the virtqueue for async socket */
+> +struct vhost_notifier {
+> +	struct list_head list;
+> +	struct vhost_virtqueue *vq;
+> +	int head;
+> +	int size;
+> +	int log;
+> +	void *ctrl;
+> +	void (*dtor)(struct vhost_notifier *);
+> +};
+> +
 
+So IMO, this is not the best interface between vhost
+and your driver, exposing them to each other unnecessarily.
 
-On Sun, 7 Mar 2010, Alexey Dobriyan wrote:
-> 
-> Unpleasant side effect of the change is that some modules stop being
-> true modules, i. e. admin is unable to start using them without reboot
-> if kernel was compiled without that tiny amount of core kernel.
-> 
-> Having used this feature several times, I think it'd be correct
-> to preserve this behaviour, at least not regress for those modules
-> which benefitted from it. For modules which were always "modules" (ipv6)
-> it's fine to continue.
-> 
-> Can we declare some policy about it?
-> 
-> And revert LIST_SORT commit if yes.
+If you think about it, your driver should not care about this structure.
+It could get e.g. a kiocb (sendmsg already gets one), and call ki_dtor
+on completion.  vhost could save it's state in ki_user_data.  If your
+driver needs to add more data to do more tracking, I think it can put
+skb pointer in the private pointer.
 
-Yeah, I think that in cases like this, you have a very good argument: 
-LIST_SORT enables code that isn't that large, and is clearly very generic.
-
-And changing the config later and trying to compile and install a module 
-is rather sane. And if that new module needs LIST_SORT, you're screwed 
-because it didn't get compiled in originally.
-
-Honestly, personally I'd rather have a real library that modules can link 
-to _before_ even loading into kernel space, but that's not how we've 
-traditionally done things. So I guess we should just revert that commit.
-
-		Linus
+-- 
+MST
