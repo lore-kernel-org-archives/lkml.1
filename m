@@ -1,70 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854Ab0CGUtl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 15:49:41 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:39573 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391Ab0CGUtj (ORCPT
+	id S1754864Ab0CGUy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 15:54:27 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:55635 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751391Ab0CGUy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 15:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AsHelYYfwyG5VqYX0GALg2iUR1zhRf50UoAePmuks3dcpYuT7Jf1Lt2ROsr8dumuj8
-         dixQ2Q/0E8jHOXCQR7h7XTV7l+xt7P4W3K+MtK8s59F2TDR6QdfLTXie+8msFIP4dV6m
-         bKUsVhE7VlXPmx5bckYeGBshE0oSigjoOaE1s=
-Date: Sun, 7 Mar 2010 12:49:34 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Dima Zavin <dmitriyz@google.com>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-Message-ID: <20100307204933.GC17727@core.coreip.homeip.net>
-References: <4B8C1867.7040201@cam.ac.uk>
- <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
- <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
- <20100303184132.GA11471@core.coreip.homeip.net>
- <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
- <20100303190753.GB11471@core.coreip.homeip.net>
- <4B8EB99F.4080104@jic23.retrosnub.co.uk>
- <20100303230229.77df3ac3@hyperion.delvare>
- <404ea8001003031508p32641b2bj8781ce2b88e1f9cb@mail.gmail.com>
+	Sun, 7 Mar 2010 15:54:26 -0500
+Date: Sun, 7 Mar 2010 15:54:25 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: The gregkh patch scripts
+In-Reply-To: <20100307181649.GD3718@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.1003071546000.8502-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <404ea8001003031508p32641b2bj8781ce2b88e1f9cb@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 03:08:29PM -0800, Dima Zavin wrote:
-> 
-> As it came up earlier in the thread, adding an ABS_AMBIENT_LIGHT_LEVEL
-> or equivalent is much simpler and provides a clean, concise, and
-> useful interface to userspace.
-> 
-> Note that for many applications, you actually get configurable
-> threshold levels, and the hardware triggers an interrupt when the
-> light level crosses those thresholds. This makes using an input device
-> very useful, and that is in fact how we use ALS devices today. I have
-> several pieces of hardware that do this, and I don't see how this new
-> als subsystem helps me handle that problem. With the suggested API,
-> I'll have to poll the sysfs files manually to see if they've changed
-> (which is suboptimal), or still add a non-standard input device to do
-> what I want.
->
+On Sun, 7 Mar 2010, Greg KH wrote:
 
-OK, so from what you are saying it looks you just like the _interface_,
-or transport, that input subsystem provides, not the fact that you
-considering the device to be a HID-type device. If this is the case then
-this indicates that we need to take another look at the proposed
-interface and make sure that it allows proper poll() support.
+> Yes, I can switch back to going off of the -rcN-gitM markings that I was
+> using in the past.  If I do that does it make it easier for you?
+> 
+> And yes, you are right, this is a constant rebase, and that's wrong on
+> my part.
 
--- 
-Dmitry
+That's exactly the problem.  I don't mind rebasing for each -rcN; in
+fact many of the early -rc kernels often contain important bug fixes so
+I'm glad to have them.  But rebasing more often than that becomes
+increasingly inconvenient.
+
+> This makes me reconsider the fact that I'm using quilt for all of this.
+> Perhaps if I switch to a git tree, it would all be easier for people
+> like you?  Would you prefer that?
+
+I'm happy either way (although by now I'm quite used to using quilt and
+not so accustomed to git -- I haven't tried guilt).  Of course, other
+people may feel differently.
+
+> For stuff like my staging tree, I'm almost convinced that switching to
+> git makes more sense as keeping that many patches in quilt is a mess and
+> I don't ever end up rebasing anything or deleting any patches in the
+> middle anymore.
+> 
+> For USB, yeah, I think it's also time to switch over as well.  What do
+> you think?
+
+Let's ask some other people on the USB list (CC'ed).  My main concern 
+is to avoid rebasing too often, whichever source-code management system 
+is used.
+
+Alan Stern
+
