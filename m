@@ -1,76 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809Ab0CGBFn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 20:05:43 -0500
-Received: from mail-qy0-f199.google.com ([209.85.221.199]:33848 "EHLO
-	mail-qy0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449Ab0CGBFm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 20:05:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=o71NMk2GtAHSWzYLpZ7jpCxsiWjlYS5OhM6UCDMuO37rA/XNtULO+GRl5fEJRg5UYN
-         tgIgHUjfNStaCEcya+65IWljK0k83ZjzkizfokKtqDxKJwEV3T3on6y8a5AnfQDyCSTi
-         vfGnYHhYvlXiZovbqdze/tWo3bFewPlv65ihc=
-MIME-Version: 1.0
-In-Reply-To: <20100306104131.GV28972@buzzloop.caiaq.de>
-References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com> 
-	<19346.6765.457769.167118@pilspetsen.it.uu.se> <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com> 
-	<20100306104131.GV28972@buzzloop.caiaq.de>
-From: dave b <db.pub.mail@gmail.com>
-Date: Sun, 7 Mar 2010 12:05:21 +1100
-Message-ID: <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
-Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1753968Ab0CGBKS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 20:10:18 -0500
+Received: from mail.perches.com ([173.55.12.10]:1488 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753632Ab0CGBKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 20:10:16 -0500
+Subject: [PATCH] vsprintf.c: Reduce sizeof struct printf_spec from 24 to 8
+ bytes
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
+References: <cover.1267682641.git.joe@perches.com>
+	 <20100304143837.af39845d.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
+	 <1267911399.849.39.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
+	 <1267914654.849.81.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
+	 <1267918554.849.89.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 06 Mar 2010 17:10:14 -0800
+Message-ID: <1267924214.1937.12.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok... however how should one test the memory of an arm machine? ...
-memtest is only for x86. *I am referring to the kernel memtest and not
-memtest86.
+On Sat, 2010-03-06 at 15:58 -0800, Linus Torvalds wrote:
+> And no, I guess we don't really need to make it 32-bit. Fitting in 64 bits 
+> would already be a big improvement over what we have now.
+
+Reducing the size of struct printf_spec is a good thing
+because multiple instances are commonly passed on stack.
+
+It's possible for type to be u8 and field_width to be s8,
+but this is likely small enough for now.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ lib/vsprintf.c |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index af4aaa6..fdee7f7 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -408,12 +408,12 @@ enum format_type {
+ };
+ 
+ struct printf_spec {
+-	enum format_type	type;
+-	int			flags;		/* flags to number() */
+-	int			field_width;	/* width of output field */
+-	int			base;
+-	int			precision;	/* # of digits/chars */
+-	int			qualifier;
++	u16	type;
++	s16	field_width;	/* width of output field */
++	u8	flags;		/* flags to number() */
++	u8	base;
++	s8	precision;	/* # of digits/chars */
++	u8	qualifier;
+ };
+ 
+ static char *number(char *buf, char *end, unsigned long long num,
+@@ -1333,7 +1333,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ 			break;
+ 
+ 		case FORMAT_TYPE_NRCHARS: {
+-			int qualifier = spec.qualifier;
++			u8 qualifier = spec.qualifier;
+ 
+ 			if (qualifier == 'l') {
+ 				long *ip = va_arg(args, long *);
+@@ -1619,7 +1619,7 @@ do {									\
+ 
+ 		case FORMAT_TYPE_NRCHARS: {
+ 			/* skip %n 's argument */
+-			int qualifier = spec.qualifier;
++			u8 qualifier = spec.qualifier;
+ 			void *skip_arg;
+ 			if (qualifier == 'l')
+ 				skip_arg = va_arg(args, long *);
+@@ -1885,7 +1885,9 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
+ 	char *next;
+ 	char digit;
+ 	int num = 0;
+-	int qualifier, base, field_width;
++	u8 qualifier;
++	u8 base;
++	s16 field_width;
+ 	bool is_sign;
+ 
+ 	while (*fmt && *str) {
+@@ -1963,7 +1965,7 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
+ 		{
+ 			char *s = (char *)va_arg(args, char *);
+ 			if (field_width == -1)
+-				field_width = INT_MAX;
++				field_width = SHORT_MAX;
+ 			/* first, skip leading white space in buffer */
+ 			str = skip_spaces(str);
+ 
 
 
-On 6 March 2010 21:41, Daniel Mack <daniel@caiaq.de> wrote:
-> On Sat, Mar 06, 2010 at 09:24:49PM +1100, dave b wrote:
->> On 6 March 2010 20:03, Mikael Pettersson <mikpe@it.uu.se> wrote:
->> > dave b writes:
->> >  > Hi have now successfully built a 2.6.33 kernel on a linkstation pro
->> >  > v2. This is an arm device. It is currently running debianÂ  lenny
->> >  > armel.
->> >  >
->> >  >
->> >  > I compiledÂ  (make) zImage, then did a make modules which failed on the
->> >  > first two rounds of compiling the modules -
->> >  >
->> >  > "fs/afs/super.c: In function â€˜afs_test_superâ€™:
->> >  > fs/afs/super.c:278: internal compiler error: Segmentation fault
->> >  > Please submit a full bug report,
->> >  > with preprocessed source if appropriate.
->> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
->> >  > This was the error encountered on the attempt at compiling the
->> >  > modules.
->> >  >
->> >  > "crypto/gcm.c: In function â€˜crypto_gcm_setauthsizeâ€™:
->> >  > crypto/gcm.c:152: internal compiler error: Segmentation fault
->> >  > Please submit a full bug report,
->> >  > with preprocessed source if appropriate.
->> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
->> >  > make[1]: *** [crypto/gcm.o] Error 1"
->> >  > This was the error the on the second attempt at compiling the modules.
->> >  >
->> >  > The 3rd attempt at building the modules was successful...
->
-> Whenever I had comparable problems, it was _always_ faulty RAM on my
-> local machine, and I'm very sure you're seeing a similar. _If_ gcc
-> crashes, it will always do that for the same input.
->
-> Daniel
->
->
