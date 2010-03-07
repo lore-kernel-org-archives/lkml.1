@@ -1,40 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751640Ab0CGX2O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 18:28:14 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50948
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751582Ab0CGX2L (ORCPT
+	id S1751391Ab0CGXn3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 18:43:29 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:43439 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931Ab0CGXn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 18:28:11 -0500
-Date: Sun, 07 Mar 2010 15:28:30 -0800 (PST)
-Message-Id: <20100307.152830.191688665.davem@davemloft.net>
-To: joe@perches.com
-Cc: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend] net/sunrpc: Remove uses of NIPQUAD, use %pI4
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1267857980.849.22.camel@Joe-Laptop.home>
-References: <1267857980.849.22.camel@Joe-Laptop.home>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Sun, 7 Mar 2010 18:43:28 -0500
+Date: Sun, 7 Mar 2010 15:41:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] scripts/kernel-doc: handle struct member __aligned
+Message-Id: <20100307154156.5062c9c7.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B943A15.0147:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
-Date: Fri, 05 Mar 2010 22:46:20 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Originally submitted Jan 1, 2010
-> http://patchwork.kernel.org/patch/71221/
-> 
-> Convert NIPQUAD to the %pI4 format extension where possible
-> Convert %02x%02x%02x%02x/NIPQUAD to %08x/ntohl
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+scripts/kernel-doc erroneously says:
 
-Trond, are you going to integrate this?
+Warning(include/linux/skbuff.h:410): Excess struct/union/enum/typedef member 'cb' description in 'sk_buff'
 
-Otherwise I'm going to.
+on this line in struct sk_buff:
+	char			cb[48] __aligned(8);
+
+due to treating the last field as the struct member name, so
+teach kernel-doc to ignore __aligned(x) in structs.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ scripts/kernel-doc |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linux-2.6.33-git13.orig/scripts/kernel-doc
++++ linux-2.6.33-git13/scripts/kernel-doc
+@@ -1424,6 +1424,8 @@ sub dump_struct($$) {
+ 	$nested =~ s/\/\*.*?\*\///gos;
+ 	# strip kmemcheck_bitfield_{begin,end}.*;
+ 	$members =~ s/kmemcheck_bitfield_.*?;//gos;
++	# strip attributes
++	$members =~ s/__aligned\s*\(\d+\)//gos;
+ 
+ 	create_parameterlist($members, ';', $file);
+ 	check_sections($file, $declaration_name, "struct", $sectcheck, $struct_actual, $nested);
