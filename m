@@ -1,61 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636Ab0CGSF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 13:05:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:52892 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857Ab0CGSF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 13:05:26 -0500
-Date: Sun, 7 Mar 2010 10:05:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-       kay.sievers@vrfy.org
-Subject: Re: [RFC] drivercore: Add of_match_table to the common device
-	drivers
-Message-ID: <20100307180534.GA3604@suse.de>
-References: <20100307064111.1442.63478.stgit@angua>
+	id S1754596Ab0CGSNr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 13:13:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43237 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753165Ab0CGSNq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 13:13:46 -0500
+Date: Sun, 7 Mar 2010 10:12:48 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, don.mullis@gmail.com,
+       david@fromorbit.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: modules, "modules" and CONFIG_LIST_SORT
+In-Reply-To: <4B93D63B.1040403@oracle.com>
+Message-ID: <alpine.LFD.2.00.1003070959490.4033@localhost.localdomain>
+References: <20100307091223.GA4895@x200> <alpine.LFD.2.00.1003070320370.4033@localhost.localdomain> <4B93D63B.1040403@oracle.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100307064111.1442.63478.stgit@angua>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 11:47:00PM -0700, Grant Likely wrote:
-> OF-style matching can be available to any device, on any type of bus.
-> This patch allows any driver to provide an OF match table when CONFIG_OF
-> is enabled so that drivers can be bound against devices described in
-> the device tree.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> 
-> Hi Greg and Kay,
-> 
-> Here is a potentially even more controversial RFC patch, the relevant
-> chunk being the addition of an of-style match table to struct device_driver
-> when CONFIG_OF is set.  The idea being that OF style device binding is
-> applicable on any bus, regardless of the bus type.  Each bus' probe could
-> be trivially extended to allow for an OF-style probe match.
-> 
-> I've used a #ifdef in this version, but it doesn't have to be conditional
-> if that would make for cleaner code.  Either way, none of the core code
-> would need to have and #ifdef bits.
-> 
-> As with the previous patch, I want to get feedback before I proceed too
-> far down this path.
 
-I have no objection to this patch at all, it looks good to me.
 
-Perhaps, in the future, you might be able to move the OF driver/device
-binding into the driver core itself to make it easier in the end.  But
-for now, feel free to add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-and send it off through your tree.
+On Sun, 7 Mar 2010, Randy Dunlap wrote:
+> On 03/07/10 03:23, Linus Torvalds wrote:
+> > 
+> > Honestly, personally I'd rather have a real library that modules can link 
+> > to _before_ even loading into kernel space, but that's not how we've 
+> > traditionally done things. So I guess we should just revert that commit.
+> 
+> xfs also needs "select LIST_SORT".  I posted a patch for that a few days
+> ago and now Christoph Hellwig has asked me to send the patch directly to Linus,
+> but if Linus is going to revert the 'config LIST_SORT' patch, I'll skip it.
 
-thanks,
+Ok, it's reverted in my tree now, I'll push out soon.
 
-greg k-h
+That said, I was serious about the "real library" thing. I do wonder if we 
+should add a "link with standard kernel libraries" phase to the final 
+module link, so that we can stop exporting silly things, and handle cases 
+like this sanely without forcing it on everybody just because some module 
+_might_ need it.
+
+For example, I've always hated how we export the 'libgcc' kind of symbols 
+too. I think we'd generally be _much_ better off just linking them into 
+the module directly, even if that means that we'll have multiple copies. I 
+hate the things like
+
+	EXPORT_SYMBOL(__ashldi3);
+
+that various architectures use. They have _nothing_ to do with real kernel 
+interfaces, and are usually really small. And on several architectures a 
+direct-linked call can be optimized by the linker in ways that external 
+linkage cannot, so it might even improve code in some cases.
+
+				Linus
