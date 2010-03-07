@@ -1,164 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652Ab0CGDby (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 22:31:54 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:47839 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753306Ab0CGDbw (ORCPT
+	id S1753805Ab0CGDhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 22:37:34 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59154 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752855Ab0CGDhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 22:31:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=OKK3XqGYRuUHBp+8HzD+LnNItD5nM6IwvMXv5fgoT+rtWy3hIyp+MCPF3i4UgVqNW1
-         2zeHxnFmfmUHXKWlwTb60BiPGctSGDi5yz9uaWLkCYVvvqm6Z/k1FaYj2zhR7Y4uwY07
-         /0SmtbAhwUCe0G64YF8Ys3ugxMUtrtz0vgFEg=
-From: Niadh <neilmunro@gmail.com>
-To: gregkh@suse.de, bzolnier@gmail.com
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Niadh <neilmunro@gmail.com>
-Subject: [PATCH 3/3] Staging: rt2860: Removes all errors from wpa.h.
-Date: Sun,  7 Mar 2010 03:31:34 +0000
-Message-Id: <1267932694-3254-1-git-send-email-neilmunro@gmail.com>
-X-Mailer: git-send-email 1.7.0.1
+	Sat, 6 Mar 2010 22:37:33 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Catalin Marinas <catalin.marinas@arm.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
+       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1267909429.22204.127.camel@pasglop>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+	 <1267712512.31654.176.camel@mulgrave.site>
+	 <20100304142704.GB6622@n2100.arm.linux.org.uk>
+	 <1267872443.8894.1443.camel@mulgrave.site>
+	 <1267909429.22204.127.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 07 Mar 2010 09:07:17 +0530
+Message-ID: <1267933038.2812.12.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch cleans up all errors but leaves all but four warnings, these are mostly typedefs and I don't know how to clean those up yet. The final warning is an 80 character limit warning, but I've yet to figure out how to clean that line up.
+On Sun, 2010-03-07 at 08:03 +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2010-03-06 at 16:17 +0530, James Bottomley wrote:
+> > On a fault in of exec data, we first try to get the page out of the page
+> > cache.  If it's not present, we put the faulting process to sleep and
+> > fetch it in from storage.  When we do the read, on the PIO path, the
+> > kernel alias for the page becomes dirty.  Some time later, we place the
+> > page into the user space (updating the pte entry that caused a fault).
+> > At this point, we'll call both flush_icache_page() and
+> > update_mmu_cache() ... this is where the I/D resolution should be done.
+> > Since it's after any I/O has occurred, it doesn't matter whether the CPU
+> > speculatively moved anything in or not.  As long as you flush the kernel
+> > alias and invalidate the user I and D aliases, we're good to go.  Using
+> > the page arch flags is really only to optimise this process (defer
+> > kernel D alias flushing).
+> 
+> Ok, so while flush_icache_page() looks like something we could use
+> instead of set_pte_at() for the icache flushing, it doesn't answer all
+> the questions. Off the top of my mind:
 
-All were detected by the checkpatch.pl tool.
+OK, so what I was actually trying to get across is the point that we
+don't handle I cache problems in the I/O or page cache code ... we
+handle them in the mm code, so the mm piece of the above was
+deliberately a bit vague.
 
-Signed-off-by: Niadh <neilmunro@gmail.com>
----
- drivers/staging/rt2860/wpa.h |   44 +++++++++++++++++++++---------------------
- 1 files changed, 22 insertions(+), 22 deletions(-)
+> - I see the calls to flush_icache_page() in mm/memory.c but I don't see
+> them next to all set_pte_at() that insert a valid PTE. For example, we
+> don't flush the icache for anonymous pages. While that might seem like a
+> good idea, we have been under pressure to "fix" that on powerpc to make
+> sure there is no stale icache content from another process leaking into
+> userspace.
 
-diff --git a/drivers/staging/rt2860/wpa.h b/drivers/staging/rt2860/wpa.h
-index 6199ae6..697d5a3 100644
---- a/drivers/staging/rt2860/wpa.h
-+++ b/drivers/staging/rt2860/wpa.h
-@@ -31,7 +31,7 @@
+I'm not entirely sure what flush_icache_page() is supposed to do.  On
+parisc it flushes the *kernel* icache ... which has got to be wrong.
+According to cachetlb.txt it's an obsolete interface.
 
- 	Revision History:
- 	Who			When			What
--	--------	----------		----------------------------------------------
-+	--------	----------		------------------------------
- 	Name		Date			Modification logs
- */
+> - It needs to be done -before- set_pte_at() but I think the code does it
+> right, only your explanation above makes it unclear :-)
 
-@@ -48,7 +48,7 @@
+Sorry, like I said, I only sketched the mm piece.  However, at least on
+parisc, there's a technical problem with flushing before we have the
+pte:  On VIPT systems, we need a mapping before the flush will work.  I
+was experimenting with a mechanism whereby we set aside in the kernel an
+aligned region of our congruence size and simply flushed in that region
+with the correct mappings, but we haven't got around to implementing it
+in the kernel yet.
 
- /* The length is the EAPoL-Key frame except key data field. */
- /* Please refer to 802.11i-2004 ,Figure 43u in p.78 */
--#define LEN_EAPOL_KEY_MSG			(sizeof(struct rt_key_descripter) - MAX_LEN_OF_RSNIE)
-+#define LEN_EAPOL_KEY_MSG(sizeof(struct rt_key_descripter) - MAX_LEN_OF_RSNIE)
+> - It doesn't take the PTE pointer as an argument, so here goes our trick
+> on powerpc of filtering out exec permission rather than flushing when a
+> page is accessed by a read fault
+> 
+> - We -still- have the problem of tracking whether the icache has been
+> flushed or not yet for a given physical page on archs with PIPT (or non
+> aliasing VIPT) like powerpc. Without that tracking, we flush a lot more
+> than necessary since we'll end up flushing things like glibc text pages
+> for every process they are mapped into which is totally wasteful. Thus
+> the idea of using a new PG bit to separate D$ from I$ tracking still
+> makes sense.
 
- /* EAP Code Type. */
- #define EAP_CODE_REQUEST	1
-@@ -76,7 +76,7 @@
- /* EAPOL EK, MK */
- #define LEN_EAP_EK					16
- #define LEN_EAP_MICK				16
--#define LEN_EAP_KEY					((LEN_EAP_EK)+(LEN_EAP_MICK))
-+#define LEN_EAP_KEY		((LEN_EAP_EK)+(LEN_EAP_MICK))
- /* TKIP key related */
- #define LEN_PMKID					16
- #define LEN_TKIP_EK					16
-@@ -84,11 +84,11 @@
- #define LEN_TKIP_TXMICK				8
- #define LEN_AES_EK					16
- #define LEN_AES_KEY					LEN_AES_EK
--#define LEN_TKIP_KEY				((LEN_TKIP_EK)+(LEN_TKIP_RXMICK)+(LEN_TKIP_TXMICK))
-+#define LEN_TKIP_KEY	((LEN_TKIP_EK)+(LEN_TKIP_RXMICK)+(LEN_TKIP_TXMICK))
- #define TKIP_AP_TXMICK_OFFSET		((LEN_EAP_KEY)+(LEN_TKIP_EK))
- #define TKIP_AP_RXMICK_OFFSET		(TKIP_AP_TXMICK_OFFSET+LEN_TKIP_TXMICK)
--#define TKIP_GTK_LENGTH				((LEN_TKIP_EK)+(LEN_TKIP_RXMICK)+(LEN_TKIP_TXMICK))
--#define LEN_PTK						((LEN_EAP_KEY)+(LEN_TKIP_KEY))
-+#define TKIP_GTK_LENGTH	((LEN_TKIP_EK)+(LEN_TKIP_RXMICK)+(LEN_TKIP_TXMICK))
-+#define LEN_PTK					((LEN_EAP_KEY)+(LEN_TKIP_KEY))
- #define MIN_LEN_OF_GTK				5
- #define LEN_PMK						32
- #define LEN_PMK_NAME				16
-@@ -162,18 +162,18 @@
- #endif
+So, assuming full congruence of user space, can't you use the VMA as an
+indicator?  i.e. if we have no user space mappings, we have to flush the
+icache ... if we have one or more, the icache has been flushed and
+placing the same page congruently in a different address space benefits
+from that prior flush, so consequently there's no need to flush again?
 
- #define	SET_u16_TO_ARRARY(_V, _LEN)		\
--{											\
-+{									\
- 	_V[0] = (_LEN & 0xFF00) >> 8;			\
- 	_V[1] = (_LEN & 0xFF);					\
- }
+I also think we've established the relevant facts for the I/O thread
+(that we only need to either flush the kernel D cache or mark it as to
+be flushed later on PIO reads).  We're now into deep technicalities of
+how the mm system operates at the architecture level, so perhaps we
+should move this to linux-arch?
 
- #define	INC_u16_TO_ARRARY(_V, _LEN)			\
--{												\
--	u16	var_len;							\
--												\
-+{									\
-+	u16	var_len;						\
-+									\
- 	var_len = (_V[0]<<8) | (_V[1]);				\
--	var_len += _LEN;							\
--												\
-+	var_len += _LEN;						\
-+									\
- 	_V[0] = (var_len & 0xFF00) >> 8;			\
- 	_V[1] = (var_len & 0xFF);					\
- }
-@@ -181,15 +181,14 @@
- #define	CONV_ARRARY_TO_u16(_V)	((_V[0]<<8) | (_V[1]))
+James
 
- #define	ADD_ONE_To_64BIT_VAR(_V)		\
--{										\
-+{									\
- 	u8	cnt = LEN_KEY_DESC_REPLAY;	\
--	do									\
--	{									\
-+	do {						\		\
- 		cnt--;							\
- 		_V[cnt]++;						\
- 		if (cnt == 0)					\
- 			break;						\
--	}while (_V[cnt] == 0);				\
-+	} while (_V[cnt] == 0);				\
- }
-
- #define IS_WPA_CAPABILITY(a)       (((a) >= Ndis802_11AuthModeWPA) && ((a) <= Ndis802_11AuthModeWPA1PSKWPA2PSK))
-@@ -294,7 +293,8 @@ struct PACKED rt_eap_hdr {
- 	u8 Body_Len[2];
- 	u8 code;
- 	u8 identifier;
--	u8 length[2];	/* including code and identifier, followed by length-2 octets of data */
-+	u8 length[2];
-+	/*including code and identifier, followed by length-2 octets of data*/
- };
-
- /* For supplicant state machine states. 802.11i Draft 4.1, p. 97 */
-@@ -368,19 +368,19 @@ struct PACKED rt_rsn_capability {
- /*========================================
- 	The prototype is defined in cmm_wpa.c
-   ========================================*/
--BOOLEAN WpaMsgTypeSubst(u8 EAPType, int * MsgType);
-+BOOLEAN WpaMsgTypeSubst(u8 EAPType, int *MsgType);
-
--void PRF(u8 * key,
-+void PRF(u8 *key,
- 	 int key_len,
--	 u8 * prefix,
-+	 u8 *prefix,
- 	 int prefix_len,
--	 u8 * data, int data_len, u8 * output, int len);
-+	 u8 *data, int data_len, u8 *output, int len);
-
- int PasswordHash(char *password,
- 		 unsigned char *ssid, int ssidlength, unsigned char *output);
-
- u8 *GetSuiteFromRSNIE(u8 *rsnie,
--			 u32 rsnie_len, u8 type, u8 * count);
-+			 u32 rsnie_len, u8 type, u8 *count);
-
- void WpaShowAllsuite(u8 *rsnie, u32 rsnie_len);
-
---
-1.7.0.1
 
