@@ -1,56 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751595Ab0CGX47 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 18:56:59 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:61654 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377Ab0CGX46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 18:56:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=GU520S3XvlwSORC+kP1b0orhQlbvRLy5UUl32t9F5F5izfxRtYQC70SmWd7eXk77Z1
-         9A0hjuTTJaHzJea2mO+4y/FzlwY70KToyvVW3AvmpV0leeP4di2wQfXqVa6Op6yN4j3U
-         L4xlFT7z4U+79RdZI9kJY1fnJ/COQENIjty2I=
-From: Stewart Malik <mali0037@gmail.com>
-To: mj@ucw.cz, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-Cc: x86@kernel.org, linux-video@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, Stewart Malik <mali0037@gmail.com>
-Subject: [PATCH] ARCH: x86: fix coding style issues in video-vesa.c
-Date: Mon,  8 Mar 2010 10:26:42 +1030
-Message-Id: <1268006202-12486-1-git-send-email-mali0037@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
+	id S1751771Ab0CGX6k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 18:58:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40133 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959Ab0CGX6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 18:58:39 -0500
+Date: Sun, 7 Mar 2010 15:27:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: t.a.c.henriques@googlemail.com, t.a.c.henriques@gmail.com,
+       adobriyan@gmail.com, tglx@linutronix.de,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Bluetooth: fix coding style issue in hci_vhci.c This
+	patch affects hci_vhci.c it fixes some warnings detected by the
+	checkpath.pl tool Signed-off-by: Tiago Henriques
+	<t.a.c.henriques@gmail.com>
+Message-ID: <20100307232744.GA8039@suse.de>
+References: <1267934631-3531-1-git-send-email-t.a.c.henriques@gmail.com> <20100307155658.GB1805@suse.de> <1267996092.3712.9.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267996092.3712.9.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- arch/x86/boot/video-vesa.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+On Sun, Mar 07, 2010 at 01:08:12PM -0800, Marcel Holtmann wrote:
+> Hi Tiago,
+> 
+> > Your Subject line is a bit messed up :)
+> > 
+> > You need to put extra lines in your git commit so that git-send-email
+> > doesn't barf on it.
+> > 
+> > On Sun, Mar 07, 2010 at 04:03:51AM +0000, t.a.c.henriques@googlemail.com wrote:
+> > > From: root <root@balganUbuntuVM.(none)>
+> > 
+> > And this is incorrect.
+> 
+> and this goes only to linux-bluetooth@vger.kernel.org. I really have no
+> idea why anybody else is on CC here. It is pure Bluetooth cleanup patch.
 
-diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-index 11e8c6e..426d330 100644
---- a/arch/x86/boot/video-vesa.c
-+++ b/arch/x86/boot/video-vesa.c
-@@ -263,15 +263,14 @@ void vesa_store_edid(void)
- 	/* ireg.cx = 0; */		/* Controller 0 */
- 	/* ireg.dx = 0;	*/		/* EDID block number */
- 	ireg.es = ds();
--	ireg.di =(size_t)&boot_params.edid_info; /* (ES:)Pointer to block */
-+	ireg.di = (size_t)&boot_params.edid_info; /* (ES:)Pointer to block */
- 	intcall(0x10, &ireg, &oreg);
- #endif /* CONFIG_FIRMWARE_EDID */
- }
- 
- #endif /* not _WAKEUP */
- 
--static __videocard video_vesa =
--{
-+static __videocard video_vesa = {
- 	.card_name	= "VESA",
- 	.probe		= vesa_probe,
- 	.set_mode	= vesa_set_mode,
--- 
-1.6.0.4
+scripts/get_maintainer.pl lists all of these, that is why.
+
+thanks,
+
+greg k-h
 
