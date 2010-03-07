@@ -1,328 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456Ab0CGLAI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 06:00:08 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:59964 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257Ab0CGLAF (ORCPT
+	id S1752700Ab0CGLBn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 06:01:43 -0500
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:57555 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078Ab0CGLBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 06:00:05 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Daniel Taylor" <Daniel.Taylor@wdc.com>, <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] msdos: add support for large disks
-References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com>
-	<20100301141335.395dc4c3.akpm@linux-foundation.org>
-	<873a0h1p2c.fsf@devron.myhome.or.jp>
-Date: Sun, 07 Mar 2010 19:59:58 +0900
-In-Reply-To: <873a0h1p2c.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Wed, 03 Mar 2010 23:02:03 +0900")
-Message-ID: <876358iehd.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+	Sun, 7 Mar 2010 06:01:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=XktGeuj+0TUqN8YDkJiM8asbYHaJekC9HjC/2NN0NX/cFfz62Nush6Tn1AuIli/FU0
+         9qM8OXYxT7fFY5cdn+WuPgebqMaYmb6IUuUHabkMjeaQZCSg0hRB+iNqY5c3nm2L4Wr+
+         BSuBMLJ+i5fyE3XsNy+psQHGzyJKjpNwP9O0M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
+References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
+	 <19346.6765.457769.167118@pilspetsen.it.uu.se>
+	 <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com>
+	 <20100306104131.GV28972@buzzloop.caiaq.de>
+	 <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
+Date: Sun, 7 Mar 2010 11:01:39 +0000
+Message-ID: <56d259a01003070301r7d5bbb9y56b01fa794c4bcc7@mail.gmail.com>
+Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
+From: Martin Guy <martinwguy@gmail.com>
+To: dave b <db.pub.mail@gmail.com>
+Cc: Daniel Mack <daniel@caiaq.de>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+On 3/7/10, dave b <db.pub.mail@gmail.com> wrote:
+> Ok... however how should one test the memory of an arm machine? ...
+>  memtest is only for x86. *I am referring to the kernel memtest and not
+>  memtest86.
 
-> BTW, to make sure, this is fs/partitions/, not fs/fat/. So, I'm not
-> sure, my knowledge is enough or not, and/or you just missed
-> fs/partitions/.
->
-> Well, I'll make time to check. BTW, basically it sounds good to me
-> except implementation details. But, I'd like to compare and check other
-> implement a bit if possible. IIRC, this is not a well defined
-> specification.
+Well, there's a userspace one: follow the link from
+http://www.arm.linux.org.uk/developer/stresstests.php
 
-I reviewed/tested more or less on [RESUBMIT PATCH] patch. And rediff
-with fixed patch is attached.
-
-> Signed-off-by: Daniel Taylor <daniel.taylor@wdc.com> diff --git
-> a/fs/partitions/msdos.c b/fs/partitions/msdos.c index 0028d2e..039bb61
-> 100644
-
-This patch is broken like this way. I couldn't apply this, so I applied
-by hand this time though, it can be easily to miss. Please fix your
-mailer (or if not possible to fix, attach is better off than broken, at
-least for me).
-
-> @@ -348,7 +355,8 @@ parse_unixware(struct parsed_partitions *state, struct
-> block_device *bdev,
->  
->  		if (p->s_label != UNIXWARE_FS_UNUSED)
->  			put_partition(state, state->next++,
-> -						START_SECT(p), NR_SECTS(p));
-> +				      start_sect((struct partition *)p),
-> +				      nr_sects((struct partition *)p));
-
-This is a wrong conversion for macro to function. "p" is not "struct
-partition" in here. And it seems we have no reason to use
-get_unaligned() for this, so just use le32_to_cpu() instead.
-
-
-And related to > 1024b sector (this is not new for this patch though),
-
-			/* prevent someone doing mkfs or mkswap on an
-			   extended partition, but leave room for LILO */
-			put_partition(state, slot, start, size == 1 ? 1 : 2);
-
-This part is broken. If "size" is smaller than minimum blocksize (note,
-"size" is number of 512b, not number of blocksize), we can't read any
-block after all (it is handled as outside of i_size by bdev).
-
-Peter (or someone) know what do we want to in here? This is on extended
-partition itself (e.g. if sda1 sda2 <sda5 sda6>, it's the size of sda2)
-
-[BTW, it seems subtypes stuff is not thinking about sector size > 512b...]
-
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-
-
-
-From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
-
-In order to use disks larger than 2TiB on Windows XP, it is necessary
-to use 4096-byte logical sectors in an MBR.
-
-Although the kernel storage and functions called from msdos.c used
-"sector_t" internally, msdos.c still used u32 variables, which results
-in the ability to handle XP-compatible large disks.
-
-This patch changes the internal variables to "sector_t".
-
-Signed-off-by: Daniel Taylor <daniel.taylor@wdc.com>
-[tweaks and fix]
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- fs/partitions/msdos.c |   74 +++++++++++++++++++++++++------------------------
- 1 file changed, 39 insertions(+), 35 deletions(-)
-
-diff -puN fs/partitions/msdos.c~part-support-4k-block fs/partitions/msdos.c
---- linux-2.6/fs/partitions/msdos.c~part-support-4k-block	2010-03-07 04:10:48.000000000 +0900
-+++ linux-2.6-hirofumi/fs/partitions/msdos.c	2010-03-07 19:41:56.000000000 +0900
-@@ -31,14 +31,17 @@
-  */
- #include <asm/unaligned.h>
- 
--#define SYS_IND(p)	(get_unaligned(&p->sys_ind))
--#define NR_SECTS(p)	({ __le32 __a =	get_unaligned(&p->nr_sects);	\
--				le32_to_cpu(__a); \
--			})
--
--#define START_SECT(p)	({ __le32 __a =	get_unaligned(&p->start_sect);	\
--				le32_to_cpu(__a); \
--			})
-+#define SYS_IND(p)	get_unaligned(&p->sys_ind)
-+
-+static inline sector_t nr_sects(struct partition *p)
-+{
-+	return (sector_t)get_unaligned_le32(&p->nr_sects);
-+}
-+
-+static inline sector_t start_sect(struct partition *p)
-+{
-+	return (sector_t)get_unaligned_le32(&p->start_sect);
-+}
- 
- static inline int is_extended_partition(struct partition *p)
- {
-@@ -104,13 +107,13 @@ static int aix_magic_present(unsigned ch
- 
- static void
- parse_extended(struct parsed_partitions *state, struct block_device *bdev,
--			u32 first_sector, u32 first_size)
-+			sector_t first_sector, sector_t first_size)
- {
- 	struct partition *p;
- 	Sector sect;
- 	unsigned char *data;
--	u32 this_sector, this_size;
--	int sector_size = bdev_logical_block_size(bdev) / 512;
-+	sector_t this_sector, this_size;
-+	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
- 	int loopct = 0;		/* number of links followed
- 				   without finding a data partition */
- 	int i;
-@@ -145,14 +148,14 @@ parse_extended(struct parsed_partitions
- 		 * First process the data partition(s)
- 		 */
- 		for (i=0; i<4; i++, p++) {
--			u32 offs, size, next;
--			if (!NR_SECTS(p) || is_extended_partition(p))
-+			sector_t offs, size, next;
-+			if (!nr_sects(p) || is_extended_partition(p))
- 				continue;
- 
- 			/* Check the 3rd and 4th entries -
- 			   these sometimes contain random garbage */
--			offs = START_SECT(p)*sector_size;
--			size = NR_SECTS(p)*sector_size;
-+			offs = start_sect(p)*sector_size;
-+			size = nr_sects(p)*sector_size;
- 			next = this_sector + offs;
- 			if (i >= 2) {
- 				if (offs + size > this_size)
-@@ -179,13 +182,13 @@ parse_extended(struct parsed_partitions
- 		 */
- 		p -= 4;
- 		for (i=0; i<4; i++, p++)
--			if (NR_SECTS(p) && is_extended_partition(p))
-+			if (nr_sects(p) && is_extended_partition(p))
- 				break;
- 		if (i == 4)
- 			goto done;	 /* nothing left to do */
- 
--		this_sector = first_sector + START_SECT(p) * sector_size;
--		this_size = NR_SECTS(p) * sector_size;
-+		this_sector = first_sector + start_sect(p) * sector_size;
-+		this_size = nr_sects(p) * sector_size;
- 		put_dev_sector(sect);
- 	}
- done:
-@@ -197,7 +200,7 @@ done:
- 
- static void
- parse_solaris_x86(struct parsed_partitions *state, struct block_device *bdev,
--			u32 offset, u32 size, int origin)
-+			sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_SOLARIS_X86_PARTITION
- 	Sector sect;
-@@ -244,7 +247,7 @@ parse_solaris_x86(struct parsed_partitio
-  */
- static void
- parse_bsd(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin, char *flavour,
-+		sector_t offset, sector_t size, int origin, char *flavour,
- 		int max_partitions)
- {
- 	Sector sect;
-@@ -263,7 +266,7 @@ parse_bsd(struct parsed_partitions *stat
- 	if (le16_to_cpu(l->d_npartitions) < max_partitions)
- 		max_partitions = le16_to_cpu(l->d_npartitions);
- 	for (p = l->d_partitions; p - l->d_partitions < max_partitions; p++) {
--		u32 bsd_start, bsd_size;
-+		sector_t bsd_start, bsd_size;
- 
- 		if (state->next == state->limit)
- 			break;
-@@ -290,7 +293,7 @@ parse_bsd(struct parsed_partitions *stat
- 
- static void
- parse_freebsd(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin)
-+		sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_BSD_DISKLABEL
- 	parse_bsd(state, bdev, offset, size, origin,
-@@ -300,7 +303,7 @@ parse_freebsd(struct parsed_partitions *
- 
- static void
- parse_netbsd(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin)
-+		sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_BSD_DISKLABEL
- 	parse_bsd(state, bdev, offset, size, origin,
-@@ -310,7 +313,7 @@ parse_netbsd(struct parsed_partitions *s
- 
- static void
- parse_openbsd(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin)
-+		sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_BSD_DISKLABEL
- 	parse_bsd(state, bdev, offset, size, origin,
-@@ -324,7 +327,7 @@ parse_openbsd(struct parsed_partitions *
-  */
- static void
- parse_unixware(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin)
-+		sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_UNIXWARE_DISKLABEL
- 	Sector sect;
-@@ -348,7 +351,8 @@ parse_unixware(struct parsed_partitions
- 
- 		if (p->s_label != UNIXWARE_FS_UNUSED)
- 			put_partition(state, state->next++,
--						START_SECT(p), NR_SECTS(p));
-+				      le32_to_cpu(p->start_sect),
-+				      le32_to_cpu(p->nr_sects));
- 		p++;
- 	}
- 	put_dev_sector(sect);
-@@ -363,7 +367,7 @@ parse_unixware(struct parsed_partitions
-  */
- static void
- parse_minix(struct parsed_partitions *state, struct block_device *bdev,
--		u32 offset, u32 size, int origin)
-+		sector_t offset, sector_t size, int origin)
- {
- #ifdef CONFIG_MINIX_SUBPARTITION
- 	Sector sect;
-@@ -390,7 +394,7 @@ parse_minix(struct parsed_partitions *st
- 			/* add each partition in use */
- 			if (SYS_IND(p) == MINIX_PARTITION)
- 				put_partition(state, state->next++,
--					      START_SECT(p), NR_SECTS(p));
-+					      start_sect(p), nr_sects(p));
- 		}
- 		printk(" >\n");
- 	}
-@@ -401,7 +405,7 @@ parse_minix(struct parsed_partitions *st
- static struct {
- 	unsigned char id;
- 	void (*parse)(struct parsed_partitions *, struct block_device *,
--			u32, u32, int);
-+			sector_t, sector_t, int);
- } subtypes[] = {
- 	{FREEBSD_PARTITION, parse_freebsd},
- 	{NETBSD_PARTITION, parse_netbsd},
-@@ -415,7 +419,7 @@ static struct {
-  
- int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- {
--	int sector_size = bdev_logical_block_size(bdev) / 512;
-+	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
- 	Sector sect;
- 	unsigned char *data;
- 	struct partition *p;
-@@ -483,8 +487,8 @@ int msdos_partition(struct parsed_partit
- 
- 	state->next = 5;
- 	for (slot = 1 ; slot <= 4 ; slot++, p++) {
--		u32 start = START_SECT(p)*sector_size;
--		u32 size = NR_SECTS(p)*sector_size;
-+		sector_t start = start_sect(p)*sector_size;
-+		sector_t size = nr_sects(p)*sector_size;
- 		if (!size)
- 			continue;
- 		if (is_extended_partition(p)) {
-@@ -513,7 +517,7 @@ int msdos_partition(struct parsed_partit
- 		unsigned char id = SYS_IND(p);
- 		int n;
- 
--		if (!NR_SECTS(p))
-+		if (!nr_sects(p))
- 			continue;
- 
- 		for (n = 0; subtypes[n].parse && id != subtypes[n].id; n++)
-@@ -521,8 +525,8 @@ int msdos_partition(struct parsed_partit
- 
- 		if (!subtypes[n].parse)
- 			continue;
--		subtypes[n].parse(state, bdev, START_SECT(p)*sector_size,
--						NR_SECTS(p)*sector_size, slot);
-+		subtypes[n].parse(state, bdev, start_sect(p)*sector_size,
-+						nr_sects(p)*sector_size, slot);
- 	}
- 	put_dev_sector(sect);
- 	return 1;
-_
+    M
