@@ -1,83 +1,243 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487Ab0CGCd0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 21:33:26 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52711 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754426Ab0CGCdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 21:33:24 -0500
-Message-ID: <4B931068.70900@cn.fujitsu.com>
-Date: Sun, 07 Mar 2010 10:33:12 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
- and 	mems_allowed
-References: <4B8E3F77.6070201@cn.fujitsu.com> <6599ad831003050403v2e988723k1b6bf38d48707ab1@mail.gmail.com>
-In-Reply-To: <6599ad831003050403v2e988723k1b6bf38d48707ab1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754541Ab0CGCdm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 21:33:42 -0500
+Received: from mail.perches.com ([173.55.12.10]:1495 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754508Ab0CGCdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 21:33:37 -0500
+Subject: [PATCH] vsprintf.c: Use noinline_for_stack
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+In-Reply-To: <alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
+References: <cover.1267682641.git.joe@perches.com>
+	 <20100304143837.af39845d.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
+	 <1267911399.849.39.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
+	 <1267914654.849.81.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
+	 <1267918554.849.89.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
+	 <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
+	 <1267924214.1937.12.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 06 Mar 2010 18:33:35 -0800
+Message-ID: <1267929215.1937.18.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2010-3-5 20:03, Paul Menage wrote:
-> On Wed, Mar 3, 2010 at 2:52 AM, Miao Xie <miaox@cn.fujitsu.com> wrote:
->> if MAX_NUMNODES > BITS_PER_LONG, loading/storing task->mems_allowed or mems_allowed in
->> task->mempolicy are not atomic operations, and the kernel page allocator gets an empty
->> mems_allowed when updating task->mems_allowed or mems_allowed in task->mempolicy. So we
->> use a rwlock to protect them to fix this probelm.
-> 
-> Rather than adding locks, if the intention is just to avoid the
-> allocator seeing an empty nodemask couldn't we instead do the
-> equivalent of:
-> 
-> current->mems_allowed |= new_mask;
-> current->mems_allowed = new_mask;
-> 
-> i.e. effectively set all new bits in the nodemask first, and then
-> clear all old bits that are no longer in the new mask. The only
-> downside of this is that a page allocation that races with the update
-> could potentially allocate from any node in the union of the old and
-> new nodemasks - but that's the case anyway for an allocation that
-> races with an update, so I don't see that it's any worse.
+On Sat, 2010-03-06 at 18:03 -0800, Linus Torvalds wrote:
+> A few noinlines might be appropriate.
 
-Before applying this patch, cpuset updates task->mems_allowed just like
-what you said. But the allocator is still likely to see an empty nodemask.
-This problem have been pointed out by Nick Piggin.
+Mark static functions with noinline_for_stack
 
-The problem is following:
-The size of nodemask_t is greater than the size of long integer, so loading
-and storing of nodemask_t are not atomic operations. If task->mems_allowed
-don't intersect with new_mask, such as the first word of the mask is empty
-and only the first word of new_mask is not empty. When the allocator
-loads a word of the mask before
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ lib/vsprintf.c |   67 +++++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 42 insertions(+), 25 deletions(-)
 
-	current->mems_allowed |= new_mask;
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 0d461c7..e9335a8 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -266,7 +266,8 @@ int strict_strtoll(const char *cp, unsigned int base, long long *res)
+ }
+ EXPORT_SYMBOL(strict_strtoll);
+ 
+-static int skip_atoi(const char **s)
++static noinline_for_stack
++int skip_atoi(const char **s)
+ {
+ 	int i = 0;
+ 
+@@ -286,7 +287,8 @@ static int skip_atoi(const char **s)
+ /* Formats correctly any integer in [0,99999].
+  * Outputs from one to five digits depending on input.
+  * On i386 gcc 4.1.2 -O2: ~250 bytes of code. */
+-static char *put_dec_trunc(char *buf, unsigned q)
++static noinline_for_stack
++char *put_dec_trunc(char *buf, unsigned q)
+ {
+ 	unsigned d3, d2, d1, d0;
+ 	d1 = (q>>4) & 0xf;
+@@ -323,7 +325,8 @@ static char *put_dec_trunc(char *buf, unsigned q)
+ 	return buf;
+ }
+ /* Same with if's removed. Always emits five digits */
+-static char *put_dec_full(char *buf, unsigned q)
++static noinline_for_stack
++char *put_dec_full(char *buf, unsigned q)
+ {
+ 	/* BTW, if q is in [0,9999], 8-bit ints will be enough, */
+ 	/* but anyway, gcc produces better code with full-sized ints */
+@@ -365,7 +368,8 @@ static char *put_dec_full(char *buf, unsigned q)
+ 	return buf;
+ }
+ /* No inlining helps gcc to use registers better */
+-static noinline char *put_dec(char *buf, unsigned long long num)
++static noinline_for_stack
++char *put_dec(char *buf, unsigned long long num)
+ {
+ 	while (1) {
+ 		unsigned rem;
+@@ -416,8 +420,9 @@ struct printf_spec {
+ 	u8	qualifier;
+ };
+ 
+-static char *number(char *buf, char *end, unsigned long long num,
+-			struct printf_spec spec)
++static noinline_for_stack
++char *number(char *buf, char *end, unsigned long long num,
++	     struct printf_spec spec)
+ {
+ 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
+ 	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
+@@ -536,7 +541,8 @@ static char *number(char *buf, char *end, unsigned long long num,
+ 	return buf;
+ }
+ 
+-static char *string(char *buf, char *end, const char *s, struct printf_spec spec)
++static noinline_for_stack
++char *string(char *buf, char *end, const char *s, struct printf_spec spec)
+ {
+ 	int len, i;
+ 
+@@ -566,8 +572,9 @@ static char *string(char *buf, char *end, const char *s, struct printf_spec spec
+ 	return buf;
+ }
+ 
+-static char *symbol_string(char *buf, char *end, void *ptr,
+-				struct printf_spec spec, char ext)
++static noinline_for_stack
++char *symbol_string(char *buf, char *end, void *ptr,
++		    struct printf_spec spec, char ext)
+ {
+ 	unsigned long value = (unsigned long) ptr;
+ #ifdef CONFIG_KALLSYMS
+@@ -587,8 +594,9 @@ static char *symbol_string(char *buf, char *end, void *ptr,
+ #endif
+ }
+ 
+-static char *resource_string(char *buf, char *end, struct resource *res,
+-				struct printf_spec spec, const char *fmt)
++static noinline_for_stack
++char *resource_string(char *buf, char *end, struct resource *res,
++		      struct printf_spec spec, const char *fmt)
+ {
+ #ifndef IO_RSRC_PRINTK_SIZE
+ #define IO_RSRC_PRINTK_SIZE	6
+@@ -678,8 +686,9 @@ static char *resource_string(char *buf, char *end, struct resource *res,
+ 	return string(buf, end, sym, spec);
+ }
+ 
+-static char *mac_address_string(char *buf, char *end, u8 *addr,
+-				struct printf_spec spec, const char *fmt)
++static noinline_for_stack
++char *mac_address_string(char *buf, char *end, u8 *addr,
++			 struct printf_spec spec, const char *fmt)
+ {
+ 	char mac_addr[sizeof("xx:xx:xx:xx:xx:xx")];
+ 	char *p = mac_addr;
+@@ -702,7 +711,8 @@ static char *mac_address_string(char *buf, char *end, u8 *addr,
+ 	return string(buf, end, mac_addr, spec);
+ }
+ 
+-static char *ip4_string(char *p, const u8 *addr, const char *fmt)
++static noinline_for_stack
++char *ip4_string(char *p, const u8 *addr, const char *fmt)
+ {
+ 	int i;
+ 	bool leading_zeros = (fmt[0] == 'i');
+@@ -751,7 +761,8 @@ static char *ip4_string(char *p, const u8 *addr, const char *fmt)
+ 	return p;
+ }
+ 
+-static char *ip6_compressed_string(char *p, const char *addr)
++static noinline_for_stack
++char *ip6_compressed_string(char *p, const char *addr)
+ {
+ 	int i, j, range;
+ 	unsigned char zerolength[8];
+@@ -831,7 +842,8 @@ static char *ip6_compressed_string(char *p, const char *addr)
+ 	return p;
+ }
+ 
+-static char *ip6_string(char *p, const char *addr, const char *fmt)
++static noinline_for_stack
++char *ip6_string(char *p, const char *addr, const char *fmt)
+ {
+ 	int i;
+ 
+@@ -846,8 +858,9 @@ static char *ip6_string(char *p, const char *addr, const char *fmt)
+ 	return p;
+ }
+ 
+-static char *ip6_addr_string(char *buf, char *end, const u8 *addr,
+-			     struct printf_spec spec, const char *fmt)
++static noinline_for_stack
++char *ip6_addr_string(char *buf, char *end, const u8 *addr,
++		      struct printf_spec spec, const char *fmt)
+ {
+ 	char ip6_addr[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255")];
+ 
+@@ -859,8 +872,9 @@ static char *ip6_addr_string(char *buf, char *end, const u8 *addr,
+ 	return string(buf, end, ip6_addr, spec);
+ }
+ 
+-static char *ip4_addr_string(char *buf, char *end, const u8 *addr,
+-			     struct printf_spec spec, const char *fmt)
++static noinline_for_stack
++char *ip4_addr_string(char *buf, char *end, const u8 *addr,
++		      struct printf_spec spec, const char *fmt)
+ {
+ 	char ip4_addr[sizeof("255.255.255.255")];
+ 
+@@ -869,8 +883,9 @@ static char *ip4_addr_string(char *buf, char *end, const u8 *addr,
+ 	return string(buf, end, ip4_addr, spec);
+ }
+ 
+-static char *uuid_string(char *buf, char *end, const u8 *addr,
+-			 struct printf_spec spec, const char *fmt)
++static noinline_for_stack
++char *uuid_string(char *buf, char *end, const u8 *addr,
++		  struct printf_spec spec, const char *fmt)
+ {
+ 	char uuid[sizeof("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")];
+ 	char *p = uuid;
+@@ -958,8 +973,9 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
+  * function pointers are really function descriptors, which contain a
+  * pointer to the real address.
+  */
+-static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+-			struct printf_spec spec)
++static noinline_for_stack
++char *pointer(const char *fmt, char *buf, char *end, void *ptr,
++	      struct printf_spec spec)
+ {
+ 	if (!ptr)
+ 		return string(buf, end, "(null)", spec);
+@@ -1028,7 +1044,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+  * @precision: precision of a number
+  * @qualifier: qualifier of a number (long, size_t, ...)
+  */
+-static int format_decode(const char *fmt, struct printf_spec *spec)
++static noinline_for_stack
++int format_decode(const char *fmt, struct printf_spec *spec)
+ {
+ 	const char *start = fmt;
+ 
 
-and then loads another word of the mask after
-
-	current->mems_allowed = new_mask;
-
-the allocator gets an empty nodemask.
-
-I make a new patch to fix this problem now.
-Considering the change of task->mems_allowed is not frequent, so in the new
-patch, I use variables as a tag to indicate whether task->mems_allowed need
-be update or not. And before setting the tag, cpuset caches the new mask of
-every task at somewhere. 
-
-When the allocator want to access task->mems_allowed, it must check updated-tag
-first. If the tag is set, the allocator enters the slow path and updates
-task->mems_allowed.
-
-Thanks!
-Miao
 
