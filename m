@@ -1,116 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753805Ab0CGDhe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 22:37:34 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59154 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752855Ab0CGDhd (ORCPT
+	id S1754272Ab0CGED6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 23:03:58 -0500
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:52294 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706Ab0CGED4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 22:37:33 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Catalin Marinas <catalin.marinas@arm.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
-       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
-       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
-       santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <1267909429.22204.127.camel@pasglop>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
-	 <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-	 <1267712512.31654.176.camel@mulgrave.site>
-	 <20100304142704.GB6622@n2100.arm.linux.org.uk>
-	 <1267872443.8894.1443.camel@mulgrave.site>
-	 <1267909429.22204.127.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Mar 2010 09:07:17 +0530
-Message-ID: <1267933038.2812.12.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Mar 2010 23:03:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qcptB8bqaDrIIC20GEKTfLtucFw15eQtMBqv43jqtjhxew6Z4BHnUfz1PHP9y6y7hd
+         Ss17W9ASrMDlu7FyTx/wX+JZdhJ2nTy/UGefHwr1lvycyz1UtcHMoZOCXb4i0JZz7j0R
+         z+UPjwLuyX0+h5St0zw77MIDU5cHxu8R6F3d8=
+From: t.a.c.henriques@googlemail.com
+To: gregkh@suse.de, t.a.c.henriques@gmail.com
+Cc: marcel@holtmann.org, adobriyan@gmail.com, tglx@linutronix.de,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Bluetooth: fix coding style issue in hci_vhci.c This patch affects hci_vhci.c it fixes some warnings detected by the checkpath.pl tool Signed-off-by: Tiago Henriques <t.a.c.henriques@gmail.com>
+Date: Sun,  7 Mar 2010 04:03:51 +0000
+Message-Id: <1267934631-3531-1-git-send-email-t.a.c.henriques@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <Fix Bluetooth Code Style warnings>
+References: <Fix Bluetooth Code Style warnings>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-03-07 at 08:03 +1100, Benjamin Herrenschmidt wrote:
-> On Sat, 2010-03-06 at 16:17 +0530, James Bottomley wrote:
-> > On a fault in of exec data, we first try to get the page out of the page
-> > cache.  If it's not present, we put the faulting process to sleep and
-> > fetch it in from storage.  When we do the read, on the PIO path, the
-> > kernel alias for the page becomes dirty.  Some time later, we place the
-> > page into the user space (updating the pte entry that caused a fault).
-> > At this point, we'll call both flush_icache_page() and
-> > update_mmu_cache() ... this is where the I/D resolution should be done.
-> > Since it's after any I/O has occurred, it doesn't matter whether the CPU
-> > speculatively moved anything in or not.  As long as you flush the kernel
-> > alias and invalidate the user I and D aliases, we're good to go.  Using
-> > the page arch flags is really only to optimise this process (defer
-> > kernel D alias flushing).
-> 
-> Ok, so while flush_icache_page() looks like something we could use
-> instead of set_pte_at() for the icache flushing, it doesn't answer all
-> the questions. Off the top of my mind:
+From: root <root@balganUbuntuVM.(none)>
 
-OK, so what I was actually trying to get across is the point that we
-don't handle I cache problems in the I/O or page cache code ... we
-handle them in the mm code, so the mm piece of the above was
-deliberately a bit vague.
+---
+ drivers/bluetooth/hci_vhci.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-> - I see the calls to flush_icache_page() in mm/memory.c but I don't see
-> them next to all set_pte_at() that insert a valid PTE. For example, we
-> don't flush the icache for anonymous pages. While that might seem like a
-> good idea, we have been under pressure to "fix" that on powerpc to make
-> sure there is no stale icache content from another process leaking into
-> userspace.
-
-I'm not entirely sure what flush_icache_page() is supposed to do.  On
-parisc it flushes the *kernel* icache ... which has got to be wrong.
-According to cachetlb.txt it's an obsolete interface.
-
-> - It needs to be done -before- set_pte_at() but I think the code does it
-> right, only your explanation above makes it unclear :-)
-
-Sorry, like I said, I only sketched the mm piece.  However, at least on
-parisc, there's a technical problem with flushing before we have the
-pte:  On VIPT systems, we need a mapping before the flush will work.  I
-was experimenting with a mechanism whereby we set aside in the kernel an
-aligned region of our congruence size and simply flushed in that region
-with the correct mappings, but we haven't got around to implementing it
-in the kernel yet.
-
-> - It doesn't take the PTE pointer as an argument, so here goes our trick
-> on powerpc of filtering out exec permission rather than flushing when a
-> page is accessed by a read fault
-> 
-> - We -still- have the problem of tracking whether the icache has been
-> flushed or not yet for a given physical page on archs with PIPT (or non
-> aliasing VIPT) like powerpc. Without that tracking, we flush a lot more
-> than necessary since we'll end up flushing things like glibc text pages
-> for every process they are mapped into which is totally wasteful. Thus
-> the idea of using a new PG bit to separate D$ from I$ tracking still
-> makes sense.
-
-So, assuming full congruence of user space, can't you use the VMA as an
-indicator?  i.e. if we have no user space mappings, we have to flush the
-icache ... if we have one or more, the icache has been flushed and
-placing the same page congruently in a different address space benefits
-from that prior flush, so consequently there's no need to flush again?
-
-I also think we've established the relevant facts for the I/O thread
-(that we only need to either flush the kernel D cache or mark it as to
-be flushed later on PIO reads).  We're now into deep technicalities of
-how the mm system operates at the architecture level, so perhaps we
-should move this to linux-arch?
-
-James
-
+diff --git a/drivers/bluetooth/hci_vhci.c b/drivers/bluetooth/hci_vhci.c
+index bb0aefd..4a5386e 100644
+--- a/drivers/bluetooth/hci_vhci.c
++++ b/drivers/bluetooth/hci_vhci.c
+@@ -264,12 +264,9 @@ static int vhci_release(struct inode *inode, struct file *file)
+ 	struct vhci_data *data = file->private_data;
+ 	struct hci_dev *hdev = data->hdev;
+ 
+-	if (hci_unregister_dev(hdev) < 0) {
++	if (hci_unregister_dev(hdev) < 0)
+ 		BT_ERR("Can't unregister HCI device %s", hdev->name);
+-	}
+-
+ 	hci_free_dev(hdev);
+-
+ 	file->private_data = NULL;
+ 
+ 	return 0;
+@@ -284,7 +281,7 @@ static const struct file_operations vhci_fops = {
+ 	.release	= vhci_release,
+ };
+ 
+-static struct miscdevice vhci_miscdev= {
++static struct miscdevice vhci_miscdev = {
+ 	.name	= "vhci",
+ 	.fops	= &vhci_fops,
+ 	.minor	= MISC_DYNAMIC_MINOR,
+-- 
+1.6.3.3
 
