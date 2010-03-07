@@ -1,92 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803Ab0CGFyf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 00:54:35 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:37808 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751028Ab0CGFye (ORCPT
+	id S1751795Ab0CGGSo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 01:18:44 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:63550 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177Ab0CGGSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 00:54:34 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Catalin Marinas <catalin.marinas@arm.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       benh@kernel.crashing.org, mdharm-kernel@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
-       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
-       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100306193649.GB13262@n2100.arm.linux.org.uk>
-References: <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-	 <1267712512.31654.176.camel@mulgrave.site>
-	 <20100304142704.GB6622@n2100.arm.linux.org.uk>
-	 <1267872443.8894.1443.camel@mulgrave.site>
-	 <20100306193649.GB13262@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Mar 2010 11:24:11 +0530
-Message-ID: <1267941251.2812.20.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Mar 2010 01:18:43 -0500
+MIME-Version: 1.0
+In-Reply-To: <20100307014746.GA28667@oksana.dev.rtsoft.ru>
+References: <fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com> 
+	<20100305120015.a2008f46.akpm@linux-foundation.org> <fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com> 
+	<20100305123527.d6d68e56.akpm@linux-foundation.org> <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com> 
+	<20100306002823.GA22095@oksana.dev.rtsoft.ru> <fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com> 
+	<20100306050536.GA20539@oksana.dev.rtsoft.ru> <fa686aa41003060843s5b8dfc28p65541056121c4502@mail.gmail.com> 
+	<20100307014746.GA28667@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 6 Mar 2010 23:11:01 -0700
+X-Google-Sender-Auth: 4bde07ee79a9d908
+Message-ID: <fa686aa41003062211i3bf850m29ba0c0acff778b9@mail.gmail.com>
+Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
+To: avorontsov@ru.mvista.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-06 at 19:36 +0000, Russell King - ARM Linux wrote:
-> On Sat, Mar 06, 2010 at 04:17:23PM +0530, James Bottomley wrote:
-> > On a fault in of exec data, we first try to get the page out of the page
-> > cache.  If it's not present, we put the faulting process to sleep and
-> > fetch it in from storage.  When we do the read, on the PIO path, the
-> > kernel alias for the page becomes dirty.  Some time later, we place the
-> > page into the user space (updating the pte entry that caused a fault).
-> > At this point, we'll call both flush_icache_page() and
-> > update_mmu_cache() ... this is where the I/D resolution should be done.
-> 
-> No - this is where things get extremely icky.
+On Sat, Mar 6, 2010 at 6:47 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> You could reply to my answers earlier and I would change and
+> repost the patches in a jiffy, since I am interested in these
+> patches.
+>
+> But you're obviously not interested in this support since you
+> didn't answer my replies. I'll explain. If you were interested
+> in some support you could give some chance to make patches
+> comfortable to you, and then you could even test them, and
+> maybe defend their inclusion.
 
-OK, but the point I'm trying to make is that the page cache code,
-including the I/O layer, only manages kernel D alias state (either by
-flushing or marking it dirty).  The user space I/D handling is done in
-the mm code (I'm not claiming it's done correctly there, just claiming
-it's done there).
+I'm sorry you feel that way, and I am sorry that I wasn't able to
+reply earlier.  I am interested in generic gpio of support, but you
+also need to understand that the run up to the merge window is a busy
+time as I need to collect all the patches that I'm responsible for and
+get them into linux-next for testing well before the merge window
+opens.  I do not maintain gpiolib, and it was therefore quite low on
+my priority list at that time.  After the merge window closes, I'll
+have time to be more responsive again.
 
-> The problem at this point occurs on SMP architectures.  As soon as you
-> update the PTE entry, it is visible to other threads of the application.
-> If you do I-cache handling after updating the PTE, then there is a window
-> where another CPU can execute the page:
-> 
-> CPU0			CPU1
-> 			speculatively prefetches from page N via kernel
-> 			mapping, loads garbage into I-cache
-> attempts to execute P
-> page fault
-> page N allocated
-> set_pte_at
-> 			executes P
-> 			*splat*
-> flush I-cache
+Regardless, this series was not going to be merged through any of my
+trees because I'm not maintaining gpiolib.  Andrew asked me opinion on
+them, and I gave him my answer.  Andrew can make his own decision
+about whether or not to merge them, but my opinion still stands.
 
-OK, so I can believe this.  We see extremely rare segfaults on parisc
-which look to be the result of some I flush race like this.  However, I
-think for a discussion of problems with the arch and mm interfaces, we
-should probably move off the usb list and onto linux-arch.
+I'm sorry that I upset you.  It was not my intention.  Please keep in
+mind that it is not unusual for patches to take more than one cycle to
+get merged.  For example, I've got patches out on the ARM list that
+were posted well before the merge window that have neither received
+comments, nor will be merged.  I'll pursue them again after this merge
+window closes and other maintainers have more bandwidth to make a good
+decision about them.
 
-Our specific problem on parisc is that being VIPT we can't do an I (or
-D) user flush without a mapping.  We have two schemes for fixing this:
-One is to use a PAGE_FLUSH flag for the mapping ... it allows the
-flushes to work but refuses any type of RWX access (can do this because
-we have a software TLB).  The other is to use a flush area within the
-kernel where we flush a page congruent to the userspace address ... I
-haven't got this working yet, and it's a bit wasteful of kernel address
-space because our congruence modulus is 4MB.
+g.
 
-James
-
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
