@@ -1,189 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182Ab0CGMka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 07:40:30 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:49801 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576Ab0CGMk2 convert rfc822-to-8bit (ORCPT
+	id S1754284Ab0CGMlT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 07:41:19 -0500
+Received: from mail-wy0-f174.google.com ([74.125.82.174]:45251 "EHLO
+	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753645Ab0CGMlR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 07:40:28 -0500
+	Sun, 7 Mar 2010 07:41:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=geo+MroWJHhsATPMLKxQJTLuT0H9olkZXZHB7VcF4jFDAkL0ggFnma5m6LnL9CB+EA
-         G9FDYCbs4IcX+XquL4xs5+a1MlNBn5n3bFbg1TCcW8puaG/eNeHdY3PmnLFMXPq5rNgE
-         5s+iU4Ia+q5xJ5kq341V6wgfy1ZaudSwmWjbk=
+        b=w21FurPDotSI+qV5DrWt6eP5mW2qwjvzC0kvw3Pib6XVcjTaZnFPZlj9xgE9iJVMVQ
+         o+Iep5SF6wt4tmzvLV4g29bvSjkxUNWa8jKr54m9PTthgz5DdrFhO7yYcifVNvbEMqA5
+         rOWuN7H2jlCgiXHd66vpI7pHAkkkHcUNgNpxk=
 MIME-Version: 1.0
-In-Reply-To: <20091015083933.815963538@linutronix.de>
-References: <20091015083906.716130653@linutronix.de>
-	 <20091015083933.815963538@linutronix.de>
-Date: Sun, 7 Mar 2010 13:40:27 +0100
-X-Google-Sender-Auth: 2661c5837bff02e1
-Message-ID: <10f740e81003070440q3697c089o72ff9f3abcf9d293@mail.gmail.com>
-Subject: Re: [patch 2/7] m68k: Remove BKL from rtc implementations
+In-Reply-To: <1265478443-31072-4-git-send-email-elendil@planet.nl>
+References: <201002061844.45212.elendil@planet.nl>
+	 <1265478443-31072-4-git-send-email-elendil@planet.nl>
+Date: Sun, 7 Mar 2010 13:41:15 +0100
+X-Google-Sender-Auth: 9a3b23ec55e686b7
+Message-ID: <10f740e81003070441w64ba9c56ve17c343d6310ead9@mail.gmail.com>
+Subject: Re: [PATCH 04/16] m68k: remove trailing space in messages
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnd Bergmann <arnd@arndb.de>, ALan Cox <alan@lxorguk.ukuu.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 09:42, Thomas Gleixner <tglx@linutronix.de> wrote:
-> m68k does not support SMP. The access to the rtc is already serialized
-> with local_irq_save/restore which is sufficient on UP.
->
-> The open() protection in arch/m68k/mvme16x/rtc.c is not pretty but
-> sufficient on UP and safe w/o the BKL.
->
-> open() in arch/m68k/bvme6000/rtc.c can do with the same atomic logic
-> as arch/m68k/mvme16x/rtc.c
+On Sat, Feb 6, 2010 at 18:47, Frans Pop <elendil@planet.nl> wrote:
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: Roman Zippel <zippel@linux-m68k.org>
 
 Thx, applied.
 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
->  arch/m68k/bvme6000/rtc.c |   29 +++++++++--------------------
->  arch/m68k/mvme16x/rtc.c  |   19 +++++--------------
->  2 files changed, 14 insertions(+), 34 deletions(-)
+>  arch/m68k/kernel/traps.c |    2 +-
+>  arch/m68k/mac/config.c   |   10 +++++-----
+>  arch/m68k/q40/config.c   |    2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
 >
-> Index: linux-2.6-tip/arch/m68k/bvme6000/rtc.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/m68k/bvme6000/rtc.c
-> +++ linux-2.6-tip/arch/m68k/bvme6000/rtc.c
-> @@ -10,7 +10,6 @@
->  #include <linux/errno.h>
->  #include <linux/miscdevice.h>
->  #include <linux/slab.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/ioport.h>
->  #include <linux/capability.h>
->  #include <linux/fcntl.h>
-> @@ -36,10 +35,9 @@
->  static unsigned char days_in_mo[] =
->  {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+> diff --git a/arch/m68k/kernel/traps.c b/arch/m68k/kernel/traps.c
+> index aacd6d1..e533f32 100644
+> --- a/arch/m68k/kernel/traps.c
+> +++ b/arch/m68k/kernel/traps.c
+> @@ -455,7 +455,7 @@ static inline void access_error040(struct frame *fp)
 >
-> -static char rtc_status;
-> +static atomic_t rtc_status = ATOMIC_INIT(1);
->
-> -static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-> -                    unsigned long arg)
-> +static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+>                if (do_page_fault(&fp->ptregs, addr, errorcode)) {
+>  #ifdef DEBUG
+> -                       printk("do_page_fault() !=0 \n");
+> +                       printk("do_page_fault() !=0\n");
+>  #endif
+>                        if (user_mode(&fp->ptregs)){
+>                                /* delay writebacks after signal delivery */
+> diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
+> index 0356da9..1c16b1b 100644
+> --- a/arch/m68k/mac/config.c
+> +++ b/arch/m68k/mac/config.c
+> @@ -148,7 +148,7 @@ static void mac_cache_card_flush(int writeback)
+>  void __init config_mac(void)
 >  {
->        volatile RtcPtr_t rtc = (RtcPtr_t)BVME_RTC_BASE;
->        unsigned char msr;
-> @@ -133,29 +131,20 @@ static int rtc_ioctl(struct inode *inode
->  }
+>        if (!MACH_IS_MAC)
+> -               printk(KERN_ERR "ERROR: no Mac, but config_mac() called!! \n");
+> +               printk(KERN_ERR "ERROR: no Mac, but config_mac() called!!\n");
 >
->  /*
-> - *     We enforce only one user at a time here with the open/close.
-> - *     Also clear the previous interrupt data on an open, and clean
-> - *     up things on a close.
-> + * We enforce only one user at a time here with the open/close.
->  */
-> -
->  static int rtc_open(struct inode *inode, struct file *file)
+>        mach_sched_init = mac_sched_init;
+>        mach_init_IRQ = mac_init_IRQ;
+> @@ -867,7 +867,7 @@ static void __init mac_identify(void)
+>         */
+>        iop_preinit();
+>
+> -       printk(KERN_INFO "Detected Macintosh model: %d \n", model);
+> +       printk(KERN_INFO "Detected Macintosh model: %d\n", model);
+>
+>        /*
+>         * Report booter data:
+> @@ -878,12 +878,12 @@ static void __init mac_identify(void)
+>                mac_bi_data.videoaddr, mac_bi_data.videorow,
+>                mac_bi_data.videodepth, mac_bi_data.dimensions & 0xFFFF,
+>                mac_bi_data.dimensions >> 16);
+> -       printk(KERN_DEBUG " Videological 0x%lx phys. 0x%lx, SCC at 0x%lx \n",
+> +       printk(KERN_DEBUG " Videological 0x%lx phys. 0x%lx, SCC at 0x%lx\n",
+>                mac_bi_data.videological, mac_orig_videoaddr,
+>                mac_bi_data.sccbase);
+> -       printk(KERN_DEBUG " Boottime: 0x%lx GMTBias: 0x%lx \n",
+> +       printk(KERN_DEBUG " Boottime: 0x%lx GMTBias: 0x%lx\n",
+>                mac_bi_data.boottime, mac_bi_data.gmtbias);
+> -       printk(KERN_DEBUG " Machine ID: %ld CPUid: 0x%lx memory size: 0x%lx \n",
+> +       printk(KERN_DEBUG " Machine ID: %ld CPUid: 0x%lx memory size: 0x%lx\n",
+>                mac_bi_data.id, mac_bi_data.cpuid, mac_bi_data.memsize);
+>
+>        iop_init();
+> diff --git a/arch/m68k/q40/config.c b/arch/m68k/q40/config.c
+> index 31ab3f0..ad10fec 100644
+> --- a/arch/m68k/q40/config.c
+> +++ b/arch/m68k/q40/config.c
+> @@ -126,7 +126,7 @@ static void q40_reset(void)
 >  {
-> -       lock_kernel();
-> -       if(rtc_status) {
-> -               unlock_kernel();
-> +       if (!atomic_dec_and_test(&rtc_status)) {
-> +               atomic_inc(&rtc_status);
->                return -EBUSY;
->        }
-> -
-> -       rtc_status = 1;
-> -       unlock_kernel();
->        return 0;
->  }
->
->  static int rtc_release(struct inode *inode, struct file *file)
->  {
-> -       lock_kernel();
-> -       rtc_status = 0;
-> -       unlock_kernel();
-> +       atomic_inc(&rtc_status);
->        return 0;
->  }
->
-> @@ -164,9 +153,9 @@ static int rtc_release(struct inode *ino
->  */
->
->  static const struct file_operations rtc_fops = {
-> -       .ioctl =        rtc_ioctl,
-> -       .open =         rtc_open,
-> -       .release =      rtc_release,
-> +       .unlocked_ioctl = rtc_ioctl,
-> +       .open           = rtc_open,
-> +       .release        = rtc_release,
->  };
->
->  static struct miscdevice rtc_dev = {
-> Index: linux-2.6-tip/arch/m68k/mvme16x/rtc.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/m68k/mvme16x/rtc.c
-> +++ linux-2.6-tip/arch/m68k/mvme16x/rtc.c
-> @@ -10,7 +10,6 @@
->  #include <linux/errno.h>
->  #include <linux/miscdevice.h>
->  #include <linux/slab.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/ioport.h>
->  #include <linux/capability.h>
->  #include <linux/fcntl.h>
-> @@ -37,8 +36,7 @@ static const unsigned char days_in_mo[]
->
->  static atomic_t rtc_ready = ATOMIC_INIT(1);
->
-> -static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-> -                    unsigned long arg)
-> +static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->  {
->        volatile MK48T08ptr_t rtc = (MK48T08ptr_t)MVME_RTC_BASE;
->        unsigned long flags;
-> @@ -121,22 +119,15 @@ static int rtc_ioctl(struct inode *inode
->  }
->
->  /*
-> - *     We enforce only one user at a time here with the open/close.
-> - *     Also clear the previous interrupt data on an open, and clean
-> - *     up things on a close.
-> + * We enforce only one user at a time here with the open/close.
->  */
-> -
->  static int rtc_open(struct inode *inode, struct file *file)
->  {
-> -       lock_kernel();
->        if( !atomic_dec_and_test(&rtc_ready) )
->        {
->                atomic_inc( &rtc_ready );
-> -               unlock_kernel();
->                return -EBUSY;
->        }
-> -       unlock_kernel();
-> -
->        return 0;
->  }
->
-> @@ -151,9 +142,9 @@ static int rtc_release(struct inode *ino
->  */
->
->  static const struct file_operations rtc_fops = {
-> -       .ioctl =        rtc_ioctl,
-> -       .open =         rtc_open,
-> -       .release =      rtc_release,
-> +       .unlocked_ioctl = rtc_ioctl,
-> +       .open           = rtc_open,
-> +       .release        = rtc_release,
->  };
->
->  static struct miscdevice rtc_dev=
+>         halted = 1;
+>         printk("\n\n*******************************************\n"
+> -               "Called q40_reset : press the RESET button!! \n"
+> +               "Called q40_reset : press the RESET button!!\n"
+>                "*******************************************\n");
+>        Q40_LED_ON();
+>        while (1)
 
 Gr{oetje,eeting}s,
 
