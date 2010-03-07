@@ -1,44 +1,174 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018Ab0CGWLy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 17:11:54 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54859 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798Ab0CGWLx (ORCPT
+	id S1755021Ab0CGW3S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 17:29:18 -0500
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:35751 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087Ab0CGW3Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 17:11:53 -0500
-Date: Sun, 7 Mar 2010 14:11:50 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Chris Wilson <chris@chris-wilson.co.uk>
-Cc: linux-kernel@vger.kernel.org, Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: [PATCH] async: Manage execution domains
-Message-ID: <20100307141150.51b3518a@linux.intel.com>
-In-Reply-To: <1267989149-10825-1-git-send-email-chris@chris-wilson.co.uk>
-References: <1267989149-10825-1-git-send-email-chris@chris-wilson.co.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Mar 2010 17:29:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type
+	:content-transfer-encoding; q=dns; s=sasl; b=fmErs0YI5kDeuMQ79Yy
+	RnRvGvjBjRCiDbL/is/pkllZAlpHWou5f6KoVsvVqOp+i97+THuoc2ET9ElKKDdC
+	zU/Vi54LS6G0hzQTPRWU1Oa+UXxwLYXsLhjM8yL3zHQeFO6EqsBmR//JKu2LtzLe
+	DtuOq9l5IPbSFdgtfmdNUgIE=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] Git 1.7.0.2
+From: Junio C Hamano <gitster@pobox.com>
+Date: Sun, 07 Mar 2010 14:29:03 -0800
+Message-ID: <7vy6i3epg0.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+X-Pobox-Relay-ID: D9E439EC-2A38-11DF-8385-D033EE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun,  7 Mar 2010 19:12:29 +0000
-Chris Wilson <chris@chris-wilson.co.uk> wrote:
+The latest maintenance release Git 1.7.0.2 is available at the
+usual places:
 
-> Currently execution domains do not interact well with full
-> synchronisation requests. If the sync request is performed before the
-> async task has begun, then the manager will never schedule() and so
-> busy-wait forever on a UP box. By reorganising the tasks into both a
-> per-domain and global list, we can either wait on a single execution
-> domain or globally over all tasks, as intended.
+  http://www.kernel.org/pub/software/scm/git/
 
-the intention has never been to wait for all tasks, at least not for
-tasks that have their own domain rather than using the global domain.
+  git-1.7.0.2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.7.0.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.7.0.2.tar.{gz,bz2}		(preformatted docs)
 
+The RPM binary packages for a few architectures are found in:
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+  RPMS/$arch/git-*-1.7.0.2-1.fc11.$arch.rpm	(RPM)
+
+Git v1.7.0.2 Release Notes
+==========================
+
+Fixes since v1.7.0.1
+--------------------
+
+ * GIT_PAGER was not honored consistently by some scripted Porcelains, most
+   notably "git am".
+
+ * updating working tree files after telling git to add them to the
+   index and while it is still working created garbage object files in
+   the repository without diagnosing it as an error.
+
+ * "git bisect -- pathspec..." did not diagnose an error condition properly when
+   the simplification with given pathspec made the history empty.
+
+ * "git rev-list --cherry-pick A...B" now has an obvious optimization when the
+   histories haven't diverged (i.e. when one end is an ancestor of the other).
+
+ * "git diff --quiet -w" did not work as expected.
+
+ * "git fast-import" didn't work with a large input, as it lacked support
+   for producing the pack index in v2 format.
+
+ * "git imap-send" didn't use CRLF line endings over the imap protocol
+   when storing its payload to the draft box, violating RFC 3501.
+
+ * "git log --format='%w(x,y,z)%b'" and friends that rewrap message
+   has been optimized for utf-8 payload.
+
+ * Error messages generated on the receiving end did not come back to "git
+   push".
+
+ * "git status" in 1.7.0 lacked the optimization we used to have in 1.6.X series
+   to speed up scanning of large working tree.
+
+ * "gitweb" did not diagnose parsing errors properly while reading tis configuration
+   file.
+
+And other minor fixes and documentation updates.
+
+----------------------------------------------------------------
+
+Changes since v1.7.0.1 are as follows:
+
+Bert Wesarg (1):
+      unset GREP_OPTIONS in test-lib.sh
+
+Christian Couder (1):
+      bisect: error out when passing bad path parameters
+
+Dmitry Potapov (1):
+      hash-object: don't use mmap() for small files
+
+Erik Faye-Lund (1):
+      run-command: support custom fd-set in async
+
+Gabriel Filion (1):
+      require_work_tree broken with NONGIT_OK
+
+Hitoshi Mitake (1):
+      git-imap-send: Convert LF to CRLF before storing patch to draft box
+
+Jakub Narebski (2):
+      gitweb: Die if there are parsing errors in config file
+      gitweb: Fix project-specific feature override behavior
+
+Jonathan Nieder (8):
+      Fix 'git var' usage synopsis
+      Make 'git var GIT_PAGER' always print the configured pager
+      git.1: Clarify the behavior of the --paginate option
+      git svn: Fix launching of pager
+      am: Fix launching of pager
+      tests: Add tests for automatic use of pager
+      t7006-pager: if stdout is not a terminal, make a new one
+      tests: Fix race condition in t7006-pager
+
+Junio C Hamano (6):
+      t6000lib: Fix permission
+      lib-patch-mode.sh: Fix permission
+      status: preload index to optimize lstat(2) calls
+      Start preparing for 1.7.0.2
+      Update draft release notes to 1.7.0.2
+      Git 1.7.0.2
+
+Larry D'Anna (2):
+      git diff --quiet -w: check and report the status
+      git-diff: add a test for git diff --quiet -w
+
+Matthieu Moy (1):
+      stash: suggest the correct command line for unknown options.
+
+Michal Sojka (1):
+      Remove extra '-' from git-am(1)
+
+Nicolas Pitre (8):
+      fast-import: start using struct pack_idx_entry
+      fast-import: use sha1write() for pack data
+      fast-import: use write_idx_file() instead of custom code
+      fast-import: make default pack size unlimited
+      fast-import: honor pack.indexversion and pack.packsizelimit config vars
+      fast-import: use the diff_delta() max_delta_size argument
+      sha1_file: don't malloc the whole compressed result when writing out objects
+      sha1_file: be paranoid when creating loose objects
+
+René Scharfe (4):
+      utf8.c: remove print_wrapped_text()
+      utf8.c: remove print_spaces()
+      utf8.c: remove strbuf_write()
+      utf8.c: speculatively assume utf-8 in strbuf_add_wrapped_text()
+
+Shawn O. Pearce (7):
+      run-command: Allow stderr to be a caller supplied pipe
+      send-pack: demultiplex a sideband stream with status data
+      receive-pack: Refactor how capabilities are shown to the client
+      receive-pack: Wrap status reports inside side-band-64k
+      receive-pack: Send hook output over side band #2
+      t5401: Use a bare repository for the remote peer
+      receive-pack: Send internal errors over side-band #2
+
+Stephen Boyd (1):
+      t7406: Fix submodule init config tests
+
+Sylvain Rabot (1):
+      gitweb multiple project roots documentation
+
+Tay Ray Chuan (1):
+      transport: add got_remote_refs flag
+
+Thomas Rast (1):
+      cherry_pick_list: quit early if one side is empty
+
