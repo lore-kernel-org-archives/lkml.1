@@ -1,55 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751391Ab0CGXn3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 18:43:29 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:43439 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931Ab0CGXn2 (ORCPT
+	id S1751559Ab0CGXwH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 18:52:07 -0500
+Received: from mail-yx0-f174.google.com ([209.85.210.174]:33728 "EHLO
+	mail-yx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959Ab0CGXwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 18:43:28 -0500
-Date: Sun, 7 Mar 2010 15:41:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] scripts/kernel-doc: handle struct member __aligned
-Message-Id: <20100307154156.5062c9c7.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 7 Mar 2010 18:52:04 -0500
+X-Greylist: delayed 1438 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Mar 2010 18:52:04 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=PrzBBw/N7x5yQmESPcDIvyTSNOUJqL1qSCCo5uehKjjvCUstaDw3fHqwPDyknssrPo
+         wsWBtkH4wiCx6EJjsYdg03ZknGpWZ6/ua28h3XjCeqxF+x3d8MtrtrgS2bEKYalslILD
+         bkqGq3Cn7iuT+3bu5R4pY2FL8uSQMPBMUnqtk=
+Message-ID: <4B94367E.9080506@garzik.org>
+Date: Sun, 07 Mar 2010 18:27:58 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: linux-ext4@vger.kernel.org
+CC: Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
+Subject: defrag deployment status (was Re: [PATCH] ext4: allow defrag (EXT4_IOC_MOVE_EXT)
+ in 32bit compat mode)
+References: <201003072132.10579.borntraeger@de.ibm.com>
+In-Reply-To: <201003072132.10579.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B943A15.0147:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 03/07/2010 03:32 PM, Christian Borntraeger wrote:
+> I have an x86_64 kernel with i386 userspace. e4defrag fails on the
+> EXT4_IOC_MOVE_EXT ioctl because it is not wired up for the compat
+> case. It seems that struct move_extent is compat save, only types
+> with fixed widths are used:
+> {
+>          __u32 reserved;         /* should be zero */
+>          __u32 donor_fd;         /* donor file descriptor */
+>          __u64 orig_start;       /* logical start offset in block for orig */
+>          __u64 donor_start;      /* logical start offset in block for donor */
+>          __u64 len;              /* block length to be moved */
+>          __u64 moved_len;        /* moved block length */
+> };
+>
+> Lets just wire up EXT4_IOC_MOVE_EXT for the compat case.
+>
+> Signed-off-by: Christian Borntraeger<borntraeger@de.ibm.com>
+> CCed: Akira Fujita<a-fujita@rs.jp.nec.com>
 
-scripts/kernel-doc erroneously says:
+I'm curious, what is the overall deployment status of ext4 defragging? 
+I actually worked on this problem years ago[1], and am hopeful that I 
+will see defragging in a Linux distribution sometime in my lifetime!  ;-)
 
-Warning(include/linux/skbuff.h:410): Excess struct/union/enum/typedef member 'cb' description in 'sk_buff'
+Looking at Fedora rawhide, I do not see anything resembling e4defrag in 
+any of the RPM packages like e2fsprogs.
 
-on this line in struct sk_buff:
-	char			cb[48] __aligned(8);
+Thanks to everyone working on this,
 
-due to treating the last field as the struct member name, so
-teach kernel-doc to ignore __aligned(x) in structs.
+	Jeff
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    2 ++
- 1 file changed, 2 insertions(+)
 
---- linux-2.6.33-git13.orig/scripts/kernel-doc
-+++ linux-2.6.33-git13/scripts/kernel-doc
-@@ -1424,6 +1424,8 @@ sub dump_struct($$) {
- 	$nested =~ s/\/\*.*?\*\///gos;
- 	# strip kmemcheck_bitfield_{begin,end}.*;
- 	$members =~ s/kmemcheck_bitfield_.*?;//gos;
-+	# strip attributes
-+	$members =~ s/__aligned\s*\(\d+\)//gos;
- 
- 	create_parameterlist($members, ';', $file);
- 	check_sections($file, $declaration_name, "struct", $sectcheck, $struct_actual, $nested);
+
+
+[1] http://linux.yyz.us/misc/ext2meta.c
+
