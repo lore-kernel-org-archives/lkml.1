@@ -1,86 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752876Ab0CGJWe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 04:22:34 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:58920 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245Ab0CGJW3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 04:22:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=aRPOt7GhM3CQdgHa+/d84DHELs1ya3o1e1ORI3hn2huX3oQ2nDAQiipilen8y3Fpa9
-         0JYLtHFRoIi5I3jcEFuZB2owS2CsjWDkULObOgSt4/Ja0vVOTKM66GGc5ku0AVlyxO+k
-         Jn69dMEVYtPFdy7Tvofl5g2OQ8A4hZB66Kkwc=
+	id S1753312Ab0CGJhl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 04:37:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14051 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751813Ab0CGJhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 04:37:39 -0500
+Message-ID: <4B937363.4070406@redhat.com>
+Date: Sun, 07 Mar 2010 11:35:31 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <20100225144122.d9ba8810.randy.dunlap@oracle.com>
-References: <20100225183523.80361261.sfr@canb.auug.org.au>
-	 <20100225144122.d9ba8810.randy.dunlap@oracle.com>
-Date: Sun, 7 Mar 2010 10:22:27 +0100
-X-Google-Sender-Auth: 53e12898a99ad277
-Message-ID: <10f740e81003070122y32765942y33c167b5ba4ca8ac@mail.gmail.com>
-Subject: Re: [PATCH -next] staging/pohmelfs: fix write_inode parameter warning
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, Evgeniy Polyakov <zbr@ioremap.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Zachary Amsden <zamsden@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>, ming.m.lin@intel.com,
+       sheng.yang@intel.com, Jes Sorensen <Jes.Sorensen@redhat.com>,
+       KVM General <kvm@vger.kernel.org>, Gleb Natapov <gleb@redhat.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: KVM usability
+References: <4B87A6BF.3090301@redhat.com> <20100226111734.GE7463@elte.hu> <4B8813F2.8090208@redhat.com> <20100227105643.GA17425@elte.hu> <4B893B2B.40301@redhat.com> <20100227172546.GA31472@elte.hu> <4B8BEFC7.2040000@redhat.com> <20100301174106.GB2362@ghostprotocols.net> <4B8C0778.8050908@redhat.com> <20100301205620.GA26151@elte.hu> <20100302103045.GA28310@elte.hu>
+In-Reply-To: <20100302103045.GA28310@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 23:41, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On 03/02/2010 12:30 PM, Ingo Molnar wrote:
+> * Ingo Molnar<mingo@elte.hu>  wrote:
 >
-> sparse warns that:
-
-Not just sparse, plain gcc as well...
-
-> drivers/staging/pohmelfs/inode.c:1797: warning: initialization from incompatible pointer type
+>    
+>> Here's our experience with tools/perf/. Hosting the project in the kernel
+>> proper helped its quality immensely:
+>>
+>>   - It's much easier to synchronize new features on the kernel side and on the
+>>     user-space side. The two go hand in hand - they are often implemented in
+>>     the same patch.
+>>      
+> Just look at an example from today, a perf+KVM feature patch posted by Yanmin
+> Zhang:
 >
-> so fix pohmelfs_write_inode() to have the expected parameters.
-
-And now it's in mainline, too...
-
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/staging/pohmelfs/inode.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>    http://www.mail-archive.com/kvm@vger.kernel.org/msg29770.html
 >
-> --- linux-next-20100225.orig/drivers/staging/pohmelfs/inode.c
-> +++ linux-next-20100225/drivers/staging/pohmelfs/inode.c
-> @@ -396,7 +396,8 @@ int pohmelfs_remove_child(struct pohmelf
->  /*
->  * Writeback for given inode.
->  */
-> -static int pohmelfs_write_inode(struct inode *inode, int sync)
-> +static int pohmelfs_write_inode(struct inode *inode,
-> +                               struct writeback_control *wbc)
->  {
->        struct pohmelfs_inode *pi = POHMELFS_I(inode);
+> That single patch implements the following "perf kvm" commands:
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>    perf kvm top
+>    perf kvm record
+>    perf kvm report
+>    perf kvm diff
 >
+> Both the kernel-space and the user-space changes are in that single patch.
+>
+> Anyone who'd like to try it out can apply it and get an updated kernel plus
+> updated tooling and can start profiling KVM guests straight away. You just
+> check out the kernel, apply the patch and that's it - you can go. It doesnt
+> get any more convenient than that to do development.
+>
+> Such kind of a unified repository is a powerful concept, and we make use of
+> those aspects of tools/perf/ every day. You could only pry it out of our cold,
+> dead fingers ;-)
+>    
 
+perf really is wonderful, but to be really competitive, and usable to 
+more developers, it needs to be in a graphical environment.  I want 
+'perf report' output to start out collapsed and drill down by clicking 
+on a tree widget.  Clicking on a function name opens its definition.  
+'perf annotate' should display annotations on my editor window, not in a 
+pager.  I should be able to check events on a list, not using 'perf list'.
 
+Is something like that suitable for tools/perf/?  I think you'll find 
+the intersection of kernel developers and GUI developers to be fairly small.
+
+> Btw., this is one of the things that FreeBSD does right - and i believe it is
+> one of the technical concepts behind Apple's success as well. Apple, with a
+> tenth's of Linux's effective R&D budget can consistently out-develop Linux. I
+> think that's in part due to there not being a strict chinese wall between the
+> Apple kernel, libraries and applications - it's one coherent project where
+> everyone is well-connected to each piece, with no artificial project-cultural
+> boundaries and barriers. People can and do move between those areas of the
+> larger "Apple" project to achieve their goals - regardless of how many
+> components need touching for a given area of interest.
+>
+> IMHO we should learn from that - while we are good in many areas there's
+> always aspects of Linux that can be improved. But i digress.
+>    
+
+Folding everything into the kernel tree is one way to approach it; IMO 
+it is completely unreasonable.  The kernel is a very small part of a 
+complete system.
 
 -- 
-Gr{oetje,eeting}s,
+error compiling committee.c: too many arguments to function
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
