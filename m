@@ -1,126 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751177Ab0CGGxa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 01:53:30 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:60031 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923Ab0CGGx2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 01:53:28 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC] drivercore: Add of_match_table to the common device drivers
-To: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	id S1751615Ab0CGHIA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 02:08:00 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42907 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136Ab0CGHH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 02:07:59 -0500
+Date: Sun, 7 Mar 2010 18:07:44 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
        kay.sievers@vrfy.org, gregkh@suse.de
-Date: Sat, 06 Mar 2010 23:47:00 -0700
-Message-ID: <20100307064111.1442.63478.stgit@angua>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC] drivercore: Add of_match_table to the common device
+ drivers
+Message-Id: <20100307180744.956998c5.sfr@canb.auug.org.au>
+In-Reply-To: <20100307064111.1442.63478.stgit@angua>
+References: <20100307064111.1442.63478.stgit@angua>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__7_Mar_2010_18_07_44_+1100_t/SLSVRYrNVMKvge"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OF-style matching can be available to any device, on any type of bus.
-This patch allows any driver to provide an OF match table when CONFIG_OF
-is enabled so that drivers can be bound against devices described in
-the device tree.
+--Signature=_Sun__7_Mar_2010_18_07_44_+1100_t/SLSVRYrNVMKvge
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Hi Grant,
 
-Hi Greg and Kay,
+Just a quick note:
 
-Here is a potentially even more controversial RFC patch, the relevant
-chunk being the addition of an of-style match table to struct device_driver
-when CONFIG_OF is set.  The idea being that OF style device binding is
-applicable on any bus, regardless of the bus type.  Each bus' probe could
-be trivially extended to allow for an OF-style probe match.
+On Sat, 06 Mar 2010 23:47:00 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asi=
+c.c
+> index 67fe13f..a5806ab 100644
+> --- a/drivers/macintosh/macio_asic.c
+> +++ b/drivers/macintosh/macio_asic.c
+> @@ -40,8 +40,7 @@ static struct macio_chip      *macio_on_hold;
+>  static int macio_bus_match(struct device *dev, struct device_driver *drv=
+)=20
+>  {
+>  	struct macio_dev * macio_dev =3D to_macio_device(dev);
+> -	struct macio_driver * macio_drv =3D to_macio_driver(drv);
+> -	const struct of_device_id * matches =3D macio_drv->match_table;
+> +	const struct of_device_id * matches =3D drv->match_table;
+                                                   ^^^^^^^^^^^
+of_match_table
 
-I've used a #ifdef in this version, but it doesn't have to be conditional
-if that would make for cleaner code.  Either way, none of the core code
-would need to have and #ifdef bits.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-As with the previous patch, I want to get feedback before I proceed too
-far down this path.
+--Signature=_Sun__7_Mar_2010_18_07_44_+1100_t/SLSVRYrNVMKvge
+Content-Type: application/pgp-signature
 
-Thanks,
-g.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkuTUMAACgkQjjKRsyhoI8xYvgCfSaC9bQ7bF9GWY3q/HYpa96fm
+h4wAn0u1SZgN6+q95twIDeqPglbbcxlX
+=zF28
+-----END PGP SIGNATURE-----
 
- drivers/macintosh/macio_asic.c |    5 ++---
- drivers/of/of_bus.c            |    7 ++++---
- include/linux/device.h         |    4 ++++
- 3 files changed, 10 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
-index 67fe13f..a5806ab 100644
---- a/drivers/macintosh/macio_asic.c
-+++ b/drivers/macintosh/macio_asic.c
-@@ -40,8 +40,7 @@ static struct macio_chip      *macio_on_hold;
- static int macio_bus_match(struct device *dev, struct device_driver *drv) 
- {
- 	struct macio_dev * macio_dev = to_macio_device(dev);
--	struct macio_driver * macio_drv = to_macio_driver(drv);
--	const struct of_device_id * matches = macio_drv->match_table;
-+	const struct of_device_id * matches = drv->match_table;
- 
- 	if (!matches) 
- 		return 0;
-@@ -84,7 +83,7 @@ static int macio_device_probe(struct device *dev)
- 
- 	macio_dev_get(macio_dev);
- 
--	match = of_match_device(drv->match_table, &macio_dev->ofdev);
-+	match = of_match_device(drv->driver.match_table, &macio_dev->ofdev);
- 	if (match)
- 		error = drv->probe(macio_dev, match);
- 	if (error)
-diff --git a/drivers/of/of_bus.c b/drivers/of/of_bus.c
-index d58ade1..9fd7f7d 100644
---- a/drivers/of/of_bus.c
-+++ b/drivers/of/of_bus.c
-@@ -22,8 +22,7 @@ extern struct device_attribute of_platform_device_attrs[];
- static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
- {
- 	struct of_device *of_dev = to_of_device(dev);
--	struct of_platform_driver *of_drv = to_of_platform_driver(drv);
--	const struct of_device_id *matches = of_drv->match_table;
-+	const struct of_device_id *matches = drv->of_match_table;
- 
- 	if (!matches)
- 		return 0;
-@@ -46,7 +45,7 @@ static int of_platform_device_probe(struct device *dev)
- 
- 	of_dev_get(of_dev);
- 
--	match = of_match_device(drv->match_table, of_dev);
-+	match = of_match_device(drv->driver.of_match_table, of_dev);
- 	if (match)
- 		error = drv->probe(of_dev, match);
- 	if (error)
-@@ -391,6 +390,8 @@ int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
- 		drv->driver.name = drv->name;
- 	if (!drv->driver.owner)
- 		drv->driver.owner = drv->owner;
-+	if (!drv->driver.of_match_table)
-+		drv->driver.of_match_table = drv->match_table;
- 	drv->driver.bus = bus;
- 
- 	/* register with core */
-diff --git a/include/linux/device.h b/include/linux/device.h
-index c9b199a..0f998f5 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -129,6 +129,10 @@ struct device_driver {
- 
- 	bool suppress_bind_attrs;	/* disables bind/unbind via sysfs */
- 
-+#if defined(CONFIG_OF)
-+	const struct of_device_id	*of_match_table;
-+#endif
-+
- 	int (*probe) (struct device *dev);
- 	int (*remove) (struct device *dev);
- 	void (*shutdown) (struct device *dev);
-
+--Signature=_Sun__7_Mar_2010_18_07_44_+1100_t/SLSVRYrNVMKvge--
