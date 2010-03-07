@@ -1,60 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549Ab0CGIXe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 03:23:34 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:36570 "EHLO
+	id S1752682Ab0CGIZJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 03:25:09 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:36741 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750857Ab0CGIXd (ORCPT
+	by vger.kernel.org with ESMTP id S1750857Ab0CGIZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 03:23:33 -0500
-Date: Sun, 7 Mar 2010 09:23:44 +0100
+	Sun, 7 Mar 2010 03:25:06 -0500
+Date: Sun, 7 Mar 2010 09:25:19 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James.Bottomley@HansenPartnership.com, benh@kernel.crashing.org,
-       linux@arm.linux.org.uk, mdharm-kernel@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
-       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
-       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100307082344.GB1987@elf.ucw.cz>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
- <1267316072.23523.1842.camel@pasglop>
- <1267333263.2762.11.camel@mulgrave.site>
- <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
- <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
- <20100303215437.GF2579@ucw.cz>
- <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
- <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
- <1267716956.6526.491.camel@e102109-lin.cambridge.arm.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, mgarski@post.pl, linux-input@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Route kbd leds through the generic leds layer (3rd
+ version)
+Message-ID: <20100307082519.GC1987@elf.ucw.cz>
+References: <20100224012010.GA4062@const>
+ <20100225013840.GA5519@const.homenet.telecomitalia.it>
+ <20100225102056.GG10823@core.coreip.homeip.net>
+ <20100225214403.GB9378@const.homenet.telecomitalia.it>
+ <20100226035448.GA16797@core.coreip.homeip.net>
+ <20100226103505.GB3992@const.homenet.telecomitalia.it>
+ <20100306065457.GE28759@elf.ucw.cz>
+ <20100306123058.GE5203@const.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1267716956.6526.491.camel@e102109-lin.cambridge.arm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100306123058.GE5203@const.famille.thibault.fr>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Seems like ARM has requirement other architectures do not, that is
-> > a) not documented anywhere
-> > b) causes problems
+On Sat 2010-03-06 13:30:58, Samuel Thibault wrote:
+> Pavel Machek, le Sat 06 Mar 2010 07:54:57 +0100, a écrit :
+> > > That being said, usermode tools which want to set up the modifiers and
+> > > connect the input LEDs to them need an easy and proper way to do so.
+> > > Having central input::numlock and such still seems a good thing.
+> > 
+> > This is something where I'm not too sure. Opening few files in
+> > sequence is not that hard to the userland so "group of leds"
+> > abstraction does not make too much sense...
 > 
-> Well, ARM is pretty similar to other architectures in this respect. And
-> I'm sure other architectures have similar problems, only that they only
-> become visible in some circumstances they may not have encountered (i.e.
-> PIO drivers + filesystem that doesn't call flush_dcache_page like ext*).
-> Some other architectures may do heavier flushing
-> 
-> Of course, a Documentation/arm/cachetlb.txt file would make sense.
+> But then userland has to monitor keyboard hotplug. At the moment,
+> neither kbd nor console-setup use a daemon to handle keyboards, and I
+> doubt their authors will be happy to have to.
 
-Actually, short/simple documentation for driver authors would be even
-better. Then you can claim it is bug in driver :-).
-								Pavel
+Okay, that makes some sense.
+
+But you mentioned having per-keyboard led would be quite easy, it does
+not seem to be controversial, so perhaps that's way to go, first?
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
