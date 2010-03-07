@@ -1,46 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784Ab0CGBDg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 20:03:36 -0500
-Received: from ozlabs.org ([203.10.76.45]:58829 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753449Ab0CGBDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 20:03:34 -0500
-Date: Sun, 7 Mar 2010 12:03:27 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Greg Thelen <gthelen@google.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Weiner <hannes@cmpxchg.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: please don't apply : bootmem: avoid DMA32 zone by default
-Message-ID: <20100307010327.GD15725@brick.ozlabs.ibm.com>
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com>
- <20100305032106.GA12065@cmpxchg.org>
- <49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
- <4B915074.4020704@kernel.org>
- <4B916BD6.8010701@kernel.org>
- <4B91EBC6.6080509@kernel.org>
- <20100306162234.e2cc84fb.akpm@linux-foundation.org>
+	id S1753809Ab0CGBFn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 20:05:43 -0500
+Received: from mail-qy0-f199.google.com ([209.85.221.199]:33848 "EHLO
+	mail-qy0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449Ab0CGBFm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 20:05:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=o71NMk2GtAHSWzYLpZ7jpCxsiWjlYS5OhM6UCDMuO37rA/XNtULO+GRl5fEJRg5UYN
+         tgIgHUjfNStaCEcya+65IWljK0k83ZjzkizfokKtqDxKJwEV3T3on6y8a5AnfQDyCSTi
+         vfGnYHhYvlXiZovbqdze/tWo3bFewPlv65ihc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100306162234.e2cc84fb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100306104131.GV28972@buzzloop.caiaq.de>
+References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com> 
+	<19346.6765.457769.167118@pilspetsen.it.uu.se> <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com> 
+	<20100306104131.GV28972@buzzloop.caiaq.de>
+From: dave b <db.pub.mail@gmail.com>
+Date: Sun, 7 Mar 2010 12:05:21 +1100
+Message-ID: <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
+Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 04:22:34PM -0800, Andrew Morton wrote:
-> Earlier, Johannes wrote
-> 
-> : Humm, now that is a bit disappointing.  Because it means we will never
-> : get rid of bootmem as long as it works for the other architectures. 
-> : And your changeset just added ~900 lines of code, some of it being a
-> : rather ugly compatibility layer in bootmem that I hoped could go away
-> : again sooner than later.
+Ok... however how should one test the memory of an arm machine? ...
+memtest is only for x86. *I am referring to the kernel memtest and not
+memtest86.
 
-Whoa!  Who's proposing to get rid of bootmem, and why?
 
-Paul.
+On 6 March 2010 21:41, Daniel Mack <daniel@caiaq.de> wrote:
+> On Sat, Mar 06, 2010 at 09:24:49PM +1100, dave b wrote:
+>> On 6 March 2010 20:03, Mikael Pettersson <mikpe@it.uu.se> wrote:
+>> > dave b writes:
+>> >  > Hi have now successfully built a 2.6.33 kernel on a linkstation pro
+>> >  > v2. This is an arm device. It is currently running debianÂ  lenny
+>> >  > armel.
+>> >  >
+>> >  >
+>> >  > I compiledÂ  (make) zImage, then did a make modules which failed on the
+>> >  > first two rounds of compiling the modules -
+>> >  >
+>> >  > "fs/afs/super.c: In function â€˜afs_test_superâ€™:
+>> >  > fs/afs/super.c:278: internal compiler error: Segmentation fault
+>> >  > Please submit a full bug report,
+>> >  > with preprocessed source if appropriate.
+>> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions."
+>> >  > This was the error encountered on the attempt at compiling the
+>> >  > modules.
+>> >  >
+>> >  > "crypto/gcm.c: In function â€˜crypto_gcm_setauthsizeâ€™:
+>> >  > crypto/gcm.c:152: internal compiler error: Segmentation fault
+>> >  > Please submit a full bug report,
+>> >  > with preprocessed source if appropriate.
+>> >  > See <file:///usr/share/doc/gcc-4.3/README.Bugs> for instructions.
+>> >  > make[1]: *** [crypto/gcm.o] Error 1"
+>> >  > This was the error the on the second attempt at compiling the modules.
+>> >  >
+>> >  > The 3rd attempt at building the modules was successful...
+>
+> Whenever I had comparable problems, it was _always_ faulty RAM on my
+> local machine, and I'm very sure you're seeing a similar. _If_ gcc
+> crashes, it will always do that for the same input.
+>
+> Daniel
+>
+>
