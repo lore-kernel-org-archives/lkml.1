@@ -1,248 +1,169 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364Ab0CGOeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 09:34:11 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:52013 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437Ab0CGOeI convert rfc822-to-8bit (ORCPT
+	id S1754416Ab0CGOg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 09:36:27 -0500
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:41277 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753437Ab0CGOg0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 09:34:08 -0500
+	Sun, 7 Mar 2010 09:36:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=tGcIbohE6hqhFpf+7Bn8M9EK9JpJA35sD3lRVqiNCPFqmv/sV92zqekyF66m14sl2z
-         OaY/302osS0lfhmkA4+L+ZQDvT3+llYZtqjqHUi1qwX5dzbmo1maz1x9Ew/KpzzDQEPY
-         b+yAQqO/GYaskfS5Hc1MYm8UrDpdje7Tz5BJ0=
-Date: Sun, 7 Mar 2010 15:33:29 +0100
-From: Ali =?UTF-8?B?R8O8bmTDvHo=?= <gndz.ali@gmail.com>
-To: gregkh@suse.de
-Cc: bzolnier@gmail.com, sd@sedf.de, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: Staging-rt2860-fix-coding-style-issues-in-rt_linux.c.patch
-Message-ID: <20100307153329.29c44889@200>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Uv+WQNu0weidyFKhInMhPkAhfV9HzMKmVZMJqXD8DQq7xTJZNOHcWR6OhfBpoPO6iF
+         wpkp0a4MYX3Oxarh4BxUzUxpnD/VsusA7AQVSJzzakPjC+CjV6jGO/p4keHcbS1hP0tF
+         baycQQBq/TOiTKgH1Sz/il/SxH23J0ayDCr/U=
+MIME-Version: 1.0
+In-Reply-To: <62e5edd41003061146x689527c9s5b3ab81eec3425a0@mail.gmail.com>
+References: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>
+	 <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>
+	 <4B8F974A.4090001@redhat.com>
+	 <62e5edd41003040336x16253369ycb1905a9938432db@mail.gmail.com>
+	 <4B8F9FC6.9030105@redhat.com>
+	 <62e5edd41003061146x689527c9s5b3ab81eec3425a0@mail.gmail.com>
+Date: Sun, 7 Mar 2010 15:36:24 +0100
+Message-ID: <1820d69d1003070636y7fee5ce1q5e60f40d93379065@mail.gmail.com>
+Subject: Re: Gspca USB driver zc3xx and STV06xx probe the same device ..
+From: Gabriel C <nix.or.die@googlemail.com>
+To: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jean-Francois Moine <moinejf@free.fr>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Hans de Goede <hdegoede@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Staging: rt2860: fix coding style issues in rt_linux.c
-This is a patch to rt_linux.c that fixes various coding style issues
-Signed-off-by: Ali GÃ¼ndÃ¼z <gndz.ali@gmail.com>
-diff --git a/drivers/staging/rt2860/rt_linux.c
-b/drivers/staging/rt2860/rt_linux.c index 9357fb2..9afc7dd 100644
---- a/drivers/staging/rt2860/rt_linux.c
-+++ b/drivers/staging/rt2860/rt_linux.c
-@@ -80,7 +80,7 @@ char const
-*pWirelessFloodEventText[IW_FLOOD_EVENT_TYPE_NUM] = { };
- 
- /* timeout -- ms */
--void RTMP_SetPeriodicTimer(struct timer_list * pTimer,
-+void RTMP_SetPeriodicTimer(struct timer_list *pTimer,
- 			   IN unsigned long timeout)
- {
- 	timeout = ((timeout * OS_HZ) / 1000);
-@@ -90,7 +90,7 @@ void RTMP_SetPeriodicTimer(struct timer_list * pTimer,
- 
- /* convert NdisMInitializeTimer --> RTMP_OS_Init_Timer */
- void RTMP_OS_Init_Timer(struct rt_rtmp_adapter *pAd,
--			struct timer_list * pTimer,
-+			struct timer_list *pTimer,
- 			IN TIMER_FUNCTION function, void *data)
- {
- 	init_timer(pTimer);
-@@ -98,7 +98,7 @@ void RTMP_OS_Init_Timer(struct rt_rtmp_adapter *pAd,
- 	pTimer->function = function;
- }
- 
--void RTMP_OS_Add_Timer(struct timer_list * pTimer,
-+void RTMP_OS_Add_Timer(struct timer_list *pTimer,
- 		       IN unsigned long timeout)
- {
- 	if (timer_pending(pTimer))
-@@ -109,22 +109,20 @@ void RTMP_OS_Add_Timer(struct timer_list * pTimer,
- 	add_timer(pTimer);
- }
- 
--void RTMP_OS_Mod_Timer(struct timer_list * pTimer,
-+void RTMP_OS_Mod_Timer(struct timer_list *pTimer,
- 		       IN unsigned long timeout)
- {
- 	timeout = ((timeout * OS_HZ) / 1000);
- 	mod_timer(pTimer, jiffies + timeout);
- }
- 
--void RTMP_OS_Del_Timer(struct timer_list * pTimer,
-+void RTMP_OS_Del_Timer(struct timer_list *pTimer,
- 		       OUT BOOLEAN * pCancelled)
- {
--	if (timer_pending(pTimer)) {
-+	if (timer_pending(pTimer))
- 		*pCancelled = del_timer_sync(pTimer);
--	} else {
-+	else
- 		*pCancelled = TRUE;
--	}
--
- }
- 
- void RTMP_OS_Release_Packet(struct rt_rtmp_adapter *pAd, struct
-rt_queue_entry *pEntry) @@ -144,7 +142,7 @@ void RTMPusecDelay(unsigned
-long usec) udelay(usec % 50);
- }
- 
--void RTMP_GetCurrentSystemTime(LARGE_INTEGER * time)
-+void RTMP_GetCurrentSystemTime(LARGE_INTEGER *time)
- {
- 	time->u.LowPart = jiffies;
- }
-@@ -154,9 +152,9 @@ int os_alloc_mem(struct rt_rtmp_adapter *pAd, u8 **
-mem, unsigned long size) {
- 	*mem = (u8 *)kmalloc(size, GFP_ATOMIC);
- 	if (*mem)
--		return (NDIS_STATUS_SUCCESS);
-+		return NDIS_STATUS_SUCCESS;
- 	else
--		return (NDIS_STATUS_FAILURE);
-+		return NDIS_STATUS_FAILURE;
- }
- 
- /* pAd MUST allow to be NULL */
-@@ -165,7 +163,7 @@ int os_free_mem(struct rt_rtmp_adapter *pAd, void
-*mem) 
- 	ASSERT(mem);
- 	kfree(mem);
--	return (NDIS_STATUS_SUCCESS);
-+	return NDIS_STATUS_SUCCESS;
- }
- 
- void *RtmpOSNetPktAlloc(struct rt_rtmp_adapter *pAd, IN int size)
-@@ -189,9 +187,8 @@ void *RTMP_AllocateFragPacketBuffer(struct
-rt_rtmp_adapter *pAd, ("can't allocate frag rx %ld size packet\n",
-Length)); }
- 
--	if (pkt) {
-+	if (pkt)
- 		RTMP_SET_PACKET_SOURCE(OSPKT_TO_RTPKT(pkt),
-PKTSRC_NDIS);
--	}
- 
- 	return (void *)pkt;
- }
-@@ -199,7 +196,7 @@ void *RTMP_AllocateFragPacketBuffer(struct
-rt_rtmp_adapter *pAd, void *RTMP_AllocateTxPacketBuffer(struct
-rt_rtmp_adapter *pAd, unsigned long Length,
- 					 IN BOOLEAN Cached,
--					 void ** VirtualAddress)
-+					 void **VirtualAddress)
- {
- 	struct sk_buff *pkt;
- 
-@@ -267,7 +264,7 @@ void RTMPFreeAdapter(struct rt_rtmp_adapter *pAd)
- 
- BOOLEAN OS_Need_Clone_Packet(void)
- {
--	return (FALSE);
-+	return FALSE;
- }
- 
- /*
-@@ -295,7 +292,7 @@ BOOLEAN OS_Need_Clone_Packet(void)
- int RTMPCloneNdisPacket(struct rt_rtmp_adapter *pAd,
- 				IN BOOLEAN pInsAMSDUHdr,
- 				void *pInPacket,
--				void ** ppOutPacket)
-+				void **ppOutPacket)
- {
- 
- 	struct sk_buff *pkt;
-@@ -306,9 +303,8 @@ int RTMPCloneNdisPacket(struct rt_rtmp_adapter *pAd,
- 	/* 1. Allocate a packet */
- 	pkt = dev_alloc_skb(2048);
- 
--	if (pkt == NULL) {
-+	if (pkt == NULL)
- 		return NDIS_STATUS_FAILURE;
--	}
- 
- 	skb_put(pkt, GET_OS_PKT_LEN(pInPacket));
- 	NdisMoveMemory(pkt->data, GET_OS_PKT_DATAPTR(pInPacket),
-@@ -324,7 +320,7 @@ int RTMPCloneNdisPacket(struct rt_rtmp_adapter *pAd,
- 
- /* the allocated NDIS PACKET must be freed via RTMPFreeNdisPacket() */
- int RTMPAllocateNdisPacket(struct rt_rtmp_adapter *pAd,
--				   void ** ppPacket,
-+				   void **ppPacket,
- 				   u8 *pHeader,
- 				   u32 HeaderLen,
- 				   u8 *pData, u32 DataLen)
-@@ -387,7 +383,7 @@ int Sniff2BytesFromNdisBuffer(char *pFirstBuffer,
- 
- void RTMP_QueryPacketInfo(void *pPacket,
- 			  struct rt_packet_info *pPacketInfo,
--			  u8 ** pSrcBufVA, u32 * pSrcBufLen)
-+			  u8 **pSrcBufVA, u32 * pSrcBufLen)
- {
- 	pPacketInfo->BufferCount = 1;
- 	pPacketInfo->pFirstBuffer = (char
-*)GET_OS_PKT_DATAPTR(pPacket); @@ -398,9 +394,9 @@ void
-RTMP_QueryPacketInfo(void *pPacket, *pSrcBufLen =
-GET_OS_PKT_LEN(pPacket); }
- 
--void RTMP_QueryNextPacketInfo(void ** ppPacket,
-+void RTMP_QueryNextPacketInfo(void **ppPacket,
- 			      struct rt_packet_info *pPacketInfo,
--			      u8 ** pSrcBufVA, u32 * pSrcBufLen)
-+			      u8 **pSrcBufVA, u32 * pSrcBufLen)
- {
- 	void *pPacket = NULL;
- 
-@@ -585,7 +581,7 @@ rt_get_sg_list_from_packet(void *pPacket, struct
-rt_rtmp_sg_list *sg) sg->NumberOfElements = 1;
- 	sg->Elements[0].Address = GET_OS_PKT_DATAPTR(pPacket);
- 	sg->Elements[0].Length = GET_OS_PKT_LEN(pPacket);
--	return (sg);
-+	return sg;
- }
- 
- void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int
-SrcBufLen) @@ -784,11 +780,11 @@ void send_monitor_packets(struct
-rt_rtmp_adapter *pAd, struct rt_rx_blk *pRxBlk) pRxBlk->pData +=
-header_len; }			/*end if */
- 
--	if (pRxBlk->DataSize < pOSPkt->len) {
-+	if (pRxBlk->DataSize < pOSPkt->len)
- 		skb_trim(pOSPkt, pRxBlk->DataSize);
--	} else {
-+	else
- 		skb_put(pOSPkt, (pRxBlk->DataSize - pOSPkt->len));
--	}			/*end if */
-+				/*end if */
- 
- 	if ((pRxBlk->pData - pOSPkt->data) > 0) {
- 		skb_put(pOSPkt, (pRxBlk->pData - pOSPkt->data));
-@@ -1243,7 +1239,7 @@ void RtmpOSNetDevFree(struct net_device *pNetDev)
- 	free_netdev(pNetDev);
- }
- 
--int RtmpOSNetDevAlloc(struct net_device ** new_dev_p, u32 privDataSize)
-+int RtmpOSNetDevAlloc(struct net_device **new_dev_p, u32 privDataSize)
- {
- 	/* assign it as null first. */
- 	*new_dev_p = NULL;
-@@ -1308,9 +1304,8 @@ int RtmpOSNetDevAttach(struct net_device *pNetDev,
- 		/* OS specific flags, here we used to indicate if we
-are virtual interface */ pNetDev->priv_flags = pDevOpHook->priv_flags;
- 
--		if (pAd->OpMode == OPMODE_STA) {
-+		if (pAd->OpMode == OPMODE_STA)
- 			pNetDev->wireless_handlers =
-&rt28xx_iw_handler_def;
--		}
- 
- 		/* copy the net device mac address to the net_device
-structure. */ NdisMoveMemory(pNetDev->dev_addr,
- 		&pDevOpHook->devAddr[0],
+2010/3/6 Erik Andrén <erik.andren@gmail.com>:
+> 2010/3/4 Hans de Goede <hdegoede@redhat.com>:
+>> Hi,
+>>
+>> On 03/04/2010 12:36 PM, Erik Andrén wrote:
+>>>
+>>> 2010/3/4 Hans de Goede<hdegoede@redhat.com>:
+>>>>
+>>>> Hi,
+>>>>
+>>>> On 03/03/2010 02:17 PM, Erik Andrén wrote:
+>>>>>
+>>>>> 2010/3/3 Gabriel C<nix.or.die@googlemail.com>:
+>>>>>>
+>>>>>> Hello,
+>>>>>>
+>>>>>> I own a QuickCam Messanger webcam.. I didn't used it in ages but today
+>>>>>> I plugged it in..
+>>>>>> ( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
+>>>>>>
+>>>>>> Now zc3xx and stv06xx are starting both to probe the device .. In
+>>>>>> 2.6.33 that result in a not working webcam.
+>>>>>> ( rmmod both&&    modprobe zc3xx one seems to fix that )
+>>>>>>
+>>>>>> On current git head zc3xx works fine even when both are probing the
+>>>>>> device.
+>>>>>>
+>>>>>> Also I noticed stv06xx fails anyway for my webcam with this error:
+>>>>>> ....
+>>>>>>
+>>>>>> [  360.910243] STV06xx: Configuring camera
+>>>>>> [  360.910244] STV06xx: st6422 sensor detected
+>>>>>> [  360.910245] STV06xx: Initializing camera
+>>>>>> [  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
+>>>>>> [  361.161976] usbcore: registered new interface driver STV06xx
+>>>>>> [  361.161978] STV06xx: registered
+>>>>>> .....
+>>>>>>
+>>>>>> Next thing is stv06xx tells it is an st6422 sensor and does not work
+>>>>>> with it while zc3xx tells it is an HV7131R(c) sensor and works fine
+>>>>>> with it.
+>>>>>>
+>>>>>> What is right ?
+>>>>>
+>>>>> Hans,
+>>>>> As you added support for the st6422 sensor to the stv06xx subdriver I
+>>>>> imagine you best know what's going on.
+>>>>>
+>>>>
+>>>> I took the USB-ID in question from the out of tree v4l1 driver I was
+>>>> basing
+>>>> my
+>>>> st6422 work on. Looking at the other ID's (which are very close together)
+>>>> and
+>>>> combining that with this bug report, I think it is safe to say that the
+>>>> USB-ID
+>>>> in question should be removed from the stv06xx driver.
+>>>>
+>>>> Erik will you handle this, or shall I ?
+>>>>
+>>> Either way is fine by me.
+>>> I can try to do it tonight.
+>>>
+>>
+>> If you could take care of this that would be great!
+>>
+>> Thanks,
+>>
+>> Hans
+>>
+>
+> Sorry for delaying this, real life came in the way.
+> I'm pasting in a patch that removes the usb id.
+> I'm also attaching it as an attachment as gmail probably will stomp on
+> the inline version.
+>
+
+Sorry too also I was busy these days.
+
+> Gabriel, could you please apply and test this patch and verify that it
+> works as intended, i. e. the stv06xx driver _doesn't_ bind to your
+> camera but the zx3xx driver instead does.
+> If it works as intended could you please reply to this mail with a
+
+Yes does work.
+
+> tested-by: your name <email> tag.
+>
+
+tested-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+
+> Best regards,
+> Erik
+>
+> From 6f40494d48c5641326168115a96659581cea6273 Mon Sep 17 00:00:00 2001
+> From: =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
+> Date: Sat, 6 Mar 2010 20:34:51 +0100
+> Subject: [PATCH 1/1] gspca-stv06xx: Remove the 046d:08da usb id from
+> linking to the stv06xx driver
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=utf-8
+> Content-Transfer-Encoding: 8bit
+>
+> The 046d:08da usb id shouldn't be associated with the stv06xx driver
+> as they're not compatible with each other.
+> This fixes a bug where Quickcam Messenger cams fail to use its proper
+> driver (gspca-zc3xx), rendering the camera inoperable.
+>
+> Signed-off-by: Erik Andrén <erik.andren@gmail.com>
+> ---
+>  drivers/media/video/gspca/stv06xx/stv06xx.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/media/video/gspca/stv06xx/stv06xx.c
+> b/drivers/media/video/gspca/stv06xx/stv06xx.c
+> index de823ed..b1f7e28 100644
+> --- a/drivers/media/video/gspca/stv06xx/stv06xx.c
+> +++ b/drivers/media/video/gspca/stv06xx/stv06xx.c
+> @@ -497,8 +497,6 @@ static const __devinitdata struct usb_device_id
+> device_table[] = {
+>        {USB_DEVICE(0x046D, 0x08F5), .driver_info = BRIDGE_ST6422 },
+>        /* QuickCam Messenger (new) */
+>        {USB_DEVICE(0x046D, 0x08F6), .driver_info = BRIDGE_ST6422 },
+> -       /* QuickCam Messenger (new) */
+> -       {USB_DEVICE(0x046D, 0x08DA), .driver_info = BRIDGE_ST6422 },
+>        {}
+>  };
+>  MODULE_DEVICE_TABLE(usb, device_table);
+> --
+> 1.6.3.3
+>
