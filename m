@@ -1,121 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182Ab0CGBru (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 20:47:50 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:52322 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753856Ab0CGBrt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 20:47:49 -0500
-Date: Sun, 7 Mar 2010 04:47:46 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-Message-ID: <20100307014746.GA28667@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com>
- <20100209191620.GA24539@oksana.dev.rtsoft.ru>
- <20100305120015.a2008f46.akpm@linux-foundation.org>
- <fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com>
- <20100305123527.d6d68e56.akpm@linux-foundation.org>
- <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
- <20100306002823.GA22095@oksana.dev.rtsoft.ru>
- <fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com>
- <20100306050536.GA20539@oksana.dev.rtsoft.ru>
- <fa686aa41003060843s5b8dfc28p65541056121c4502@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa686aa41003060843s5b8dfc28p65541056121c4502@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754284Ab0CGBsi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 20:48:38 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53358 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752552Ab0CGBsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 20:48:36 -0500
+Date: Sun, 7 Mar 2010 12:48:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>,
+       Greg Thelen <gthelen@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: please don't apply : bootmem: avoid DMA32 zone by default
+Message-Id: <20100307124826.6c70a779.sfr@canb.auug.org.au>
+In-Reply-To: <20100307010327.GD15725@brick.ozlabs.ibm.com>
+References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com>
+	<20100305032106.GA12065@cmpxchg.org>
+	<49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
+	<4B915074.4020704@kernel.org>
+	<4B916BD6.8010701@kernel.org>
+	<4B91EBC6.6080509@kernel.org>
+	<20100306162234.e2cc84fb.akpm@linux-foundation.org>
+	<20100307010327.GD15725@brick.ozlabs.ibm.com>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 09:43:20AM -0700, Grant Likely wrote:
-> > On Fri, Mar 05, 2010 at 08:54:56PM -0700, Grant Likely wrote:
-> > And of course the part of the OF rework, which was first posted
-> > for *review* on Feb 03, is a completely different story?
-> >
-> >  48 files changed, 317 insertions(+), 575 deletions(-)
-> 
-> Completely uncontroversial changes with zero functional behaviour
-> change.  There was no uncertainty about these ones and they were
-> posted almost a week earlier.
+--Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The patches simply touch too many things, so I'd say that the
-possible breakage impact is on par with the OF GPIO stuff.
+Hi Paul,
 
-[...]
-> > That's a non-argument, what is "lower impact"? Do I touch any
-> > hot paths? And if nothing has changed, David (again, the gpiolib
-> > maintainer) is happy with the notifiers approach, why would you
-> > care?
-> 
-> Adding unneeded notifier infrastructure is churn I don't want to see.
+On Sun, 7 Mar 2010 12:03:27 +1100 Paul Mackerras <paulus@samba.org> wrote:
+>
+> On Sat, Mar 06, 2010 at 04:22:34PM -0800, Andrew Morton wrote:
+> > Earlier, Johannes wrote
+> >=20
+> > : Humm, now that is a bit disappointing.  Because it means we will never
+> > : get rid of bootmem as long as it works for the other architectures.=20
+> > : And your changeset just added ~900 lines of code, some of it being a
+> > : rather ugly compatibility layer in bootmem that I hoped could go away
+> > : again sooner than later.
+>=20
+> Whoa!  Who's proposing to get rid of bootmem, and why?
 
-You could reply to my answers earlier and I would change and
-repost the patches in a jiffy, since I am interested in these
-patches.
+I assume that is the point of the "early_res" work already in Linus' tree
+starting from commit 27811d8cabe56e0c3622251b049086f49face4ff ("x86: Move
+range related operation to one file").
 
-But you're obviously not interested in this support since you
-didn't answer my replies. I'll explain. If you were interested
-in some support you could give some chance to make patches
-comfortable to you, and then you could even test them, and
-maybe defend their inclusion.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Look at what an interested person does:
+--Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK
+Content-Type: application/pgp-signature
 
-http://www.mail-archive.com/linux-mmc@vger.kernel.org/msg00895.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Note that that was v2 with my comments fixed, and that was
-just seconds before 2.6.33 merge window closed. See?
-Someone with a direct interest! I gave my comments, they
-were fixed, and I felt grateful and responsible for pushing
-the support upstream.
+iEYEARECAAYFAkuTBeoACgkQjjKRsyhoI8xhpACcDObt+kcXskN18effWjz/qp07
+NnkAoJp9fYyg3fxv9ru6/yJg5649Y6UK
+=2PoU
+-----END PGP SIGNATURE-----
 
-But you're not interested in the support, so I don't see
-why you block it without any good technical reason.
-
-And note that not only I'm interested in this support, the
-I2C/SPI GPIO controllers issue was brought on ml several
-times by many people.
-
-[...]
-> > I don't get it. Why is it a problem to change your patches that
-> > ought to be queued for 2.6.*35*?
-> 
-> It's not, and they are going to be queued for 2.6.35.  In fact, I
-> didn't posted them this week to avoid adding confusion to the merge
-> window.  The issues isn't changing my patches.
-
-Then why you mentioned OF rework as some reason to block
-these patches?
-
-> It is that I don't
-> like the notifier approach, and I intend to prove that it can be done
-> in a better way.
-
-No doubt that you have some better ideas (not to mention that
-notifiers was your idea as well :-).
-
-Here are some technical arguments:
-
-1. You can implement your new ideas on top of the current solution.
-   Or I can happily do that for you.
-2. The patches don't change any API, instead they just build
-   a bridge between GPIOLIB and OF GPIO infrastructure.
-   So it's just a matter *taste* how to build that bridge.
-   It's an internal issue of how GPIOLIB and OF GPIO interact.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+--Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK--
