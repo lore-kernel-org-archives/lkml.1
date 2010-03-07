@@ -1,77 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284Ab0CGBsi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 20:48:38 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53358 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552Ab0CGBsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 20:48:36 -0500
-Date: Sun, 7 Mar 2010 12:48:26 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>,
-       Greg Thelen <gthelen@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: please don't apply : bootmem: avoid DMA32 zone by default
-Message-Id: <20100307124826.6c70a779.sfr@canb.auug.org.au>
-In-Reply-To: <20100307010327.GD15725@brick.ozlabs.ibm.com>
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com>
-	<20100305032106.GA12065@cmpxchg.org>
-	<49b004811003042117n720f356h7e10997a1a783475@mail.gmail.com>
-	<4B915074.4020704@kernel.org>
-	<4B916BD6.8010701@kernel.org>
-	<4B91EBC6.6080509@kernel.org>
-	<20100306162234.e2cc84fb.akpm@linux-foundation.org>
-	<20100307010327.GD15725@brick.ozlabs.ibm.com>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK"
+	id S1754271Ab0CGCDs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 21:03:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53189 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752638Ab0CGCDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 21:03:47 -0500
+Date: Sat, 6 Mar 2010 18:03:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joe Perches <joe@perches.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] vsprintf.c: Reduce sizeof struct printf_spec from 24 to
+ 8 bytes
+In-Reply-To: <1267924214.1937.12.camel@Joe-Laptop.home>
+Message-ID: <alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
+References: <cover.1267682641.git.joe@perches.com>  <20100304143837.af39845d.akpm@linux-foundation.org>  <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>  <1267911399.849.39.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
+  <1267914654.849.81.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>  <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>  <1267918554.849.89.camel@Joe-Laptop.home>  <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
+  <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>  <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain> <1267924214.1937.12.camel@Joe-Laptop.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
 
-On Sun, 7 Mar 2010 12:03:27 +1100 Paul Mackerras <paulus@samba.org> wrote:
->
-> On Sat, Mar 06, 2010 at 04:22:34PM -0800, Andrew Morton wrote:
-> > Earlier, Johannes wrote
-> >=20
-> > : Humm, now that is a bit disappointing.  Because it means we will never
-> > : get rid of bootmem as long as it works for the other architectures.=20
-> > : And your changeset just added ~900 lines of code, some of it being a
-> > : rather ugly compatibility layer in bootmem that I hoped could go away
-> > : again sooner than later.
->=20
-> Whoa!  Who's proposing to get rid of bootmem, and why?
+On Sat, 6 Mar 2010, Joe Perches wrote:
+> 
+> Reducing the size of struct printf_spec is a good thing
+> because multiple instances are commonly passed on stack.
 
-I assume that is the point of the "early_res" work already in Linus' tree
-starting from commit 27811d8cabe56e0c3622251b049086f49face4ff ("x86: Move
-range related operation to one file").
+Sadly, this is not enough.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+the 'pointer()' function has a 200+ byte stack footprint on x86-64. And 
+vsnprintf itself is about 100+ bytes. So that stack depth is way bigger 
+than I would have expected.
 
---Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK
-Content-Type: application/pgp-signature
+I'm not sure _why_ that stack footprint for 'pointer()' is so big, but I 
+bet it's due to some simple inlining, and gcc (once more) sucking at it 
+and not being able to combine stack frames. It's a damn shame.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+I suspect it's mac_address_string() having 20-odd bytes of temporary data, 
+ip6_compressed_string() having some more, ip6_addr_string() having 50 
+bytes, uuid_string() adding thirty-odd bytes etc. Inline them all, suck up 
+merging stack slots, and 200 bytes is easy.
 
-iEYEARECAAYFAkuTBeoACgkQjjKRsyhoI8xhpACcDObt+kcXskN18effWjz/qp07
-NnkAoJp9fYyg3fxv9ru6/yJg5649Y6UK
-=2PoU
------END PGP SIGNATURE-----
+So no, I don't think we can do the recursion as things stand. I've applied 
+your cleanup patch, along with the two from Bjorn Helgaas (which he did 
+for his pnp set), but they don't help this fundamental problem.
 
---Signature=_Sun__7_Mar_2010_12_48_26_+1100_OZJqAAANxhscbimK--
+A few noinlines might be appropriate. As would a good gcc cluestick about 
+inlining and stack usage. The latter is unlikely to materialize, I guess.
+
+		Linus
