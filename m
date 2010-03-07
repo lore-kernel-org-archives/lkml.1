@@ -1,53 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927Ab0CGIcg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 03:32:36 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:32987 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752441Ab0CGIce (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 03:32:34 -0500
-Message-ID: <4B93649F.10303@panasas.com>
-Date: Sun, 07 Mar 2010 10:32:31 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752686Ab0CGJBB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 04:01:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37723 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751355Ab0CGJBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 04:01:00 -0500
+Message-ID: <4B936B27.1050207@redhat.com>
+Date: Sun, 07 Mar 2010 11:00:23 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-Subject: Re: [GIT PULL] exofs changes for 2.6.34
-References: <4B8FA351.9030000@panasas.com> <20100304140004.GA10838@infradead.org>
-In-Reply-To: <20100304140004.GA10838@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+To: Gleb Natapov <gleb@redhat.com>
+CC: john cooper <john.cooper@third-harmonic.com>,
+       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, mtosatti@redhat.com,
+       zamsden@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+References: <20100301091819.GD16909@redhat.com> <4B8BB6FA.1000505@oss.ntt.co.jp> <20100301125223.GI16909@redhat.com> <4B8BBE61.3020503@oss.ntt.co.jp> <20100301132609.GJ16909@redhat.com> <4B8C11DC.1060004@third-harmonic.com> <20100302072809.GS16909@redhat.com>
+In-Reply-To: <20100302072809.GS16909@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Mar 2010 08:32:33.0502 (UTC) FILETIME=[BBCBBFE0:01CABDD0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/2010 04:00 PM, Christoph Hellwig wrote:
-> On Thu, Mar 04, 2010 at 02:10:57PM +0200, Boaz Harrosh wrote:
->>  Next changes will be support for raid5 and raid6
-> 
-> Err, you're not pushing another bloody copy of raid algorithms in, are
-> you?
-> 
+On 03/02/2010 09:28 AM, Gleb Natapov wrote:
+> On Mon, Mar 01, 2010 at 02:13:32PM -0500, john cooper wrote:
+>    
+>> Gleb Natapov wrote:
+>>
+>>      
+>>> Think about what happens if in the middle of
+>>> instruction emulation some data from device emulated in userspace is
+>>> needed. Emulator should be able to tell KVM that exit to userspace is
+>>> needed and restart instruction emulation when data is available.
+>>>        
+>> setjmp/longjmp are useful constructs in general but
+>> IME are better suited for infrequent exceptions vs.
+>> routine usage.
+>>      
+> Exception condition during instruction emulation _is_
+> infrequent.
 
-No of course not. You should know me by now. I intend to fully reuse both
-linux/raid/pq.h and linux/async_tx.h.
-[What? lose all these CPU/HW optimizations people have done ?-)]
+Well, with mmio you'd expect it to happen every read access.
 
-I'm struggling with re-factoring some of drivers/md/raid* as I'm using
-bios just as they do, and bio_lists are fine, but currently the code
-is very md/dm structure specific, there is no abstract bio_list API
-but I hope I can extract one with minimum risk. I have not yet looked
-into btrfs, they do raid5 as well right?
+> Although setjmp/longjmp that I know about
+> are routine usage. See QEMU TCG main loop or userspace
+> thread libraries.
+>    
 
-But all this is far down the road, off course I'll send RFCs first. The
-above push is just for that unique objects groups/striping/mirroring, which
-is very small code, a couple of functions actually, over the basic IO.
+Agreed, nothing magical about it.
 
-Thanks for asking, though.
-Boaz
+>> If the issue is finding some clean and regular way
+>> to back out from (and possibly reeneter) logic
+>> expressed within nested function invocations, have
+>> you considered turning the problem inside out and
+>> using a state machine approach?
+>>      
+> I don't see how state machine will help. But the goal
+> is not to rewrite emulator.c (this will no be excepted
+> by kvm maintainers), but improve it gradually.
+>    
+
+That is orthogonal.  If we decide a state machine is the best 
+implementation, then we'll find a way to move over to that.  However, I 
+don't think a state machine is a good representation considering some of 
+the code paths are very complicated and depend on a many memory accesses 
+(e.g. hardware task switches).
+
+-- 
+error compiling committee.c: too many arguments to function
+
