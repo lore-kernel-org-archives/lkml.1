@@ -1,169 +1,252 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416Ab0CGOg1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 09:36:27 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:41277 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437Ab0CGOg0 convert rfc822-to-8bit (ORCPT
+	id S1754233Ab0CGPEw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 10:04:52 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:40433 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753237Ab0CGPEv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 09:36:26 -0500
+	Sun, 7 Mar 2010 10:04:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Uv+WQNu0weidyFKhInMhPkAhfV9HzMKmVZMJqXD8DQq7xTJZNOHcWR6OhfBpoPO6iF
-         wpkp0a4MYX3Oxarh4BxUzUxpnD/VsusA7AQVSJzzakPjC+CjV6jGO/p4keHcbS1hP0tF
-         baycQQBq/TOiTKgH1Sz/il/SxH23J0ayDCr/U=
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=TUQXu1auPLF1xjnhCIgPBQy3clDvBgIjwML48n4yuF41/qMCiUG0bO8b+KctKAjnwT
+         xRgbujpReTOqL9GXNW+O96KOb2hIHMH7LywQt/hyIomrpYkvXdg2eHCkHcn4qMqr0C6E
+         hHzJhiY7Echh/dLuO+G18INxwELJ2FD37fZQ4=
+From: Gustavo Campanelli <gedece@gmail.com>
+To: gregkh@suse.de, alan@linux.intel.com
+Subject: 0001-Staging-rar-fixed-coding-style-issues-in-rar_driver
+Date: Sun, 7 Mar 2010 11:52:35 -0300
+User-Agent: KMail/1.12.2 (Linux/2.6.31-20-generic; KDE/4.3.2; i686; ; )
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <62e5edd41003061146x689527c9s5b3ab81eec3425a0@mail.gmail.com>
-References: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>
-	 <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>
-	 <4B8F974A.4090001@redhat.com>
-	 <62e5edd41003040336x16253369ycb1905a9938432db@mail.gmail.com>
-	 <4B8F9FC6.9030105@redhat.com>
-	 <62e5edd41003061146x689527c9s5b3ab81eec3425a0@mail.gmail.com>
-Date: Sun, 7 Mar 2010 15:36:24 +0100
-Message-ID: <1820d69d1003070636y7fee5ce1q5e60f40d93379065@mail.gmail.com>
-Subject: Re: Gspca USB driver zc3xx and STV06xx probe the same device ..
-From: Gabriel C <nix.or.die@googlemail.com>
-To: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jean-Francois Moine <moinejf@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Hans de Goede <hdegoede@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Message-Id: <201003071152.35805.gedece@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/6 Erik Andrén <erik.andren@gmail.com>:
-> 2010/3/4 Hans de Goede <hdegoede@redhat.com>:
->> Hi,
->>
->> On 03/04/2010 12:36 PM, Erik Andrén wrote:
->>>
->>> 2010/3/4 Hans de Goede<hdegoede@redhat.com>:
->>>>
->>>> Hi,
->>>>
->>>> On 03/03/2010 02:17 PM, Erik Andrén wrote:
->>>>>
->>>>> 2010/3/3 Gabriel C<nix.or.die@googlemail.com>:
->>>>>>
->>>>>> Hello,
->>>>>>
->>>>>> I own a QuickCam Messanger webcam.. I didn't used it in ages but today
->>>>>> I plugged it in..
->>>>>> ( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
->>>>>>
->>>>>> Now zc3xx and stv06xx are starting both to probe the device .. In
->>>>>> 2.6.33 that result in a not working webcam.
->>>>>> ( rmmod both&&    modprobe zc3xx one seems to fix that )
->>>>>>
->>>>>> On current git head zc3xx works fine even when both are probing the
->>>>>> device.
->>>>>>
->>>>>> Also I noticed stv06xx fails anyway for my webcam with this error:
->>>>>> ....
->>>>>>
->>>>>> [  360.910243] STV06xx: Configuring camera
->>>>>> [  360.910244] STV06xx: st6422 sensor detected
->>>>>> [  360.910245] STV06xx: Initializing camera
->>>>>> [  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
->>>>>> [  361.161976] usbcore: registered new interface driver STV06xx
->>>>>> [  361.161978] STV06xx: registered
->>>>>> .....
->>>>>>
->>>>>> Next thing is stv06xx tells it is an st6422 sensor and does not work
->>>>>> with it while zc3xx tells it is an HV7131R(c) sensor and works fine
->>>>>> with it.
->>>>>>
->>>>>> What is right ?
->>>>>
->>>>> Hans,
->>>>> As you added support for the st6422 sensor to the stv06xx subdriver I
->>>>> imagine you best know what's going on.
->>>>>
->>>>
->>>> I took the USB-ID in question from the out of tree v4l1 driver I was
->>>> basing
->>>> my
->>>> st6422 work on. Looking at the other ID's (which are very close together)
->>>> and
->>>> combining that with this bug report, I think it is safe to say that the
->>>> USB-ID
->>>> in question should be removed from the stv06xx driver.
->>>>
->>>> Erik will you handle this, or shall I ?
->>>>
->>> Either way is fine by me.
->>> I can try to do it tonight.
->>>
->>
->> If you could take care of this that would be great!
->>
->> Thanks,
->>
->> Hans
->>
->
-> Sorry for delaying this, real life came in the way.
-> I'm pasting in a patch that removes the usb id.
-> I'm also attaching it as an attachment as gmail probably will stomp on
-> the inline version.
->
+>From 3aa64eeca3712935308080784bbc54fa018db88b Mon Sep 17 00:00:00 2001
+From: Gustavo Campanelli <gedece@gmail.com>
+Date: Sun, 7 Mar 2010 10:44:54 -0300
+Subject: [PATCH] Staging: rar: fixed coding style issues in rar_driver.c
+ This is a patch to the rar_driver.c file that fixes various coding issues found by the checkpath.pl tool
+ Signed-off-by: Gustavo Campanelli <gedece@gmail.com>
 
-Sorry too also I was busy these days.
+---
+ drivers/staging/rar/rar_driver.c |   91 +++++++++++++++++++------------------
+ 1 files changed, 47 insertions(+), 44 deletions(-)
 
-> Gabriel, could you please apply and test this patch and verify that it
-> works as intended, i. e. the stv06xx driver _doesn't_ bind to your
-> camera but the zx3xx driver instead does.
-> If it works as intended could you please reply to this mail with a
+diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
+index d85d189..e087706 100644
+--- a/drivers/staging/rar/rar_driver.c
++++ b/drivers/staging/rar/rar_driver.c
+@@ -68,7 +68,8 @@ static void __exit rar_exit_handler(void);
+ /*
+   function that is activated on the successfull probe of the RAR device
+ */
+-static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
++static int __devinit rar_probe(struct pci_dev *pdev,
++				const struct pci_device_id *ent);
+ 
+ static struct pci_device_id rar_pci_id_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
+@@ -86,9 +87,9 @@ static struct pci_driver rar_pci_driver = {
+ 
+ /* This function is used to retrieved RAR info using the IPC message
+    bus interface */
+-static int memrar_get_rar_addr(struct pci_dev* pdev,
+-	                      int offset,
+-	                      u32 *addr)
++static int memrar_get_rar_addr(struct pci_dev *pdev,
++				int offset,
++				u32 *addr)
+ {
+ 	/*
+ 	 * ======== The Lincroft Message Bus Interface ========
+@@ -140,23 +141,23 @@ static int memrar_get_rar_addr(struct pci_dev* pdev,
+ 	       | (offset << 8)
+ 	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
+ 
+-	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
++	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n", offset);
+ 
+ 	if (addr == 0)
+ 		return -EINVAL;
+ 
+ 	/* Send the control message */
+ 	result = pci_write_config_dword(pdev,
+-	                          LNC_MCR_OFFSET,
+-	                          message);
++				LNC_MCR_OFFSET,
++				message);
+ 
+ 	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
+-	  ,result);
++	  , result);
+ 
+ 	if (!result)
+ 		result = pci_read_config_dword(pdev,
+-		                              LNC_MDR_OFFSET,
+-				              addr);
++						LNC_MDR_OFFSET,
++						addr);
+ 
+ 	printk(KERN_WARNING "rar- result from read data register is %x\n",
+ 	  result);
+@@ -170,9 +171,9 @@ static int memrar_get_rar_addr(struct pci_dev* pdev,
+ 		return 0;
+ }
+ 
+-static int memrar_set_rar_addr(struct pci_dev* pdev,
+-	                      int offset,
+-	                      u32 addr)
++static int memrar_set_rar_addr(struct pci_dev *pdev,
++				int offset,
++				u32 addr)
+ {
+ 	/*
+ 	 * ======== The Lincroft Message Bus Interface ========
+@@ -225,23 +226,23 @@ static int memrar_set_rar_addr(struct pci_dev* pdev,
+ 	       | (offset << 8)
+ 	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
+ 
+-	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
++	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n", offset);
+ 
+ 	if (addr == 0)
+ 		return -EINVAL;
+ 
+ 	/* Send the control message */
+ 	result = pci_write_config_dword(pdev,
+-	                          LNC_MDR_OFFSET,
+-	                          addr);
++					LNC_MDR_OFFSET,
++					addr);
+ 
+ 	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
+-	  ,result);
++	  , result);
+ 
+ 	if (!result)
+ 		result = pci_write_config_dword(pdev,
+-		                              LNC_MCR_OFFSET,
+-				              message);
++						LNC_MCR_OFFSET,
++						message);
+ 
+ 	printk(KERN_WARNING "rar- result from write data register is %x\n",
+ 	  result);
+@@ -284,17 +285,17 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
+ 	/* struct pci_dev *pdev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0)); */
+ 
+ 	if (pdev == NULL)
+-	       return -ENODEV;
++		return -ENODEV;
+ 
+ 	for (i = offsets; i != end; ++i, ++n) {
+-	       if (memrar_get_rar_addr (pdev,
+-		                       (*i).low,
+-		                       &(rar_addr[n].low)) != 0
+-		   || memrar_get_rar_addr (pdev,
+-		                          (*i).high,
+-		                          &(rar_addr[n].high)) != 0) {
+-		       result = -1;
+-		       break;
++		if (memrar_get_rar_addr(pdev,
++					(*i).low,
++					 &(rar_addr[n].low)) != 0
++		   || memrar_get_rar_addr(pdev,
++					(*i).high,
++					&(rar_addr[n].high)) != 0) {
++			result = -1;
++			break;
+ 	       }
+ 	}
+ 
+@@ -302,15 +303,16 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
+ 	/* pci_dev_put(pdev); */
+ 
+ 	if (result == 0) {
+-	if(1) {
+-	       size_t z;
+-	       for (z = 0; z != MRST_NUM_RAR; ++z) {
+-			printk(KERN_WARNING "rar - BRAR[%Zd] physical address low\n"
+-			     "\tlow:  0x%08x\n"
+-			     "\thigh: 0x%08x\n",
+-			     z,
+-			     rar_addr[z].low,
+-			     rar_addr[z].high);
++		if (1) {
++			size_t z;
++			for (z = 0; z != MRST_NUM_RAR; ++z) {
++				printk(KERN_WARNING "rar - BRAR[%Zd] physical"
++							"address low\n"
++							"\tlow:  0x%08x\n"
++							"\thigh: 0x%08x\n",
++							z,
++							rar_addr[z].low,
++							rar_addr[z].high);
+ 			}
+ 	       }
+ 	}
+@@ -321,7 +323,8 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
+ /*
+   function that is activated on the successfull probe of the RAR device
+ */
+-static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++static int __devinit rar_probe(struct pci_dev *pdev,
++				const struct pci_device_id *ent)
+ {
+ 	/* error */
+ 	int error;
+@@ -347,7 +350,7 @@ static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id
+ 
+ 	/* Initialize the RAR parameters, which have to be retrieved */
+ 	/* via the message bus service */
+-	error=memrar_init_rar_params(rar_dev);
++	error = memrar_init_rar_params(rar_dev);
+ 
+ 	if (error) {
+ 		DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
+@@ -388,7 +391,7 @@ MODULE_LICENSE("GPL");
+  * int rar_index
+  * The rar_index is an index to the rar for which you wish to retrieve
+  * the address information.
+- * Values can be 0,1, or 2.
++ * Values can be 0,1, or 2.r
+  *
+  * struct RAR_address_struct is a pointer to a place to which the function
+  * can return the address structure for the RAR.
+@@ -396,10 +399,10 @@ MODULE_LICENSE("GPL");
+  * The function returns a 0 upon success or a -1 if there is no RAR
+  * facility on this system.
+  */
+-int get_rar_address(int rar_index,struct RAR_address_struct *addresses)
++int get_rar_address(int rar_index, struct RAR_address_struct *addresses)
+ {
+ 	if (registered && (rar_index < 3) && (rar_index >= 0)) {
+-		*addresses=rar_addr[rar_index];
++		*addresses = rar_addr[rar_index];
+ 		/* strip off lock bit information  */
+ 		addresses->low = addresses->low & 0xfffffff0;
+ 		addresses->high = addresses->high & 0xfffffff0;
+@@ -431,10 +434,10 @@ int lock_rar(int rar_index)
+ 	int result;
+ if (registered && (rar_index < 3) && (rar_index >= 0)) {
+ 	/* first make sure that lock bits are clear (this does lock) */
+-	working_addr=rar_addr[rar_index].low & 0xfffffff0;
++	working_addr = rar_addr[rar_index].low & 0xfffffff0;
+ 
+ 	/* now send that value to the register using the IPC */
+-        result=memrar_set_rar_addr(rar_dev,rar_index,working_addr);
++	result = memrar_set_rar_addr(rar_dev, rar_index, working_addr);
+ 	return result;
+ 	}
+ 
+-- 
+1.6.3.3
 
-Yes does work.
-
-> tested-by: your name <email> tag.
->
-
-tested-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-
-> Best regards,
-> Erik
->
-> From 6f40494d48c5641326168115a96659581cea6273 Mon Sep 17 00:00:00 2001
-> From: =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
-> Date: Sat, 6 Mar 2010 20:34:51 +0100
-> Subject: [PATCH 1/1] gspca-stv06xx: Remove the 046d:08da usb id from
-> linking to the stv06xx driver
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=utf-8
-> Content-Transfer-Encoding: 8bit
->
-> The 046d:08da usb id shouldn't be associated with the stv06xx driver
-> as they're not compatible with each other.
-> This fixes a bug where Quickcam Messenger cams fail to use its proper
-> driver (gspca-zc3xx), rendering the camera inoperable.
->
-> Signed-off-by: Erik Andrén <erik.andren@gmail.com>
-> ---
->  drivers/media/video/gspca/stv06xx/stv06xx.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/media/video/gspca/stv06xx/stv06xx.c
-> b/drivers/media/video/gspca/stv06xx/stv06xx.c
-> index de823ed..b1f7e28 100644
-> --- a/drivers/media/video/gspca/stv06xx/stv06xx.c
-> +++ b/drivers/media/video/gspca/stv06xx/stv06xx.c
-> @@ -497,8 +497,6 @@ static const __devinitdata struct usb_device_id
-> device_table[] = {
->        {USB_DEVICE(0x046D, 0x08F5), .driver_info = BRIDGE_ST6422 },
->        /* QuickCam Messenger (new) */
->        {USB_DEVICE(0x046D, 0x08F6), .driver_info = BRIDGE_ST6422 },
-> -       /* QuickCam Messenger (new) */
-> -       {USB_DEVICE(0x046D, 0x08DA), .driver_info = BRIDGE_ST6422 },
->        {}
->  };
->  MODULE_DEVICE_TABLE(usb, device_table);
-> --
-> 1.6.3.3
->
