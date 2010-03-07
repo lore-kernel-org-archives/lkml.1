@@ -1,174 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021Ab0CGW3S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 17:29:18 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:35751 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087Ab0CGW3Q convert rfc822-to-8bit (ORCPT
+	id S1750951Ab0CGWwS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 17:52:18 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:33170 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832Ab0CGWwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 17:29:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type
-	:content-transfer-encoding; q=dns; s=sasl; b=fmErs0YI5kDeuMQ79Yy
-	RnRvGvjBjRCiDbL/is/pkllZAlpHWou5f6KoVsvVqOp+i97+THuoc2ET9ElKKDdC
-	zU/Vi54LS6G0hzQTPRWU1Oa+UXxwLYXsLhjM8yL3zHQeFO6EqsBmR//JKu2LtzLe
-	DtuOq9l5IPbSFdgtfmdNUgIE=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git 1.7.0.2
-From: Junio C Hamano <gitster@pobox.com>
-Date: Sun, 07 Mar 2010 14:29:03 -0800
-Message-ID: <7vy6i3epg0.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 7 Mar 2010 17:52:17 -0500
+Message-ID: <4B942E1E.1070204@linux.vnet.ibm.com>
+Date: Sun, 07 Mar 2010 14:52:14 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-X-Pobox-Relay-ID: D9E439EC-2A38-11DF-8385-D033EE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
-Content-Transfer-Encoding: 8BIT
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Fabian Korak <fkorak@stud.fh-offenburg.de>, linux-kernel@vger.kernel.org
+Subject: Re: Perf doesn't accept i915:i915_gem_request_wait_begin as an event
+References: <4B93BF8C020000DD00024397@tula.rz.fh-offenburg.de> <4B93F813.9080707@linux.vnet.ibm.com> <20100307110441.50dca8cd@infradead.org>
+In-Reply-To: <20100307110441.50dca8cd@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release Git 1.7.0.2 is available at the
-usual places:
+On 03/07/2010 11:04 AM, Arjan van de Ven wrote:
+> On Sun, 07 Mar 2010 11:01:39 -0800
+> Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
+>>
+>> I find the example given on that web page quite confusing because
+>> perf currently doesn't have support for arch-dependent events like
+>> that, except via "raw code" events which use the syntax -e
+>> r<hex_code>. I wonder if they locally modified perf to handle those
+>> events, and then forgot that they had made that modification before
+>> posting up those instructions.
+>
+> these are just standard trace points...
 
-  http://www.kernel.org/pub/software/scm/git/
+Ah, I see.  Thanks for the correction.
 
-  git-1.7.0.2.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.7.0.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.7.0.2.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.7.0.2-1.fc11.$arch.rpm	(RPM)
-
-Git v1.7.0.2 Release Notes
-==========================
-
-Fixes since v1.7.0.1
---------------------
-
- * GIT_PAGER was not honored consistently by some scripted Porcelains, most
-   notably "git am".
-
- * updating working tree files after telling git to add them to the
-   index and while it is still working created garbage object files in
-   the repository without diagnosing it as an error.
-
- * "git bisect -- pathspec..." did not diagnose an error condition properly when
-   the simplification with given pathspec made the history empty.
-
- * "git rev-list --cherry-pick A...B" now has an obvious optimization when the
-   histories haven't diverged (i.e. when one end is an ancestor of the other).
-
- * "git diff --quiet -w" did not work as expected.
-
- * "git fast-import" didn't work with a large input, as it lacked support
-   for producing the pack index in v2 format.
-
- * "git imap-send" didn't use CRLF line endings over the imap protocol
-   when storing its payload to the draft box, violating RFC 3501.
-
- * "git log --format='%w(x,y,z)%b'" and friends that rewrap message
-   has been optimized for utf-8 payload.
-
- * Error messages generated on the receiving end did not come back to "git
-   push".
-
- * "git status" in 1.7.0 lacked the optimization we used to have in 1.6.X series
-   to speed up scanning of large working tree.
-
- * "gitweb" did not diagnose parsing errors properly while reading tis configuration
-   file.
-
-And other minor fixes and documentation updates.
-
-----------------------------------------------------------------
-
-Changes since v1.7.0.1 are as follows:
-
-Bert Wesarg (1):
-      unset GREP_OPTIONS in test-lib.sh
-
-Christian Couder (1):
-      bisect: error out when passing bad path parameters
-
-Dmitry Potapov (1):
-      hash-object: don't use mmap() for small files
-
-Erik Faye-Lund (1):
-      run-command: support custom fd-set in async
-
-Gabriel Filion (1):
-      require_work_tree broken with NONGIT_OK
-
-Hitoshi Mitake (1):
-      git-imap-send: Convert LF to CRLF before storing patch to draft box
-
-Jakub Narebski (2):
-      gitweb: Die if there are parsing errors in config file
-      gitweb: Fix project-specific feature override behavior
-
-Jonathan Nieder (8):
-      Fix 'git var' usage synopsis
-      Make 'git var GIT_PAGER' always print the configured pager
-      git.1: Clarify the behavior of the --paginate option
-      git svn: Fix launching of pager
-      am: Fix launching of pager
-      tests: Add tests for automatic use of pager
-      t7006-pager: if stdout is not a terminal, make a new one
-      tests: Fix race condition in t7006-pager
-
-Junio C Hamano (6):
-      t6000lib: Fix permission
-      lib-patch-mode.sh: Fix permission
-      status: preload index to optimize lstat(2) calls
-      Start preparing for 1.7.0.2
-      Update draft release notes to 1.7.0.2
-      Git 1.7.0.2
-
-Larry D'Anna (2):
-      git diff --quiet -w: check and report the status
-      git-diff: add a test for git diff --quiet -w
-
-Matthieu Moy (1):
-      stash: suggest the correct command line for unknown options.
-
-Michal Sojka (1):
-      Remove extra '-' from git-am(1)
-
-Nicolas Pitre (8):
-      fast-import: start using struct pack_idx_entry
-      fast-import: use sha1write() for pack data
-      fast-import: use write_idx_file() instead of custom code
-      fast-import: make default pack size unlimited
-      fast-import: honor pack.indexversion and pack.packsizelimit config vars
-      fast-import: use the diff_delta() max_delta_size argument
-      sha1_file: don't malloc the whole compressed result when writing out objects
-      sha1_file: be paranoid when creating loose objects
-
-René Scharfe (4):
-      utf8.c: remove print_wrapped_text()
-      utf8.c: remove print_spaces()
-      utf8.c: remove strbuf_write()
-      utf8.c: speculatively assume utf-8 in strbuf_add_wrapped_text()
-
-Shawn O. Pearce (7):
-      run-command: Allow stderr to be a caller supplied pipe
-      send-pack: demultiplex a sideband stream with status data
-      receive-pack: Refactor how capabilities are shown to the client
-      receive-pack: Wrap status reports inside side-band-64k
-      receive-pack: Send hook output over side band #2
-      t5401: Use a bare repository for the remote peer
-      receive-pack: Send internal errors over side-band #2
-
-Stephen Boyd (1):
-      t7406: Fix submodule init config tests
-
-Sylvain Rabot (1):
-      gitweb multiple project roots documentation
-
-Tay Ray Chuan (1):
-      transport: add got_remote_refs flag
-
-Thomas Rast (1):
-      cherry_pick_list: quit early if one side is empty
-
+- Corey
