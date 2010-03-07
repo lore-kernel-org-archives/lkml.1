@@ -1,380 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295Ab0CGEHU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 23:07:20 -0500
-Received: from xenotime.net ([72.52.64.118]:54355 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753620Ab0CGEHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 23:07:18 -0500
-Message-ID: <4B932672.3010309@xenotime.net>
-Date: Sat, 06 Mar 2010 20:07:14 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754234Ab0CGETY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 23:19:24 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:43376 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753425Ab0CGETW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 23:19:22 -0500
+Date: Sat, 6 Mar 2010 23:19:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: The gregkh patch scripts
+Message-ID: <Pine.LNX.4.44L0.1003062253101.29076-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: William Cohen <wcohen@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add DocBook documentation for the block tracepoints.
-References: <1267811199-29812-1-git-send-email-wcohen@redhat.com>
-In-Reply-To: <1267811199-29812-1-git-send-email-wcohen@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Cohen wrote:
-> This patch adds a simple description of the various block tracepoints
-> available in the kernel.
-> 
-> Signed-off-by: William Cohen <wcohen@redhat.com>
+Greg:
 
-Thanks.  I have just a few nits below then it will be ready IMO.
+Are the scripts you use for creating the various gregkh-*.patch files 
+stored in 
 
-> ---
->  Documentation/DocBook/tracepoint.tmpl |   13 +++
->  include/trace/events/block.h          |  164 +++++++++++++++++++++++++++++++++
->  2 files changed, 177 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
-> index 8bca1d5..e8473ea 100644
-> --- a/Documentation/DocBook/tracepoint.tmpl
-> +++ b/Documentation/DocBook/tracepoint.tmpl
-> @@ -16,6 +16,15 @@
->       </address>
->      </affiliation>
->     </author>
-> +   <author>
-> +    <firstname>William</firstname>
-> +    <surname>Cohen</surname>
-> +    <affiliation>
-> +     <address>
-> +      <email>wcohen@redhat.com</email>
-> +     </address>
-> +    </affiliation>
-> +   </author>
->    </authorgroup>
->  
->    <legalnotice>
-> @@ -91,4 +100,8 @@
->  !Iinclude/trace/events/signal.h
->    </chapter>
->  
-> +  <chapter id="block">
-> +   <title>Block IO</title>
-> +!Iinclude/trace/events/block.h
-> +  </chapter>
->  </book>
-> diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-> index 5fb7273..6bb1181 100644
-> --- a/include/trace/events/block.h
-> +++ b/include/trace/events/block.h
-> @@ -40,6 +40,16 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
->  		  __entry->nr_sector, __entry->errors)
->  );
->  
-> +/**
-> + * block_rq_abort - abort block operation request
-> + * @q: queue containing the block operation request
-> + * @rq: block IO operation request
-> + *
-> + * Called immediately after pending block IO operation request @rq in
-> + * queue @q is aborted. The fields in the operation request @rq
-> + * can be examined to determine which device and sectors the pending
-> + * operation would access.
-> + */
->  DEFINE_EVENT(block_rq_with_error, block_rq_abort,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq),
-> @@ -47,6 +57,15 @@ DEFINE_EVENT(block_rq_with_error, block_rq_abort,
->  	TP_ARGS(q, rq)
->  );
->  
-> +/**
-> + * block_rq_requeue - place block IO request back on a queue
-> + * @q: queue holding operation
-> + * @rq: block IO operation request
-> + *
-> + * The block operation request @rq is being placed back into queue
-> + * @q.  For some reason the request was not completed and needs to be
-> + * put back in the queue.
-> + */
->  DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq),
-> @@ -54,6 +73,17 @@ DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
->  	TP_ARGS(q, rq)
->  );
->  
-> +/**
-> + * block_rq_complete - block IO operation completed by device driver
-> + * @q: queue containing the block operation request
-> + * @rq: block operations request
-> + *
-> + * The block_rq_complete tracepoint event indicates that some portion
-> + * of operation request has been completed by the device driver.  If
-> + * the @rq->bio is NULL, then there is absolutely no additonal work to
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/scripts/
 
-                      %NULL,                            additional
+?  Those files appear not to have been updated for quite some time.
 
-> + * do for the request. If @rq->bio is non-NULL then there is
-> + * additional work is required to complete the request.
+Regardless, the way the current scripts work has got a problem.  As far
+as I can tell, they take Linus's current tree, apply your various
+accumulated quilt series files, and then compute the diff between the
+end result and the starting point.  The output is labelled with name of
+the starting tree.  (If my understanding is wrong then tell me so and
+ignore the rest of this message.)
 
-                      ^^drop "is"
+The problem is that Linus's current tree is not a good starting point.  
+For example, right now several of the individual files such as
+gregkh-07-usb-2.6.33.patch are completely empty.  This is because you
+have sent all the pending changes upstream, so they are now included in
+Linus's tree and hence they don't show up in a diff.
 
-> + */
->  DEFINE_EVENT(block_rq_with_error, block_rq_complete,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq),
-> @@ -95,6 +125,16 @@ DECLARE_EVENT_CLASS(block_rq,
->  		  __entry->nr_sector, __entry->comm)
->  );
->  
-> +/**
-> + * block_rq_insert - insert block operation request into queue
-> + * @q: target queue
-> + * @rq: block IO operation request
-> + *
-> + * Called immediately before block operation request @rq is inserted
-> + * into queue @q.  The fields in the operation request @rq struct can
-> + * be examined to determine which device and sectors the pending
-> + * operation would access.
-> + */
->  DEFINE_EVENT(block_rq, block_rq_insert,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq),
-> @@ -102,6 +142,14 @@ DEFINE_EVENT(block_rq, block_rq_insert,
->  	TP_ARGS(q, rq)
->  );
->  
-> +/**
-> + * block_rq_issue - issue pending block io request operation to device driver
+But...  The file is still named "gregkh-07-usb-2.6.33.patch", even
+though it isn't a patch against 2.6.33 -- it's a patch against whatever
+Linus's tree happened to contain at the time you ran the script.  
+Since I don't know what tree that was (and I don't have git repository
+for the kernel anyway), I can't use the patch file.  (Well, I _can_ use 
+it because it's empty, but it doesn't do me any good -- the principle 
+is still valid.)
 
-                                           IO
+As Linus has explained to quite a few people, this isn't a good way to
+operate.  What your scripts do is essentially the same as rebasing a
+publicly-exported git repository, which should be done relatively
+infrequently.  It's okay to rebase against the actual releases and the
+*-rcN trees, because they are well-defined intermediate points.  But
+rebasing against a *-rcN-gitM should be quite rare, and rebasing
+against anything else is basically forbidden.
 
-> + * @q: queue holding operation
-> + * @rq: block IO operation operation request
-> + *
-> + * Called when block operation request @rq from queue @q is sent to a
-> + * device driver for processing.
-> + */
->  DEFINE_EVENT(block_rq, block_rq_issue,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq),
-> @@ -109,6 +157,17 @@ DEFINE_EVENT(block_rq, block_rq_issue,
->  	TP_ARGS(q, rq)
->  );
->  
-> +/**
-> + * block_bio_bounce - used bounce buffer when processing block operation
-> + * @q: queue holding the block operation
-> + * @bio: block operation
-> + *
-> + * A bounce buffer was used to handle the block operation @bio in @q.
-> + * This occurs when hardware limitations prevent a direct transfer of
-> + * data between the @bio data memory area and the IO device.  Use of a
-> + * bounce buffer requires extra copying of data and decreases
-> + * performance.
-> + */
->  TRACE_EVENT(block_bio_bounce,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio),
-> @@ -138,6 +197,14 @@ TRACE_EVENT(block_bio_bounce,
->  		  __entry->nr_sector, __entry->comm)
->  );
->  
-> +/**
-> + * block_bio_complete - completed all work on the block operation
-> + * @q: queue holding the block operation
-> + * @bio: block operation completed
-> + *
-> + * This tracepoint indicates there is no further work to do on this
-> + * block IO operation @bio.
-> + */
->  TRACE_EVENT(block_bio_complete,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio),
-> @@ -193,6 +260,14 @@ DECLARE_EVENT_CLASS(block_bio,
->  		  __entry->nr_sector, __entry->comm)
->  );
->  
-> +/**
-> + * block_bio_backmerge - merging block operation to the end of an existing operation
-> + * @q: queue holding operation
-> + * @bio: new block operation to merge
-> + *
-> + * Merging block request @bio to the end of an existing block request
-> + * in queue @q.
-> + */
->  DEFINE_EVENT(block_bio, block_bio_backmerge,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio),
-> @@ -200,6 +275,14 @@ DEFINE_EVENT(block_bio, block_bio_backmerge,
->  	TP_ARGS(q, bio)
->  );
->  
-> +/**
-> + * block_bio_frontmerge - merging block operation to the beginning of an existing operation
-> + * @q: queue holding operation
-> + * @bio: new block operation to merge
-> + *
-> + * Merging block IO operation @bio to the beginning of an existing block
-> + * operation in queue @q.
-> + */
->  DEFINE_EVENT(block_bio, block_bio_frontmerge,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio),
-> @@ -207,6 +290,13 @@ DEFINE_EVENT(block_bio, block_bio_frontmerge,
->  	TP_ARGS(q, bio)
->  );
->  
-> +/**
-> + * block_bio_queue - putting new block IO operation in queue
-> + * @q: queue holding operation
-> + * @bio: new block operation
-> + *
-> + * About to  place the block IO operation @bio into queue @q.
+This means the scripts shouldn't start with the vanilla
+tree-of-the-moment.  They should start with the most recent release or
+-rcN tag.  In rare cases they could use an rcN-gitM tag, but only if
+there's a good reason.
 
-            to place
+So for example, the current gregkh-*-2.6.33.patch files should be quite
+large, because they should contain all the accumulated development for
+the last three months that hasn't gotten into 2.6.33.  When 2.6.34-rc1
+is released then the files should get small, since they would then
+contain only material that was submitted slightly before or during the
+merge window.
 
-> + */
->  DEFINE_EVENT(block_bio, block_bio_queue,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio),
-> @@ -243,6 +333,15 @@ DECLARE_EVENT_CLASS(block_get_rq,
->  		  __entry->nr_sector, __entry->comm)
->  );
->  
-> +/**
-> + * block_getrq - get a free request entry in queue for block IO operations
-> + * @q: queue for operations
-> + * @bio: pending block IO operation
-> + * @rw: low bit indicates a read (%0) or a write (%1)
-> + *
-> + * A request struct for queue @q has been allocated to handle the
-> + * block IO operation @bio.
-> + */
->  DEFINE_EVENT(block_get_rq, block_getrq,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
-> @@ -250,6 +349,17 @@ DEFINE_EVENT(block_get_rq, block_getrq,
->  	TP_ARGS(q, bio, rw)
->  );
->  
-> +/**
-> + * block_sleeprq - waiting to get a free request entry in queue for block IO operation
-> + * @q: queue for operation
-> + * @bio: pending block IO operation
-> + * @rw: low bit indicates a read (%0) or a write (%1)
-> + *
-> + * In the case where a request struct cannot be provided for queue @q
-> + * the process needs to wait for an request struct to become
-> + * available.  This tracepoint event is generated each time the
-> + * process goes to sleep waiting for request struct become available.
-> + */
->  DEFINE_EVENT(block_get_rq, block_sleeprq,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
-> @@ -257,6 +367,14 @@ DEFINE_EVENT(block_get_rq, block_sleeprq,
->  	TP_ARGS(q, bio, rw)
->  );
->  
-> +/**
-> + * block_plug - keep operations requests in request queue
-> + * @q: request queue to plug
-> + *
-> + * Plug the request queue @q.  Do not allow block operation requests
-> + * to be sent to the device driver. Instead, accumulate requests in
-> + * the queue to improve throughput performance of the block device.
-> + */
->  TRACE_EVENT(block_plug,
->  
->  	TP_PROTO(struct request_queue *q),
-> @@ -293,6 +411,13 @@ DECLARE_EVENT_CLASS(block_unplug,
->  	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
->  );
->  
-> +/**
-> + * block_unplug_timer - timed release of operations requests in queue to device driver
-> + * @q: request queue to unplug
-> + *
-> + * Unplug the request queue @q because a timer expired and allow block
-> + * operation requests to be sent to the device driver.
-> + */
->  DEFINE_EVENT(block_unplug, block_unplug_timer,
->  
->  	TP_PROTO(struct request_queue *q),
-> @@ -300,6 +425,13 @@ DEFINE_EVENT(block_unplug, block_unplug_timer,
->  	TP_ARGS(q)
->  );
->  
-> +/**
-> + * block_unplug_io - release of operations requests in request queue
-> + * @q: request queue to unplug
-> + *
-> + * Unplug request queue @q because device driver is scheduled to work
-> + * on elements in the request queue.
-> + */
->  DEFINE_EVENT(block_unplug, block_unplug_io,
->  
->  	TP_PROTO(struct request_queue *q),
-> @@ -307,6 +439,17 @@ DEFINE_EVENT(block_unplug, block_unplug_io,
->  	TP_ARGS(q)
->  );
->  
-> +/**
-> + * block_split - split a single bio struct into two bio structs
-> + * @q: queue containing the bio
-> + * @bio: block operation being split
-> + * @new_sector: The starting sector for the new bio
-> + *
-> + * The bio request @bio in request queue @q needs to be split into two
-> + * bio requests. The newly created @bio request starts at
-> + * @new_sector. This split may be required due to hardware limitation
-> + * such as operation crossing device boundaries in a RAID system.
-> + */
->  TRACE_EVENT(block_split,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio,
-> @@ -337,6 +480,16 @@ TRACE_EVENT(block_split,
->  		  __entry->comm)
->  );
->  
-> +/**
-> + * block_remap - map request for a partition to the raw device
-> + * @q: queue holding the operation
-> + * @bio: revised operation
-> + * @dev: device for the operation
-> + * @from: original sector for the operation
-> + *
-> + * An operation for a partion on a block device has been mapped to the
+Can the scripts be updated to work in this way?
 
-                         partition
+Alan Stern
 
-> + * raw block device.
-> + */
->  TRACE_EVENT(block_remap,
->  
->  	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
-> @@ -370,6 +523,17 @@ TRACE_EVENT(block_remap,
->  		  (unsigned long long)__entry->old_sector)
->  );
->  
-> +/**
-> + * block_rq_remap - map request for a block operation request
-> + * @q: queue holding the operation
-> + * @rq: block IO operation request
-> + * @dev: device for the operation
-> + * @from: original sector for the operation
-> + *
-> + * The block operation request @rq in @q has been remapped.  The block
-> + * operation request @rq holds the current information and @from hold
-> + * the original sector.
-> + */
->  TRACE_EVENT(block_rq_remap,
->  
->  	TP_PROTO(struct request_queue *q, struct request *rq, dev_t dev,
-
-
-Thanks,
-~Randy
