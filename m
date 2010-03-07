@@ -1,62 +1,123 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648Ab0CGSQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 13:16:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44147 "EHLO mx1.redhat.com"
+	id S1754654Ab0CGSSr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 13:18:47 -0500
+Received: from kroah.org ([198.145.64.141]:40609 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165Ab0CGSQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 13:16:55 -0500
-Message-ID: <4B93ED7A.6070204@redhat.com>
-Date: Sun, 07 Mar 2010 20:16:26 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1753165Ab0CGSSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 13:18:45 -0500
+Date: Sun, 7 Mar 2010 10:16:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: The gregkh patch scripts
+Message-ID: <20100307181649.GD3718@kroah.com>
+References: <Pine.LNX.4.44L0.1003062253101.29076-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Luca Barbieri <luca.barbieri@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zamsden@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>, ming.m.lin@intel.com,
-       sheng.yang@intel.com, Jes Sorensen <Jes.Sorensen@redhat.com>,
-       KVM General <kvm@vger.kernel.org>, Gleb Natapov <gleb@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: KVM usability
-References: <4B87A6BF.3090301@redhat.com> <20100227105643.GA17425@elte.hu>	 <4B893B2B.40301@redhat.com> <20100227172546.GA31472@elte.hu>	 <4B8BEFC7.2040000@redhat.com>	 <20100301174106.GB2362@ghostprotocols.net>	 <4B8C0778.8050908@redhat.com> <20100301205620.GA26151@elte.hu>	 <20100302103045.GA28310@elte.hu> <4B937363.4070406@redhat.com> <ff13bc9a1003070714q3963a302ne37a57537423da57@mail.gmail.com>
-In-Reply-To: <ff13bc9a1003070714q3963a302ne37a57537423da57@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003062253101.29076-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/2010 05:14 PM, Luca Barbieri wrote:
->> perf really is wonderful, but to be really competitive, and usable to more
->> developers, it needs to be in a graphical environment.  I want 'perf report'
->> output to start out collapsed and drill down by clicking on a tree widget.
->>   Clicking on a function name opens its definition.  'perf annotate' should
->> display annotations on my editor window, not in a pager.  I should be able
->> to check events on a list, not using 'perf list'.
->>
->> Is something like that suitable for tools/perf/?  I think you'll find the
->> intersection of kernel developers and GUI developers to be fairly small.
->>      
-> The latest versions of Gnome Sysprof use perf and provide a GTK+ tree
-> interface for the profiling output.
->
-> However, they are not configurable at all and don't support anything
-> but call graph profiling, unless they added more features very
-> recently.
-> It would be nice to extend sysprof into a more capable tool, and one
-> that can read perf output files and do so when launched from the
-> command line.
->    
+On Sat, Mar 06, 2010 at 11:19:20PM -0500, Alan Stern wrote:
+> Greg:
+> 
+> Are the scripts you use for creating the various gregkh-*.patch files 
+> stored in 
+> 
+> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/scripts/
+> 
+> ?  Those files appear not to have been updated for quite some time.
 
-Looks like a step in the right direction.  I don't think this belong in 
-tools/, though.
+Until last week, yes, they were the most recent version.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+However, last week I made some changes, which caused things to break in
+different ways as you have noticed.
 
+> Regardless, the way the current scripts work has got a problem.  As far
+> as I can tell, they take Linus's current tree, apply your various
+> accumulated quilt series files, and then compute the diff between the
+> end result and the starting point.  The output is labelled with name of
+> the starting tree.  (If my understanding is wrong then tell me so and
+> ignore the rest of this message.)
+
+No, that is correct.
+
+I switched to using a git commit base to make it easier to handle the
+merges in the linux-next tree due to problems that Stephen was having
+when merging my trees into there.
+
+> The problem is that Linus's current tree is not a good starting point.  
+> For example, right now several of the individual files such as
+> gregkh-07-usb-2.6.33.patch are completely empty.  This is because you
+> have sent all the pending changes upstream, so they are now included in
+> Linus's tree and hence they don't show up in a diff.
+
+Yes that is true.
+
+But I do think that Linus's tree is a good starting point, as that
+reflects my current quilt patchset identically.
+
+> But...  The file is still named "gregkh-07-usb-2.6.33.patch", even
+> though it isn't a patch against 2.6.33 -- it's a patch against whatever
+> Linus's tree happened to contain at the time you ran the script.  
+> Since I don't know what tree that was (and I don't have git repository
+> for the kernel anyway), I can't use the patch file.  (Well, I _can_ use 
+> it because it's empty, but it doesn't do me any good -- the principle 
+> is still valid.)
+
+Yes, the issue is that the base tree is not labeled the same.  I should
+rename the patch to be "gregkh-07-usb-SHA.patch" to be more refelective
+of what it really is.
+
+If you look at the quilt series that linux-next pulls from, those have
+the correct marking with the # BEGIN markings that linux-next relies on.
+It identifies the proper SHA1 to base the tree off of.
+
+> As Linus has explained to quite a few people, this isn't a good way to
+> operate.  What your scripts do is essentially the same as rebasing a
+> publicly-exported git repository, which should be done relatively
+> infrequently.  It's okay to rebase against the actual releases and the
+> *-rcN trees, because they are well-defined intermediate points.  But
+> rebasing against a *-rcN-gitM should be quite rare, and rebasing
+> against anything else is basically forbidden.
+> 
+> This means the scripts shouldn't start with the vanilla
+> tree-of-the-moment.  They should start with the most recent release or
+> -rcN tag.  In rare cases they could use an rcN-gitM tag, but only if
+> there's a good reason.
+> 
+> So for example, the current gregkh-*-2.6.33.patch files should be quite
+> large, because they should contain all the accumulated development for
+> the last three months that hasn't gotten into 2.6.33.  When 2.6.34-rc1
+> is released then the files should get small, since they would then
+> contain only material that was submitted slightly before or during the
+> merge window.
+> 
+> Can the scripts be updated to work in this way?
+
+Yes, I can switch back to going off of the -rcN-gitM markings that I was
+using in the past.  If I do that does it make it easier for you?
+
+And yes, you are right, this is a constant rebase, and that's wrong on
+my part.
+
+This makes me reconsider the fact that I'm using quilt for all of this.
+Perhaps if I switch to a git tree, it would all be easier for people
+like you?  Would you prefer that?
+
+For stuff like my staging tree, I'm almost convinced that switching to
+git makes more sense as keeping that many patches in quilt is a mess and
+I don't ever end up rebasing anything or deleting any patches in the
+middle anymore.
+
+For USB, yeah, I think it's also time to switch over as well.  What do
+you think?
+
+thanks,
+
+greg k-h
