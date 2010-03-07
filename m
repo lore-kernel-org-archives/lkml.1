@@ -1,65 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428Ab0CGPOw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 10:14:52 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:33528 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654Ab0CGPOv convert rfc822-to-8bit (ORCPT
+	id S1754487Ab0CGPRA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 10:17:00 -0500
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:34737 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754362Ab0CGPQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 10:14:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Tknb3bnvDraCvfb3JiAm724Favy3CYG5jsluedTy4OPT0p9pQUGz2wSDbjOHmkPUpu
-         EsheSoVQQvhweVipnVX1yluDvoVj2R15rA+n2iXoY9pPKwu+a1FC0lxF2GXdvBeCQJL+
-         YuhbMpS1dew4mfn+oi2OubQmUgpgIQ45x/Ss0=
+	Sun, 7 Mar 2010 10:16:58 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAFtQk0tbstZK/2dsb2JhbACbQ3S3Yg2EawQ
+Date: Sun, 7 Mar 2010 16:16:56 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>
+Cc: linux-kernel@vger.kernel.org, seth.heasley@intel.com
+Subject: Re: [PATCH] iTCO_wdt: Don't stop on shutdown with nowayout
+Message-ID: <20100307151656.GX7459@infomag.iguana.be>
+References: <20100223164019.60a6de1a@marrow.netinsight.se>
 MIME-Version: 1.0
-In-Reply-To: <4B937363.4070406@redhat.com>
-References: <4B87A6BF.3090301@redhat.com> <20100227105643.GA17425@elte.hu>
-	 <4B893B2B.40301@redhat.com> <20100227172546.GA31472@elte.hu>
-	 <4B8BEFC7.2040000@redhat.com>
-	 <20100301174106.GB2362@ghostprotocols.net>
-	 <4B8C0778.8050908@redhat.com> <20100301205620.GA26151@elte.hu>
-	 <20100302103045.GA28310@elte.hu> <4B937363.4070406@redhat.com>
-Date: Sun, 7 Mar 2010 16:14:49 +0100
-Message-ID: <ff13bc9a1003070714q3963a302ne37a57537423da57@mail.gmail.com>
-Subject: Re: KVM usability
-From: Luca Barbieri <luca.barbieri@gmail.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zamsden@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>, ming.m.lin@intel.com,
-       sheng.yang@intel.com, Jes Sorensen <Jes.Sorensen@redhat.com>,
-       KVM General <kvm@vger.kernel.org>, Gleb Natapov <gleb@redhat.com>,
-       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223164019.60a6de1a@marrow.netinsight.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> perf really is wonderful, but to be really competitive, and usable to more
-> developers, it needs to be in a graphical environment.  I want 'perf report'
-> output to start out collapsed and drill down by clicking on a tree widget.
->  Clicking on a function name opens its definition.  'perf annotate' should
-> display annotations on my editor window, not in a pager.  I should be able
-> to check events on a list, not using 'perf list'.
->
-> Is something like that suitable for tools/perf/?  I think you'll find the
-> intersection of kernel developers and GUI developers to be fairly small.
+Hi,
 
-The latest versions of Gnome Sysprof use perf and provide a GTK+ tree
-interface for the profiling output.
+> Currently, the watchdog is turned off when the system shuts down or the
+> module is unloaded. If nowayout has been selected, this makes no sense
+> and fails to restart the system if it hangs during reboot, so make it
+> conditional.
 
-However, they are not configurable at all and don't support anything
-but call graph profiling, unless they added more features very
-recently.
-It would be nice to extend sysprof into a more capable tool, and one
-that can read perf output files and do so when launched from the
-command line.
+the nowayout option is there to make sure that the watchdog keeps running
+as long as the system is running. If you however do a system shutdown (which
+means that you are going to reboot your server in a controlled fasion and thus
+not as result of a crash or hang-situation), then either the shutdown function
+of your platform_driver or the reboot_notifier call will be executed.
+In the case of a watchdog device idriver we will then stop the watchdog to
+prevent reboot's during the fsck that might happen after reboot.
+If you run into a reboot operation during an fsck then chances a very big that
+after the reboot your system will again be rebooted during the next fsck.
+To prevent this fsck-reboot-loop issue we turn of the watchdog when rebooting.
+
+Because of this, I'm not going to apply this patch.
+
+> We have a system which has such a hang, and therefore want the watchdog
+> to be on until the bitter end.
+
+Hmm, the correct question here should be: why do we have a hang in a clean boot.
+Do you have more info on what exactly happens? This might be an initialization problem.
+
+If we better understand what happens, then we might consider having an option to keep
+the watchdog on after a reboot (which has nothing to do with the nowayout functionality imho).
+or even power-on.
+
+Kind regards,
+Wim.
+
