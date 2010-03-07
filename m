@@ -1,44 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700Ab0CGLBn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 06:01:43 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:57555 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078Ab0CGLBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 06:01:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=XktGeuj+0TUqN8YDkJiM8asbYHaJekC9HjC/2NN0NX/cFfz62Nush6Tn1AuIli/FU0
-         9qM8OXYxT7fFY5cdn+WuPgebqMaYmb6IUuUHabkMjeaQZCSg0hRB+iNqY5c3nm2L4Wr+
-         BSuBMLJ+i5fyE3XsNy+psQHGzyJKjpNwP9O0M=
+	id S1752151Ab0CGLI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 06:08:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38240 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951Ab0CGLI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 06:08:56 -0500
+Date: Sun, 7 Mar 2010 13:04:57 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Alexander Graf <agraf@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Adam Litke <agl@us.ibm.com>, Amit Shah <amit.shah@redhat.com>,
+       hch@lst.de, Jamie Lokier <jamie@shareable.org>,
+       Shirley Ma <mashirle@us.ibm.com>,
+       Anthony Liguori <aliguori@linux.vnet.ibm.com>
+Subject: Re: [PULL] virtio
+Message-ID: <20100307110457.GB20004@redhat.com>
+References: <20100307104252.GA19926@redhat.com> <40B76F19-1E35-4956-A34E-0A83A403F97D@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
-References: <25ae2d691003051958x72040b47g29d842f1d389a6cf@mail.gmail.com>
-	 <19346.6765.457769.167118@pilspetsen.it.uu.se>
-	 <25ae2d691003060224x67ab1c9au5102c8a22518aff@mail.gmail.com>
-	 <20100306104131.GV28972@buzzloop.caiaq.de>
-	 <25ae2d691003061705l5fc0bca7n4a07f558a0c410cf@mail.gmail.com>
-Date: Sun, 7 Mar 2010 11:01:39 +0000
-Message-ID: <56d259a01003070301r7d5bbb9y56b01fa794c4bcc7@mail.gmail.com>
-Subject: Re: weirdness with compiling a 2.6.33 kernel on arm debian
-From: Martin Guy <martinwguy@gmail.com>
-To: dave b <db.pub.mail@gmail.com>
-Cc: Daniel Mack <daniel@caiaq.de>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <40B76F19-1E35-4956-A34E-0A83A403F97D@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/10, dave b <db.pub.mail@gmail.com> wrote:
-> Ok... however how should one test the memory of an arm machine? ...
->  memtest is only for x86. *I am referring to the kernel memtest and not
->  memtest86.
+On Sun, Mar 07, 2010 at 11:57:23AM +0100, Alexander Graf wrote:
+> 
+> On 07.03.2010, at 11:42, Michael S. Tsirkin wrote:
+> 
+> > Linus,
+> > Please pull another virtio fix: this one fixes hotplug and
+> > was supposed to be applied by Rusty already
+> > (http://lkml.org/lkml/2009/11/30/451), but apparently got lost,
+> > somehow.
+> > 
+> > Thanks!
+> > 
+> > The following changes since commit 3119815912a220bdac943dfbdfee640414c0c611:
+> >  Michael S. Tsirkin (1):
+> >        virtio: fix out of range array access
+> > 
+> > are available in the git repository at:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git for-linus
+> > 
+> > Michael S. Tsirkin (1):
+> >      virtio: set pci bus master enable bit
+> 
+> This is still missing an identifier for the hypervisor. We need to know if the guest will ever set bus master enabled or not, so we can have a compat hack in qemu to not check for it.
+> 
+> 
+> Alex
 
-Well, there's a userspace one: follow the link from
-http://www.arm.linux.org.uk/developer/stresstests.php
+This patch fixes hotplug with qemu 0.11-0.12 which can't make use of a new
+identifier without a time machine.
 
-    M
+IMHO we can't add new identifiers in time for 2.6.34 anyway, so if you
+want to do that, please send a patch and have it queued up for the next
+release. But I don't think we need an identifier for compat hack.
+Hypervisor can detect buggy guests when they set status to OK without
+enabling bus master first.
+
+Makes sense?
+
+
+-- 
+MST
