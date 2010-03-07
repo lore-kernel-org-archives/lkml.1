@@ -1,77 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234Ab0CGETY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 23:19:24 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:43376 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753425Ab0CGETW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 23:19:22 -0500
-Date: Sat, 6 Mar 2010 23:19:20 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: The gregkh patch scripts
-Message-ID: <Pine.LNX.4.44L0.1003062253101.29076-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751309Ab0CGFpZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 00:45:25 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:52942 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750702Ab0CGFpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 00:45:23 -0500
+To: sam@synack.fr
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, hadi@cyberus.ca, kaber@trash.net,
+       zbr@ioremap.net, nhorman@tuxdriver.com, root@localdomain.pl,
+       linux-security-module@vger.kernel.org
+Subject: Re: [RFC v2 00/10] snet: Security for NETwork syscalls
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
+	<201003030156.o231udx1023055@www262.sakura.ne.jp>
+	<m2vdd9p9r7.fsf@ssh.synack.fr>
+In-Reply-To: <m2vdd9p9r7.fsf@ssh.synack.fr>
+Message-Id: <201003071445.FJB39029.QLSHtOFOJFOVMF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Sun, 7 Mar 2010 14:45:20 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg:
+Hello.
 
-Are the scripts you use for creating the various gregkh-*.patch files 
-stored in 
+Samir Bellabes wrote:
+> Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> writes:
+> 
+> > Regarding [RFC v2 09/10] snet: introduce snet_ticket
+> > +enum snet_verdict snet_ticket_check(struct snet_info *info)
+> > +{
+> > +       struct snet_ticket *st = NULL;
+> > +       unsigned int h = 0, verdict = SNET_VERDICT_NONE;
+> > +       struct list_head *l = NULL;
+> > +       struct snet_task_security *tsec = NULL;
+> > +
+> > +       if (snet_ticket_mode == SNET_TICKET_OFF)
+> > +               goto out;
+> > +
+> > +       tsec = (struct snet_task_security*) current_security();
+> > +
+> > +       h = jhash_2words(info->syscall, info->protocol, 0) % HSIZE;
+> > +       l = &tsec->hash[h];
+> > +
+> > +       read_lock_bh(&tsec->lock);
+> >
+> > Credentials are allocated for copy-on-write basis.
+> > Sharing "tsec" among multiple "struct task_struct" is what you intended?
+> 
+> No, there is no shared "tsec".
+> snet_ticket_check() is called from the process context. So "tsec" is
+> a pointer to the "void *security" pointer from its own "struct
+> task_struct".
+>
+Until 2.6.28:
 
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/scripts/
+  "void *security" is directory attached to "struct task_struct".
+  copy_process() calls security_task_alloc().
 
-?  Those files appear not to have been updated for quite some time.
+  Therefore, task1->security != task2->security is guaranteed as long as you do
 
-Regardless, the way the current scripts work has got a problem.  As far
-as I can tell, they take Linus's current tree, apply your various
-accumulated quilt series files, and then compute the diff between the
-end result and the starting point.  The output is labelled with name of
-the starting tree.  (If my understanding is wrong then tell me so and
-ignore the rest of this message.)
+    task->security = kmalloc();
 
-The problem is that Linus's current tree is not a good starting point.  
-For example, right now several of the individual files such as
-gregkh-07-usb-2.6.33.patch are completely empty.  This is because you
-have sent all the pending changes upstream, so they are now included in
-Linus's tree and hence they don't show up in a diff.
+  at security_task_alloc().
 
-But...  The file is still named "gregkh-07-usb-2.6.33.patch", even
-though it isn't a patch against 2.6.33 -- it's a patch against whatever
-Linus's tree happened to contain at the time you ran the script.  
-Since I don't know what tree that was (and I don't have git repository
-for the kernel anyway), I can't use the patch file.  (Well, I _can_ use 
-it because it's empty, but it doesn't do me any good -- the principle 
-is still valid.)
+Since 2.6.29:
 
-As Linus has explained to quite a few people, this isn't a good way to
-operate.  What your scripts do is essentially the same as rebasing a
-publicly-exported git repository, which should be done relatively
-infrequently.  It's okay to rebase against the actual releases and the
-*-rcN trees, because they are well-defined intermediate points.  But
-rebasing against a *-rcN-gitM should be quite rare, and rebasing
-against anything else is basically forbidden.
+  "void *security" is attached to "struct cred", and "struct cred *" is
+  attached to "struct task_struct". copy_process() calls copy_creds() and
+  prepare_creds() calls security_prepare_creds(). But copy_creds() does not
+  call prepare_creds() for clone(CLONE_THREAD) case.
 
-This means the scripts shouldn't start with the vanilla
-tree-of-the-moment.  They should start with the most recent release or
--rcN tag.  In rare cases they could use an rcN-gitM tag, but only if
-there's a good reason.
+  Therefore, task1->cred->security != task2->cred->security is not guaranteed
+  even if you do
 
-So for example, the current gregkh-*-2.6.33.patch files should be quite
-large, because they should contain all the accumulated development for
-the last three months that hasn't gotten into 2.6.33.  When 2.6.34-rc1
-is released then the files should get small, since they would then
-contain only material that was submitted slightly before or during the
-merge window.
+    cred->security = kmalloc();
 
-Can the scripts be updated to work in this way?
+  at security_prepare_creds().
 
-Alan Stern
+> every task_struct have a "tsec" allocated to its "void *security"
+> pointer. 
 
+You meant to have assigned "void *security" dedicated to "struct task_struct".
+But "void *security" is no longer directly attached to "struct task_struct".
+I couldn't find code that checks whether "current->cred" is used by only
+current thread or not. "current->cred" being used by only current thread is
+a requirement for having a "tsec" allocated to every "struct task_struct".
+
+Your code will share "tsec" among multiple threads if a process created
+threads using clone(CLONE_THREAD | CLONE_SIGHAND | CLONE_VM). Each thread has
+its own "struct task_struct" but they share "cred->security".
+Sharing "tsec" among multiple threads is what you intended?
+
+
+
+Regards.
