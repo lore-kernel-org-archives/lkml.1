@@ -1,61 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487Ab0CGPRA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 10:17:00 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:34737 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754362Ab0CGPQ6 (ORCPT
+	id S1754506Ab0CGPUR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 10:20:17 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:34964 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754378Ab0CGPUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 10:16:58 -0500
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAFtQk0tbstZK/2dsb2JhbACbQ3S3Yg2EawQ
-Date: Sun, 7 Mar 2010 16:16:56 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-kernel@vger.kernel.org, seth.heasley@intel.com
-Subject: Re: [PATCH] iTCO_wdt: Don't stop on shutdown with nowayout
-Message-ID: <20100307151656.GX7459@infomag.iguana.be>
-References: <20100223164019.60a6de1a@marrow.netinsight.se>
+	Sun, 7 Mar 2010 10:20:14 -0500
+Date: Sun, 7 Mar 2010 23:20:07 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Stewart Malik <mali0037@gmail.com>
+Cc: davem@davemloft.net, richih.mailinglist@gmail.com,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CRYPTO: Blowfish: Converted spaces to tabs in
+	crypto/blowfish.c
+Message-ID: <20100307152007.GA24260@gondor.apana.org.au>
+References: <1267947066-22399-1-git-send-email-mali0037@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100223164019.60a6de1a@marrow.netinsight.se>
+In-Reply-To: <1267947066-22399-1-git-send-email-mali0037@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Mar 07, 2010 at 06:01:06PM +1030, Stewart Malik wrote:
+>
+> @@ -452,17 +456,17 @@ static int bf_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen)
+>  static struct crypto_alg alg = {
+>  	.cra_name		=	"blowfish",
+>  	.cra_flags		=	CRYPTO_ALG_TYPE_CIPHER,
+> -	.cra_blocksize		=	BF_BLOCK_SIZE,
+> -	.cra_ctxsize		=	sizeof(struct bf_ctx),
+> -	.cra_alignmask		=	3,
+> +	.cra_blocksize	=	BF_BLOCK_SIZE,
+> +	.cra_ctxsize	=	sizeof(struct bf_ctx),
+> +	.cra_alignmask	=	3,
 
-> Currently, the watchdog is turned off when the system shuts down or the
-> module is unloaded. If nowayout has been selected, this makes no sense
-> and fails to restart the system if it hangs during reboot, so make it
-> conditional.
-
-the nowayout option is there to make sure that the watchdog keeps running
-as long as the system is running. If you however do a system shutdown (which
-means that you are going to reboot your server in a controlled fasion and thus
-not as result of a crash or hang-situation), then either the shutdown function
-of your platform_driver or the reboot_notifier call will be executed.
-In the case of a watchdog device idriver we will then stop the watchdog to
-prevent reboot's during the fsck that might happen after reboot.
-If you run into a reboot operation during an fsck then chances a very big that
-after the reboot your system will again be rebooted during the next fsck.
-To prevent this fsck-reboot-loop issue we turn of the watchdog when rebooting.
-
-Because of this, I'm not going to apply this patch.
-
-> We have a system which has such a hang, and therefore want the watchdog
-> to be on until the bitter end.
-
-Hmm, the correct question here should be: why do we have a hang in a clean boot.
-Do you have more info on what exactly happens? This might be an initialization problem.
-
-If we better understand what happens, then we might consider having an option to keep
-the watchdog on after a reboot (which has nothing to do with the nowayout functionality imho).
-or even power-on.
-
-Kind regards,
-Wim.
-
+What's this bit for?
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
