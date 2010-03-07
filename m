@@ -1,116 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968Ab0CGBKS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Mar 2010 20:10:18 -0500
-Received: from mail.perches.com ([173.55.12.10]:1488 "EHLO mail.perches.com"
+	id S1754041Ab0CGBNn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Mar 2010 20:13:43 -0500
+Received: from thunk.org ([69.25.196.29]:33978 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753632Ab0CGBKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Mar 2010 20:10:16 -0500
-Subject: [PATCH] vsprintf.c: Reduce sizeof struct printf_spec from 24 to 8
- bytes
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
-References: <cover.1267682641.git.joe@perches.com>
-	 <20100304143837.af39845d.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
-	 <1267911399.849.39.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-	 <1267914654.849.81.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
-	 <1267918554.849.89.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Mar 2010 17:10:14 -0800
-Message-ID: <1267924214.1937.12.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+	id S1752950Ab0CGBNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Mar 2010 20:13:42 -0500
+Date: Sat, 6 Mar 2010 20:13:35 -0500
+From: tytso@mit.edu
+To: Dave Airlie <airlied@gmail.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] X doesn't work with 2.6.33 (can't find any input
+ devices)
+Message-ID: <20100307011335.GA5149@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Dave Airlie <airlied@gmail.com>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <20100303151720.GA3191@thunk.org>
+ <20100303.072007.170106625.davem@davemloft.net>
+ <20100305044054.GB5747@thunk.org>
+ <21d7e9971003042111n5b5145c5sd9b62b53522cfd86@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9971003042111n5b5145c5sd9b62b53522cfd86@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-06 at 15:58 -0800, Linus Torvalds wrote:
-> And no, I guess we don't really need to make it 32-bit. Fitting in 64 bits 
-> would already be a big improvement over what we have now.
+On Fri, Mar 05, 2010 at 03:11:53PM +1000, Dave Airlie wrote:
+> On Fri, Mar 5, 2010 at 2:40 PM,  <tytso@mit.edu> wrote:
+> > See Linus's complaints over the nouveau driver; it's the same
+> > principle; something is really broken.
+> 
+> Not really, this is just somebody doing something stupid one would hope,
+> 
+> does lshal on both kernels give similiar results?
 
-Reducing the size of struct printf_spec is a good thing
-because multiple instances are commonly passed on stack.
+No, it's quite different.    See attached.
 
-It's possible for type to be u8 and field_width to be s8,
-but this is likely small enough for now.
-
-Signed-off-by: Joe Perches <joe@perches.com>
----
- lib/vsprintf.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index af4aaa6..fdee7f7 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -408,12 +408,12 @@ enum format_type {
- };
+--- lshal-2.6.33	     2010-03-06 10:15:44.837265508 -0500
++++ lshal-2.6.32-git4	     2010-03-06 18:45:35.782582002 -0500
+@@ -1,17 +1,2446 @@
  
- struct printf_spec {
--	enum format_type	type;
--	int			flags;		/* flags to number() */
--	int			field_width;	/* width of output field */
--	int			base;
--	int			precision;	/* # of digits/chars */
--	int			qualifier;
-+	u16	type;
-+	s16	field_width;	/* width of output field */
-+	u8	flags;		/* flags to number() */
-+	u8	base;
-+	s8	precision;	/* # of digits/chars */
-+	u8	qualifier;
- };
- 
- static char *number(char *buf, char *end, unsigned long long num,
-@@ -1333,7 +1333,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 			break;
- 
- 		case FORMAT_TYPE_NRCHARS: {
--			int qualifier = spec.qualifier;
-+			u8 qualifier = spec.qualifier;
- 
- 			if (qualifier == 'l') {
- 				long *ip = va_arg(args, long *);
-@@ -1619,7 +1619,7 @@ do {									\
- 
- 		case FORMAT_TYPE_NRCHARS: {
- 			/* skip %n 's argument */
--			int qualifier = spec.qualifier;
-+			u8 qualifier = spec.qualifier;
- 			void *skip_arg;
- 			if (qualifier == 'l')
- 				skip_arg = va_arg(args, long *);
-@@ -1885,7 +1885,9 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
- 	char *next;
- 	char digit;
- 	int num = 0;
--	int qualifier, base, field_width;
-+	u8 qualifier;
-+	u8 base;
-+	s16 field_width;
- 	bool is_sign;
- 
- 	while (*fmt && *str) {
-@@ -1963,7 +1965,7 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
- 		{
- 			char *s = (char *)va_arg(args, char *);
- 			if (field_width == -1)
--				field_width = INT_MAX;
-+				field_width = SHORT_MAX;
- 			/* first, skip leading white space in buffer */
- 			str = skip_spaces(str);
- 
+-Dumping 23 device(s) from the Global Device List:
++Dumping 149 device(s) from the Global Device List:
+ -------------------------------------------------
+...
 
 
+It looks like it's fixed as of 2.6.33-git10.  Hopefully whoever fixed
+it will backport it to 2.6.33-STABLE, since this will seriously screw
+up anyone wanting to use 2.6.33 at least on Ubuntu; I don't know about
+other distributions.
+
+					- Ted
