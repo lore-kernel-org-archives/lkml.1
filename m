@@ -1,50 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880Ab0CGVKG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 16:10:06 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:57786 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752094Ab0CGVKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 16:10:04 -0500
-Subject: Re: [PATCH] Bluetooth: fix coding style issue in hci_vhci.c This
- patch affects hci_vhci.c it fixes some warnings detected by the
- checkpath.pl tool Signed-off-by: Tiago Henriques <t.a.c.henriques@gmail.com>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Greg KH <gregkh@suse.de>
-Cc: t.a.c.henriques@googlemail.com, t.a.c.henriques@gmail.com,
-       adobriyan@gmail.com, tglx@linutronix.de,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100307155658.GB1805@suse.de>
-References: <1267934631-3531-1-git-send-email-t.a.c.henriques@gmail.com>
-	 <20100307155658.GB1805@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Mar 2010 13:08:12 -0800
-Message-ID: <1267996092.3712.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	id S1754894Ab0CGVXr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 16:23:47 -0500
+Received: from tundra.namei.org ([65.99.196.166]:59897 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754868Ab0CGVXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 16:23:46 -0500
+Date: Mon, 8 Mar 2010 08:23:30 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: linux-kernel@vger.kernel.org
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: Upstream first policy
+Message-ID: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tiago,
+On Thu, 4 Mar 2010, Linus Torvalds wrote:
 
-> Your Subject line is a bit messed up :)
+> On Thu, 4 Mar 2010, Kyle McMartin wrote:
+>> 
+>> I recommend you don't look at Ubuntu, we might have a lot of extra
+>> crud[2] in the kernel if you do. :) (Actually, shockingly less than I
+>> thought, just apparmor, aufs, ndiswrapper are the obvious ones.)
 > 
-> You need to put extra lines in your git commit so that git-send-email
-> doesn't barf on it.
+> Ok, so ndiswrapper falls under the "yeah, no" heading.
 > 
-> On Sun, Mar 07, 2010 at 04:03:51AM +0000, t.a.c.henriques@googlemail.com wrote:
-> > From: root <root@balganUbuntuVM.(none)>
-> 
-> And this is incorrect.
+> But apparmor was supposed to be on the "yeah, we'll merge it" path, I 
+> talked to somebody about it not _that_ long ago. Some of the security 
+> people object, but they object for all the wrong reasons and I really do 
+> think that since it's getting used, we really should merge it.
 
-and this goes only to linux-bluetooth@vger.kernel.org. I really have no
-idea why anybody else is on CC here. It is pure Bluetooth cleanup patch.
+The AppArmor developer has been posting patches for review -- there's 
+nothing stopping the code being merged except for the need to address 
+purely technical issues raised by reviewers, which is ongoing.
 
-Regards
+See: http://thread.gmane.org/gmane.linux.kernel.lsm/10443
 
-Marcel
+> Although there was _some_ noise about Ubuntu trying to move away from 
+> it.. But that may have been more of the whole FUD thing from the people 
+> who for some unfathomable reason think that inodes are more important 
+> than pathnames.
+
+Hey, thanks for another random unfounded personal attack, it's really 
+appreciated.
 
 
+- James
+-- 
+James Morris
+<jmorris@namei.org>
