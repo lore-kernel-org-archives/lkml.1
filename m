@@ -1,119 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372Ab0CHTJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 14:09:38 -0500
-Received: from ppp173-197.broadband.gorge.net ([209.216.173.197]:42764 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753798Ab0CHTJc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 14:09:32 -0500
-Date: Mon, 8 Mar 2010 19:08:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-Message-ID: <20100308190857.400bde09@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
-	<20100308094647.GA14268@elte.hu>
-	<20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.7; i686-redhat-linux-gnu)
+	id S1755399Ab0CHTK2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 14:10:28 -0500
+Received: from mail2.tundra.com ([142.46.200.162]:46818 "EHLO mx2.tundra.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753798Ab0CHTKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 14:10:23 -0500
+X-ASG-Debug-ID: 1268075421-6bd900340000-xx1T2L
+X-Barracuda-URL: http://142.46.200.162:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: abounine@tundra.com
+Date: Mon, 8 Mar 2010 14:10:05 -0500
+From: Alexandre Bounine <abounine@tundra.com>
+To: mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       thomas.moll@sysgo.com, abounine@tundra.com
+X-ASG-Orig-Subj: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Subject: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Message-ID: <20100308191005.GE4324@amak.tundra.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+X-Barracuda-Connect: UNKNOWN[142.46.200.189]
+X-Barracuda-Start-Time: 1268075421
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at tundra.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Things like "/etc/passwd" really are about the _pathname_, not the inode. 
-> It really is the _path_ that is special, because that is fundamentally the 
-> thing you trust.
 
-Why can I trust the path ?
+From: Alexandre Bounine <alexandre.bounine@idt.com>
 
-> But it's not actually _true_ in any deeper sense. You're really just 
-> trying to enforce a pathname-based model using a inode/content based 
-> security hammer.
+Add Machine Check exception handling into RapidIO port driver
+for Freescale SoCs (MPC85xx).
 
-Quite untrue. I've actually *used* path based security systems (DEC10
-ACLs) and for almost every case its brain-dead.
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Tested-by: Thomas Moll <thomas.moll@sysgo.com>
+---
 
-Imagine a world where this happened
+ fsl_rio.c |   74 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 70 insertions(+), 4 deletions(-)
 
-	echo "hello" > fred
-	chmod 666 fred
-	ls -l fred
-	fred rw-rw-rw-
-	mv fred bill
-	ls -l bill
-	bill rw-------
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/arch/powerpc/sysdev/fsl_rio.c w33b/arch/powerpc/sysdev/fsl_rio.c
+--- w33a/arch/powerpc/sysdev/fsl_rio.c	2010-03-08 10:38:10.121013000 -0500
++++ w33b/arch/powerpc/sysdev/fsl_rio.c	2010-03-08 11:23:03.274215000 -0500
+@@ -31,6 +31,8 @@
+ #include <linux/kfifo.h>
+ 
+ #include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/uaccess.h>
+ 
+ #undef DEBUG_PW	/* Port-Write debugging */
+ 
+@@ -46,6 +48,8 @@
+ #define RIO_ESCSR		0x158
+ #define RIO_CCSR		0x15c
+ #define RIO_LTLEDCSR		0x0608
++#define  RIO_LTLEDCSR_IER	0x80000000
++#define  RIO_LTLEDCSR_PRT	0x01000000
+ #define RIO_LTLEECSR		0x060c
+ #define RIO_EPWISR		0x10010
+ #define RIO_ISR_AACR		0x10120
+@@ -213,6 +217,54 @@ struct rio_priv {
+ 	spinlock_t pw_fifo_lock;
+ };
+ 
++#define __fsl_read_rio_config(x, addr, err, op)		\
++	__asm__ __volatile__(				\
++		"1:	"op" %1,0(%2)\n"		\
++		"	eieio\n"			\
++		"2:\n"					\
++		".section .fixup,\"ax\"\n"		\
++		"3:	li %1,-1\n"			\
++		"	li %0,%3\n"			\
++		"	b 2b\n"				\
++		".section __ex_table,\"a\"\n"		\
++		"	.align 2\n"			\
++		"	.long 1b,3b\n"			\
++		".text"					\
++		: "=r" (err), "=r" (x)			\
++		: "b" (addr), "i" (-EFAULT), "0" (err))
++
++static void __iomem *rio_regs_win;
++
++static int (*saved_mcheck_exception)(struct pt_regs *regs);
++
++static int fsl_rio_mcheck_exception(struct pt_regs *regs)
++{
++	const struct exception_table_entry *entry = NULL;
++	unsigned long reason = (mfspr(SPRN_MCSR) & MCSR_MASK);
++
++	if (reason & MCSR_BUS_RBERR) {
++		reason = in_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR));
++		if (reason & (RIO_LTLEDCSR_IER | RIO_LTLEDCSR_PRT)) {
++			/* Check if we are prepared to handle this fault */
++			entry = search_exception_tables(regs->nip);
++			if (entry) {
++				pr_debug("RIO: %s - MC Exception handled\n",
++					 __func__);
++				out_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR),
++					 0);
++				regs->msr |= MSR_RI;
++				regs->nip = entry->fixup;
++				return 1;
++			}
++		}
++	}
++
++	if (saved_mcheck_exception)
++		return saved_mcheck_exception(regs);
++	else
++		return cur_cpu_spec->machine_check(regs);
++}
++
+ /**
+  * fsl_rio_doorbell_send - Send a MPC85xx doorbell message
+  * @mport: RapidIO master port info
+@@ -313,6 +365,7 @@ fsl_rio_config_read(struct rio_mport *mp
+ {
+ 	struct rio_priv *priv = mport->priv;
+ 	u8 *data;
++	u32 rval, err = 0;
+ 
+ 	pr_debug
+ 	    ("fsl_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
+@@ -323,17 +376,24 @@ fsl_rio_config_read(struct rio_mport *mp
+ 	data = (u8 *) priv->maint_win + offset;
+ 	switch (len) {
+ 	case 1:
+-		*val = in_8((u8 *) data);
++		__fsl_read_rio_config(rval, data, err, "lbz");
+ 		break;
+ 	case 2:
+-		*val = in_be16((u16 *) data);
++		__fsl_read_rio_config(rval, data, err, "lhz");
+ 		break;
+ 	default:
+-		*val = in_be32((u32 *) data);
++		__fsl_read_rio_config(rval, data, err, "lwz");
+ 		break;
+ 	}
+ 
+-	return 0;
++	if (err) {
++		pr_debug("RIO: cfg_read error %d for %x:%x:%x\n",
++			 err, destid, hopcount, offset);
++	}
++
++	*val = rval;
++
++	return err;
+ }
+ 
+ /**
+@@ -1364,6 +1424,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 	rio_register_mport(port);
+ 
+ 	priv->regs_win = ioremap(regs.start, regs.end - regs.start + 1);
++	rio_regs_win = priv->regs_win;
+ 
+ 	/* Probe the master port phy type */
+ 	ccsr = in_be32(priv->regs_win + RIO_CCSR);
+@@ -1432,6 +1493,11 @@ int fsl_rio_setup(struct of_device *dev)
+ 	fsl_rio_doorbell_init(port);
+ 	fsl_rio_port_write_init(port);
+ 
++	saved_mcheck_exception = ppc_md.machine_check_exception;
++	ppc_md.machine_check_exception = fsl_rio_mcheck_exception;
++	/* Ensure that RFXE is set */
++	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
++
+ 	return 0;
+ err:
+ 	iounmap(priv->regs_win);
 
-week later
-	vi fred
-	ls -l fred
-	fred rw-rw-rw-
+---
 
-Your password file is a special case
+Important Notice: This message is intended for the use of the individual to whom it is addressed and may contain information which is privileged, confidential and/or exempt from disclosure under applicable law. If the reader of this message is not the intended recipient, or is not the employee or agent responsible for delivering the message to the intended recipient, you are hereby notified that any dissemination, distribution, or copying of this communication is strictly prohibited. If you have received this communication in error, please notify the sender immediately by telephone or return e-mail and delete the original message from your systems. Thank you. 
 
-> And when you base your security on inodes, you _do_ have problems with 
-> things like /etc. Exactly because there are many different paths in that 
-> directory, and they actually have _different_ security issues. A program 
-> that is supposed to be able to edit/replace /etc/hosts is _not_ supposed 
-> to be able to edit/replace /etc/passwd.
-
-In a secure system I don't just care if its called /etc/passwd. I care
-that whoever made changes to it was trusted to do so and furthermore that
-the suid binary, the libraries it relies upon and the other points of
-trust that matter. Real security is *not* a file permissions system its a
-trust model including things like integrity validation.
-
-Another reason this is true is how passwd is updated - the tool creates
-a new file of some name like passwd.tmp and does processing into that,
-then renames it over the top. If I break passwd.tmp then you'll trust the
-result "because it's called passwd", while a system that keeps
-permissions and labels attached to the object will not because someone
-tampered with the object that became passwd.
-
-> Notice how it's really fundamentally about the pathname? When you create a 
-> new file and overwrite /etc/passwd with that file, the security rules 
-> really do _not_ come from your newly created inode, they come from the 
-> fact that you made the path "/etc/passwd" point to that inode.
-
-No - they come from whatever created or modified the file. It doesn't
-matter what an object is called if I need to know whether the data in it
-is honest.
-
-> You end up making up new ideas to handle this: it's why traditional BSD 
-> UNIX security has the setgid and sticky bit on directories, and it's also 
-> obviously why selinux ends up having special rules for "link" and "rename" 
-> etc - exactly so that you can emulate security that is really 
-> fundamentally about the pathname.
-
-The directory bits move with the directory - they are object
-permissions to retrofit delete permission (a gap in the original
-Unix design) and a very crude inheritance hack.
-
-They are not about paths. If you mv a file into a directory with these
-properties they don't magically inherit the properties.
-
-> the file. The _fundamental_ rule is about the pathname. The labeling comes 
-> about BECAUSE YOU USED A HAMMER FOR A SCREW.
-> 
-> I really don't understand why some people are unable to admit this fact. 
-
-Perhaps because
-- They understand what they are talking about and have studied the
-  research
-- They've got a grasp of the mathematical/logical models that this is all
-  based upon
-- They know the difference between access control lists and security
-  models
-- They aren't so arrogant as to assume that using the capslock key
-  overrides fifty years of research
-
-??
-
-Alan
