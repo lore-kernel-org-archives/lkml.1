@@ -1,63 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929Ab0CHVRZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:17:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50160 "EHLO mail.zytor.com"
+	id S1755651Ab0CHVWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:22:16 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51626 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755744Ab0CHVRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:17:20 -0500
-Message-ID: <4B956940.1060304@zytor.com>
-Date: Mon, 08 Mar 2010 13:16:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org>	<1268031640.4389.11.camel@mulgrave.site>	<yq1vdd6bzgz.fsf@sermon.lab.mkp.net>	<yq1mxyibz7o.fsf@sermon.lab.mkp.net>	<yq1iq96bz22.fsf@sermon.lab.mkp.net> <4B9546E6.6050006@zytor.com> <yq1fx4aa7nq.fsf@sermon.lab.mkp.net>
-In-Reply-To: <yq1fx4aa7nq.fsf@sermon.lab.mkp.net>
-Content-Type: text/plain; charset=UTF-8
+	id S1753798Ab0CHVWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 16:22:14 -0500
+Subject: Re: [RESEND][PATCH] Fix oops on !GENERIC_TIME systems when
+ accessing current_clocksource
+From: john stultz <johnstul@us.ibm.com>
+To: greg kh <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>, stable@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, aaro.koskinen@iki.fi,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1267475683.4216.61.camel@localhost.localdomain>
+References: <1267475683.4216.61.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Mar 2010 13:22:07 -0800
+Message-ID: <1268083327.3726.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08/2010 12:19 PM, Martin K. Petersen wrote:
->>>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
+On Mon, 2010-03-01 at 12:34 -0800, john stultz wrote:
+> No one has replied to this, so I wanted to send it out again.
+
+Just another ping here. I know the patch has made it to -tip, but its
+something that should be needed for 2.6.34, 2.6.33-stable.
+
+thanks
+-john
+
+
+> Aaro Koskinen reported an issue in bug #15366, where on non-GENERIC_TIME
+> systems,
+> accessing /sys/devices/system/clocksource/clocksource0/current_clocksource would oops the system. 
 > 
-> hpa> On the flipside, though, there really is very little net benefit to
-> hpa> 4K as opposed to 512 byte logical sectors: the additional protocol
-> hpa> overhead is relatively minimal, and as long as writes are aligned
-> hpa> full blocks, there shouldn't be any additional overhead on either
-> hpa> the OS or the drive side.  On the plus side, you get full
-> hpa> compatibility with the existing software stack.  The equation
-> hpa> really seems rather simple.
+> It seems the timekeeper/clocksource rework missed initializing the
+> curr_clocksource value in the !GENERIC_TIME.
 > 
-> 4KB sectors are not a win for anybody except the drive vendors.
+> The following patch makes sure it gets initialized, and avoids the
+> issue.
+> 
+> Thanks to Aaro for reporting and diagnosing the issue as well as testing
+> the fix!
+> 
+> Bug Details: http://bugzilla.kernel.org/show_bug.cgi?id=15366
+> 
+> Too late for 2.6.33, but this likely should go into 2.6.33-stable and
+> 2.6.32-stable.
+> 
+> thanks
+> -john
+> 
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> index e85c234..c436ee5 100644
+> --- a/kernel/time/clocksource.c
+> +++ b/kernel/time/clocksource.c
+> @@ -568,6 +568,10 @@ static inline void clocksource_select(void) { }
+>   */
+>  static int __init clocksource_done_booting(void)
+>  {
+> +	mutex_lock(&clocksource_mutex);
+> +	curr_clocksource = clocksource_default_clock();
+> +	mutex_unlock(&clocksource_mutex);
+> +
+>  	finished_booting = 1;
+>  
+>  	/*
+> 
 > 
 
-Obviously.  However, larger physical storage unit sizes -- 4K for
-spinning media, but frequently much larger for flash, for example -- is
-already in wide use, and having a huge mishmash of logical block sizes
-isn't going to work very well.
 
-> There is a push in the industry right now to keep the 512-byte logical
-> blocks forever.  The first step would be to report misaligned accesses
-> or accesses that are not a multiple of the physical block size.  Second
-> step would be to eventually reject any write that's not a properly
-> aligned multiple of the physical block size.
-
-I personally suspect that that is the way it is going to go, rather than
-trying to change the software ecosystem to a different logical block
-size.  It has been tried in the past and failed, with the sole exception
-of CD-ROMs, pretty much.
-
-	-hpa
