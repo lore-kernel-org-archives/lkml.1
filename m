@@ -1,73 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497Ab0CHJhn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 04:37:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12323 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113Ab0CHJh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 04:37:27 -0500
-Message-ID: <4B94C552.30604@redhat.com>
-Date: Mon, 08 Mar 2010 11:37:22 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/18] KVM: MMU: Add infrastructure for two-level page
- walker
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com> <1267643541-451-12-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1267643541-451-12-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753552Ab0CHJhq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 04:37:46 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54217 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042Ab0CHJh0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 04:37:26 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Mon, 08 Mar 2010 01:36:32 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 2/4] x86: make 820 to be static
+In-reply-to: <1268040992-13807-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <1268040992-13807-5-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1268040992-13807-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2010 09:12 PM, Joerg Roedel wrote:
-> This patch introduces a mmu-callback to translate gpa
-> addresses in the walk_addr code. This is later used to
-> translate l2_gpa addresses into l1_gpa addresses.
->
-> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
-> ---
->   arch/x86/include/asm/kvm_host.h |    1 +
->   arch/x86/kvm/mmu.c              |    7 +++++++
->   arch/x86/kvm/paging_tmpl.h      |   19 +++++++++++++++++++
->   include/linux/kvm_host.h        |    5 +++++
->   4 files changed, 32 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index c0b5576..76c8b5f 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -250,6 +250,7 @@ struct kvm_mmu {
->   	void (*free)(struct kvm_vcpu *vcpu);
->   	gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gva_t gva, u32 access,
->   			    u32 *error);
-> +	gpa_t (*translate_gpa)(struct kvm_vcpu *vcpu, gpa_t gpa, u32 *error);
->   	void (*prefetch_page)(struct kvm_vcpu *vcpu,
->   			      struct kvm_mmu_page *page);
->   	int (*sync_page)(struct kvm_vcpu *vcpu,
->    
+and we don't need to expose e820_any_mapped anymore
 
-I think placing this here means we will miss a few translations, namely 
-when we do a physical access (say, reading PDPTEs or similar).
+Signed-off-by: Yinghai Lu <yinghai@kernel.org.
 
-We need to do this on the level of kvm_read_guest() so we capture 
-physical accesses:
+---
+ arch/x86/kernel/e820.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-kvm_read_guest_virt
-   -> walk_addr
-      -> kvm_read_guest_tdp
-          -> kvm_read_guest_virt
-             -> walk_addr
-                 -> kvm_read_guest_tdp
-                      -> kvm_read_guest
-
-Of course, not all accesses will use kvm_read_guest_tdp; for example 
-kvmclock accesses should still go untranslated.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -34,7 +34,7 @@
+  * user can e.g. boot the original kernel with mem=1G while still booting the
+  * next kernel with full memory.
+  */
+-static struct e820map e820;
++static struct e820map __initdata e820;
+ static struct e820map __initdata e820_saved;
+ 
+ /* For PCI or other memory-mapped resources */
+@@ -46,9 +46,10 @@ EXPORT_SYMBOL(pci_mem_start);
+ /*
+  * This function checks if any part of the range <start,end> is mapped
+  * with type.
++ * phys_pud_init() is using it and is _meminit, but we have !after_bootmem
++ * so could use refok here
+  */
+-int
+-e820_any_mapped(u64 start, u64 end, unsigned type)
++int __init_refok e820_any_mapped(u64 start, u64 end, unsigned type)
+ {
+ 	int i;
+ 
+@@ -63,7 +64,6 @@ e820_any_mapped(u64 start, u64 end, unsi
+ 	}
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(e820_any_mapped);
+ 
+ /*
+  * This function checks if the entire range <start,end> is mapped with type.
