@@ -1,59 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779Ab0CHV1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:27:19 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:44565 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755523Ab0CHV1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:27:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=l910o3aJXMuGxifRagnkuG/kzCDt7I8e0Xa/p13vkKqRcXFTkj62LsZjxd1sFE3yi
-	XcprB7CimMwJ3t7KinrKw==
-Date: Mon, 8 Mar 2010 13:27:11 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Miao Xie <miaox@cn.fujitsu.com>
-cc: Nick Piggin <npiggin@suse.de>, Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH V2 3/4] cpuset: alloc nodemask_t at heap not stack
-In-Reply-To: <4B94CC6D.2070502@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1003081324550.14689@chino.kir.corp.google.com>
-References: <4B94CC6D.2070502@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	id S1755826Ab0CHV3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:29:43 -0500
+Received: from bee.hiwaay.net ([216.180.54.11]:12829 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755655Ab0CHV3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 16:29:40 -0500
+X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 16:29:40 EST
+Date: Mon, 8 Mar 2010 15:20:04 -0600
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Upstream first policy
+Message-ID: <20100308212004.GA1314123@hiwaay.net>
+References: <elwcV-406-1@gated-at.bofh.it> <elHL4-42q-5@gated-at.bofh.it> <elP5U-6Ku-29@gated-at.bofh.it> <elPyV-7zE-7@gated-at.bofh.it> <elQbE-8ll-7@gated-at.bofh.it> <elQv0-vu-17@gated-at.bofh.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100308191749.19e20430@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010, Miao Xie wrote:
+Once upon a time, Alan Cox  <alan@lxorguk.ukuu.org.uk> said:
+>Its path based in the sense that public_html has a path based meaning by
+>convention understood by httpd. Copy a jpeg into your public_html and it
+>will be labelled up for http access under the Fedora shipped rule sets.
 
-> Changes from V1 to V2:
-> - None
-> 
+I'm pretty sure the "copy into a directory" only gets the correct label
+by inheritance from the parent directory.
 
-Both this and patch 2/4 are already in -mm, so please rebase this series 
-on mmotm-2010-03-04-18-05.
+"mkdir public_html" only gets the correct label by running the
+restorecond daemon, which is really kind of a hack.  You have a
+user-space daemon that watches for creation of specific things with
+inotify, and resets their label when a match is found.  It doesn't scale
+up to many rules, certainly not the full SELinux list.
 
-> @@ -1381,39 +1394,46 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
->  			  struct cgroup *oldcont, struct task_struct *tsk,
->  			  bool threadgroup)
->  {
-> -	nodemask_t from, to;
->  	struct mm_struct *mm;
->  	struct cpuset *cs = cgroup_cs(cont);
->  	struct cpuset *oldcs = cgroup_cs(oldcont);
-> +	NODEMASK_ALLOC(nodemask_t, from, GFP_KERNEL);
-> +	NODEMASK_ALLOC(nodemask_t, to, GFP_KERNEL);
-> +
-> +	if (from == NULL || to == NULL)
-> +		return;
->  
-
-You're potentially leaking one of the allocated nodemasks there if the 
-other is -ENOMEM.
+-- 
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
