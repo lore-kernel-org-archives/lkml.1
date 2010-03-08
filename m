@@ -1,60 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430Ab0CHTMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 14:12:53 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36954 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753576Ab0CHTMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 14:12:48 -0500
-Message-ID: <4B954BF5.2050506@zytor.com>
-Date: Mon, 08 Mar 2010 11:11:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1755393Ab0CHTNZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 14:13:25 -0500
+Received: from server109c.appriver.com ([72.32.253.87]:1293 "EHLO
+	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753576Ab0CHTNT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 14:13:19 -0500
+X-Policy: GLOBAL - intcomgrp.com
+X-Primary: jkosin@intcomgrp.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: JKosin@intcomgrp.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 216.54.13.100
+X-Note-Reverse-DNS: mail.intcomgrp.com
+X-Note-WHTLIST: JKosin@intcomgrp.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: G179 G180 G181 G182 G186 G187 G198 G285 
+X-Note: Encrypt Rule Hits: 
+X-Note: Mail Class: ALLOWEDSENDER
+X-Note: Headers Injected
+Message-ID: <4B954CCE.8080902@intcomgrp.com>
+Date: Mon, 08 Mar 2010 14:15:26 -0500
+From: James Kosin <jkosin@intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org>	 <1268031640.4389.11.camel@mulgrave.site>	 <yq1vdd6bzgz.fsf@sermon.lab.mkp.net>	<yq1mxyibz7o.fsf@sermon.lab.mkp.net>	 <yq1iq96bz22.fsf@sermon.lab.mkp.net>  <4B9546E6.6050006@zytor.com> <1268074705.10660.23.camel@mulgrave.site>
-In-Reply-To: <1268074705.10660.23.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Security: key: keyring: fix code style issues
+References: <elPIC-7L6-15@gated-at.bofh.it>
+In-Reply-To: <elPIC-7L6-15@gated-at.bofh.it>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Mar 2010 19:15:26.0876 (UTC) FILETIME=[B5BB45C0:01CABEF3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08/2010 10:58 AM, James Bottomley wrote:
->>
->> On the flipside, though, there really is very little net benefit to 4K
->> as opposed to 512 byte logical sectors: the additional protocol overhead
->> is relatively minimal, and as long as writes are aligned full blocks,
->> there shouldn't be any additional overhead on either the OS or the drive
->> side.  On the plus side, you get full compatibility with the existing
->> software stack.  The equation really seems rather simple.
+See below my comments,
+
+James Kosin
+
+On 3/8/2010 1:20 PM, Chihau Chau wrote:
+> From: Chihau Chau <chihau@gmail.com>
 > 
-> There's another problem that afflicts 4k drives emulating 512b: they
-> have to do a read modify write for any isolated 512b write ... that
-> leads to potential corruption of adjacent 512b blocks if power is lost
-> at the moment the write is being done.  Since most Linux filesystems are
-> 4k sectors, misalignment really hammers this, plus most journal writes
-> seem to be done in 512 byte increments.  I suppose for USB this could be
-> regarded as flakey as usual, though.
+> This fixes some code style issues like to include <linux/uaccess.h> instead
+> <asm/uaccess.h> and to remove some innecessary braces.
 > 
+> Signed-off-by: Chihau Chau <chihau@gmail.com>
+> ---
+>  security/keys/keyring.c |   11 ++++-------
+>  1 files changed, 4 insertions(+), 7 deletions(-)
+> 
+> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+> index e814d21..5a44965 100644
+> --- a/security/keys/keyring.c
+> +++ b/security/keys/keyring.c
+> @@ -17,7 +17,7 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/err.h>
+>  #include <keys/keyring-type.h>
+> -#include <asm/uaccess.h>
+> +#include <linux/uaccess.h>
+>  #include "internal.h"
+>  
+>  /*
+> @@ -170,12 +170,10 @@ static void keyring_describe(const struct key *keyring, struct seq_file *m)
+>  {
+>  	struct keyring_list *klist;
+>  
+> -	if (keyring->description) {
+> +	if (keyring->description)
+>  		seq_puts(m, keyring->description);
+> -	}
+> -	else {
+> +	else
+>  		seq_puts(m, "[anon]");
+> -	}
 
-Misalignment sucks in general.  This is nothing new - the RAID and flash
-people have had these problems for a long time now.  It's clear we need
-to align our filesystems, period.
+I'm just going to put my 2-cents in here.
 
-As to the read-modify-write issue: to some degree there is very little
-you can do about it other than a big enough capacitor.  If you can't
-write a sector atomically and have it stick, you're screwed no matter what.
+a)  removing the braces doesn't change the functionality here; HOWEVER,
+b)  it may introduce a serious BUG later.
 
-	-hpa
+The main reason is some people don't look carefully at code and often
+add statements inside an if else block ...  and if not caught will
+change the meaning of the statements and the order of execution.  The
+worst possible case is if the else {} block is matchable to another if
+statement above this... then the compiler never complains about the else
+without an if test.
+
+I'm okay with changing this to be like below with the {} matching and in
+the same format if you like.
+
+>  
+>  	rcu_read_lock();
+>  	klist = rcu_dereference(keyring->payload.subscriptions);
+> @@ -775,8 +773,7 @@ int __key_link(struct key *keyring, struct key *key)
+>  		smp_wmb();
+>  		klist->nkeys++;
+>  		smp_wmb();
+> -	}
+> -	else {
+> +	} else {
+>  		/* grow the key list */
+>  		max = 4;
+>  		if (klist)
+
