@@ -1,192 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870Ab0CHDkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 22:40:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47333 "EHLO mx1.redhat.com"
+	id S1753893Ab0CHDn5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 22:43:57 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34687 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753313Ab0CHDkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 22:40:04 -0500
-From: Amit Shah <amit.shah@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, greg@kroah.com, Amit Shah <amit.shah@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@ozlabs.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH v2 (resend)] hvc_console: Fix race between hvc_close and hvc_remove
-Date: Mon,  8 Mar 2010 09:08:17 +0530
-Message-Id: <1268019497-6164-1-git-send-email-amit.shah@redhat.com>
-In-Reply-To: <20100304024427.GB31594@amit-x200.redhat.com>
-References: <20100304024427.GB31594@amit-x200.redhat.com>
+	id S1753313Ab0CHDnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Mar 2010 22:43:51 -0500
+Date: Mon, 8 Mar 2010 14:43:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Richard =?UTF-8?B?UsO2amZvcnM=?= <richard.rojfors@pelagicore.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: linux-next: build failure after merge of the scsi-post-merge final
+ tree
+Message-Id: <20100308144343.d2129e35.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__8_Mar_2010_14_43_43_+1100_FeY75_NsKR7QXpPx"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan pointed out a race in the code where hvc_remove is invoked. The
-recent virtio_console work is the first user of hvc_remove().
+--Signature=_Mon__8_Mar_2010_14_43_43_+1100_FeY75_NsKR7QXpPx
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alan describes it thus:
+Hi all,
 
-The hvc_console assumes that a close and remove call can't occur at the
-same time.
+After merging the final tree, today's linux-next build (x86_64
+allmodconfig) failed like this:
 
-In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
-itself....
+drivers/i2c/busses/i2c-xiic.c:39:28: error: linux/i2c-xiic.h: No such file =
+or directory
+drivers/i2c/busses/i2c-xiic.c: In function =E2=80=98xiic_i2c_probe=E2=80=99:
+drivers/i2c/busses/i2c-xiic.c:750: error: dereferencing pointer to incomple=
+te type
+drivers/i2c/busses/i2c-xiic.c:751: error: dereferencing pointer to incomple=
+te type
 
-So this can happen
+I assume people already now about this.
 
-        hvc_close                               hvc_remove
-        hung up ? - no
-                                                lock
-                                                tty = hp->tty
-                                                unlock
-        lock
-        hp->tty = NULL
-        unlock
-        notify del
-        kref_put the hvc struct
-        close completes
-        tty is destroyed
-                                                tty_hangup dead tty
-                                                tty->ops will be NULL
-                                                NULL->...
+Caused by commit e1d5b6598cdc33257fe68302ae9db81d2f7bb883 ("i2c: Add
+support for Xilinx XPS IIC Bus Interface") from Linus' tree.  I have
+reverted that commit for today.
 
-This patch adds some tty krefs and also converts to using tty_vhangup().
+[The version of that patch in next-20100305 had the extra file in it ...]
 
-Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linuxppc-dev@ozlabs.org
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I didn't receive a reply from the linuxppc folks to take this patch via
-their tree. Greg, can you please take this in your tty tree? It's needed
-for 2.6.34, but since hvc_remove() was exported in 2.6.33, it might make
-sense for stable as well.
+--Signature=_Mon__8_Mar_2010_14_43_43_+1100_FeY75_NsKR7QXpPx
+Content-Type: application/pgp-signature
 
- drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 4c3b59b..7e94b3c 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	spin_lock_irqsave(&hp->lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->count++ > 0) {
-+		tty_kref_get(tty);
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 		hvc_kick();
- 		return 0;
-@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 
- 	tty->driver_data = hp;
- 
--	hp->tty = tty;
-+	hp->tty = tty_kref_get(tty);
- 
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
-@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 		spin_lock_irqsave(&hp->lock, flags);
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
-+		tty_kref_put(tty);
- 		tty->driver_data = NULL;
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
-@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		return;
- 
- 	hp = tty->driver_data;
-+
- 	spin_lock_irqsave(&hp->lock, flags);
-+	tty_kref_get(tty);
- 
- 	if (--hp->count == 0) {
- 		/* We are done with the tty pointer now. */
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		/* Put the ref obtained in hvc_open() */
-+		tty_kref_put(tty);
-+
- 		if (hp->ops->notifier_del)
- 			hp->ops->notifier_del(hp, hp->data);
- 
-@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 	}
- 
-+	tty_kref_put(tty);
- 	kref_put(&hp->kref, destroy_hvc_struct);
- }
- 
-@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
- 	if (hp->ops->notifier_hangup)
--			hp->ops->notifier_hangup(hp, hp->data);
-+		hp->ops->notifier_hangup(hp, hp->data);
- 
- 	while(temp_open_count) {
- 		--temp_open_count;
-+		tty_kref_put(tty);
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 	}
- }
-@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
- 	}
- 
- 	/* No tty attached, just skip */
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 	if (tty == NULL)
- 		goto bail;
- 
-@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
- 
- 		tty_flip_buffer_push(tty);
- 	}
-+	if (tty)
-+		tty_kref_put(tty);
- 
- 	return poll_mask;
- }
-@@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
- 	struct tty_struct *tty;
- 
- 	spin_lock_irqsave(&hp->lock, flags);
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 
- 	if (hp->index < MAX_NR_HVC_CONSOLES)
- 		vtermnos[hp->index] = -1;
-@@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
- 	/*
- 	 * We 'put' the instance that was grabbed when the kref instance
- 	 * was initialized using kref_init().  Let the last holder of this
--	 * kref cause it to be removed, which will probably be the tty_hangup
-+	 * kref cause it to be removed, which will probably be the tty_vhangup
- 	 * below.
- 	 */
- 	kref_put(&hp->kref, destroy_hvc_struct);
- 
- 	/*
--	 * This function call will auto chain call hvc_hangup.  The tty should
--	 * always be valid at this time unless a simultaneous tty close already
--	 * cleaned up the hvc_struct.
-+	 * This function call will auto chain call hvc_hangup.
- 	 */
--	if (tty)
--		tty_hangup(tty);
-+	if (tty) {
-+		tty_vhangup(tty);
-+		tty_kref_put(tty);
-+	}
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(hvc_remove);
--- 
-1.6.2.5
+iEYEARECAAYFAkuUcm8ACgkQjjKRsyhoI8ytBgCgkttl4V+pbhnNCwPIN1jgJGAx
+byoAn1xYxbw0b0XWcf2kYx0eL2NzByIj
+=BvM7
+-----END PGP SIGNATURE-----
 
+--Signature=_Mon__8_Mar_2010_14_43_43_+1100_FeY75_NsKR7QXpPx--
