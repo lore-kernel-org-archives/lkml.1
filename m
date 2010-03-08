@@ -1,57 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119Ab0CHXxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:53:53 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46652 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756056Ab0CHXxt (ORCPT
+	id S1756133Ab0CHXyA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:54:00 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:48244 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756121Ab0CHXx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:53:49 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 9 Mar 2010 08:50:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: sync_mm_rss() issues
-Message-Id: <20100309085012.46c28722.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <30859.1268056796@redhat.com>
-References: <30859.1268056796@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 8 Mar 2010 18:53:56 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=IflMSCMwo5oHVws5xILlk9FnK2E+68da/5X0BPRPkUaJKYlz1D782y+pVHsezjemcfT0mkdWSFWBEDooU+xFbvcb6sjYRhVJOyRBZxmVkJOwocj2hEmIXjVALZWQInpa;
+Date: Mon, 8 Mar 2010 15:53:31 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] PCI fix
+Message-ID: <20100308155331.6724efb7@jbarnes-piketon>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Mar 2010 13:59:56 +0000
-David Howells <dhowells@redhat.com> wrote:
 
-> 
-> There are a couple of issues with sync_mm_rss(), as added by patch:
-> 
-> 	commit 34e55232e59f7b19050267a05ff1226e5cd122a5
-> 	Author: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 	Date:   Fri Mar 5 13:41:40 2010 -0800
-> 	Subject: mm: avoid false sharing of mm_counter
-> 
->  (1) You haven't implemented it for NOMMU mode.  What's the right way to do
->      this?  Just give an empty function?
-> 
-Ah, sorry. I'll prepare empty function immediately. But I have no NOMMU
-enviroment...
+The following changes since commit 64096c17417380d8a472d096645f4cbc9406c987:
+  Linus Torvalds (1):
+        Merge branch 'slab-for-linus' of git://git.kernel.org/.../penberg/slab-2.6
 
+are available in the git repository at:
 
->  (2) linux/mm.h should carry the empty function as an inline when
->      CONFIG_SPLIT_RSS_COUNTING=n, rather than it being defined as an empty
->      function in mm/memory.c.
-> 
+  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
 
-ok.
+Just one fix from Rafael for the new runtime PM stuff.  A few other
+fixes are trickling in now, and I expect more once people start testing
+-rc1.
 
-please wait..
+Thanks,
+Jesse
 
-Sorry,
--Kame
+Rafael J. Wysocki (1):
+      PCI/PM Runtime: Make runtime PM of PCI devices inactive by default
 
+ drivers/pci/pci.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
