@@ -1,82 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249Ab0CHPT2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:19:28 -0500
-Received: from exprod6og115.obsmtp.com ([64.18.1.35]:43168 "HELO
-	exprod6og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755185Ab0CHPTZ convert rfc822-to-8bit (ORCPT
+	id S1755257Ab0CHPUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:20:44 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:22190 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185Ab0CHPUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:19:25 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 8 Mar 2010 10:20:39 -0500
+To: Tejun Heo <tj@kernel.org>
+Cc: "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
+       Jim Meyering <jim@meyering.net>
+Subject: Re: ATA 4 KiB sector issues.
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4B947393.2050002@kernel.org>
+Date: Mon, 08 Mar 2010 10:18:27 -0500
+In-Reply-To: <4B947393.2050002@kernel.org> (Tejun Heo's message of "Mon, 08
+	Mar 2010 12:48:35 +0900")
+Message-ID: <yq1zl2ic058.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [GIT PULL] MFD update for 2.6.34
-Date: Mon, 8 Mar 2010 10:20:04 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909022426DC@mi8nycmail19.Mi8.com>
-In-Reply-To: <20100308114835.GA16081@linux-sh.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [GIT PULL] MFD update for 2.6.34
-Thread-Index: Acq+tWa1dmTzJ4SsQMW4iuB47GzPzwAHPYcg
-References: <20100307215323.GA21970@sortiz.org> <20100308114835.GA16081@linux-sh.org>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Samuel Ortiz" <sameo@linux.intel.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Peter Huewe" <peterhuewe@gmx.de>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Denis Turischev" <denis@compulab.co.il>,
-       "Mark Brown" <broonie@opensource.wolfsonmicro.com>,
-       "Mike Turquette" <mturquette@ti.com>,
-       "Magnus Damm" <damm@opensource.se>,
-       "Yusuke Goda" <goda.yusuke@renesas.com>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       "Balaji T K" <balajitk@ti.com>, "Moiz Sonasath" <m-sonasath@ti.com>,
-       "Eduardo Valentin" <eduardo.valentin@nokia.com>,
-       "Haojian Zhuang" <haojian.zhuang@marvell.com>,
-       "Joonyoung Shim" <jy0922.shim@samsung.com>,
-       "Christoph Egger" <siccegge@stud.informatik.uni-erlangen.de>,
-       "Linus Walleij" <linus.walleij@stericsson.com>,
-       "Cory Maccarrone" <darkstar6262@gmail.com>,
-       "Julia Lawall" <julia@diku.dk>
-X-OriginalArrivalTime: 08 Mar 2010 15:19:23.0939 (UTC) FILETIME=[BBF69730:01CABED2]
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B95155E.0238:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, March 08, 2010 4:49 AM, Paul Mundt wrote:
-> On Sun, Mar 07, 2010 at 10:53:25PM +0100, Samuel Ortiz wrote:
->> H Hartley Sweeten (3):
->>       mfd: Use resource_size() in sm501
->>       mfd: Use resource_size() for t7l66xb
->>       mfd: Use resouce_size for tc6393xb
->> 
-> These need to be looked at carefully, at least the sm501 change is
-> totally bogus, breaks everything, and stems from a total lack of
-> understanding of how the drivers interact.
->
-> The I/O resource that's remapped and handled by the MFD takes the full
-> size, while the region request is purposely trimmed down so only the
-> registers needed by the MFD driver are reserved by the MFD driver. Other
-> drivers (like sm501fb) will have their own region requests within the
-> same resource at different offsets, all of which are broken after this
-> change.
->
-> As such, 311e54c07e784fe63d421f724dcc597d1f82ccad at least needs to be
-> reverted. I haven't looked at the other two, but if it's a similar
-> mechanical change then those should be dropped, too.
+>>>>> "Tejun" == Tejun Heo <tj@kernel.org> writes:
 
-Hello Paul,
+Tejun> The [Windows Vista/7] partitioner seems to be using 1M as the
+Tejun> basic alignment unit and offsetting from there if explicitly
+Tejun> requested by the drive
 
-I took a look at the sm501 patch and see your concern.
+Yep.
 
-The ioremap change to use resource_size looks ok. But the two request_mem_region
-changes are an issue due to the point you mentioned above.
 
-The patches to t7166xb and tc6393xb both appear to be ok. They do not have the
-same issue.
+Tejun> Please note that hdparm is misreporting the alignment offset.  It
+Tejun> should be reporting 512 instead of 256 for offset-by-one drives.
 
-Regards,
-Hartley
+Already fixed.  Your hdparm must be old.
+
+
+
+Tejun> Partitioners maybe should only align partitions which will be
+Tejun> used by Linux and default to the traditional layout for others
+Tejun> while allowing explicit override.
+
+I don't think we take the partition type into account.  Karel?
+
+
+Tejun> Reportedly, commonly used partitioners aren't ready to handle
+Tejun> drives larger than 2 TiB in any configuration and alignment isn't
+Tejun> done properly for drives with 4 KiB physical sectors.  4 KiB
+Tejun> logical sector support is broken in both the kernel 
+
+Huh, what?  My homedir is on a 4KiB LBS/PBS drive and has been for ~2
+years.
+
+
+Tejun> (need more details and probably a whole section on partitioner
+Tejun> behaviors)
+
+I'm Cc:'ing Karel Zak and Jim Meyering who have been doing all the
+alignment work for fdisk and parted respectively.  Karel, Jim: The full
+writeup is here:
+
+	http://ata.wiki.kernel.org/index.php/ATA_4_KiB_sector_issues
+
+It'd be great if you guys could share what you have been doing to the
+tooling.
+
+
+Tejun> Unfortunately, the transition to 4 KiB sector size, physical only
+Tejun> or logical too, is looking fairly ugly.  Hopefully, a reasonable
+Tejun> solution can be reached in not too distant future but even with
+Tejun> all the software side updated, it looks like it's gonna cause
+Tejun> significant amount of confusion and frustration.
+
+With regards to XP compatibility I don't think we should go too much out
+of our way to accommodate it.  XP has been disowned by its master and I
+think virtualization will take care of the rest.
+
+FWIW, recent fdisk has a command line flag that will enable/disable DOS
+compatible layout.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
