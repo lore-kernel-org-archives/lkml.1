@@ -1,87 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908Ab0CHGuw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 01:50:52 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57152 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034Ab0CHGur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 01:50:47 -0500
-Message-ID: <4B949E43.2010906@cn.fujitsu.com>
-Date: Mon, 08 Mar 2010 14:50:43 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
-References: <4B94936B.8030409@cn.fujitsu.com>
-In-Reply-To: <4B94936B.8030409@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1751955Ab0CHGyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 01:54:54 -0500
+Received: from sh.osrg.net ([192.16.179.4]:52211 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751034Ab0CHGys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 01:54:48 -0500
+Date: Mon, 8 Mar 2010 15:54:36 +0900
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] Documentation: fix block/biodoc.txt dma mapping description
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100308155252Z.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 08 Mar 2010 15:54:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> While running a ftrace test, a kernel warning showed up. The bug is not so
-> easy to reproduce, normally it takes 30 mins to 2 hours.
-> 
-> After revering 3c05d7482777f15e71bb4cb1ba78dee2800dfec6, I ran the test
-> for 15 hours, and the bug seems disapeared.
-> 
+- It looks incorrect to use blk_rq_map_sg with pci_map_page here about
+  DMA mappings. dma_map_sg?
 
-This bug exhausted us, we found a issue: a tiny window which is
-one of causes of this bug. This patch is to close this tiny window.
-(bug is not fixed)
+- better to use dma_map_page instead of pci_map_page.
+  http://marc.info/?l=linux-kernel&m=126596737604808&w=2
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-
-ringbuffer resizing and reseting will increase the ->record_disabled
-and then wait until a rcu_shced grace period passes.
-
-Contrarily, testing ->record_disabled should be at the same
-preempt disabled critical region as writing into ringbuffer, otherwise
-it will leave a window break ringbuffer resizing or reseting.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 8c1b2d2..54191d6 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2232,12 +2232,12 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
- 	if (ring_buffer_flags != RB_BUFFERS_ON)
- 		return NULL;
- 
--	if (atomic_read(&buffer->record_disabled))
--		return NULL;
--
- 	/* If we are tracing schedule, we don't want to recurse */
- 	resched = ftrace_preempt_disable();
- 
-+	if (atomic_read(&buffer->record_disabled))
-+		goto out_nocheck;
-+
- 	if (trace_recursive_lock())
- 		goto out_nocheck;
- 
-@@ -2469,11 +2469,11 @@ int ring_buffer_write(struct ring_buffer *buffer,
- 	if (ring_buffer_flags != RB_BUFFERS_ON)
- 		return -EBUSY;
- 
--	if (atomic_read(&buffer->record_disabled))
--		return -EBUSY;
--
- 	resched = ftrace_preempt_disable();
- 
-+	if (atomic_read(&buffer->record_disabled))
-+		goto out;
-+
- 	cpu = raw_smp_processor_id();
- 
- 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+ Documentation/block/biodoc.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/Documentation/block/biodoc.txt b/Documentation/block/biodoc.txt
+index 6fab97e..508b5b2 100644
+--- a/Documentation/block/biodoc.txt
++++ b/Documentation/block/biodoc.txt
+@@ -1162,8 +1162,8 @@ where a driver received a request ala this before:
+ 
+ As mentioned, there is no virtual mapping of a bio. For DMA, this is
+ not a problem as the driver probably never will need a virtual mapping.
+-Instead it needs a bus mapping (pci_map_page for a single segment or
+-use blk_rq_map_sg for scatter gather) to be able to ship it to the driver. For
++Instead it needs a bus mapping (dma_map_page for a single segment or
++use dma_map_sg for scatter gather) to be able to ship it to the driver. For
+ PIO drivers (or drivers that need to revert to PIO transfer once in a
+ while (IDE for example)), where the CPU is doing the actual data
+ transfer a virtual mapping is needed. If the driver supports highmem I/O,
+-- 
+1.6.5
 
