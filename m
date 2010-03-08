@@ -1,767 +1,457 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356Ab0CHPyd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:54:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48015 "EHLO hera.kernel.org"
+	id S1755367Ab0CHPyk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:54:40 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48020 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755333Ab0CHPy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:54:28 -0500
+	id S1755320Ab0CHPyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 10:54:32 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
        heiko.carstens@de.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
        peterz@infradead.org, dipankar@in.ibm.com, josh@freedesktop.org,
        paulmck@linux.vnet.ibm.com, oleg@redhat.com, akpm@linux-foundation.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3/4] scheduler: replace migration_thread with cpuhog
-Date: Tue,  9 Mar 2010 00:53:22 +0900
-Message-Id: <1268063603-7425-4-git-send-email-tj@kernel.org>
+Subject: [PATCH 2/4] stop_machine: reimplement using cpuhog
+Date: Tue,  9 Mar 2010 00:53:21 +0900
+Message-Id: <1268063603-7425-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1268063603-7425-1-git-send-email-tj@kernel.org>
 References: <1268063603-7425-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 15:53:44 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 15:53:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently migration_thread is serving three purposes - migration
-pusher, context to execute active_load_balance() and forced context
-switcher for expedited RCU synchronize_sched.  All three roles are
-hardcoded into migration_thread() and determining which job is
-scheduled is slightly messy.
+Reimplement stop_machine using cpuhog.  As cpuhogs are guaranteed to
+be available for all online cpus, stop_machine_create/destroy() are no
+longer necessary and removed.
 
-This patch kills migration_thread and replaces all three uses with
-cpuhog.  The three different roles of migration_thread() are splitted
-into three separate cpuhog callbacks - migration_hog(),
-active_load_balance_hog() and synchronize_sched_expedited_hog() - and
-each use case now simply asks cpuhog to execute the callback as
-necessary.
+With resource management and synchronization handled by cpuhog, the
+new implementation is much simpler.  Asking the cpuhog to execute the
+stop_cpu() state machine on all online cpus with cpu hotplug disabled
+is enough.
 
-synchronize_sched_expedited() was implemented with private
-preallocated resources and custom multi-cpu queueing and waiting
-logic, both of which are provided by cpuhog.
-synchronize_sched_expedited_count is made atomic and all other shared
-resources along with the mutex are dropped.
+stop_machine itself doesn't need to manage any global resources
+anymore, so all per-instance information is rolled into struct
+stop_machine_data and the mutex and all static data variables are
+removed.
 
-synchronize_sched_expedited() also implemented a check to detect cases
-where not all the callback got executed on their assigned cpus and
-fall back to synchronize_sched().  If called with cpu hotplug blocked,
-cpuhog already guarantees that and the condition cannot happen;
-otherwise, stop_machine() would break.  However, this patch preserves
-the paranoid check using a cpumask to record on which cpus the hog ran
-so that it can serve as a bisection point if something actually goes
-wrong theree.
-
-Because the internal execution state is no longer visible,
-rcu_expedited_torture_stats() is removed.
-
-This patch also renames cpuhog threads to from "hog/%d" to
-"migration/%d".  The names of these threads ultimately don't matter
-and there's no reason to make unnecessary userland visible changes.
-
-With this patch applied, stop_machine() and sched now share the same
-resources.  stop_machine() is faster without wasting any resources and
-sched migration users are much cleaner.
+The previous implementation created and destroyed RT workqueues as
+necessary which made stop_machine() calls highly expensive on very
+large machines.  According to Dimitri Sivanich, preventing the dynamic
+creation/destruction makes booting faster more than twice on very
+large machines.  cpuhog resources are preallocated for all online cpus
+and should have the same effect.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Dipankar Sarma <dipankar@in.ibm.com>
-Cc: Josh Triplett <josh@freedesktop.org>
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Dimitri Sivanich <sivanich@sgi.com>
 ---
- Documentation/RCU/torture.txt |   10 --
- include/linux/rcutiny.h       |    2 -
- include/linux/rcutree.h       |    1 -
- kernel/cpuhog.c               |    2 +-
- kernel/rcutorture.c           |    2 +-
- kernel/sched.c                |  358 +++++++++++++----------------------------
- 6 files changed, 113 insertions(+), 262 deletions(-)
+ arch/s390/kernel/time.c      |    1 -
+ drivers/xen/manage.c         |   14 +---
+ include/linux/stop_machine.h |   20 -----
+ kernel/cpu.c                 |    8 --
+ kernel/module.c              |   14 +---
+ kernel/stop_machine.c        |  162 ++++++++++--------------------------------
+ 6 files changed, 42 insertions(+), 177 deletions(-)
 
-diff --git a/Documentation/RCU/torture.txt b/Documentation/RCU/torture.txt
-index 9dba3bb..c412018 100644
---- a/Documentation/RCU/torture.txt
-+++ b/Documentation/RCU/torture.txt
-@@ -170,16 +170,6 @@ Similarly, sched_expedited RCU provides the following:
- 	sched_expedited-torture: Reader Pipe:  12660320201 95875 0 0 0 0 0 0 0 0 0
- 	sched_expedited-torture: Reader Batch:  12660424885 0 0 0 0 0 0 0 0 0 0
- 	sched_expedited-torture: Free-Block Circulation:  1090795 1090795 1090794 1090793 1090792 1090791 1090790 1090789 1090788 1090787 0
--	state: -1 / 0:0 3:0 4:0
--
--As before, the first four lines are similar to those for RCU.
--The last line shows the task-migration state.  The first number is
---1 if synchronize_sched_expedited() is idle, -2 if in the process of
--posting wakeups to the migration kthreads, and N when waiting on CPU N.
--Each of the colon-separated fields following the "/" is a CPU:state pair.
--Valid states are "0" for idle, "1" for waiting for quiescent state,
--"2" for passed through quiescent state, and "3" when a race with a
--CPU-hotplug event forces use of the synchronize_sched() primitive.
- 
- 
- USAGE
-diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
-index 96cc307..49d3d46 100644
---- a/include/linux/rcutiny.h
-+++ b/include/linux/rcutiny.h
-@@ -60,8 +60,6 @@ static inline long rcu_batches_completed_bh(void)
- 	return 0;
- }
- 
--extern int rcu_expedited_torture_stats(char *page);
--
- #define synchronize_rcu synchronize_sched
- 
- static inline void synchronize_rcu_expedited(void)
-diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index 8044b1b..65e0740 100644
---- a/include/linux/rcutree.h
-+++ b/include/linux/rcutree.h
-@@ -36,7 +36,6 @@ extern void rcu_sched_qs(int cpu);
- extern void rcu_bh_qs(int cpu);
- extern int rcu_needs_cpu(int cpu);
- extern void rcu_scheduler_starting(void);
--extern int rcu_expedited_torture_stats(char *page);
- 
- #ifdef CONFIG_TREE_PREEMPT_RCU
- 
-diff --git a/kernel/cpuhog.c b/kernel/cpuhog.c
-index c25c510..353a157 100644
---- a/kernel/cpuhog.c
-+++ b/kernel/cpuhog.c
-@@ -289,7 +289,7 @@ static int __cpuinit cpuhog_cpu_callback(struct notifier_block *nfb,
- 	switch (action & ~CPU_TASKS_FROZEN) {
- 	case CPU_UP_PREPARE:
- 		BUG_ON(hog->thread || hog->enabled || !list_empty(&hog->works));
--		p = kthread_create(cpuhog_thread, hog, "hog/%d", cpu);
-+		p = kthread_create(cpuhog_thread, hog, "migration/%d", cpu);
- 		if (IS_ERR(p))
- 			return NOTIFY_BAD;
- 		sched_setscheduler_nocheck(p, SCHED_FIFO, &param);
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 9bb5217..57f61b5 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -650,7 +650,7 @@ static struct rcu_torture_ops sched_expedited_ops = {
- 	.deferred_free	= rcu_sync_torture_deferred_free,
- 	.sync		= synchronize_sched_expedited,
- 	.cb_barrier	= NULL,
--	.stats		= rcu_expedited_torture_stats,
-+	.stats		= NULL,
- 	.irq_capable	= 1,
- 	.name		= "sched_expedited"
- };
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3a8fb30..900088d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -53,9 +53,9 @@
- #include <linux/timer.h>
- #include <linux/rcupdate.h>
- #include <linux/cpu.h>
-+#include <linux/cpuhog.h>
- #include <linux/cpuset.h>
- #include <linux/percpu.h>
--#include <linux/kthread.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/sysctl.h>
-@@ -578,15 +578,13 @@ struct rq {
- 	int post_schedule;
- 	int active_balance;
- 	int push_cpu;
-+	struct cpuhog_work active_balance_work;
- 	/* cpu of this runqueue: */
- 	int cpu;
- 	int online;
- 
- 	unsigned long avg_load_per_task;
- 
--	struct task_struct *migration_thread;
--	struct list_head migration_queue;
--
- 	u64 rt_avg;
- 	u64 age_stamp;
- 	u64 idle_stamp;
-@@ -2053,21 +2051,18 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 	__set_task_cpu(p, new_cpu);
- }
- 
--struct migration_req {
--	struct list_head list;
--
-+struct migration_arg {
- 	struct task_struct *task;
- 	int dest_cpu;
--
--	struct completion done;
- };
- 
-+static int migration_hog(void *data);
-+
- /*
-  * The task's runqueue lock must be held.
-  * Returns true if you have to wait for migration thread.
-  */
--static int
--migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
-+static bool migrate_task(struct task_struct *p, int dest_cpu)
- {
- 	struct rq *rq = task_rq(p);
- 
-@@ -2075,15 +2070,7 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
- 	 * If the task is not on a runqueue (and not running), then
- 	 * the next wake-up will properly place the task.
- 	 */
--	if (!p->se.on_rq && !task_running(rq, p))
--		return 0;
--
--	init_completion(&req->done);
--	req->task = p;
--	req->dest_cpu = dest_cpu;
--	list_add(&req->list, &rq->migration_queue);
--
--	return 1;
-+	return p->se.on_rq || task_running(rq, p);
- }
- 
- /*
-@@ -3149,7 +3136,6 @@ static void double_rq_unlock(struct rq *rq1, struct rq *rq2)
- void sched_exec(void)
- {
- 	struct task_struct *p = current;
--	struct migration_req req;
- 	int dest_cpu, this_cpu;
- 	unsigned long flags;
- 	struct rq *rq;
-@@ -3175,16 +3161,11 @@ again:
- 	}
- 
- 	/* force the process onto the specified CPU */
--	if (migrate_task(p, dest_cpu, &req)) {
--		/* Need to wait for migration thread (might exit: take ref). */
--		struct task_struct *mt = rq->migration_thread;
-+	if (migrate_task(p, dest_cpu)) {
-+		struct migration_arg arg = { p, dest_cpu };
- 
--		get_task_struct(mt);
- 		task_rq_unlock(rq, &flags);
--		wake_up_process(mt);
--		put_task_struct(mt);
--		wait_for_completion(&req.done);
--
-+		hog_one_cpu(this_cpu, migration_hog, &arg);
+diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
+index 65065ac..afe429e 100644
+--- a/arch/s390/kernel/time.c
++++ b/arch/s390/kernel/time.c
+@@ -397,7 +397,6 @@ static void __init time_init_wq(void)
+ 	if (time_sync_wq)
  		return;
- 	}
- 	task_rq_unlock(rq, &flags);
-@@ -4143,6 +4124,8 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
- /* Working cpumask for load_balance and load_balance_newidle. */
- static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
- 
-+static int active_load_balance_hog(void *data);
-+
- /*
-  * Check this_cpu to ensure it is balanced within domain. Attempt to move
-  * tasks if there is an imbalance.
-@@ -4233,7 +4216,7 @@ redo:
- 
- 			raw_spin_lock_irqsave(&busiest->lock, flags);
- 
--			/* don't kick the migration_thread, if the curr
-+			/* don't kick the active_load_balance_hog, if the curr
- 			 * task on busiest cpu can't be moved to this_cpu
- 			 */
- 			if (!cpumask_test_cpu(this_cpu,
-@@ -4251,7 +4234,9 @@ redo:
- 			}
- 			raw_spin_unlock_irqrestore(&busiest->lock, flags);
- 			if (active_balance)
--				wake_up_process(busiest->migration_thread);
-+				hog_one_cpu_nowait(cpu_of(busiest),
-+					active_load_balance_hog, busiest,
-+					&busiest->active_balance_work);
- 
- 			/*
- 			 * We've kicked active balancing, reset the failure
-@@ -4412,7 +4397,7 @@ redo:
- 		double_lock_balance(this_rq, busiest);
- 
- 		/*
--		 * don't kick the migration_thread, if the curr
-+		 * don't kick the active_load_balance_hog, if the curr
- 		 * task on busiest cpu can't be moved to this_cpu
- 		 */
- 		if (!cpumask_test_cpu(this_cpu, &busiest->curr->cpus_allowed)) {
-@@ -4433,7 +4418,9 @@ redo:
- 		 */
- 		raw_spin_unlock(&this_rq->lock);
- 		if (active_balance)
--			wake_up_process(busiest->migration_thread);
-+			hog_one_cpu_nowait(cpu_of(busiest),
-+					   active_load_balance_hog, busiest,
-+					   &busiest->active_balance_work);
- 		raw_spin_lock(&this_rq->lock);
- 
- 	} else
-@@ -4496,24 +4483,29 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 	time_sync_wq = create_singlethread_workqueue("timesync");
+-	stop_machine_create();
  }
  
  /*
-- * active_load_balance is run by migration threads. It pushes running tasks
-- * off the busiest CPU onto idle CPUs. It requires at least 1 task to be
-- * running on each physical CPU where possible, and avoids physical /
-- * logical imbalances.
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index 5d42d55..888114a 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -79,12 +79,6 @@ static void do_suspend(void)
+ 
+ 	shutting_down = SHUTDOWN_SUSPEND;
+ 
+-	err = stop_machine_create();
+-	if (err) {
+-		printk(KERN_ERR "xen suspend: failed to setup stop_machine %d\n", err);
+-		goto out;
+-	}
+-
+ #ifdef CONFIG_PREEMPT
+ 	/* If the kernel is preemptible, we need to freeze all the processes
+ 	   to prevent them from being in the middle of a pagetable update
+@@ -92,7 +86,7 @@ static void do_suspend(void)
+ 	err = freeze_processes();
+ 	if (err) {
+ 		printk(KERN_ERR "xen suspend: freeze failed %d\n", err);
+-		goto out_destroy_sm;
++		goto out;
+ 	}
+ #endif
+ 
+@@ -135,12 +129,8 @@ out_resume:
+ out_thaw:
+ #ifdef CONFIG_PREEMPT
+ 	thaw_processes();
+-
+-out_destroy_sm:
+-#endif
+-	stop_machine_destroy();
+-
+ out:
++#endif
+ 	shutting_down = SHUTDOWN_INVALID;
+ }
+ #endif	/* CONFIG_PM_SLEEP */
+diff --git a/include/linux/stop_machine.h b/include/linux/stop_machine.h
+index baba3a2..4e66014 100644
+--- a/include/linux/stop_machine.h
++++ b/include/linux/stop_machine.h
+@@ -36,23 +36,6 @@ int stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus);
+  */
+ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus);
+ 
+-/**
+- * stop_machine_create: create all stop_machine threads
 - *
-- * Called with busiest_rq locked.
-+ * active_load_balance_hog is run by cpuhog. It pushes running tasks
-+ * off the busiest CPU onto idle CPUs. It requires at least 1 task to
-+ * be running on each physical CPU where possible, and avoids physical
-+ * / logical imbalances.
-  */
--static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
-+static int active_load_balance_hog(void *data)
- {
-+	struct rq *busiest_rq = data;
-+	int busiest_cpu = cpu_of(busiest_rq);
- 	int target_cpu = busiest_rq->push_cpu;
-+	struct rq *target_rq = cpu_rq(target_cpu);
- 	struct sched_domain *sd;
--	struct rq *target_rq;
-+
-+	raw_spin_lock_irq(&busiest_rq->lock);
-+
-+	/* make sure the requested cpu hasn't gone down in the meantime */
-+	if (unlikely(busiest_cpu != smp_processor_id() ||
-+		     !busiest_rq->active_balance))
-+		goto out_unlock;
- 
- 	/* Is there any task to move? */
- 	if (busiest_rq->nr_running <= 1)
--		return;
+- * Description: This causes all stop_machine threads to be created before
+- * stop_machine actually gets called. This can be used by subsystems that
+- * need a non failing stop_machine infrastructure.
+- */
+-int stop_machine_create(void);
 -
--	target_rq = cpu_rq(target_cpu);
-+		goto out_unlock;
- 
- 	/*
- 	 * This condition is "impossible", if it occurs
-@@ -4544,6 +4536,10 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
- 			schedstat_inc(sd, alb_failed);
- 	}
- 	double_unlock_balance(busiest_rq, target_rq);
-+out_unlock:
-+	busiest_rq->active_balance = 0;
-+	raw_spin_unlock_irq(&busiest_rq->lock);
-+	return 0;
- }
- 
- #ifdef CONFIG_NO_HZ
-@@ -7116,17 +7112,12 @@ static inline void sched_init_granularity(void)
- /*
-  * This is how migration works:
-  *
-- * 1) we queue a struct migration_req structure in the source CPU's
-- *    runqueue and wake up that CPU's migration thread.
-- * 2) we down() the locked semaphore => thread blocks.
-- * 3) migration thread wakes up (implicitly it forces the migrated
-- *    thread off the CPU)
-- * 4) it gets the migration request and checks whether the migrated
-- *    task is still in the wrong runqueue.
-- * 5) if it's in the wrong runqueue then the migration thread removes
-+ * 1) we invoke migration_hog() on the target CPU using hog_one_cpu().
-+ * 2) hog starts to run (implicitly forcing the migrated thread off the CPU)
-+ * 3) it checks whether the migrated task is still in the wrong runqueue.
-+ * 4) if it's in the wrong runqueue then the migration thread removes
-  *    it and puts it into the right queue.
-- * 6) migration thread up()s the semaphore.
-- * 7) we wake up and the migration is done.
-+ * 5) hog completes and hog_one_cpu() returns and the migration is done.
-  */
- 
- /*
-@@ -7140,9 +7131,9 @@ static inline void sched_init_granularity(void)
-  */
- int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
- {
--	struct migration_req req;
- 	unsigned long flags;
- 	struct rq *rq;
-+	unsigned int dest_cpu;
- 	int ret = 0;
- 
- 	/*
-@@ -7188,15 +7179,12 @@ again:
- 	if (cpumask_test_cpu(task_cpu(p), new_mask))
- 		goto out;
- 
--	if (migrate_task(p, cpumask_any_and(cpu_active_mask, new_mask), &req)) {
-+	dest_cpu = cpumask_any_and(cpu_active_mask, new_mask);
-+	if (migrate_task(p, dest_cpu)) {
-+		struct migration_arg arg = { p, dest_cpu };
- 		/* Need help from migration thread: drop lock and wait. */
--		struct task_struct *mt = rq->migration_thread;
+-/**
+- * stop_machine_destroy: destroy all stop_machine threads
+- *
+- * Description: This causes all stop_machine threads which were created with
+- * stop_machine_create to be destroyed again.
+- */
+-void stop_machine_destroy(void);
 -
--		get_task_struct(mt);
- 		task_rq_unlock(rq, &flags);
--		wake_up_process(rq->migration_thread);
--		put_task_struct(mt);
--		wait_for_completion(&req.done);
-+		hog_one_cpu(cpu_of(rq), migration_hog, &arg);
- 		tlb_migrate_finish(p->mm);
- 		return 0;
- 	}
-@@ -7254,75 +7242,6 @@ fail:
+ #else
+ 
+ static inline int stop_machine(int (*fn)(void *), void *data,
+@@ -65,8 +48,5 @@ static inline int stop_machine(int (*fn)(void *), void *data,
  	return ret;
  }
  
--#define RCU_MIGRATION_IDLE	0
--#define RCU_MIGRATION_NEED_QS	1
--#define RCU_MIGRATION_GOT_QS	2
--#define RCU_MIGRATION_MUST_SYNC	3
+-static inline int stop_machine_create(void) { return 0; }
+-static inline void stop_machine_destroy(void) { }
 -
--/*
-- * migration_thread - this is a highprio system thread that performs
-- * thread migration by bumping thread off CPU then 'pushing' onto
-- * another runqueue.
-- */
--static int migration_thread(void *data)
--{
--	int badcpu;
--	int cpu = (long)data;
--	struct rq *rq;
+ #endif /* CONFIG_SMP */
+ #endif /* _LINUX_STOP_MACHINE */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 677f253..c8aa8d0 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -271,9 +271,6 @@ int __ref cpu_down(unsigned int cpu)
+ {
+ 	int err;
+ 
+-	err = stop_machine_create();
+-	if (err)
+-		return err;
+ 	cpu_maps_update_begin();
+ 
+ 	if (cpu_hotplug_disabled) {
+@@ -285,7 +282,6 @@ int __ref cpu_down(unsigned int cpu)
+ 
+ out:
+ 	cpu_maps_update_done();
+-	stop_machine_destroy();
+ 	return err;
+ }
+ EXPORT_SYMBOL(cpu_down);
+@@ -366,9 +362,6 @@ int disable_nonboot_cpus(void)
+ {
+ 	int cpu, first_cpu, error;
+ 
+-	error = stop_machine_create();
+-	if (error)
+-		return error;
+ 	cpu_maps_update_begin();
+ 	first_cpu = cpumask_first(cpu_online_mask);
+ 	/*
+@@ -399,7 +392,6 @@ int disable_nonboot_cpus(void)
+ 		printk(KERN_ERR "Non-boot CPUs are not disabled\n");
+ 	}
+ 	cpu_maps_update_done();
+-	stop_machine_destroy();
+ 	return error;
+ }
+ 
+diff --git a/kernel/module.c b/kernel/module.c
+index f82386b..16162c9 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -656,16 +656,8 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
+ 		return -EFAULT;
+ 	name[MODULE_NAME_LEN-1] = '\0';
+ 
+-	/* Create stop_machine threads since free_module relies on
+-	 * a non-failing stop_machine call. */
+-	ret = stop_machine_create();
+-	if (ret)
+-		return ret;
 -
--	rq = cpu_rq(cpu);
--	BUG_ON(rq->migration_thread != current);
--
--	set_current_state(TASK_INTERRUPTIBLE);
--	while (!kthread_should_stop()) {
--		struct migration_req *req;
--		struct list_head *head;
--
--		raw_spin_lock_irq(&rq->lock);
--
--		if (cpu_is_offline(cpu)) {
--			raw_spin_unlock_irq(&rq->lock);
--			break;
--		}
--
--		if (rq->active_balance) {
--			active_load_balance(rq, cpu);
--			rq->active_balance = 0;
--		}
--
--		head = &rq->migration_queue;
--
--		if (list_empty(head)) {
--			raw_spin_unlock_irq(&rq->lock);
--			schedule();
--			set_current_state(TASK_INTERRUPTIBLE);
--			continue;
--		}
--		req = list_entry(head->next, struct migration_req, list);
--		list_del_init(head->next);
--
--		if (req->task != NULL) {
--			raw_spin_unlock(&rq->lock);
--			__migrate_task(req->task, cpu, req->dest_cpu);
--		} else if (likely(cpu == (badcpu = smp_processor_id()))) {
--			req->dest_cpu = RCU_MIGRATION_GOT_QS;
--			raw_spin_unlock(&rq->lock);
--		} else {
--			req->dest_cpu = RCU_MIGRATION_MUST_SYNC;
--			raw_spin_unlock(&rq->lock);
--			WARN_ONCE(1, "migration_thread() on CPU %d, expected %d\n", badcpu, cpu);
--		}
--		local_irq_enable();
--
--		complete(&req->done);
+-	if (mutex_lock_interruptible(&module_mutex) != 0) {
+-		ret = -EINTR;
+-		goto out_stop;
 -	}
--	__set_current_state(TASK_RUNNING);
++	if (mutex_lock_interruptible(&module_mutex) != 0)
++		return -EINTR;
+ 
+ 	mod = find_module(name);
+ 	if (!mod) {
+@@ -725,8 +717,6 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
+ 
+  out:
+ 	mutex_unlock(&module_mutex);
+-out_stop:
+-	stop_machine_destroy();
+ 	return ret;
+ }
+ 
+diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
+index 912823e..7588788 100644
+--- a/kernel/stop_machine.c
++++ b/kernel/stop_machine.c
+@@ -2,16 +2,12 @@
+  * GPL v2 and any later version.
+  */
+ #include <linux/cpu.h>
+-#include <linux/err.h>
+-#include <linux/kthread.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/stop_machine.h>
+-#include <linux/syscalls.h>
+ #include <linux/interrupt.h>
 -
++#include <linux/cpuhog.h>
+ #include <asm/atomic.h>
+-#include <asm/uaccess.h>
+ 
+ /* This controls the threads on each CPU. */
+ enum stopmachine_state {
+@@ -26,174 +22,92 @@ enum stopmachine_state {
+ 	/* Exit */
+ 	STOPMACHINE_EXIT,
+ };
+-static enum stopmachine_state state;
+ 
+ struct stop_machine_data {
+-	int (*fn)(void *);
+-	void *data;
+-	int fnret;
++	int			(*fn)(void *);
++	void			*data;
++	/* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
++	unsigned int		num_threads;
++	const struct cpumask	*active_cpus;
++
++	enum stopmachine_state	state;
++	atomic_t		thread_ack;
+ };
+ 
+-/* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
+-static unsigned int num_threads;
+-static atomic_t thread_ack;
+-static DEFINE_MUTEX(lock);
+-/* setup_lock protects refcount, stop_machine_wq and stop_machine_work. */
+-static DEFINE_MUTEX(setup_lock);
+-/* Users of stop_machine. */
+-static int refcount;
+-static struct workqueue_struct *stop_machine_wq;
+-static struct stop_machine_data active, idle;
+-static const struct cpumask *active_cpus;
+-static void *stop_machine_work;
+-
+-static void set_state(enum stopmachine_state newstate)
++static void set_state(struct stop_machine_data *smdata,
++		      enum stopmachine_state newstate)
+ {
+ 	/* Reset ack counter. */
+-	atomic_set(&thread_ack, num_threads);
++	atomic_set(&smdata->thread_ack, smdata->num_threads);
+ 	smp_wmb();
+-	state = newstate;
++	smdata->state = newstate;
+ }
+ 
+ /* Last one to ack a state moves to the next state. */
+-static void ack_state(void)
++static void ack_state(struct stop_machine_data *smdata)
+ {
+-	if (atomic_dec_and_test(&thread_ack))
+-		set_state(state + 1);
++	if (atomic_dec_and_test(&smdata->thread_ack))
++		set_state(smdata, smdata->state + 1);
+ }
+ 
+-/* This is the actual function which stops the CPU. It runs
+- * in the context of a dedicated stopmachine workqueue. */
+-static void stop_cpu(struct work_struct *unused)
++/* This is the cpuhog function which stops the CPU. */
++static int stop_cpu(void *data)
+ {
++	struct stop_machine_data *smdata = data;
+ 	enum stopmachine_state curstate = STOPMACHINE_NONE;
+-	struct stop_machine_data *smdata = &idle;
+-	int cpu = smp_processor_id();
+-	int err;
++	int cpu = smp_processor_id(), err = 0;
++	bool is_active;
++
++	if (!smdata->active_cpus)
++		is_active = cpu == cpumask_first(cpu_online_mask);
++	else
++		is_active = cpumask_test_cpu(cpu, smdata->active_cpus);
+ 
+-	if (!active_cpus) {
+-		if (cpu == cpumask_first(cpu_online_mask))
+-			smdata = &active;
+-	} else {
+-		if (cpumask_test_cpu(cpu, active_cpus))
+-			smdata = &active;
+-	}
+ 	/* Simple state machine */
+ 	do {
+ 		/* Chill out and ensure we re-read stopmachine_state. */
+ 		cpu_relax();
+-		if (state != curstate) {
+-			curstate = state;
++		if (smdata->state != curstate) {
++			curstate = smdata->state;
+ 			switch (curstate) {
+ 			case STOPMACHINE_DISABLE_IRQ:
+ 				local_irq_disable();
+ 				hard_irq_disable();
+ 				break;
+ 			case STOPMACHINE_RUN:
+-				/* On multiple CPUs only a single error code
+-				 * is needed to tell that something failed. */
+-				err = smdata->fn(smdata->data);
+-				if (err)
+-					smdata->fnret = err;
++				if (is_active)
++					err = smdata->fn(smdata->data);
+ 				break;
+ 			default:
+ 				break;
+ 			}
+-			ack_state();
++			ack_state(smdata);
+ 		}
+ 	} while (curstate != STOPMACHINE_EXIT);
+ 
+ 	local_irq_enable();
++	return err;
+ }
+ 
+-/* Callback for CPUs which aren't supposed to do anything. */
+-static int chill(void *unused)
+-{
 -	return 0;
 -}
 -
--#ifdef CONFIG_HOTPLUG_CPU
+-int stop_machine_create(void)
+-{
+-	mutex_lock(&setup_lock);
+-	if (refcount)
+-		goto done;
+-	stop_machine_wq = create_rt_workqueue("kstop");
+-	if (!stop_machine_wq)
+-		goto err_out;
+-	stop_machine_work = alloc_percpu(struct work_struct);
+-	if (!stop_machine_work)
+-		goto err_out;
+-done:
+-	refcount++;
+-	mutex_unlock(&setup_lock);
+-	return 0;
 -
- static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
+-err_out:
+-	if (stop_machine_wq)
+-		destroy_workqueue(stop_machine_wq);
+-	mutex_unlock(&setup_lock);
+-	return -ENOMEM;
+-}
+-EXPORT_SYMBOL_GPL(stop_machine_create);
+-
+-void stop_machine_destroy(void)
+-{
+-	mutex_lock(&setup_lock);
+-	refcount--;
+-	if (refcount)
+-		goto done;
+-	destroy_workqueue(stop_machine_wq);
+-	free_percpu(stop_machine_work);
+-done:
+-	mutex_unlock(&setup_lock);
+-}
+-EXPORT_SYMBOL_GPL(stop_machine_destroy);
+-
+ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
+ {
+-	struct work_struct *sm_work;
+-	int i, ret;
+-
+-	/* Set up initial state. */
+-	mutex_lock(&lock);
+-	num_threads = num_online_cpus();
+-	active_cpus = cpus;
+-	active.fn = fn;
+-	active.data = data;
+-	active.fnret = 0;
+-	idle.fn = chill;
+-	idle.data = NULL;
++	struct stop_machine_data smdata = { .fn = fn, .data = data,
++					    .num_threads = num_online_cpus(),
++					    .active_cpus = cpus };
+ 
+-	set_state(STOPMACHINE_PREPARE);
+-
+-	/* Schedule the stop_cpu work on all cpus: hold this CPU so one
+-	 * doesn't hit this CPU until we're ready. */
+-	get_cpu();
+-	for_each_online_cpu(i) {
+-		sm_work = per_cpu_ptr(stop_machine_work, i);
+-		INIT_WORK(sm_work, stop_cpu);
+-		queue_work_on(i, stop_machine_wq, sm_work);
+-	}
+-	/* This will release the thread on our CPU. */
+-	put_cpu();
+-	flush_workqueue(stop_machine_wq);
+-	ret = active.fnret;
+-	mutex_unlock(&lock);
+-	return ret;
++	/* Set the initial state and hog all online cpus. */
++	set_state(&smdata, STOPMACHINE_PREPARE);
++	return hog_cpus(cpu_online_mask, stop_cpu, &smdata);
+ }
+ 
+ int stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
  {
  	int ret;
-@@ -7334,6 +7253,25 @@ static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
- }
  
- /*
-+ * migration_hog - this will be executed by a highprio cpuhog thread
-+ * and performs thread migration by bumping thread off CPU then
-+ * 'pushing' onto another runqueue.
-+ */
-+static int migration_hog(void *data)
-+{
-+	struct migration_arg *arg = data;
-+
-+	/*
-+	 * The original target cpu might have gone down and we might
-+	 * be on another cpu but it doesn't matter.
-+	 */
-+	__migrate_task_irq(arg->task, raw_smp_processor_id(), arg->dest_cpu);
-+	return 0;
-+}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+
-+/*
-  * Figure out where task on dead CPU should go, use force if necessary.
-  */
- static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-@@ -7687,35 +7625,20 @@ static void set_rq_offline(struct rq *rq)
- static int __cpuinit
- migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- {
--	struct task_struct *p;
- 	int cpu = (long)hcpu;
- 	unsigned long flags;
--	struct rq *rq;
-+	struct rq *rq = cpu_rq(cpu);
- 
- 	switch (action) {
- 
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		p = kthread_create(migration_thread, hcpu, "migration/%d", cpu);
--		if (IS_ERR(p))
--			return NOTIFY_BAD;
--		kthread_bind(p, cpu);
--		/* Must be high prio: stop_machine expects to yield to it. */
--		rq = task_rq_lock(p, &flags);
--		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
--		task_rq_unlock(rq, &flags);
--		get_task_struct(p);
--		cpu_rq(cpu)->migration_thread = p;
- 		rq->calc_load_update = calc_load_update;
- 		break;
- 
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		/* Strictly unnecessary, as first user will wake it. */
--		wake_up_process(cpu_rq(cpu)->migration_thread);
--
- 		/* Update our root-domain */
--		rq = cpu_rq(cpu);
- 		raw_spin_lock_irqsave(&rq->lock, flags);
- 		if (rq->rd) {
- 			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
-@@ -7726,26 +7649,10 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		break;
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--		if (!cpu_rq(cpu)->migration_thread)
--			break;
--		/* Unbind it from offline cpu so it can run. Fall thru. */
--		kthread_bind(cpu_rq(cpu)->migration_thread,
--			     cpumask_any(cpu_online_mask));
--		kthread_stop(cpu_rq(cpu)->migration_thread);
--		put_task_struct(cpu_rq(cpu)->migration_thread);
--		cpu_rq(cpu)->migration_thread = NULL;
--		break;
--
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		cpuset_lock(); /* around calls to cpuset_cpus_allowed_lock() */
- 		migrate_live_tasks(cpu);
--		rq = cpu_rq(cpu);
--		kthread_stop(rq->migration_thread);
--		put_task_struct(rq->migration_thread);
--		rq->migration_thread = NULL;
- 		/* Idle task back to normal (off runqueue, low prio) */
- 		raw_spin_lock_irq(&rq->lock);
- 		update_rq_clock(rq);
-@@ -7758,29 +7665,11 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		migrate_nr_uninterruptible(rq);
- 		BUG_ON(rq->nr_running != 0);
- 		calc_global_load_remove(rq);
--		/*
--		 * No need to migrate the tasks: it was best-effort if
--		 * they didn't take sched_hotcpu_mutex. Just wake up
--		 * the requestors.
--		 */
--		raw_spin_lock_irq(&rq->lock);
--		while (!list_empty(&rq->migration_queue)) {
--			struct migration_req *req;
--
--			req = list_entry(rq->migration_queue.next,
--					 struct migration_req, list);
--			list_del_init(&req->list);
--			raw_spin_unlock_irq(&rq->lock);
--			complete(&req->done);
--			raw_spin_lock_irq(&rq->lock);
--		}
--		raw_spin_unlock_irq(&rq->lock);
- 		break;
- 
- 	case CPU_DYING:
- 	case CPU_DYING_FROZEN:
- 		/* Update our root-domain */
--		rq = cpu_rq(cpu);
- 		raw_spin_lock_irqsave(&rq->lock, flags);
- 		if (rq->rd) {
- 			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
-@@ -9642,10 +9531,8 @@ void __init sched_init(void)
- 		rq->push_cpu = 0;
- 		rq->cpu = i;
- 		rq->online = 0;
--		rq->migration_thread = NULL;
- 		rq->idle_stamp = 0;
- 		rq->avg_idle = 2*sysctl_sched_migration_cost;
--		INIT_LIST_HEAD(&rq->migration_queue);
- 		rq_attach_root(rq, &def_root_domain);
- #endif
- 		init_rq_hrtick(rq);
-@@ -10931,12 +10818,6 @@ struct cgroup_subsys cpuacct_subsys = {
- 
- #ifndef CONFIG_SMP
- 
--int rcu_expedited_torture_stats(char *page)
--{
--	return 0;
--}
--EXPORT_SYMBOL_GPL(rcu_expedited_torture_stats);
--
- void synchronize_sched_expedited(void)
- {
- }
-@@ -10944,30 +10825,20 @@ EXPORT_SYMBOL_GPL(synchronize_sched_expedited);
- 
- #else /* #ifndef CONFIG_SMP */
- 
--static DEFINE_PER_CPU(struct migration_req, rcu_migration_req);
--static DEFINE_MUTEX(rcu_sched_expedited_mutex);
--
--#define RCU_EXPEDITED_STATE_POST -2
--#define RCU_EXPEDITED_STATE_IDLE -1
--
--static int rcu_expedited_state = RCU_EXPEDITED_STATE_IDLE;
-+static atomic_t synchronize_sched_expedited_count = ATOMIC_INIT(0);
- 
--int rcu_expedited_torture_stats(char *page)
-+static int synchronize_sched_expedited_hog(void *data)
- {
--	int cnt = 0;
--	int cpu;
-+	static DEFINE_SPINLOCK(done_mask_lock);
-+	struct cpumask *done_mask = data;
- 
--	cnt += sprintf(&page[cnt], "state: %d /", rcu_expedited_state);
--	for_each_online_cpu(cpu) {
--		 cnt += sprintf(&page[cnt], " %d:%d",
--				cpu, per_cpu(rcu_migration_req, cpu).dest_cpu);
-+	if (done_mask) {
-+		spin_lock(&done_mask_lock);
-+		cpumask_set_cpu(smp_processor_id(), done_mask);
-+		spin_unlock(&done_mask_lock);
- 	}
--	cnt += sprintf(&page[cnt], "\n");
--	return cnt;
-+	return 0;
- }
--EXPORT_SYMBOL_GPL(rcu_expedited_torture_stats);
--
--static long synchronize_sched_expedited_count;
- 
- /*
-  * Wait for an rcu-sched grace period to elapse, but use "big hammer"
-@@ -10981,60 +10852,53 @@ static long synchronize_sched_expedited_count;
-  */
- void synchronize_sched_expedited(void)
- {
--	int cpu;
--	unsigned long flags;
--	bool need_full_sync = 0;
--	struct rq *rq;
--	struct migration_req *req;
--	long snap;
--	int trycount = 0;
-+	cpumask_var_t done_mask_var;
-+	struct cpumask *done_mask = NULL;
-+	int snap, trycount = 0;
-+
-+	/*
-+	 * done_mask is used to check that all cpus actually have
-+	 * finished running the hog, which is guaranteed by hog_cpus()
-+	 * if it's called with cpu hotplug blocked.  Keep the paranoia
-+	 * for now but it's best effort if cpumask is off stack.
-+	 */
-+	if (zalloc_cpumask_var(&done_mask_var, GFP_ATOMIC))
-+		done_mask = done_mask_var;
- 
- 	smp_mb();  /* ensure prior mod happens before capturing snap. */
--	snap = ACCESS_ONCE(synchronize_sched_expedited_count) + 1;
-+	snap = atomic_read(&synchronize_sched_expedited_count) + 1;
+-	ret = stop_machine_create();
+-	if (ret)
+-		return ret;
+ 	/* No CPUs can come up or down during this. */
  	get_online_cpus();
--	while (!mutex_trylock(&rcu_sched_expedited_mutex)) {
-+	while (try_hog_cpus(cpu_online_mask, synchronize_sched_expedited_hog,
-+			    done_mask) == -EAGAIN) {
- 		put_online_cpus();
- 		if (trycount++ < 10)
- 			udelay(trycount * num_online_cpus());
- 		else {
- 			synchronize_sched();
--			return;
-+			goto free_out;
- 		}
--		if (ACCESS_ONCE(synchronize_sched_expedited_count) - snap > 0) {
-+		if (atomic_read(&synchronize_sched_expedited_count) - snap > 0) {
- 			smp_mb(); /* ensure test happens before caller kfree */
--			return;
-+			goto free_out;
- 		}
- 		get_online_cpus();
- 	}
--	rcu_expedited_state = RCU_EXPEDITED_STATE_POST;
--	for_each_online_cpu(cpu) {
--		rq = cpu_rq(cpu);
--		req = &per_cpu(rcu_migration_req, cpu);
--		init_completion(&req->done);
--		req->task = NULL;
--		req->dest_cpu = RCU_MIGRATION_NEED_QS;
--		raw_spin_lock_irqsave(&rq->lock, flags);
--		list_add(&req->list, &rq->migration_queue);
--		raw_spin_unlock_irqrestore(&rq->lock, flags);
--		wake_up_process(rq->migration_thread);
--	}
--	for_each_online_cpu(cpu) {
--		rcu_expedited_state = cpu;
--		req = &per_cpu(rcu_migration_req, cpu);
--		rq = cpu_rq(cpu);
--		wait_for_completion(&req->done);
--		raw_spin_lock_irqsave(&rq->lock, flags);
--		if (unlikely(req->dest_cpu == RCU_MIGRATION_MUST_SYNC))
--			need_full_sync = 1;
--		req->dest_cpu = RCU_MIGRATION_IDLE;
--		raw_spin_unlock_irqrestore(&rq->lock, flags);
--	}
--	rcu_expedited_state = RCU_EXPEDITED_STATE_IDLE;
--	synchronize_sched_expedited_count++;
--	mutex_unlock(&rcu_sched_expedited_mutex);
-+	atomic_inc(&synchronize_sched_expedited_count);
-+	if (done_mask)
-+		cpumask_xor(done_mask, done_mask, cpu_online_mask);
+ 	ret = __stop_machine(fn, data, cpus);
  	put_online_cpus();
--	if (need_full_sync)
-+
-+	/* paranoia - this can't happen */
-+	if (done_mask && cpumask_weight(done_mask)) {
-+		char buf[80];
-+
-+		cpulist_scnprintf(buf, sizeof(buf), done_mask);
-+		WARN_ONCE(1, "synchronize_sched_expedited: cpu online and done masks disagree on %d cpus: %s\n",
-+			  cpumask_weight(done_mask), buf);
- 		synchronize_sched();
-+	}
-+free_out:
-+	free_cpumask_var(done_mask_var);
+-	stop_machine_destroy();
+ 	return ret;
  }
- EXPORT_SYMBOL_GPL(synchronize_sched_expedited);
- 
+ EXPORT_SYMBOL_GPL(stop_machine);
 -- 
 1.6.4.2
 
