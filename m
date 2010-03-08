@@ -1,44 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242Ab0CHPQZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:16:25 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:43327 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869Ab0CHPQX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:16:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ht1DXhVbtNztMQfVFH1nYR6fH0ASTtH4sdK6OMck82DeyUw4ee6Rx324/eUFIT2RCq
-         ZtVgH++bHYrpkVIqcDkY4ViDqFEj/wQMRhdgqtYaTiFEZgQDqfqzZewdl0pbdRntvy59
-         54xYffPyd+uR1g78vtMgFa7W7fGPRtSnM2a1E=
-Date: Mon, 8 Mar 2010 17:16:15 +0200
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: wzt.wzt@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, eparis@redhat.com,
-       faith@redhat.com
-Subject: Re: [PATCH] Kernel: Fix coding style in kernel/audit.c
-Message-ID: <20100308151614.GA4081@x200>
-References: <20100308222742.GB17489@localhost.localdomain>
+	id S1755237Ab0CHPRM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:17:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43903 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754129Ab0CHPRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 10:17:09 -0500
+Message-ID: <4B9514E2.7030605@kernel.org>
+Date: Tue, 09 Mar 2010 00:16:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100308222742.GB17489@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>
+Subject: Re: [GIT PULL] workqueue changes for 2.6.34-rc1
+References: <4B8E0FBC.7080702@kernel.org>
+In-Reply-To: <4B8E0FBC.7080702@kernel.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 15:16:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 06:27:42AM +0800, wzt.wzt@gmail.com wrote:
-> @@ -346,8 +346,8 @@ static int audit_set_enabled(int state, uid_t loginuid, u32 sessionid, u32 sid)
->  static int audit_set_failure(int state, uid_t loginuid, u32 sessionid, u32 sid)
->  {
->  	if (state != AUDIT_FAIL_SILENT
-> -	    && state != AUDIT_FAIL_PRINTK
-> -	    && state != AUDIT_FAIL_PANIC)
-> +		&& state != AUDIT_FAIL_PRINTK
-> +		&& state != AUDIT_FAIL_PANIC)
+On 03/03/2010 04:29 PM, Tejun Heo wrote:
+> Please pull from the following workqueue branch.
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-linus
 
-Come on.
+Ping. Thanks.
+
+-- 
+tejun
