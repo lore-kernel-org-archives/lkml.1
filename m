@@ -1,91 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889Ab0CHVub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:50:31 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:60711 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755837Ab0CHVu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:50:28 -0500
-Message-ID: <4B957122.4060007@msgid.tls.msk.ru>
-Date: Tue, 09 Mar 2010 00:50:26 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	id S1755873Ab0CHVuy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:50:54 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48901 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755837Ab0CHVuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 16:50:51 -0500
+Date: Mon, 8 Mar 2010 16:50:50 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PNPACPI: add support for remote wakeup
+Message-ID: <Pine.LNX.4.44L0.1003081648510.1297-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jeff Moyer <jmoyer@redhat.com>
-CC: linux-aio@kvack.org, Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: aio: compat_ioctl issue?
-References: <4B956E5B.9020302@msgid.tls.msk.ru> <x497hpm8p69.fsf@segfault.boston.devel.redhat.com>
-In-Reply-To: <x497hpm8p69.fsf@segfault.boston.devel.redhat.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=804465C5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Moyer wrote:
-> Michael Tokarev <mjt@tls.msk.ru> writes:
-> 
->> Hello.
->>
->> I just come across a situation (next in a long row :)
->> when on x86, 32bit userspace does not work with 64bit
->> kernel.  This time this is about aio requests.
->>
->> An application submits some aio job, and it is returned
->> immediately (from io_getevents()) with EINVAL error.
-[]
-> Can you post the program, please?
+This patch (as1354) adds remote-wakeup support to the pnpacpi driver.
+The new can_wakeup method also allows other PNP protocol drivers
+(pnpbios or iaspnp) to add wakeup support, but I don't know enough
+about how they work to actually do it.
 
-The program which I'm trying is quite big - it's qemu-kvm
-v. 0.12.3 compiled with --enable-linux-aio.  I bugged
-kvm folks about non-working aio support but immediately
-realized it's 32/64bit issue in the kernel, since 64bit
-kvm works just fine on the same kernel (which is 64bits).
-So I added 2 printfs into its linux-aio.c and re-run it.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-The diff against upstream qemu-kvm is this one:
+---
 
----- cut -----
-diff --git a/linux-aio.c b/linux-aio.c
-index 5e892b0..e856873 100644
---- a/linux-aio.c
-+++ b/linux-aio.c
-@@ -60,6 +60,9 @@ static void qemu_laio_process_completion(struct qemu_laio_state *s,
-
-     ret = laiocb->ret;
-     if (ret != -ECANCELED) {
-+if (ret != laiocb->nbytes)
-+fprintf(stderr, "io_getevents: exp %d got %d %s\n", laiocb->nbytes, ret,
-+strerror(ret));
-         if (ret == laiocb->nbytes)
-             ret = 0;
-         else if (ret >= 0)
-@@ -223,6 +226,12 @@ BlockDriverAIOCB *laio_submit(BlockDriverState *bs, void *aio_ctx, int fd,
-     io_set_eventfd(&laiocb->iocb, s->efd);
-     s->count++;
-
-+{ struct iovec *v = (struct iovec*)iocbs->u.c.buf;
-+printf("io_submit: lio_opcode=%d reqprio=%d iov=%p{%p,%d}, niov=%lu, offset=%Ld\n",
-+iocbs->aio_lio_opcode, iocbs->aio_reqprio, iocbs->u.c.buf,
-+v->iov_base, v->iov_len,
-+iocbs->u.c.nbytes, iocbs->u.c.offset);
+Index: usb-2.6/include/linux/pnp.h
+===================================================================
+--- usb-2.6.orig/include/linux/pnp.h
++++ usb-2.6/include/linux/pnp.h
+@@ -414,6 +414,7 @@ struct pnp_protocol {
+ 	int (*disable) (struct pnp_dev *dev);
+ 
+ 	/* protocol specific suspend/resume */
++	bool (*can_wakeup) (struct pnp_dev *dev);
+ 	int (*suspend) (struct pnp_dev * dev, pm_message_t state);
+ 	int (*resume) (struct pnp_dev * dev);
+ 
+Index: usb-2.6/drivers/pnp/core.c
+===================================================================
+--- usb-2.6.orig/drivers/pnp/core.c
++++ usb-2.6/drivers/pnp/core.c
+@@ -164,6 +164,9 @@ int __pnp_add_device(struct pnp_dev *dev
+ 	list_add_tail(&dev->global_list, &pnp_global);
+ 	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
+ 	spin_unlock(&pnp_lock);
++	if (dev->protocol->can_wakeup)
++		device_set_wakeup_capable(&dev->dev,
++				dev->protocol->can_wakeup(dev));
+ 	return device_register(&dev->dev);
+ }
+ 
+Index: usb-2.6/drivers/pnp/pnpacpi/core.c
+===================================================================
+--- usb-2.6.orig/drivers/pnp/pnpacpi/core.c
++++ usb-2.6/drivers/pnp/pnpacpi/core.c
+@@ -121,17 +121,37 @@ static int pnpacpi_disable_resources(str
+ }
+ 
+ #ifdef CONFIG_ACPI_SLEEP
++static bool pnpacpi_can_wakeup(struct pnp_dev *dev)
++{
++	struct acpi_device *acpi_dev = dev->data;
++	acpi_handle handle = acpi_dev->handle;
++
++	return acpi_bus_can_wakeup(handle);
 +}
-     if (io_submit(s->ctx, 1, &iocbs) < 0)
-         goto out_dec_count;
-     return &laiocb->common;
----- cut -----
++
+ static int pnpacpi_suspend(struct pnp_dev *dev, pm_message_t state)
+ {
+ 	struct acpi_device *acpi_dev = dev->data;
+ 	acpi_handle handle = acpi_dev->handle;
+ 	int power_state;
+ 
++	if (device_can_wakeup(&dev->dev)) {
++		int rc = acpi_pm_device_sleep_wake(&dev->dev,
++				device_may_wakeup(&dev->dev));
++
++		if (rc)
++			return rc;
++	}
+ 	power_state = acpi_pm_device_sleep_state(&dev->dev, NULL);
+ 	if (power_state < 0)
+ 		power_state = (state.event == PM_EVENT_ON) ?
+ 				ACPI_STATE_D0 : ACPI_STATE_D3;
+ 
++	/* acpi_bus_set_power() often fails (keyboard port can't be
++	 * powered-down?), and in any case, our return value is ignored
++	 * by pnp_bus_suspend().  Hence we don't revert the wakeup
++	 * setting if the set_power fails.
++	 */
+ 	return acpi_bus_set_power(handle, power_state);
+ }
+ 
+@@ -140,6 +160,8 @@ static int pnpacpi_resume(struct pnp_dev
+ 	struct acpi_device *acpi_dev = dev->data;
+ 	acpi_handle handle = acpi_dev->handle;
+ 
++	if (device_may_wakeup(&dev->dev))
++		acpi_pm_device_sleep_wake(&dev->dev, false);
+ 	return acpi_bus_set_power(handle, ACPI_STATE_D0);
+ }
+ #endif
+@@ -150,6 +172,7 @@ struct pnp_protocol pnpacpi_protocol = {
+ 	.set	 = pnpacpi_set_resources,
+ 	.disable = pnpacpi_disable_resources,
+ #ifdef CONFIG_ACPI_SLEEP
++	.can_wakeup = pnpacpi_can_wakeup,
+ 	.suspend = pnpacpi_suspend,
+ 	.resume = pnpacpi_resume,
+ #endif
 
-I'm not sure if it's useful or not.
-
-Qemu-kvm git tree is at
-git://git.kernel.org/pub/scm/virt/kvm/qemu-kvm.git
-
-I never dealt with aio before, so I'll need to familiarize
-myself with it before trying to create a smaller testcase.
-
-Thanks!
-
-/mjt
