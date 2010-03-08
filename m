@@ -1,126 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884Ab0CHWWI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 17:22:08 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:5469 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786Ab0CHWWE (ORCPT
+	id S1755913Ab0CHWWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 17:22:23 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:37018 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755839Ab0CHWWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 17:22:04 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PNPACPI: add support for remote wakeup
-Date: Mon, 8 Mar 2010 15:21:59 -0700
-User-Agent: KMail/1.9.10
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1003081648510.1297-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003081648510.1297-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 8 Mar 2010 17:22:20 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Weird wireless/wpa_supplicant screw-up.
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1268086939_3979P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201003081521.59985.bjorn.helgaas@hp.com>
+Date: Mon, 08 Mar 2010 17:22:19 -0500
+Message-ID: <7197.1268086939@localhost>
+X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=dagger.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020209.4B95789B.00E7,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 March 2010 02:50:50 pm Alan Stern wrote:
-> This patch (as1354) adds remote-wakeup support to the pnpacpi driver.
-> The new can_wakeup method also allows other PNP protocol drivers
-> (pnpbios or iaspnp) to add wakeup support, but I don't know enough
-> about how they work to actually do it.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+--==_Exmh_1268086939_3979P
+Content-Type: text/plain; charset=us-ascii
 
-We usually send PNP patches through the ACPI tree, so I added a CC
-to linux-acpi.
+(This could be user error/userspace bug, feel free to point me in the right
+direction if you think so.  Hopefully somebody knows what I've broken this
+time...)
 
-> --- usb-2.6.orig/drivers/pnp/core.c
-> +++ usb-2.6/drivers/pnp/core.c
-> @@ -164,6 +164,9 @@ int __pnp_add_device(struct pnp_dev *dev
->  	list_add_tail(&dev->global_list, &pnp_global);
->  	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
->  	spin_unlock(&pnp_lock);
-> +	if (dev->protocol->can_wakeup)
-> +		device_set_wakeup_capable(&dev->dev,
-> +				dev->protocol->can_wakeup(dev));
+Fedora Rawhide as of this morning, 2.6.33-mmotm0304 kernel, wpa_supplicant-0.6.8-8.fc13.x86_64
+wireless-tools-29-5.1.fc12.x86_64.  Dell Latitude E6500, Intel 5100AGN card.
 
-I also added Rafael because he added code in acpi_bind_one() that
-does the same thing.  I think the struct dev there will be the same
-one as &dev->dev here: we build both an acpi_device and a pnp_dev,
-and they refer to the same struct device.
+So I finally get a few spare cycles, and re-try getting WPA2 working on our
+enterprise wireless network, and wpa_supplicant reports it completed
+successfully and set the keys, but 'iwconfig' reports back:
 
-However, I think we still need your patch because acpi_bind_one()
-is only used for PCI devices, so it looks like there's currently
-no way to use acpi_pm_device_sleep_wake() for non-PCI devices.
+wlan0     IEEE 802.11abgn  ESSID:"VT-Wireless"  
+          Mode:Managed  Frequency:2.412 GHz  Access Point: 00:0F:F7:14:2A:91   
+          Bit Rate=1 Mb/s   Tx-Power=15 dBm   
+          Retry  long limit:7   RTS thr:off   Fragment thr:off
+          Encryption key:off
+          Power Management:off
+          Link Quality=42/70  Signal level=-68 dBm  
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
-Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+No encryption key. Yee. Hah.
 
->  	return device_register(&dev->dev);
->  }
->  
-> Index: usb-2.6/drivers/pnp/pnpacpi/core.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/pnp/pnpacpi/core.c
-> +++ usb-2.6/drivers/pnp/pnpacpi/core.c
-> @@ -121,17 +121,37 @@ static int pnpacpi_disable_resources(str
->  }
->  
->  #ifdef CONFIG_ACPI_SLEEP
-> +static bool pnpacpi_can_wakeup(struct pnp_dev *dev)
-> +{
-> +	struct acpi_device *acpi_dev = dev->data;
-> +	acpi_handle handle = acpi_dev->handle;
-> +
-> +	return acpi_bus_can_wakeup(handle);
-> +}
-> +
->  static int pnpacpi_suspend(struct pnp_dev *dev, pm_message_t state)
->  {
->  	struct acpi_device *acpi_dev = dev->data;
->  	acpi_handle handle = acpi_dev->handle;
->  	int power_state;
->  
-> +	if (device_can_wakeup(&dev->dev)) {
-> +		int rc = acpi_pm_device_sleep_wake(&dev->dev,
-> +				device_may_wakeup(&dev->dev));
-> +
-> +		if (rc)
-> +			return rc;
-> +	}
->  	power_state = acpi_pm_device_sleep_state(&dev->dev, NULL);
->  	if (power_state < 0)
->  		power_state = (state.event == PM_EVENT_ON) ?
->  				ACPI_STATE_D0 : ACPI_STATE_D3;
->  
-> +	/* acpi_bus_set_power() often fails (keyboard port can't be
-> +	 * powered-down?), and in any case, our return value is ignored
-> +	 * by pnp_bus_suspend().  Hence we don't revert the wakeup
-> +	 * setting if the set_power fails.
-> +	 */
->  	return acpi_bus_set_power(handle, power_state);
->  }
->  
-> @@ -140,6 +160,8 @@ static int pnpacpi_resume(struct pnp_dev
->  	struct acpi_device *acpi_dev = dev->data;
->  	acpi_handle handle = acpi_dev->handle;
->  
-> +	if (device_may_wakeup(&dev->dev))
-> +		acpi_pm_device_sleep_wake(&dev->dev, false);
->  	return acpi_bus_set_power(handle, ACPI_STATE_D0);
->  }
->  #endif
-> @@ -150,6 +172,7 @@ struct pnp_protocol pnpacpi_protocol = {
->  	.set	 = pnpacpi_set_resources,
->  	.disable = pnpacpi_disable_resources,
->  #ifdef CONFIG_ACPI_SLEEP
-> +	.can_wakeup = pnpacpi_can_wakeup,
->  	.suspend = pnpacpi_suspend,
->  	.resume = pnpacpi_resume,
->  #endif
-> 
-> 
+But wait... 'iwlist keys' reports:
 
+wlan0     2 key sizes : 40, 104bits
+          4 keys available :
+                [1]: off
+                [2]: 6A7D-5232-BDE6-E40A-71C5-EC21-6399-00F3-5CAD-D394-D1E5-1261-BD99-0115-F4A8-63B2 (256 bits)
+                [3]: off
+                [4]: off
+          Current Transmit Key: [1]
+
+So we got a perfectly good key, but we're not using it.
+
+Anybody got any ideas/hints?
+
+
+
+--==_Exmh_1268086939_3979P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLlXibcC3lWbTT17ARAoRRAJ9cnA9eNaACHwt/XrT7mGVQsDy+jgCfQZUW
+7CeL6/hsCptoeZcdxeqye54=
+=03dn
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1268086939_3979P--
 
