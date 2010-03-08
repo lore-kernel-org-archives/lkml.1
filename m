@@ -1,70 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472Ab0CHQbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 11:31:55 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:57871 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568Ab0CHQbu convert rfc822-to-8bit (ORCPT
+	id S1755473Ab0CHQcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 11:32:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42274 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755206Ab0CHQcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 11:31:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RUGSMzN85bDxx3H+CgmDCc7aMHBSoHbk7br+tojRrPeHglfiiYqAU/5xqDREWalhUn
-         Pn29fNeyOhNnHI/z+7x8dvmm0v3rjSm4MxraPAUlRYZKJ+bo+WnYWIIw8yhOQietq3j2
-         temB6KgAJuihwMV6YcVOJwduGhe/z8t2X8neg=
-MIME-Version: 1.0
-In-Reply-To: <4B952437.8020607@gmail.com>
-References: <201003072132.10579.borntraeger@de.ibm.com>
-	 <4B94367E.9080506@garzik.org>
-	 <201003080853.42978.borntraeger@de.ibm.com>
-	 <4B9518DA.8010201@davidnewall.com> <4B952437.8020607@gmail.com>
-Date: Mon, 8 Mar 2010 11:31:49 -0500
-Message-ID: <87f94c371003080831n4d310e10i2b9badf4290f1ede@mail.gmail.com>
-Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag 
-	(EXT4_IOC_MOVE_EXT) in 32bit compat mode)
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: jim owens <owens6336@gmail.com>
-Cc: David Newall <davidn@davidnewall.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Mar 2010 11:32:14 -0500
+Date: Mon, 8 Mar 2010 08:32:04 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
+       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, dipankar@in.ibm.com, josh@freedesktop.org,
+       paulmck@linux.vnet.ibm.com, oleg@redhat.com, akpm@linux-foundation.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 2/4] stop_machine: reimplement using cpuhog
+Message-ID: <20100308083204.1300b97a@infradead.org>
+In-Reply-To: <1268063603-7425-3-git-send-email-tj@kernel.org>
+References: <1268063603-7425-1-git-send-email-tj@kernel.org>
+	<1268063603-7425-3-git-send-email-tj@kernel.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 8, 2010 at 11:22 AM, jim owens <owens6336@gmail.com> wrote:
-> David Newall wrote:
->> Christian Borntraeger wrote:
->>> Some bigger things are missing in the e4defrag tool:
->>> ...
->>> - overall layout considerations (e.g. putting files close to its
->>> directory or
->>>   use the atime to move often used files to the beginning of a disk etc.)
->>
->> Shouldn't oft-used files be placed closer to the middle?  If you place
->> them at the beginning of the file, it's only possible for the head-stack
->> to be close to the file from the inner direction.  Place them in the
->> middle and it's possible for the head-stack to be close from the outer
->> direction, too, which sounds like a doubling of probability.  It seems
->> that it's the least frequently used files that should be placed at one
->> end of the disk or the other.
->
-> No.  Your logic would be correct if rotating disks had
-> similar speed at all locations.  Current disks are much
-> faster at the 0 end than at the middle or highest address.
->
-> It is not unusual to see 2x difference in transfer speed
-> so you always want the important stuff as low as possible.
->
-> jim
+On Tue,  9 Mar 2010 00:53:21 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-Jim, I should know this, but is sector 0 on the outside edge, or the inner edge?
+> Reimplement stop_machine using cpuhog.  As cpuhogs are guaranteed to
+> be available for all online cpus, stop_machine_create/destroy() are no
+> longer necessary and removed.
 
-I assume outer so that the linear speed of the platter under the head
-is faster and thus more data per second is passing under the head.
+question;
+stop_machine pretty much also stops interrupts (it has to, at least for
+the users of stop_machine).. do cpu_hogs do this too?
 
-Greg
+(if they don't, cpu_hogs aren't safe for some of the users of
+stop_machine, like code patching etc)
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
