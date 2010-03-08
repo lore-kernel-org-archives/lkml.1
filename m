@@ -1,42 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844Ab0CHU7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:59:33 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:50451 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755676Ab0CHU71 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:59:27 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5914"; a="35832020"
-Subject: [GIT PULL] fix for msm_sdcc MMC driver for 2.6.34-rc1
-From: Daniel Walker <dwalker@codeaurora.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Mar 2010 12:58:56 -0800
-Message-ID: <1268081936.14857.60.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755614Ab0CHVI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:08:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37388 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755410Ab0CHVIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 16:08:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC driver and suspend process (rev. 3)
+Date: Mon, 8 Mar 2010 22:10:56 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+References: <201002272140.36891.rjw@sisk.pl> <alpine.LFD.2.00.1003031644410.1044@localhost.localdomain> <201003040152.58437.rjw@sisk.pl>
+In-Reply-To: <201003040152.58437.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003082210.56660.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just one small trivial fix.
+On Thursday 04 March 2010, Rafael J. Wysocki wrote:
+> On Wednesday 03 March 2010, Len Brown wrote:
+> > For the record, Rafael, Alexey and I discusseed this a bit further...
+> > 
+> > We reasoned that this failure is impossible during the Suspend-to-RAM 
+> > path, and the failure is specific to the hibernate reboot kernel handoff
+> > to the resume image.
+> 
+> Below is a simplified version of the patch that also should fix the problem.
 
-The following changes since commit 6b7b284958d47b77d06745b36bc7f36dab769d9b:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc2
+Appended is updated version with the names changed as discussed on IRC.
 
-are available in the git repository at:
+Rafael
 
-  git://codeaurora.org/quic/kernel/dwalker/linux-msm.git msm-mmc_sdcc
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / EC / PM: Close race between EC and resume from hibernation (rev. 2)
 
-Roel Kluin (1):
-      msm_sdcc.c: missing brackets in msmsdcc_resume()
+There is a race between resume from hibernation and the EC driver
+that may result in restoring the hibernation image in the middle of
+an EC transaction in progress, which in turn may lead to
+unpredictable behavior of the platform.
 
- drivers/mmc/host/msm_sdcc.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+To remove that race condition, add a helpers for suspending and
+resuming EC transactions in a safe way to be executed by the ACPI
+platform hibernate pre-restore and restore cleanup callbacks.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/acpi/ec.c       |   33 ++++++++++++++++++++++++++++++++-
+ drivers/acpi/internal.h |    2 ++
+ drivers/acpi/sleep.c    |   19 ++++++++++++++-----
+ 3 files changed, 48 insertions(+), 6 deletions(-)
 
-
+Index: linux-2.6/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -76,8 +76,9 @@ enum ec_command {
+ enum {
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+ 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
+-	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
+ 					 * OpReg are installed */
++	EC_FLAGS_BLOCKED,		/* Transactions are blocked */
+ };
+ 
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -291,6 +292,10 @@ static int acpi_ec_transaction(struct ac
+ 	if (t->rdata)
+ 		memset(t->rdata, 0, t->rlen);
+ 	mutex_lock(&ec->lock);
++	if (test_bit(EC_FLAGS_BLOCKED, &ec->flags)) {
++		status = -EINVAL;
++		goto unlock;
++	}
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+@@ -453,6 +458,32 @@ int ec_transaction(u8 command,
+ 
+ EXPORT_SYMBOL(ec_transaction);
+ 
++void acpi_ec_block_transactions(void)
++{
++	struct acpi_ec *ec = first_ec;
++
++	if (!ec)
++		return;
++
++	mutex_lock(&ec->lock);
++	/* Prevent transactions from being carried out */
++	set_bit(EC_FLAGS_BLOCKED, &ec->flags);
++	mutex_unlock(&ec->lock);
++}
++
++void acpi_ec_unblock_transactions(void)
++{
++	struct acpi_ec *ec = first_ec;
++
++	if (!ec)
++		return;
++
++	mutex_lock(&ec->lock);
++	/* Allow transactions to be carried out again */
++	clear_bit(EC_FLAGS_BLOCKED, &ec->flags);
++	mutex_unlock(&ec->lock);
++}
++
+ static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
+ {
+ 	int result;
+Index: linux-2.6/drivers/acpi/internal.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/internal.h
++++ linux-2.6/drivers/acpi/internal.h
+@@ -49,6 +49,8 @@ void acpi_early_processor_set_pdc(void);
+ int acpi_ec_init(void);
+ int acpi_ec_ecdt_probe(void);
+ int acpi_boot_ec_enable(void);
++void acpi_ec_block_transactions(void);
++void acpi_ec_unblock_transactions(void);
+ 
+ /*--------------------------------------------------------------------------
+                                   Suspend/Resume
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -552,8 +552,17 @@ static void acpi_hibernation_leave(void)
+ 	hibernate_nvs_restore();
+ }
+ 
+-static void acpi_pm_enable_gpes(void)
++static int acpi_pm_pre_restore(void)
+ {
++	acpi_disable_all_gpes();
++	acpi_os_wait_events_complete(NULL);
++	acpi_ec_block_transactions();
++	return 0;
++}
++
++static void acpi_pm_restore_cleanup(void)
++{
++	acpi_ec_unblock_transactions();
+ 	acpi_enable_all_runtime_gpes();
+ }
+ 
+@@ -565,8 +574,8 @@ static struct platform_hibernation_ops a
+ 	.prepare = acpi_pm_prepare,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
+-	.restore_cleanup = acpi_pm_enable_gpes,
++	.pre_restore = acpi_pm_pre_restore,
++	.restore_cleanup = acpi_pm_restore_cleanup,
+ };
+ 
+ /**
+@@ -618,8 +627,8 @@ static struct platform_hibernation_ops a
+ 	.prepare = acpi_pm_disable_gpes,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
+-	.restore_cleanup = acpi_pm_enable_gpes,
++	.pre_restore = acpi_pm_pre_restore,
++	.restore_cleanup = acpi_pm_restore_cleanup,
+ 	.recover = acpi_pm_finish,
+ };
+ #endif /* CONFIG_HIBERNATION */
