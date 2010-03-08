@@ -1,32 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831Ab0CHOKT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 09:10:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4811 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568Ab0CHOKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 09:10:13 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20100304132623.GA3740@localhost.localdomain>
-References: <20100304132623.GA3740@localhost.localdomain>
-To: wzt.wzt@gmail.com
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, jmorris@namei.org
-Subject: Re: [PATCH 1/2] Security: Fix some coding styles in security/keys/keyring.c
-Date: Mon, 08 Mar 2010 14:10:08 +0000
-Message-ID: <31058.1268057408@redhat.com>
+	id S1754968Ab0CHOK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 09:10:27 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:35446 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754468Ab0CHOKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 09:10:24 -0500
+Message-ID: <4B950542.2030306@canonical.com>
+Date: Mon, 08 Mar 2010 15:10:10 +0100
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/20] KVM: x86 emulator: fix memory access during x86
+ emulation
+References: <1266414330-27444-1-git-send-email-avi@redhat.com> <1266414330-27444-14-git-send-email-avi@redhat.com> <4B925E66.5@canonical.com> <4B937AF5.5020004@redhat.com>
+In-Reply-To: <4B937AF5.5020004@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wzt.wzt@gmail.com wrote:
-
-> Fix some coding styles in security/keys/keyring.c
+Avi Kivity wrote:
+> On 03/06/2010 03:53 PM, Stefan Bader wrote:
+>> i Avi,
+>>
+>> we currently try to integrate this patch for an update into a 2.6.32
+>> based
+>> system (amongst other kvm updates). But as soon as this patch gets
+>> added kvm
+>> will die on startup in kvm_leave_lazy_mmu. This has been documented here:
+>>
+>> https://bugs.edge.launchpad.net/ubuntu/+source/linux/+bug/531823
+>>
+>> I have placed the backports of your patches, which are currently in
+>> linux-next
+>> and marked for stable here:
+>>
+>> git://kernel.ubuntu.com/smb/linux-2.6.32.y kvm
+>>
+>> I have tested the failure with a version that got only the following
+>> patches in:
+>> KVM: x86 emulator: Add Virtual-8086 mode of emulation
+>> KVM: x86 emulator: fix memory access during x86 emulation
+>> KVM: x86 emulator: Check IOPL level during io instruction emulation
+>> KVM: x86 emulator: Fix popf emulation
+>> KVM: x86 emulator: Check CPL level during privilege instruction emulation
+>>
+>> and also with a version that takes all stable patches up to the bad one:
+>> KVM: VMX: Trap and invalid MWAIT/MONITOR instruction
+>> KVM: x86 emulator: Add group8 instruction decoding
+>> KVM: x86 emulator: Add group9 instruction decoding
+>> KVM: x86 emulator: Add Virtual-8086 mode of emulation
+>> KVM: x86 emulator: fix memory access during x86 emulation
+>>
+>> But as soon as the fix for memory access gets added, the bug will
+>> occur. Would
+>> you have an idea what might be causing this?
+>>    
 > 
-> Signed-off-by: Zhitong Wang <zhitong.wangzt@alibaba-inc.com>
+> Does the same guest, using the same qemu-kvm, work on kvm.git or upstream?
+> 
+The test was done with a kvm user-space package based on 0.12.3 (which seems to
+be the current upstream version). I try to do a test on the git version.
 
-Acked-by: David Howells <dhowells@redhat.com>
+Stefan
