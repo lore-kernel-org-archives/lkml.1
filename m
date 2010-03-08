@@ -1,91 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556Ab0CHClB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 21:41:01 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46312 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753337Ab0CHCkz (ORCPT
+	id S1753617Ab0CHCmT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 21:42:19 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:35870 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753337Ab0CHCmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 21:40:55 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 8 Mar 2010 11:37:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure
-Message-Id: <20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
-References: <1267995474-9117-1-git-send-email-arighi@develer.com>
-	<1267995474-9117-4-git-send-email-arighi@develer.com>
-	<20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
-	<20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Mar 2010 21:42:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Xrl6OJO0kPSduuFUbAKwrzcfJ3boO2V5rGZ1994th+yRdKzY84pc5FieK/nVPWUNbA
+         RSOx4g/VosQCMOGMP1Kk3NTDKyllIaUwZiCTEvsXR9VM3GXpxgqVw4vevON1yFOPui+B
+         31oCvHc3Z9jNTv04uVtWzc7AwrodqTIOe/y+c=
+MIME-Version: 1.0
+In-Reply-To: <20100308132043.f6dcc0cd.sfr@canb.auug.org.au>
+References: <20100308132043.f6dcc0cd.sfr@canb.auug.org.au>
+From: Mulyadi Santosa <mulyadi.santosa@gmail.com>
+Date: Mon, 8 Mar 2010 09:41:53 +0700
+Message-ID: <f284c33d1003071841n617191e6vade447b3413ee9f9@mail.gmail.com>
+Subject: Re: linux-next: manual merge of the trivial tree with Linus' tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010 11:17:24 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Mon, Mar 8, 2010 at 9:20 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Jiri,
+>
+> Today's linux-next merge of the trivial tree got a conflict in
+> Documentation/filesystems/proc.txt between commit
+> 34e55232e59f7b19050267a05ff1226e5cd122a5 ("mm: avoid false sharing of
+> mm_counter") from Linus' tree and commit
+> cb2992a60b7e73fbabe9ffe54056eed0022f2ed2 ("doc: typo - Table 1-2 should
+> refer to "status", not "statm"") from the trivial tree.
 
-> > But IIRC, clear_writeback is done under treelock.... No ?
-> > 
-> The place where NR_WRITEBACK is updated is out of tree_lock.
-> 
->    1311 int test_clear_page_writeback(struct page *page)
->    1312 {
->    1313         struct address_space *mapping = page_mapping(page);
->    1314         int ret;
->    1315
->    1316         if (mapping) {
->    1317                 struct backing_dev_info *bdi = mapping->backing_dev_info;
->    1318                 unsigned long flags;
->    1319
->    1320                 spin_lock_irqsave(&mapping->tree_lock, flags);
->    1321                 ret = TestClearPageWriteback(page);
->    1322                 if (ret) {
->    1323                         radix_tree_tag_clear(&mapping->page_tree,
->    1324                                                 page_index(page),
->    1325                                                 PAGECACHE_TAG_WRITEBACK);
->    1326                         if (bdi_cap_account_writeback(bdi)) {
->    1327                                 __dec_bdi_stat(bdi, BDI_WRITEBACK);
->    1328                                 __bdi_writeout_inc(bdi);
->    1329                         }
->    1330                 }
->    1331                 spin_unlock_irqrestore(&mapping->tree_lock, flags);
->    1332         } else {
->    1333                 ret = TestClearPageWriteback(page);
->    1334         }
->    1335         if (ret)
->    1336                 dec_zone_page_state(page, NR_WRITEBACK);
->    1337         return ret;
->    1338 }
+Thanks for the notification and the fix. I am glad my trivial patch is
+considered into the  next level of code merge....
 
-We can move this up to under tree_lock. Considering memcg, all our target has "mapping".
+-- 
+regards,
 
-If we newly account bounce-buffers (for NILFS, FUSE, etc..), which has no ->mapping,
-we need much more complex new charge/uncharge theory.
+Mulyadi Santosa
+Freelance Linux trainer and consultant
 
-But yes, adding new lock scheme seems complicated. (Sorry Andrea.)
-My concerns is performance. We may need somehing new re-implementation of
-locks/migrate/charge/uncharge.
-
-Thanks,
--Kame
-
-
-
+blog: the-hydra.blogspot.com
+training: mulyaditraining.blogspot.com
