@@ -1,104 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310Ab0CHPqO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:46:14 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:38714 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054Ab0CHPqM (ORCPT
+	id S1755290Ab0CHPsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:48:36 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:34193 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753861Ab0CHPsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:46:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=EDJu5Oodzs8SX+DxaMM9A/4AuSktP7m7jeOn8sF4RF1+MoNiCPlVOtcW76OGHjr/e1
-         oMjT2CayhYVJhv2UnbfYybp5qYwhRh7zIC/1NJdH8wI164vh2Qx29VvFA6KhHqTew2F6
-         OfjyV3zRV7MFIjtK9+x3n1DShWoo6AIi8zxWg=
-Date: Mon, 8 Mar 2010 16:46:01 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fs, binfmt_aout: Fix pointer warnings
-Message-ID: <20100308154601.GA30454@a1.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Mon, 8 Mar 2010 10:48:33 -0500
+Message-ID: <4B951BF0.9050403@oracle.com>
+Date: Mon, 08 Mar 2010 10:46:56 -0500
+From: Chuck Lever <chuck.lever@oracle.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Joe Perches <joe@perches.com>
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       linux-nfs <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH resend] net/sunrpc: Remove uses of NIPQUAD, use %pI4
+References: <1267857980.849.22.camel@Joe-Laptop.home>
+In-Reply-To: <1267857980.849.22.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B951C2B.00E2:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 03/06/2010 01:46 AM, Joe Perches wrote:
+> Originally submitted Jan 1, 2010
+> http://patchwork.kernel.org/patch/71221/
+>
+> Convert NIPQUAD to the %pI4 format extension where possible
+> Convert %02x%02x%02x%02x/NIPQUAD to %08x/ntohl
+>
+> Signed-off-by: Joe Perches<joe@perches.com>
+> ---
+>   net/sunrpc/xprtrdma/transport.c |    3 +--
+>   net/sunrpc/xprtsock.c           |    5 ++---
+>   2 files changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/net/sunrpc/xprtrdma/transport.c b/net/sunrpc/xprtrdma/transport.c
+> index 7018eef..83d339f 100644
+> --- a/net/sunrpc/xprtrdma/transport.c
+> +++ b/net/sunrpc/xprtrdma/transport.c
+> @@ -165,8 +165,7 @@ xprt_rdma_format_addresses(struct rpc_xprt *xprt)
+>
+>   	xprt->address_strings[RPC_DISPLAY_PROTO] = "rdma";
+>
+> -	(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+> -				NIPQUAD(sin->sin_addr.s_addr));
+> +	(void)snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+>   	xprt->address_strings[RPC_DISPLAY_HEX_ADDR] = kstrdup(buf, GFP_KERNEL);
+>
+>   	(void)snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
+> diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+> index 3d739e5..86234bc 100644
+> --- a/net/sunrpc/xprtsock.c
+> +++ b/net/sunrpc/xprtsock.c
+> @@ -297,12 +297,11 @@ static void xs_format_common_peer_addresses(struct rpc_xprt *xprt)
+>   	switch (sap->sa_family) {
+>   	case AF_INET:
+>   		sin = xs_addr_in(xprt);
+> -		(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+> -					NIPQUAD(sin->sin_addr.s_addr));
+> +		snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+>   		break;
+>   	case AF_INET6:
+>   		sin6 = xs_addr_in6(xprt);
+> -		(void)snprintf(buf, sizeof(buf), "%pi6",&sin6->sin6_addr);
+> +		snprintf(buf, sizeof(buf), "%pi6",&sin6->sin6_addr);
 
-I'm getting the warnings in the commit message below with current git. Maybe fix
-them like this:
+Why remove the (void) here, but not in xprtrdma/transport.c?  IMO the 
+(void) cast should be left in place at all three call sites.
 
---
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Mon, 8 Mar 2010 16:37:42 +0100
-Subject: [PATCH] fs, binfmt_aout: Fix pointer warnings
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+>   		break;
+>   	default:
+>   		BUG();
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-I get
 
-fs/binfmt_aout.c: In function ‘aout_core_dump’:
-fs/binfmt_aout.c:125: warning: passing argument 2 of ‘dump_write’ makes pointer from integer without a cast
-include/linux/coredump.h:12: note: expected ‘const void *’ but argument is of type ‘long unsigned int’
-fs/binfmt_aout.c:132: warning: passing argument 2 of ‘dump_write’ makes pointer from integer without a cast
-include/linux/coredump.h:12: note: expected ‘const void *’ but argument is of type ‘long unsigned int’
-
-due to dump_write() expecting a user void *. Fold casts into the
-START_DATA/START_STACK macros and shut up the warnings.
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- fs/binfmt_aout.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index 15d80bb..9b6aef0 100644
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -75,14 +75,16 @@ static int aout_core_dump(struct coredump_params *cprm)
- 	struct file *file = cprm->file;
- 	mm_segment_t fs;
- 	int has_dumped = 0;
--	unsigned long dump_start, dump_size;
-+	void __user *dump_start;
-+	int dump_size;
- 	struct user dump;
- #ifdef __alpha__
--#       define START_DATA(u)	(u.start_data)
-+#       define START_DATA(u)	((void __user *)u.start_data)
- #else
--#	define START_DATA(u)	((u.u_tsize << PAGE_SHIFT) + u.start_code)
-+#	define START_DATA(u)	((void __user *)((u.u_tsize << PAGE_SHIFT) + \
-+				 u.start_code))
- #endif
--#       define START_STACK(u)   (u.start_stack)
-+#       define START_STACK(u)   ((void __user *)u.start_stack)
- 
- 	fs = get_fs();
- 	set_fs(KERNEL_DS);
-@@ -104,9 +106,9 @@ static int aout_core_dump(struct coredump_params *cprm)
- 
- /* make sure we actually have a data and stack area to dump */
- 	set_fs(USER_DS);
--	if (!access_ok(VERIFY_READ, (void __user *)START_DATA(dump), dump.u_dsize << PAGE_SHIFT))
-+	if (!access_ok(VERIFY_READ, START_DATA(dump), dump.u_dsize << PAGE_SHIFT))
- 		dump.u_dsize = 0;
--	if (!access_ok(VERIFY_READ, (void __user *)START_STACK(dump), dump.u_ssize << PAGE_SHIFT))
-+	if (!access_ok(VERIFY_READ, START_STACK(dump), dump.u_ssize << PAGE_SHIFT))
- 		dump.u_ssize = 0;
- 
- 	set_fs(KERNEL_DS);
 -- 
-1.6.6.1
-
+chuck[dot]lever[at]oracle[dot]com
