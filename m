@@ -1,63 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940Ab0CHWAj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 17:00:39 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:25076 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912Ab0CHWAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 17:00:37 -0500
-Date: Mon, 8 Mar 2010 17:00:22 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <h.peter.anvin@intel.com>
-Subject: [GIT PULL] Btrfs pull for .34
-Message-ID: <20100308220022.GB14976@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-	"H. Peter Anvin" <h.peter.anvin@intel.com>
+	id S1755410Ab0CHWBG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 17:01:06 -0500
+Received: from kroah.org ([198.145.64.141]:38983 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755639Ab0CHWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 17:01:01 -0500
+Date: Mon, 8 Mar 2010 14:00:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Driver core: don't initialize wakeup flags
+Message-ID: <20100308220035.GA21390@kroah.com>
+References: <Pine.LNX.4.44L0.1003081645100.1297-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003081645100.1297-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B957379.0146:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Mon, Mar 08, 2010 at 04:46:19PM -0500, Alan Stern wrote:
+> This patch (as1351) removes an unnecessary and unwanted assignment
+> from device_initialize().  The wakeup flags are set to 0 along with
+> everything else when the device structure is allocated, so we don't
+> need to do it again.  Furthermore, the subsystem might already have
+> set these flags to their correct values; we don't want to override it.
 
-This merge window conflicted with my spring break skiing window, so this
-pull request is very very short.  I have a larger one in testing but
-really wanted to get this out.
+Does this solve a bug where a subsystem does do this already?  Or can it
+wait for 2.6.35?
 
-Linus, please pull the btrfs-unstable master branch:
+thanks,
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
-
-The RB_ROOT patch changes btrfs to use the proper rbtree initializer,
-and Josef's patch fixes a memory corruption during btrfs mount.
-
-Eric Paris (1) commits (+12/-12):
-    Btrfs: use RB_ROOT to intialize rb_trees instead of setting rb_node to NULL
-
-Josef Bacik (1) commits (+3/-2):
-    Btrfs: kfree correct pointer during mount option parsing
-
-Total: (2) commits
-
- fs/btrfs/disk-io.c          |    4 ++--
- fs/btrfs/extent_io.c        |    4 ++--
- fs/btrfs/extent_map.c       |    2 +-
- fs/btrfs/free-space-cache.c |    4 ++--
- fs/btrfs/ordered-data.h     |    2 +-
- fs/btrfs/ref-cache.h        |    2 +-
- fs/btrfs/relocation.c       |    4 ++--
- fs/btrfs/super.c            |    5 +++--
- fs/btrfs/transaction.c      |    2 +-
- 9 files changed, 15 insertions(+), 14 deletions(-)
-
+greg k-h
