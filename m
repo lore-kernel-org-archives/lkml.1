@@ -1,395 +1,235 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995Ab0CHXGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:06:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51932 "EHLO mx2.suse.de"
+	id S1756003Ab0CHXJZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:09:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6433 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755723Ab0CHXGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:06:21 -0500
-Date: Tue, 9 Mar 2010 00:06:19 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT] trivial
-Message-ID: <alpine.LNX.2.00.1003090004340.17799@pobox.suse.cz>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755723Ab0CHXJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:09:23 -0500
+Date: Mon, 8 Mar 2010 18:09:05 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, jens.axboe@oracle.com,
+       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface
+	"weight_device" for IO-Controller
+Message-ID: <20100308230905.GB3614@redhat.com>
+References: <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com> <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, Mar 08, 2010 at 11:39:54AM -0800, Nauman Rafique wrote:
+> On Fri, Mar 5, 2010 at 6:13 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Fri, Mar 05, 2010 at 10:25:58AM +0800, Gui Jianfeng wrote:
+> >> Currently, IO Controller makes use of blkio.weight to assign weight for
+> >> all devices. Here a new user interface "blkio.weight_device" is introduced to
+> >> assign different weights for different devices. blkio.weight becomes the
+> >> default value for devices which are not configured by "blkio.weight_device"
+> >>
+> >> You can use the following format to assigned specific weight for a given
+> >> device:
+> >>
+> >> major:minor represents device number.
+> >>
+> >> And you can remove a specific weight as following:
+> >>
+> >> V1->V2 changes:
+> >> - use user interface "weight_device" instead of "policy" suggested by Vivek
+> >> - rename some struct suggested by Vivek
+> >> - rebase to 2.6-block "for-linus" branch
+> >> - remove an useless list_empty check pointed out by Li Zefan
+> >> - some trivial typo fix
+> >>
+> >> V2->V3 changes:
+> >> - Move policy_*_node() functions up to get rid of forward declarations
+> >> - rename related functions by adding prefix "blkio_"
+> >>
+> >
+> > Thanks for the changes Gui. Looks good to me.
+> >
+> > Acked-by: Vivek Goyal <vgoyal@redhat.com>
+> >
+> > Vivek
+> >
+> >> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> >> ---
+> >>  block/blk-cgroup.c  |  236 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+> >>  block/blk-cgroup.h  |   10 ++
+> >>  block/cfq-iosched.c |    2 +-
+> >>  3 files changed, 246 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+> >> index c85d74c..8825e49 100644
+> >> --- a/block/blk-cgroup.c
+> >> +++ b/block/blk-cgroup.c
+> >> @@ -16,6 +16,7 @@
+> >>  #include <linux/module.h>
+> >>  #include <linux/err.h>
+> >>  #include "blk-cgroup.h"
+> >> +#include <linux/genhd.h>
+> >>
+> >>  static DEFINE_SPINLOCK(blkio_list_lock);
+> >>  static LIST_HEAD(blkio_list);
+> >> @@ -23,6 +24,32 @@ static LIST_HEAD(blkio_list);
+> >>  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
+> >>  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
+> >>
+> >> +static inline void blkio_policy_insert_node(struct blkio_cgroup *blkcg,
+> >> +                                         struct blkio_policy_node *pn)
+> >> +{
+> >> +     list_add(&pn->node, &blkcg->policy_list);
+> >> +}
+> >> +
+> >> +/* Must be called with blkcg->lock held */
+> >> +static inline void blkio_policy_delete_node(struct blkio_policy_node *pn)
+> >> +{
+> >> +     list_del(&pn->node);
+> >> +}
+> >> +
+> >> +/* Must be called with blkcg->lock held */
+> >> +static struct blkio_policy_node *
+> >> +blkio_policy_search_node(const struct blkio_cgroup *blkcg, dev_t dev)
+> >> +{
+> >> +     struct blkio_policy_node *pn;
+> >> +
+> >> +     list_for_each_entry(pn, &blkcg->policy_list, node) {
+> >> +             if (pn->dev == dev)
+> >> +                     return pn;
+> >> +     }
+> >> +
+> >> +     return NULL;
+> >> +}
+> >> +
+> >>  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
+> >>  {
+> >>       return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
+> >> @@ -128,6 +155,7 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+> >>       struct blkio_group *blkg;
+> >>       struct hlist_node *n;
+> >>       struct blkio_policy_type *blkiop;
+> >> +     struct blkio_policy_node *pn;
+> >>
+> >>       if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
+> >>               return -EINVAL;
+> >> @@ -136,7 +164,13 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+> >>       spin_lock(&blkio_list_lock);
+> >>       spin_lock_irq(&blkcg->lock);
+> >>       blkcg->weight = (unsigned int)val;
+> >> +
+> >>       hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
+> >> +             pn = blkio_policy_search_node(blkcg, blkg->dev);
+> >> +
+> >> +             if (pn)
+> >> +                     continue;
+> >> +
+> >>               list_for_each_entry(blkiop, &blkio_list, list)
+> >>                       blkiop->ops.blkio_update_group_weight_fn(blkg,
+> >>                                       blkcg->weight);
+> >> @@ -178,15 +212,208 @@ SHOW_FUNCTION_PER_GROUP(dequeue);
+> >>
+> >>  #ifdef CONFIG_DEBUG_BLK_CGROUP
+> >>  void blkiocg_update_blkio_group_dequeue_stats(struct blkio_group *blkg,
+> >> -                     unsigned long dequeue)
+> >> +                                           unsigned long dequeue)
+> >>  {
+> >>       blkg->dequeue += dequeue;
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(blkiocg_update_blkio_group_dequeue_stats);
+> >>  #endif
+> >>
+> >> +static int blkio_check_dev_num(dev_t dev)
+> >> +{
+> >> +     int part = 0;
+> >> +     struct gendisk *disk;
+> >> +
+> >> +     disk = get_gendisk(dev, &part);
+> >> +     if (!disk || part)
+> >> +             return -ENODEV;
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int blkio_policy_parse_and_set(char *buf,
+> >> +                                   struct blkio_policy_node *newpn)
+> >> +{
+> >> +     char *s[4], *p, *major_s = NULL, *minor_s = NULL;
+> >> +     int ret;
+> >> +     unsigned long major, minor, temp;
+> >> +     int i = 0;
+> >> +     dev_t dev;
+> >> +
+> >> +     memset(s, 0, sizeof(s));
+> >> +
+> >> +     while ((p = strsep(&buf, " ")) != NULL) {
+> >> +             if (!*p)
+> >> +                     continue;
+> >> +
+> >> +             s[i++] = p;
+> >> +
+> >> +             /* Prevent from inputing too many things */
+> >> +             if (i == 3)
+> >> +                     break;
+> >> +     }
+> >> +
+> >> +     if (i != 2)
+> >> +             return -EINVAL;
+> >> +
+> >> +     p = strsep(&s[0], ":");
+> >> +     if (p != NULL)
+> >> +             major_s = p;
+> >> +     else
+> >> +             return -EINVAL;
+> >> +
+> >> +     minor_s = s[0];
+> >> +     if (!minor_s)
+> >> +             return -EINVAL;
+> >> +
+> >> +     ret = strict_strtoul(major_s, 10, &major);
+> >> +     if (ret)
+> >> +             return -EINVAL;
+> >> +
+> >> +     ret = strict_strtoul(minor_s, 10, &minor);
+> >> +     if (ret)
+> >> +             return -EINVAL;
+> >> +
+> >> +     dev = MKDEV(major, minor);
+> 
+> I am not quite sure if exposing a mojor,minor number is the best
+> interface that can be exposed to user space. How about actual disk
+> names like sda, sdb, .. etc? The only problem I see there is that it
+> seems tricky to get to these disk names from within the block layer.
+> "struct request_queue" has a pointer to backing_dev which has a device
+> from which we can get major,minor. But in order to get to disk name,
+> we would have to call get_gendisk which can hold a semaphore. Is this
+> the reason for us going with major,minor as a user interface to
+> specify a disk? I bet there are good reasons for us not keeping a
+> pointer to "struct gendisk" from "struct request_queue". If we could
+> keep that pointer, our user interface could be very easily modified to
+> be the disk name like sda, sdb, etc.
 
-please pull from
+That's a good question. Why not use device names instead of device
+numbers? From user's perspective, device names will be more intutive
+to use.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial.git for-linus
+At the same time, will it look odd to handle devices with their names as WWID.
 
-to receive trivial patch queue contents for 2.6.34. Nothing earth-shaking 
-there (what a surprise :) ).
+/dev/mapper/3600508b400105df70000e000026f0000
 
-Thanks!
+Though I see that there is an alternate way to address the same device
+like /dev/dm-2 etc.
 
+So from user's perspective I think it will be more intutive to handle
+disk names instead of numbers.
 
-Adam Buchbinder (7):
-      Fix a grammar error (redundant "be") in comment
-      Fix misspelling of "truly" in a label.
-      Fix misspellings of "truly" in comments.
-      Fix misspellings of "invocation" in comments.
-      Fix misspellings of "separate" in strings.
-      Fix misspelling of "successful" and variants in comments.
-      Fix misspelling of "should" and "shouldn't" in comments.
+Gui, did you forsee issues in implementing disk names?
 
-Ali Gholami Rudi (1):
-      doc: fix checking socket() in net tstamp example
-
-Anton Blanchard (1):
-      Remove reference to kthread_create_on_cpu
-
-Baruch Siach (1):
-      devres: typo fix s/dev/devm/
-
-Daniel Mack (3):
-      tree-wide: s/widht/width/g typo in comments
-      tree-wide: fix 'lenght' typo in comments and code
-      tree-wide: Assorted spelling fixes
-
-Edward Z. Yang (1):
-      Remove redundant trailing semicolons from macros
-
-Geert Uytterhoeven (1):
-      ataflop: Killl warning about unused variable flags
-
-GeunSik Lim (1):
-      doc: cpuset: Update the cpuset flag file
-
-Jaak Ristioja (1):
-      bio: Fix outdated comment about bio_alloc_bioset()
-
-Jasper Spaans (1):
-      arch/x86/kernel/apic/apic_flat_64.c: Make comment match the code
-
-Jean Delvare (1):
-      devres/irq: Fix devm_irq_match comment
-
-Jiri Kosina (6):
-      crypto: fix typo in Kconfig help text
-      No need to patch AMD-provided drivers/gpu/drm/radeon/atombios.h
-      Remove drivers/parport/ChangeLog
-      Fix of spelling in arch/sparc/kernel/leon_kernel.c no longer needed
-      Remove fs/ntfs/ChangeLog
-      Merge branch 'for-next' into for-linus
-
-Jonathan Corbet (1):
-      Remove drivers/char/ChangeLog
-
-Julia Lawall (1):
-      fs/qnx4: decrement sizeof size in strncmp
-
-Justin P. Mattock (2):
-      fix comment typo in pci-dma.c
-      fix comment typos in avc.c
-
-Mulyadi Santosa (1):
-      doc: typo - Table 1-2 should refer to "status", not "statm"
-
-Nikanth Karthikesan (1):
-      doc: fix typo in comment explaining rb_tree usage
-
-Pavel Roskin (1):
-      drm/kms: fix spelling in error message
-
-Peter Huewe (5):
-      uwb/i1480: add __init/__exit macros
-      isdn/hardware: add __init/__exit macros to mISDNisar.c
-      w1: add __init/__exit macros to w1.c
-      media/dvb: add __init/__exit macros to bt878.c
-      isdn/mISDN: add __init/__exit macros to dsp_core.c
-
-Robert P. J. Day (1):
-      xen: Fix misspelled CONFIG variable in comment.
-
-Rudy Matela (1):
-      Coding style correction of some wan drivers
-
-Sebastian Andrzej Siewior (1):
-      tree wide: remove execute flag from .c files
-
-Shahar Havivi (1):
-      vt: remove unused variables
-
-Shaun Patterson (1):
-      vmiclock: fix comment spelling mistake
-
-Stefan Weil (2):
-      Fix spelling of 'platform' in comments and doc
-      Fix spelling of 'platform' in log messages
-
-Thadeu Lima de Souza Cascardo (8):
-      fix ext3/ext4 comment typo compain -> complain
-      fix comment typo boo -> boot in ksysfs.c
-      doc: fix leve -> level typo in pm-runtime doc
-      fix comment typo leve -> level in powerpc
-      doc: update 00-INDEX for Documentation/laptops/
-      doc: fix Defaultd -> Defaults typo in EISA doc
-      doc: capitalization and other minor fixes in pnp doc
-      doc: fix console doc typo
-
-Uwe Kleine-König (5):
-      fix typos "precidence" -> "precedence" in comments
-      tree-wide: fix typos "ammount" -> "amount"
-      grammar fix in comment
-      fix typo "definetly" -> "definitely" in comment
-      tree-wide: fix typos "ass?o[sc]iac?te" -> "associate" in comments
-
- Documentation/DocBook/mtdnand.tmpl                 |    6 +-
- Documentation/DocBook/v4l/common.xml               |    2 +-
- Documentation/DocBook/v4l/vidioc-g-parm.xml        |    2 +-
- Documentation/arm/Samsung-S3C24XX/CPUfreq.txt      |    4 +-
- Documentation/cgroups/cpusets.txt                  |  127 +-
- Documentation/console/console.txt                  |    2 +-
- Documentation/driver-model/platform.txt            |    2 +-
- Documentation/eisa.txt                             |    2 +-
- Documentation/filesystems/proc.txt                 |    2 +-
- Documentation/hwmon/abituguru                      |    2 +-
- Documentation/input/rotary-encoder.txt             |    2 +-
- Documentation/laptops/00-INDEX                     |    4 +
- Documentation/networking/skfp.txt                  |    2 +-
- .../networking/timestamping/timestamping.c         |    2 +-
- Documentation/pnp.txt                              |   13 +-
- Documentation/power/runtime_pm.txt                 |    2 +-
- Documentation/s390/kvm.txt                         |    2 +-
- Documentation/scsi/ChangeLog.lpfc                  |   10 +-
- Documentation/trace/ftrace.txt                     |    2 +-
- arch/arm/boot/bootp/init.S                         |    2 +-
- arch/arm/common/clkdev.c                           |    2 +-
- arch/arm/mach-at91/include/mach/at91_mci.h         |    2 +-
- arch/arm/mach-davinci/include/mach/i2c.h           |    2 +-
- arch/arm/mach-ep93xx/micro9.c                      |    2 +-
- arch/arm/mach-nomadik/board-nhk8815.c              |    2 +-
- arch/arm/mach-s3c2410/include/mach/spi-gpio.h      |    2 +-
- arch/arm/mach-s5pc100/setup-sdhci.c                |    4 +-
- arch/arm/mach-u300/core.c                          |    4 +-
- arch/arm/mach-u300/include/mach/debug-macro.S      |    2 +-
- arch/arm/plat-s3c/include/plat/gpio-cfg-helpers.h  |    2 +-
- arch/arm/plat-s3c/include/plat/nand.h              |    2 +-
- .../arm/plat-s3c/include/plat/regs-usb-hsotg-phy.h |    2 +-
- arch/arm/plat-s3c24xx/include/plat/cpu-freq-core.h |    2 +-
- arch/blackfin/include/asm/nand.h                   |    4 +-
- arch/cris/arch-v10/lib/old_checksum.c              |    2 +-
- arch/cris/arch-v32/mm/tlb.c                        |    2 +-
- arch/h8300/include/asm/io.h                        |    2 +-
- arch/ia64/sn/kernel/setup.c                        |    2 +-
- arch/m68k/atari/atakeyb.c                          |    2 +-
- arch/m68k/include/asm/fbio.h                       |    2 +-
- arch/m68k/include/asm/io_no.h                      |    2 +-
- arch/powerpc/boot/dts/kmeter1.dts                  |    2 +-
- arch/powerpc/kernel/legacy_serial.c                |    2 +-
- arch/powerpc/mm/init_32.c                          |    2 +-
- arch/s390/crypto/sha_common.c                      |    2 +-
- arch/s390/include/asm/cio.h                        |    2 +-
- arch/s390/kernel/sclp.S                            |    2 +-
- arch/sh/kernel/cpu/clock.c                         |    2 +-
- arch/sparc/include/asm/fbio.h                      |    2 +-
- arch/sparc/kernel/perf_event.c                     |    2 +-
- arch/x86/crypto/twofish-i586-asm_32.S              |   10 +-
- arch/x86/crypto/twofish-x86_64-asm_64.S            |   20 +-
- arch/x86/kernel/apic/apic_flat_64.c                |    2 +-
- arch/x86/kernel/head_64.S                          |    2 +-
- arch/x86/kernel/pci-calgary_64.c                   |    2 +-
- arch/x86/kernel/pci-dma.c                          |    2 +-
- arch/x86/kernel/ptrace.c                           |    2 +-
- arch/x86/kernel/tsc.c                              |    2 +-
- arch/x86/kernel/vmiclock_32.c                      |    2 +-
- arch/x86/xen/smp.c                                 |    2 +-
- arch/xtensa/kernel/entry.S                         |    4 +-
- block/bsg.c                                        |    2 +-
- crypto/Kconfig                                     |    4 +-
- drivers/acpi/dock.c                                |    2 +-
- drivers/acpi/proc.c                                |    2 +-
- drivers/ata/libata-core.c                          |    2 +-
- drivers/ata/libata-sff.c                           |    2 +-
- drivers/ata/pata_acpi.c                            |    2 +-
- drivers/ata/pata_hpt3x3.c                          |    2 +-
- drivers/ata/pata_pcmcia.c                          |    2 +-
- drivers/block/drbd/drbd_int.h                      |    4 +-
- drivers/block/drbd/drbd_req.h                      |    2 +-
- drivers/char/ChangeLog                             |  775 ---------
- drivers/char/agp/intel-agp.c                       |    2 +-
- drivers/char/applicom.c                            |    2 +-
- drivers/char/hvc_iseries.c                         |    2 +-
- drivers/char/hw_random/n2-drv.c                    |    2 +-
- drivers/char/ip2/i2hw.h                            |    2 +-
- drivers/char/pty.c                                 |    2 +-
- drivers/char/random.c                              |    2 +-
- drivers/char/serial167.c                           |    2 +-
- drivers/char/tty_io.c                              |    2 +-
- drivers/char/vt.c                                  |    6 +-
- drivers/crypto/hifn_795x.c                         |    2 +-
- drivers/dma/coh901318_lli.h                        |    2 +-
- drivers/gpu/drm/nouveau/nouveau_bios.c             |    2 +-
- drivers/gpu/drm/nouveau/nouveau_drv.h              |    2 +-
- drivers/gpu/drm/radeon/radeon_state.c              |    2 +-
- drivers/gpu/drm/via/via_irq.c                      |    4 +-
- drivers/i2c/algos/i2c-algo-pcf.c                   |    2 +-
- drivers/i2c/busses/i2c-pxa.c                       |    2 +-
- drivers/ieee1394/pcilynx.c                         |    2 +-
- drivers/infiniband/hw/ehca/ehca_qes.h              |    4 +-
- drivers/infiniband/hw/ehca/ehca_reqs.c             |    2 +-
- drivers/input/misc/yealink.h                       |    2 +-
- drivers/input/serio/i8042.c                        |    2 +-
- drivers/input/tablet/aiptek.c                      |    2 +-
- drivers/isdn/hardware/mISDN/mISDNisar.c            |    4 +-
- drivers/isdn/i4l/isdn_common.c                     |    2 +-
- drivers/isdn/mISDN/dsp_core.c                      |    4 +-
- drivers/isdn/mISDN/l1oip_core.c                    |    4 +-
- drivers/isdn/sc/hardware.h                         |    2 +-
- drivers/media/dvb/dvb-core/dvb_frontend.h          |    8 +-
- drivers/media/video/bt8xx/bttv-cards.c             |    4 +-
- drivers/media/video/gspca/ov519.c                  |    2 +-
- drivers/media/video/pwc/philips.txt                |    2 +-
- drivers/media/video/sn9c102/sn9c102_sensor.h       |    2 +-
- drivers/media/video/tea6420.c                      |    2 +-
- drivers/message/i2o/iop.c                          |    2 +-
- drivers/mfd/sm501.c                                |    8 +-
- drivers/mmc/card/sdio_uart.c                       |    2 +-
- drivers/mmc/host/mxcmmc.c                          |    2 +-
- drivers/mtd/chips/jedec_probe.c                    |    2 +-
- drivers/mtd/maps/plat-ram.c                        |    2 +-
- drivers/mtd/nand/bcm_umi_nand.c                    |    4 +-
- drivers/mtd/nand/mxc_nand.c                        |    2 +-
- drivers/net/atlx/atl2.h                            |    2 +-
- drivers/net/chelsio/sge.c                          |    2 +-
- drivers/net/cs89x0.c                               |    2 +-
- drivers/net/cxgb3/sge.c                            |    4 +-
- drivers/net/davinci_emac.c                         |    2 +-
- drivers/net/e1000e/82571.c                         |    2 +-
- drivers/net/e1000e/lib.c                           |    2 +-
- drivers/net/igb/igb_main.c                         |    2 +-
- drivers/net/irda/sa1100_ir.c                       |    2 +-
- drivers/net/ks8851.c                               |    2 +-
- drivers/net/qlge/qlge_ethtool.c                    |    2 +-
- drivers/net/qlge/qlge_main.c                       |    2 +-
- drivers/net/sfc/regs.h                             |    2 +-
- drivers/net/skfp/ess.c                             |    2 +-
- drivers/net/smsc9420.c                             |    2 +-
- drivers/net/spider_net.c                           |    4 +-
- drivers/net/sungem.c                               |    2 +-
- drivers/net/tehuti.c                               |    2 +-
- drivers/net/tokenring/tms380tr.c                   |    4 +-
- drivers/net/tun.c                                  |    2 +-
- drivers/net/typhoon.c                              |    6 +-
- drivers/net/ucc_geth.c                             |    2 +-
- drivers/net/wan/cosa.c                             |   10 +-
- drivers/net/wan/hdlc_cisco.c                       |    8 +-
- drivers/net/wan/hdlc_x25.c                         |    4 +-
- drivers/net/wimax/i2400m/fw.c                      |    2 +-
- drivers/net/wimax/i2400m/i2400m.h                  |    2 +-
- drivers/net/wimax/i2400m/sdio.c                    |    4 +-
- drivers/net/wimax/i2400m/usb.c                     |    4 +-
- drivers/net/wireless/ath/ar9170/main.c             |    2 +-
- drivers/net/wireless/iwmc3200wifi/lmac.h           |    2 +-
- drivers/net/wireless/rt2x00/rt2500usb.c            |    4 +-
- drivers/net/wireless/rt2x00/rt2800usb.c            |    4 +-
- drivers/net/wireless/rt2x00/rt2x00debug.c          |    2 +-
- drivers/net/wireless/rt2x00/rt2x00dev.c            |    2 +-
- drivers/net/wireless/rt2x00/rt2x00queue.c          |    2 +-
- drivers/net/wireless/rt2x00/rt61pci.c              |    2 +-
- drivers/net/wireless/rt2x00/rt73usb.c              |    6 +-
- drivers/net/wireless/zd1211rw/zd_mac.c             |    2 +-
- drivers/parport/ChangeLog                          |  583 -------
- drivers/platform/x86/thinkpad_acpi.c               |    4 +-
- drivers/s390/char/raw3270.c                        |    2 +-
- drivers/s390/char/sclp.c                           |    2 +-
- drivers/scsi/a100u2w.c                             |    2 +-
- drivers/scsi/initio.c                              |    2 +-
- drivers/scsi/libfc/fc_fcp.c                        |    4 +-
- drivers/scsi/lpfc/lpfc_els.c                       |    4 +-
- drivers/scsi/lpfc/lpfc_scsi.c                      |    4 +-
- drivers/scsi/pcmcia/nsp_cs.h                       |    2 +-
- drivers/scsi/pm8001/pm8001_hwi.c                   |    2 +-
- drivers/scsi/pm8001/pm8001_sas.c                   |    2 +-
- drivers/scsi/pmcraid.h                             |    2 +-
- drivers/scsi/sd.c                                  |    2 +-
- drivers/serial/samsung.c                           |    2 +-
- drivers/spi/spi_s3c24xx.c                          |    2 +-
- drivers/usb/musb/davinci.c                         |    2 +-
- drivers/usb/musb/musb_regs.h                       |    2 +-
- drivers/usb/serial/cypress_m8.c                    |    2 +-
- drivers/usb/serial/opticon.c                       |    2 +-
- drivers/usb/serial/symbolserial.c                  |    2 +-
- drivers/usb/wusbcore/wusbhc.h                      |    2 +-
- drivers/uwb/i1480/i1480-est.c                      |    4 +-
- drivers/uwb/uwbd.c                                 |    2 +-
- drivers/video/68328fb.c                            |    2 +-
- drivers/video/mbx/mbxfb.c                          |    2 +-
- drivers/video/omap/lcdc.c                          |    2 +-
- drivers/video/pm2fb.c                              |    2 +-
- drivers/video/s1d13xxxfb.c                         |    4 +-
- drivers/video/sm501fb.c                            |    2 +-
- drivers/video/sstfb.c                              |    2 +-
- drivers/w1/w1.c                                    |    4 +-
- drivers/zorro/zorro.ids                            |    2 +-
- fs/affs/bitmap.c                                   |    2 +-
- fs/binfmt_elf_fdpic.c                              |    2 +-
- fs/bio.c                                           |    7 +-
- fs/buffer.c                                        |    2 +-
- fs/cifs/asn1.c                                     |    2 +-
- fs/cifs/cifs_dfs_ref.c                             |    2 +-
- fs/cifs/cifssmb.c                                  |    2 +-
- fs/dlm/member.c                                    |    2 +-
- fs/ext3/super.c                                    |    2 +-
- fs/ext4/mballoc.c                                  |    2 +-
- fs/ext4/super.c                                    |    2 +-
- fs/fuse/inode.c                                    |    2 +-
- fs/gfs2/ops_fstype.c                               |    2 +-
- fs/jbd/transaction.c                               |    2 +-
- fs/locks.c                                         |    2 +-
- fs/mpage.c                                         |    2 +-
- fs/namei.c                                         |    2 +-
- fs/nfsd/nfs4xdr.c                                  |    2 +-
- fs/ntfs/ChangeLog                                  | 1702 --------------------
- fs/ocfs2/dlmglue.c                                 |    2 +-
- fs/ocfs2/extent_map.c                              |    2 +-
- fs/qnx4/inode.c                                    |    3 +-
- fs/reiserfs/bitmap.c                               |    2 +-
- fs/udf/inode.c                                     |    2 +-
- include/linux/dm9000.h                             |    2 +-
- include/linux/hil.h                                |   16 +-
- include/linux/lru_cache.h                          |    2 +-
- include/linux/mmzone.h                             |    2 +-
- include/linux/rbtree.h                             |    8 +-
- include/linux/sched.h                              |    2 +-
- include/math-emu/op-common.h                       |    2 +-
- include/media/davinci/vpfe_capture.h               |    2 +-
- include/net/irda/irttp.h                           |    2 +-
- kernel/audit.c                                     |    2 +-
- kernel/irq/chip.c                                  |    2 +-
- kernel/irq/devres.c                                |    4 +-
- kernel/ksysfs.c                                    |    2 +-
- kernel/params.c                                    |    6 +-
- kernel/sched_cpupri.c                              |    2 +-
- kernel/trace/ring_buffer.c                         |    4 +-
- kernel/trace/trace.h                               |    2 +-
- mm/highmem.c                                       |    2 +-
- mm/slub.c                                          |    2 +-
- net/ipv4/tcp_timer.c                               |    2 +-
- net/mac80211/mesh_plink.c                          |    2 +-
- net/netfilter/nf_conntrack_sip.c                   |    4 +-
- net/netfilter/xt_hashlimit.c                       |    2 +-
- net/sctp/sm_sideeffect.c                           |    2 +-
- scripts/gfp-translate                              |    2 +-
- security/selinux/avc.c                             |    6 +-
- sound/pci/rme9652/hdspm.c                          |    2 +-
- sound/soc/codecs/wm8990.c                          |    2 +-
- tools/perf/perf.c                                  |    2 +-
- tools/perf/util/hist.c                             |    2 +-
- 242 files changed, 396 insertions(+), 3454 deletions(-)
- mode change 100755 => 100644 arch/arm/mach-omap2/board-3630sdp.c
- mode change 100755 => 100644 arch/arm/mach-omap2/board-zoom-peripherals.c
- delete mode 100644 drivers/char/ChangeLog
- mode change 100755 => 100644 drivers/mtd/chips/cfi_util.c
- mode change 100755 => 100644 drivers/mtd/inftlcore.c
- delete mode 100644 drivers/parport/ChangeLog
- delete mode 100644 fs/ntfs/ChangeLog
+Thanks
+Vivek
