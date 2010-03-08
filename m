@@ -1,64 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751501Ab0CHFjt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 00:39:49 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:39553 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950Ab0CHFjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 00:39:44 -0500
-Date: Sun, 7 Mar 2010 21:37:24 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] scripts/kernel-doc: fix empty function description section
-Message-Id: <20100307213724.30f84ea2.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751543Ab0CHFoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 00:44:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6869 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751153Ab0CHFoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 00:44:12 -0500
+Message-ID: <4B948E9E.2030703@redhat.com>
+Date: Sun, 07 Mar 2010 23:43:58 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-ext4@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
+Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag
+ (EXT4_IOC_MOVE_EXT) in 32bit compat mode)
+References: <201003072132.10579.borntraeger@de.ibm.com> <4B94367E.9080506@garzik.org>
+In-Reply-To: <4B94367E.9080506@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0208.4B948D79.01A4:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Jeff Garzik wrote:
+> On 03/07/2010 03:32 PM, Christian Borntraeger wrote:
+>> I have an x86_64 kernel with i386 userspace. e4defrag fails on the
+>> EXT4_IOC_MOVE_EXT ioctl because it is not wired up for the compat
+>> case. It seems that struct move_extent is compat save, only types
+>> with fixed widths are used:
+>> {
+>>          __u32 reserved;         /* should be zero */
+>>          __u32 donor_fd;         /* donor file descriptor */
+>>          __u64 orig_start;       /* logical start offset in block for
+>> orig */
+>>          __u64 donor_start;      /* logical start offset in block for
+>> donor */
+>>          __u64 len;              /* block length to be moved */
+>>          __u64 moved_len;        /* moved block length */
+>> };
+>>
+>> Lets just wire up EXT4_IOC_MOVE_EXT for the compat case.
+>>
+>> Signed-off-by: Christian Borntraeger<borntraeger@de.ibm.com>
+>> CCed: Akira Fujita<a-fujita@rs.jp.nec.com>
+> 
+> I'm curious, what is the overall deployment status of ext4 defragging? I
+> actually worked on this problem years ago[1], and am hopeful that I will
+> see defragging in a Linux distribution sometime in my lifetime!  ;-)
 
-scripts/kernel-doc mishandles a function that has a multi-line
-function short description and no function parameters.  The
-observed problem was from drivers/scsi/scsi_netlink.c:
+on ext4 you mean, I guess - you could use XFS if defragging is a high priority,
+see xfs_fsr(8)
 
-/**
- * scsi_netlink_init - Called by SCSI subsystem to intialize
- * 	the SCSI transport netlink interface
- *
- **/
+> Looking at Fedora rawhide, I do not see anything resembling e4defrag in
+> any of the RPM packages like e2fsprogs.
 
-kernel-doc treated the " * " line as a Description: section with
-only a newline character in the Description contents.  This caused
-output_highlight() to complain:
-output_highlight got called with no args?
-plus produce a perl call stack backtrace.
+I had it for a while, but with the various problems and general uneasiness
+with the code so far, I took it back out lest people lose data to it.
 
-The fix is just to ignore Description sections if they only
-contain "\n".
+-Eric
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Thanks to everyone working on this,
+> 
+>     Jeff
+> 
+> 
+> 
+> 
+> [1] http://linux.yyz.us/misc/ext2meta.c
 
---- linux-2.6.33-git13.orig/scripts/kernel-doc
-+++ linux-2.6.33-git13/scripts/kernel-doc
-@@ -2105,7 +2105,7 @@ sub process_file($) {
- 		$section = $newsection;
- 	    } elsif (/$doc_end/) {
- 
--		if ($contents ne "") {
-+		if (($contents ne "") && ($contents ne "\n")) {
- 		    dump_section($file, $section, xml_escape($contents));
- 		    $section = $section_default;
- 		    $contents = "";
