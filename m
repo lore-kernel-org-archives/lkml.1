@@ -1,64 +1,210 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646Ab0CHJlv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 04:41:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27082 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753230Ab0CHJlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 04:41:46 -0500
-Message-ID: <4B94C655.6000504@redhat.com>
-Date: Mon, 08 Mar 2010 11:41:41 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/18][RFC] Nested Paging support for Nested SVM (aka NPT-Virtualization)
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753795Ab0CHJob (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 04:44:31 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54269 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348Ab0CHJoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 04:44:24 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Mon, 08 Mar 2010 01:43:21 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 1/4] x86: add get_centaur_ram_top
+In-reply-to: <1268041404-14029-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+Message-id: <1268041404-14029-2-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1268041404-14029-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2010 09:12 PM, Joerg Roedel wrote:
-> Hi,
->
-> here are the patches that implement nested paging support for nested
-> svm. They are somewhat intrusive to the soft-mmu so I post them as RFC
-> in the first round to get feedback about the general direction of the
-> changes.  Nevertheless I am proud to report that with these patches the
-> famous kernel-compile benchmark runs only 4% slower in the l2 guest as
-> in the l1 guest when l2 is single-processor. With SMP guests the
-> situation is very different. The more vcpus the guest has the more is
-> the performance drop from l1 to l2.
-> Anyway, this post is to get feedback about the overall concept of these
-> patches.  Please review and give feedback :-)
->
-> Thanks,
->
-> 	Joerg
->
-> Diffstat:
->
->   arch/x86/include/asm/kvm_host.h |   21 ++++++
->   arch/x86/kvm/mmu.c              |  152 ++++++++++++++++++++++++++++++---------
->   arch/x86/kvm/mmu.h              |    2 +
->   arch/x86/kvm/paging_tmpl.h      |   81 ++++++++++++++++++---
->   arch/x86/kvm/svm.c              |  126 +++++++++++++++++++++++++++-----
->   arch/x86/kvm/vmx.c              |    9 +++
->   arch/x86/kvm/x86.c              |   19 +++++-
->   include/linux/kvm.h             |    1 +
->   include/linux/kvm_host.h        |    5 ++
->   9 files changed, 354 insertions(+), 62 deletions(-)
->    
+so we can avoid to access e820.map[] directly.
 
-Okay, this looks excellent overall, it's nice to see how well this fits 
-with the existing mmu infrastructure (only ~300 lines added).  The 
-performance results are impressive.
+later we could move e820 to static and _initdata
 
--- 
-error compiling committee.c: too many arguments to function
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+
+
+---
+ arch/x86/include/asm/e820.h   |    9 ++++++
+ arch/x86/kernel/cpu/centaur.c |   53 +--------------------------------------
+ arch/x86/kernel/e820.c        |   57 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup.c       |    2 +
+ 4 files changed, 70 insertions(+), 51 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1194,3 +1194,60 @@ void __init setup_memory_map(void)
+ 	printk(KERN_INFO "BIOS-provided physical RAM map:\n");
+ 	e820_print_map(who);
+ }
++
++#ifdef CONFIG_X86_OOSTORE
++/*
++ * Figure what we can cover with MCR's
++ *
++ * Shortcut: We know you can't put 4Gig of RAM on a winchip
++ */
++void __init get_centaur_ram_top(void)
++{
++	u32 clip = 0xFFFFFFFFUL;
++	u32 top = 0;
++	int i;
++
++	if (boot_cpu_data.x86_vendor != X86_VENDOR_CENTAUR)
++		return;
++
++	for (i = 0; i < e820.nr_map; i++) {
++		unsigned long start, end;
++
++		if (e820.map[i].addr > 0xFFFFFFFFUL)
++			continue;
++		/*
++		 * Don't MCR over reserved space. Ignore the ISA hole
++		 * we frob around that catastrophe already
++		 */
++		if (e820.map[i].type == E820_RESERVED) {
++			if (e820.map[i].addr >= 0x100000UL &&
++			    e820.map[i].addr < clip)
++				clip = e820.map[i].addr;
++			continue;
++		}
++		start = e820.map[i].addr;
++		end = e820.map[i].addr + e820.map[i].size;
++		if (start >= end)
++			continue;
++		if (end > top)
++			top = end;
++	}
++	/*
++	 * Everything below 'top' should be RAM except for the ISA hole.
++	 * Because of the limited MCR's we want to map NV/ACPI into our
++	 * MCR range for gunk in RAM
++	 *
++	 * Clip might cause us to MCR insufficient RAM but that is an
++	 * acceptable failure mode and should only bite obscure boxes with
++	 * a VESA hole at 15Mb
++	 *
++	 * The second case Clip sometimes kicks in is when the EBDA is marked
++	 * as reserved. Again we fail safe with reasonable results
++	 */
++	if (top > clip)
++		top = clip;
++
++	centaur_ram_top = top;
++}
++#endif
++
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -875,6 +875,8 @@ void __init setup_arch(char **cmdline_p)
+ 	if (mtrr_trim_uncached_memory(max_pfn))
+ 		max_pfn = e820_end_of_ram_pfn();
+ 
++	get_centaur_ram_top();
++
+ #ifdef CONFIG_X86_32
+ 	/* max_low_pfn get updated here */
+ 	find_low_pfn_range();
+Index: linux-2.6/arch/x86/kernel/cpu/centaur.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/centaur.c
++++ linux-2.6/arch/x86/kernel/cpu/centaur.c
+@@ -37,63 +37,14 @@ static void __cpuinit centaur_mcr_insert
+ 	mtrr_centaur_report_mcr(reg, lo, hi);	/* Tell the mtrr driver */
+ }
+ 
+-/*
+- * Figure what we can cover with MCR's
+- *
+- * Shortcut: We know you can't put 4Gig of RAM on a winchip
+- */
+-static u32 __cpuinit ramtop(void)
+-{
+-	u32 clip = 0xFFFFFFFFUL;
+-	u32 top = 0;
+-	int i;
+-
+-	for (i = 0; i < e820.nr_map; i++) {
+-		unsigned long start, end;
+-
+-		if (e820.map[i].addr > 0xFFFFFFFFUL)
+-			continue;
+-		/*
+-		 * Don't MCR over reserved space. Ignore the ISA hole
+-		 * we frob around that catastrophe already
+-		 */
+-		if (e820.map[i].type == E820_RESERVED) {
+-			if (e820.map[i].addr >= 0x100000UL &&
+-			    e820.map[i].addr < clip)
+-				clip = e820.map[i].addr;
+-			continue;
+-		}
+-		start = e820.map[i].addr;
+-		end = e820.map[i].addr + e820.map[i].size;
+-		if (start >= end)
+-			continue;
+-		if (end > top)
+-			top = end;
+-	}
+-	/*
+-	 * Everything below 'top' should be RAM except for the ISA hole.
+-	 * Because of the limited MCR's we want to map NV/ACPI into our
+-	 * MCR range for gunk in RAM
+-	 *
+-	 * Clip might cause us to MCR insufficient RAM but that is an
+-	 * acceptable failure mode and should only bite obscure boxes with
+-	 * a VESA hole at 15Mb
+-	 *
+-	 * The second case Clip sometimes kicks in is when the EBDA is marked
+-	 * as reserved. Again we fail safe with reasonable results
+-	 */
+-	if (top > clip)
+-		top = clip;
+-
+-	return top;
+-}
++int __cpuinitdata centaur_ram_top;
+ 
+ /*
+  * Compute a set of MCR's to give maximum coverage
+  */
+ static int __cpuinit centaur_mcr_compute(int nr, int key)
+ {
+-	u32 mem = ramtop();
++	u32 mem = centaur_ram_top;
+ 	u32 root = power2(mem);
+ 	u32 base = root;
+ 	u32 top = root;
+Index: linux-2.6/arch/x86/include/asm/e820.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/e820.h
++++ linux-2.6/arch/x86/include/asm/e820.h
+@@ -72,6 +72,15 @@ struct e820map {
+ extern struct e820map e820;
+ extern struct e820map e820_saved;
+ 
++#ifdef CONFIG_X86_OOSTORE
++extern int centaur_ram_top;
++void get_centaur_ram_top(void);
++#else
++static inline void get_centaur_ram_top(void)
++{
++}
++#endif
++
+ extern unsigned long pci_mem_start;
+ extern int e820_any_mapped(u64 start, u64 end, unsigned type);
+ extern int e820_all_mapped(u64 start, u64 end, unsigned type);
