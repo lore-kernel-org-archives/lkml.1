@@ -1,72 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035Ab0CHHBH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 02:01:07 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47874 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034Ab0CHHBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 02:01:00 -0500
-Subject: Re: ATA 4 KiB sector issues.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Tejun Heo <tj@kernel.org>
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, mkp@mkp.net
-In-Reply-To: <4B947393.2050002@kernel.org>
-References: <4B947393.2050002@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Mar 2010 12:30:40 +0530
-Message-ID: <1268031640.4389.11.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1752106Ab0CHHEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 02:04:12 -0500
+Received: from mga12.intel.com ([143.182.124.36]:3468 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751034Ab0CHHEE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 02:04:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,601,1262592000"; 
+   d="scan'208";a="251979027"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [PATCH 6/7] xen: Enable PV clocksource for HVM
+Date: Mon, 8 Mar 2010 15:05:21 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "xen-devel" <xen-devel@lists.xensource.com>
+References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com> <201003051054.50535.sheng@linux.intel.com> <1267781507.11737.36769.camel@zakaz.uk.xensource.com>
+In-Reply-To: <1267781507.11737.36769.camel@zakaz.uk.xensource.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003081505.21833.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a quick note:
+On Friday 05 March 2010 17:31:47 Ian Campbell wrote:
+> On Fri, 2010-03-05 at 02:54 +0000, Sheng Yang wrote:
+> > On Friday 05 March 2010 01:40:51 Jeremy Fitzhardinge wrote:
+> > > On 03/04/2010 01:36 AM, Sheng Yang wrote:
+> > > > And enable it by default in PV extended HVM guest.
+> > > >
+> > > > Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> > > > ---
+> > > >   arch/x86/xen/hvmpv.c |   20 ++++++++++++++++++++
+> > > >   arch/x86/xen/time.c  |    4 +++-
+> > > >   2 files changed, 23 insertions(+), 1 deletions(-)
+> > > >
+> > > > diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
+> > > > index 7a741ed..284e021 100644
+> > > > --- a/arch/x86/xen/hvmpv.c
+> > > > +++ b/arch/x86/xen/hvmpv.c
+> > > > @@ -43,6 +43,7 @@ static void __init xen_hvm_pv_banner(void)
+> > > >   		pv_info.name);
+> > > >   	printk(KERN_INFO "Xen version: %d.%d%s\n",
+> > > >   		version>>  16, version&  0xffff, extra.extraversion);
+> > > > +	printk(KERN_INFO "PV feature: PV clocksource enabled\n");
+> > > >   }
+> > > >
+> > > >   static int __init xen_para_available(void)
+> > > > @@ -117,6 +118,22 @@ static void __init init_shared_info(void)
+> > > >   	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
+> > > >   }
+> > > >
+> > > > +extern struct clocksource xen_clocksource;
+> > >
+> > > No externs in .c files.  But aside from that, I'd prefer you export a
+> > > function from xen/time.c to do the clocksource registration and call it
+> > > from both places (even if its a one-liner).
+> >
+> > OK
+> >
+> > > > +
+> > > > +static void __init init_pv_clocksource(void)
+> > > > +{
+> > > > +	if (enable_hvm_pv(HVM_PV_CLOCK))
+> > > > +		BUG();
+> > >
+> > > BUG is a bit severe.  Will it really never, ever fail?  And if it does,
+> > > the consequence is hardly serious; we just fall back to emulated
+> > > devices.
+> >
+> > It shouldn't fail. If we got a hypervisor without these extension, this
+> > one won't be called. Because the feature should be detected by CPUID, and
+> > the hypervisor would mask the unsupported features. So the guest won't
+> > see that bit if it's not supported, and this one wouldn't be involved.
+> 
+> It is still possible that a hypervisor might want to turn on the general
+> extensions but not the PV clock extensions, and we can't predict what
+> reasons we might have for doing that in the future. A BUG() is an
+> awfully big hammer for a failure like this and destroys any hope of
+> making changes in a forward/backward compatible manner in the future.
+> Surely it is possible to simply continue with non-PV clock?
 
-The 2TB size for msdos partitions is a problem independent of the 4k
-sector issue.  Traditional 512 byte sector drives are now available in
-those sizes.  It looks like we're going to have to move to a new
-partitioning label to solve this.
+Evtchn can't work with it. 
 
-There's actually another barrier at 8 or 16TB, which is where a 4k
-logical sector filesystem tops out using 32 bit block offsets (it's 8TB
-if the fs hasn't been proof checked against sign extension problems).
+If the potentially disable pv clock is your concern, I think the better way is 
+to make PV clock as a separate feature, and let PV evtchn depends on it. I've 
+updated the patches to reflect this change.
 
-However, for 4k sectors, the main issues which have shown up in testing
-by others (mostly Martin) are
-
-     1. In native 4k mode, we work perfectly fine.  *however*, most
-        BIOSs can't boot native 4k drives.
-     2. Even if the BIOS can boot native 4k, our own boot loaders seem
-        to be hard coded for 512 byte sectors in several places.
-     3. If we run in the 512 byte sector emulation mode, we end up with
-        the partition alignment problems you allude to.
-     4. The aligment problem is made more complex by drives that make
-        use of the offset exponent feature (what you refer to as offset
-        by one) ... fortunately very few of these have been seen in the
-        wild and we're hopeful they can be shot before they breed.
-     5. I'm really, really sorry to have to mention it, but it looks
-        like uefi is going to be the only way we can boot non-msdos
-        partitioned devices with native 4k sectors.
-
-so the bottom line seems to be that if you want the device as a non boot
-disk, use native 4k sectors and a non-msdos partition label.  If you
-want to boot from the drive and your bios won't book 4k natively,
-partition everything using the 512 emulation and try to align the
-partitions correctly.  If your bios/uefi will boot 4k natively, just use
-it and whatever partition label the bios/uefi supports.
-
-Martin can fill in the pieces I've left out.
-
-James
-
-
+-- 
+regards
+Yang, Sheng
