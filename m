@@ -1,56 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970Ab0CHDvu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 22:51:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58934 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753858Ab0CHDvo (ORCPT
+	id S1754038Ab0CHECW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 23:02:22 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:40710 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753946Ab0CHECR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 22:51:44 -0500
-Date: Mon, 8 Mar 2010 04:51:43 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Paul Mackerras <paulus@samba.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
-Message-ID: <20100308035143.GE20695@one.firstfloor.org>
-References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803072522.1d90f15c@infradead.org> <20090804201109.GA21386@elte.hu> <20090805123501.GF14610@erda.amd.com> <84144f020908060031vb48b983m6e6b1b521e01d6aa@mail.gmail.com> <20090806105134.GD11236__37984.4768475325$1249556453$gmane$org@elte.hu> <87ocjcqcdj.fsf@basil.nowhere.org> <20100305164615.GY13205@erda.amd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 7 Mar 2010 23:02:17 -0500
+Date: Mon, 8 Mar 2010 05:02:13 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Dan Carpenter <error27@gmail.com>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Julia Lawall <julia@diku.dk>, Dmitry Torokhov <dtor@mail.ru>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [patch] regulator: handle kcalloc() failure
+Message-ID: <20100308040213.GI8548@pengutronix.de>
+References: <20100307123645.GB6469@bicker>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cVp8NMj01v+Em8Se"
 Content-Disposition: inline
-In-Reply-To: <20100305164615.GY13205@erda.amd.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20100307123645.GB6469@bicker>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the tests I run with oprofile do not indicate unreliable ring_buffer
 
-Did you try it with callgraph mode? That seems to be worst.
+--cVp8NMj01v+Em8Se
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> behavior. Maybe my use cases and loads are different. Can you describe
-> a setup where this may happen for sure? What is the impact, do you
+On Sun, Mar 07, 2010 at 03:36:45PM +0300, Dan Carpenter wrote:
+> Return -ENOMEM if kcalloc() fails
+>=20
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-Seeing it on very busy 16 CPU and larger systems.
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-> have lost samples or inconsistent buffer data? Is the data loss in
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-There are a lot of lost samples, callgraphs are incomplete etc.
+--cVp8NMj01v+Em8Se
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> kernel or user space? Also, I am not aware that the ring_buffer is
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Not sure.
+iEYEARECAAYFAkuUdsUACgkQD27XaX1/VRtE4gCguQme9vkTrK7Ww6xVRphvsqkZ
+qBkAmgM2i1HCenHtTlQ2P+y/iTluAxbk
+=UZGt
+-----END PGP SIGNATURE-----
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--cVp8NMj01v+Em8Se--
