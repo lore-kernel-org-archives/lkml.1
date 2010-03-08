@@ -1,81 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651Ab0CHVWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:22:16 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51626 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753798Ab0CHVWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:22:14 -0500
-Subject: Re: [RESEND][PATCH] Fix oops on !GENERIC_TIME systems when
- accessing current_clocksource
-From: john stultz <johnstul@us.ibm.com>
-To: greg kh <greg@kroah.com>
-Cc: Ingo Molnar <mingo@elte.hu>, stable@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, aaro.koskinen@iki.fi,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1267475683.4216.61.camel@localhost.localdomain>
-References: <1267475683.4216.61.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Mar 2010 13:22:07 -0800
-Message-ID: <1268083327.3726.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755696Ab0CHVWt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:22:49 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:42917 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755503Ab0CHVWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 16:22:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=t733gWy1NXmGoIAdJ1+6RuoUecMWPVU37v0GwAPNse6HMKB0nDGOEyp0Q2c7feLhb
+	+oFnECcaFiUp/vlAkQrsQ==
+Date: Mon, 8 Mar 2010 13:22:38 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Miao Xie <miaox@cn.fujitsu.com>
+cc: Lee Schermerhorn <lee.schermerhorn@hp.com>, Nick Piggin <npiggin@suse.de>,
+       Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>
+Subject: Re: [PATCH V2 1/4] cpuset: fix the problem that cpuset_mem_spread_node()
+ returns an offline node
+In-Reply-To: <4B94CB6C.8090601@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1003081318460.14689@chino.kir.corp.google.com>
+References: <4B94CB6C.8090601@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-03-01 at 12:34 -0800, john stultz wrote:
-> No one has replied to this, so I wanted to send it out again.
+On Mon, 8 Mar 2010, Miao Xie wrote:
 
-Just another ping here. I know the patch has made it to -tip, but its
-something that should be needed for 2.6.34, 2.6.33-stable.
+> Changes from V1 to V2:
+> - cleanup two unnecessary smp_wmb() at cpuset_migrate_mm()
+> 
 
-thanks
--john
+This patch is already in -mm without this update, so it's probably better 
+to make this an incremental series basedo n mmotm-2010-03-04-18-05 or 
+later.
 
-
-> Aaro Koskinen reported an issue in bug #15366, where on non-GENERIC_TIME
-> systems,
-> accessing /sys/devices/system/clocksource/clocksource0/current_clocksource would oops the system. 
-> 
-> It seems the timekeeper/clocksource rework missed initializing the
-> curr_clocksource value in the !GENERIC_TIME.
-> 
-> The following patch makes sure it gets initialized, and avoids the
-> issue.
-> 
-> Thanks to Aaro for reporting and diagnosing the issue as well as testing
-> the fix!
-> 
-> Bug Details: http://bugzilla.kernel.org/show_bug.cgi?id=15366
-> 
-> Too late for 2.6.33, but this likely should go into 2.6.33-stable and
-> 2.6.32-stable.
-> 
-> thanks
-> -john
-> 
-> 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-> index e85c234..c436ee5 100644
-> --- a/kernel/time/clocksource.c
-> +++ b/kernel/time/clocksource.c
-> @@ -568,6 +568,10 @@ static inline void clocksource_select(void) { }
->   */
->  static int __init clocksource_done_booting(void)
+> @@ -2090,15 +2086,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
+>  static int cpuset_track_online_nodes(struct notifier_block *self,
+>  				unsigned long action, void *arg)
 >  {
-> +	mutex_lock(&clocksource_mutex);
-> +	curr_clocksource = clocksource_default_clock();
-> +	mutex_unlock(&clocksource_mutex);
+> +	nodemask_t oldmems;
 > +
->  	finished_booting = 1;
->  
->  	/*
-> 
-> 
+>  	cgroup_lock();
+>  	switch (action) {
+>  	case MEM_ONLINE:
+> -	case MEM_OFFLINE:
+> +		oldmems = top_cpuset.mems_allowed;
+>  		mutex_lock(&callback_mutex);
+>  		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+>  		mutex_unlock(&callback_mutex);
+> -		if (action == MEM_OFFLINE)
+> -			scan_for_empty_cpusets(&top_cpuset);
+> +		update_tasks_nodemask(&top_cpuset, &oldmems, NULL);
+> +		break;
+> +	case MEM_OFFLINE:
+> +		scan_for_empty_cpusets(&top_cpuset);
+>  		break;
+>  	default:
+>  		break;
 
-
+This looks wrong, why isn't top_cpuset.mems_allowed updated for 
+MEM_OFFLINE?  If you're going to update it when a new node comes online 
+for (struct memory_notify *)arg->status_change_nid is >= 0, then it should 
+be removed from the nodemask when offlined as well.  You'd be calling 
+scan_for_empty_cpusets() needlessly in this code since it'll never change 
+under your hotplug code.
