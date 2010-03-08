@@ -1,51 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612Ab0CHDG6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 22:06:58 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36999 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900Ab0CHDGv (ORCPT
+	id S1753664Ab0CHDRG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 22:17:06 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:54650 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292Ab0CHDQ6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 22:06:51 -0500
-Date: Mon, 8 Mar 2010 04:06:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Anca Emanuel <anca.emanuel@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       David Rientjes <rientjes@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, "haicheng.li" <haicheng.li@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] slab: add memory hotplug support
-Message-ID: <20100308030650.GD20695@one.firstfloor.org>
-References: <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com> <20100305062002.GV8653@laptop> <c1fb08351003050447w17175bbdy15e1e9bb78c2e40@mail.gmail.com> <alpine.DEB.2.00.1003050808390.32229@router.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1003050808390.32229@router.home>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 7 Mar 2010 22:16:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=shrbqRnqkUe3W3V03ZrGepD/48fsCqeMfz0ydPC1ZARyEMRyS0khNLL9a0o3y4ketA
+         6UZ+UaOqaeikcQzB/l0bkiqZD6HLfGIWc/jTMaNwdL/r3hiBZzO9sGcD1bcuH9ICFZ0x
+         /2q/e5zkTerYLidzFFVORhJ8baEndfJ2eaPKU=
+MIME-Version: 1.0
+Date: Mon, 8 Mar 2010 11:16:57 +0800
+Message-ID: <7b6bb4a51003071916v16f54d7fx9d3039826c1e1d80@mail.gmail.com>
+Subject: where's include/linux/i2c-xiic.h?
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: richard.rojfors@pelagicore.com, ben-linux@fluff.org,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Under certain conditions this is possible. If the bad memory was modified
-> then you have a condition that requires termination of all processes that
-> are using the memory. If its the kernel then you need to reboot.
-> 
-> If the memory contains a page from disk then the memory can be moved
-> elsewhere.
-> 
-> If you can clean up a whole range like that then its possible to replace
-> the memory.
+Hi,
 
-Typically that's not possible because of the way DIMMs are interleaved --
-the to be freed areas would be very large, and with a specific size
-there are always kernel or unmovable user areas areas in the way.
+    I'm getting following compile error with current git tree, does
+commit e1d5b6598cdc33257fe68302ae9db81d2f7bb883 miss file
+include/linux/i2c-xiic.h?
 
-In general on Linux hot DIMM replacement only works if the underlying
-platform does it transparently (e.g. support memory RAID and chipkill) 
-and you have enough redundant memory for it.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+    drivers/i2c/busses/i2c-xiic.c:39:28: error: linux/i2c-xiic.h: No
+such file or directory
+    drivers/i2c/busses/i2c-xiic.c: In function ‘xiic_i2c_probe’:
+    drivers/i2c/busses/i2c-xiic.c:750: error: dereferencing pointer to
+incomplete type
+    drivers/i2c/busses/i2c-xiic.c:751: error: dereferencing pointer to
+incomplete type
+    make[2]: *** [drivers/i2c/busses/i2c-xiic.o] Error 1
+
+Regards
+Xiaotian
