@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049Ab0CHMNv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 07:13:51 -0500
+	id S1755076Ab0CHMN5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 07:13:57 -0500
 Received: from ey-out-2122.google.com ([74.125.78.24]:27327 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917Ab0CHMNp (ORCPT
+	with ESMTP id S1755009Ab0CHMNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 07:13:45 -0500
+	Mon, 8 Mar 2010 07:13:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:date:subject:mime-version:x-tuid:x-uid:x-length
          :organization:to:cc:content-type:content-transfer-encoding
          :message-id;
-        b=Kmxg3mx8jTQaioFFSrw6Zd0MmM17jGqV7EtmWTu2F96brnkYAwfJQFg0dTMzRoOzM1
-         pxPsZi+lT9vO5CTDDnIFlHRlPYZ5Qrlf2zSE9cbOL+YShuy1qikGfLxRR5OHGEhe7J0P
-         l1pGLArC+fUirr3lySHAbvQhg3Ra4rQarZ/AQ=
+        b=aaGebzdvq8ZyKA48i+l7cmlXkvnj5Zg6F4BRUDp/c+wqRyk8EmwCU/FoMS9Ro0/f/V
+         ErcjMZz+7znWLAIDo2Ke1exp28Utl6OqagEc4E5Xw26XwenGK3swAfFMPy128zjgiXxH
+         IeQQpTGMzaaz8njM3YAi0OdyRzzjh0z/ezLO0=
 From: Florian Fainelli <florian@openwrt.org>
-Date: Mon, 8 Mar 2010 13:12:45 +0100
-Subject: [PATCH 2/4] MFD: add support for the RDC321x southbridge
+Date: Mon, 8 Mar 2010 13:12:51 +0100
+Subject: [PATCH 4/4] WATCHDOG: convert rdc321x_wdt to use southbridge accessors
 MIME-Version: 1.0
-X-TUID: 0fc58ffdc2989a86
-X-Length: 7398
+X-TUID: 2a6ef95b94a39919
+X-Length: 5140
 Organization: OpenWrt
 To: linux-kernel@vger.kernel.org
 Cc: Wim Van Sebroeck <wim@iguana.be>, Samuel Ortiz <sameo@linux.intel.com>,
@@ -28,229 +28,138 @@ Cc: Wim Van Sebroeck <wim@iguana.be>, Samuel Ortiz <sameo@linux.intel.com>,
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003081312.45499.florian@openwrt.org>
+Message-Id: <201003081312.51810.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new MFD driver for the RDC321x southbridge. This southbridge
-is always present in the RDC321x System-on-a-Chip and provides access to some
-GPIOs as well as a watchdog. Access to these two functions is done using the
-southbridge PCI device configuration space.
+With the introduction of the MFD driver which abstracts access to the PCI
+device configuration space the watchdog driver must be converted to use these
+accessors and provide safe register read/write. As a result we now use the
+memory resource which comes with the platform device.
 
 Signed-off-by: Regards, Florian Fainelli <florian@openwrt.org>
 ---
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 413576a..ad119fc 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -358,6 +358,16 @@ config MFD_TIMBERDALE
- 
- 	The timberdale FPGA can be found on the Intel Atom development board
- 	for in-vehicle infontainment, called Russellville.
-+
-+config MFD_RDC321X
-+	tristate "Support for RDC-R321x southbridge"
-+	select MFD_CORE
-+	depends on PCI
-+	help
-+	  Say yes here if you want to have support for the RDC R-321x SoC
-+	  southbridge which provides access to GPIOs and Watchdog using the
-+	  southbridge PCI device configuration space.
-+
- endmenu
- 
- menu "Multimedia Capabilities Port drivers"
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 78295d6..d57ad38 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -57,3 +57,4 @@ obj-$(CONFIG_AB4500_CORE)	+= ab4500-core.o
- obj-$(CONFIG_MFD_TIMBERDALE)    += timberdale.o
- obj-$(CONFIG_MFD_88PM8607)	+= 88pm8607.o
- obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-+obj-$(CONFIG_MFD_RDC321X)	+= rdc321x-southbridge.o
-diff --git a/drivers/mfd/rdc321x-southbridge.c b/drivers/mfd/rdc321x-southbridge.c
-new file mode 100644
-index 0000000..05a56fb
---- /dev/null
-+++ b/drivers/mfd/rdc321x-southbridge.c
-@@ -0,0 +1,148 @@
-+/*
-+ * RDC321x MFD southbrige driver
-+ *
+diff --git a/drivers/watchdog/rdc321x_wdt.c b/drivers/watchdog/rdc321x_wdt.c
+index 4976bfd..dea4c00 100644
+--- a/drivers/watchdog/rdc321x_wdt.c
++++ b/drivers/watchdog/rdc321x_wdt.c
+@@ -1,7 +1,7 @@
+ /*
+  * RDC321x watchdog driver
+  *
+- * Copyright (C) 2007 Florian Fainelli <florian@openwrt.org>
 + * Copyright (C) 2007-2010 Florian Fainelli <florian@openwrt.org>
-+ * Copyright (C) 2010 Bernhard Loos <bernhardloos@googlemail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/pci.h>
-+#include <linux/mfd/core.h>
+  *
+  * This driver is highly inspired from the cpu5_wdt driver
+  *
+@@ -36,8 +36,7 @@
+ #include <linux/watchdog.h>
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+-
+-#include <asm/rdc321x_defs.h>
 +#include <linux/mfd/rdc321x.h>
+ 
+ #define RDC_WDT_MASK	0x80000000 /* Mask */
+ #define RDC_WDT_EN	0x00800000 /* Enable bit */
+@@ -63,6 +62,7 @@ static struct {
+ 	int default_ticks;
+ 	unsigned long inuse;
+ 	spinlock_t lock;
++	int base_reg;
+ } rdc321x_wdt_device;
+ 
+ /* generic helper functions */
+@@ -70,14 +70,16 @@ static struct {
+ static void rdc321x_wdt_trigger(unsigned long unused)
+ {
+ 	unsigned long flags;
++	u32 val;
+ 
+ 	if (rdc321x_wdt_device.running)
+ 		ticks--;
+ 
+ 	/* keep watchdog alive */
+ 	spin_lock_irqsave(&rdc321x_wdt_device.lock, flags);
+-	outl(RDC_WDT_EN | inl(RDC3210_CFGREG_DATA),
+-		RDC3210_CFGREG_DATA);
++	rdc321x_pci_read(rdc321x_wdt_device.base_reg, &val);
++	val |= RDC_WDT_EN;
++	rdc321x_pci_write(rdc321x_wdt_device.base_reg, val);
+ 	spin_unlock_irqrestore(&rdc321x_wdt_device.lock, flags);
+ 
+ 	/* requeue?? */
+@@ -105,10 +107,11 @@ static void rdc321x_wdt_start(void)
+ 
+ 		/* Clear the timer */
+ 		spin_lock_irqsave(&rdc321x_wdt_device.lock, flags);
+-		outl(RDC_CLS_TMR, RDC3210_CFGREG_ADDR);
++		rdc321x_pci_write(rdc321x_wdt_device.base_reg, RDC_CLS_TMR);
+ 
+ 		/* Enable watchdog and set the timeout to 81.92 us */
+-		outl(RDC_WDT_EN | RDC_WDT_CNT, RDC3210_CFGREG_DATA);
++		rdc321x_pci_write(rdc321x_wdt_device.base_reg,
++					RDC_WDT_EN | RDC_WDT_CNT);
+ 		spin_unlock_irqrestore(&rdc321x_wdt_device.lock, flags);
+ 
+ 		mod_timer(&rdc321x_wdt_device.timer,
+@@ -148,7 +151,7 @@ static long rdc321x_wdt_ioctl(struct file *file, unsigned int cmd,
+ 				unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+-	unsigned int value;
++	u32 value;
+ 	static struct watchdog_info ident = {
+ 		.options = WDIOF_CARDRESET,
+ 		.identity = "RDC321x WDT",
+@@ -162,9 +165,9 @@ static long rdc321x_wdt_ioctl(struct file *file, unsigned int cmd,
+ 	case WDIOC_GETSTATUS:
+ 		/* Read the value from the DATA register */
+ 		spin_lock_irqsave(&rdc321x_wdt_device.lock, flags);
+-		value = inl(RDC3210_CFGREG_DATA);
++		rdc321x_pci_read(rdc321x_wdt_device.base_reg, &value);
+ 		spin_unlock_irqrestore(&rdc321x_wdt_device.lock, flags);
+-		if (copy_to_user(argp, &value, sizeof(int)))
++		if (copy_to_user(argp, &value, sizeof(u32)))
+ 			return -EFAULT;
+ 		break;
+ 	case WDIOC_GETSUPPORT:
+@@ -219,17 +222,26 @@ static struct miscdevice rdc321x_wdt_misc = {
+ static int __devinit rdc321x_wdt_probe(struct platform_device *pdev)
+ {
+ 	int err;
++	struct resource *r;
 +
-+static struct pci_dev *rdc321x_sb_pdev;
-+
-+/*
-+ * Unlocked PCI configuration space accessors
-+ */
-+int rdc321x_pci_read(int reg, u32 *val)
-+{
-+	int err;
-+
-+	err = pci_read_config_dword(rdc321x_sb_pdev, reg, val);
-+	if (err)
-+		return err;
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(rdc321x_pci_read);
-+
-+int rdc321x_pci_write(int reg, u32 val)
-+{
-+	int err;
-+
-+	err = pci_write_config_dword(rdc321x_sb_pdev, reg, val);
-+	if (err)
-+		return err;
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(rdc321x_pci_write);
-+
-+static struct resource rdc321x_wdt_resource[] = {
-+	{
-+		.name	= "wdt-reg",
-+		.start	= RDC321X_WDT_CTRL,
-+		.end	= RDC321X_WDT_CTRL + 0x3,
-+		.flags	= IORESOURCE_MEM,
-+	}
-+};
-+
-+static struct rdc321x_gpio_pdata rdc321x_gpio_pdata = {
-+	.max_gpios	= RDC321X_MAX_GPIO,
-+};
-+
-+static struct resource rdc321x_gpio_resources[] = {
-+	{
-+		.name	= "gpio-reg1",
-+		.start	= RDC321X_GPIO_CTRL_REG1,
-+		.end	= RDC321X_GPIO_CTRL_REG1 + 0x7,
-+		.flags	= IORESOURCE_MEM,
-+	}, {
-+		.name	= "gpio-reg2",
-+		.start	= RDC321X_GPIO_CTRL_REG2,
-+		.end	= RDC321X_GPIO_CTRL_REG2 + 0x7,
-+		.flags	= IORESOURCE_MEM,
-+	}
-+};
-+
-+static struct mfd_cell rdc321x_sb_cells[] = {
-+	{
-+		.name		= "rdc321x-wdt",
-+		.resources	= rdc321x_wdt_resource,
-+		.num_resources	= ARRAY_SIZE(rdc321x_wdt_resource),
-+	}, {
-+		.name 		= "rdc321x-gpio",
-+		.resources	= rdc321x_gpio_resources,
-+		.num_resources	= ARRAY_SIZE(rdc321x_gpio_resources),
-+		.driver_data	= &rdc321x_gpio_pdata,
-+	},
-+};
-+
-+static int __devinit rdc321x_sb_probe(struct pci_dev *pdev,
-+					const struct pci_device_id *ent)
-+{
-+	int err;
-+
-+	err = pci_enable_device(pdev);
-+	if (err) {
-+		printk(KERN_ERR "failed to enable device\n");
-+		return err;
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "wdt-reg");
++	if (!r) {
++		dev_err(&pdev->dev, "failed to get wdt-reg resource\n");
++		return -ENODEV;
 +	}
 +
-+	rdc321x_sb_pdev = pdev;
-+
-+	return mfd_add_devices(&pdev->dev, -1,
-+		rdc321x_sb_cells, ARRAY_SIZE(rdc321x_sb_cells), NULL, 0);
-+}
-+
-+static void __devexit rdc321x_sb_remove(struct pci_dev *pdev)
-+{
-+	mfd_remove_devices(&pdev->dev);
-+}
-+
-+static struct pci_device_id rdc321x_sb_table[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_RDC, PCI_DEVICE_ID_RDC_R6030) },
-+	{}
-+};
-+
-+static struct pci_driver rdc321x_sb_driver = {
-+	.name 		= "RDC321x Southbridge",
-+	.id_table 	= rdc321x_sb_table,
-+	.probe 		= rdc321x_sb_probe,
-+	.remove		= __devexit_p(rdc321x_sb_remove),
-+};
-+
-+static int __init rdc321x_sb_init(void)
-+{
-+	return pci_register_driver(&rdc321x_sb_driver);
-+}
-+
-+static void __exit rdc321x_sb_exit(void)
-+{
-+	pci_unregister_driver(&rdc321x_sb_driver);
-+}
-+
-+module_init(rdc321x_sb_init);
-+module_exit(rdc321x_sb_exit);
-+
-+MODULE_AUTHOR("Florian Fainelli <florian@openwrt.org>");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("RDC R-321x MFD southbridge driver");
-diff --git a/include/linux/mfd/rdc321x.h b/include/linux/mfd/rdc321x.h
-new file mode 100644
-index 0000000..82c595f
---- /dev/null
-+++ b/include/linux/mfd/rdc321x.h
-@@ -0,0 +1,24 @@
-+#ifndef __RDC321X_MFD_H
-+#define __RDC321X_MFD_H
-+
-+#include <linux/types.h>
-+
-+/* Offsets to be accessed in the southbridge PCI
-+ * device configuration register */
-+#define RDC321X_WDT_CTRL	0x44
-+#define RDC321X_GPIO_CTRL_REG1	0x48
-+#define RDC321X_GPIO_DATA_REG1	0x4c
-+#define RDC321X_GPIO_CTRL_REG2	0x84
-+#define RDC321X_GPIO_DATA_REG2	0x88
-+
-+#define RDC321X_MAX_GPIO	58
-+
-+/* Definitions for the shared southbridge accessors */
-+int rdc321x_pci_write(int reg, u32 val);
-+int rdc321x_pci_read(int reg, u32 *val);
-+
-+struct rdc321x_gpio_pdata {
-+	unsigned max_gpios;
-+};
-+
-+#endif /* __RDC321X_MFD_H */
++	rdc321x_wdt_device.base_reg = r->start;
+ 
+ 	err = misc_register(&rdc321x_wdt_misc);
+ 	if (err < 0) {
+-		printk(KERN_ERR PFX "watchdog misc_register failed\n");
++		dev_err(&pdev->dev, "misc_register failed\n");
+ 		return err;
+ 	}
+ 
+ 	spin_lock_init(&rdc321x_wdt_device.lock);
+ 
+ 	/* Reset the watchdog */
+-	outl(RDC_WDT_RST, RDC3210_CFGREG_DATA);
++	rdc321x_pci_write(rdc321x_wdt_device.base_reg, RDC_WDT_RST);
+ 
+ 	init_completion(&rdc321x_wdt_device.stop);
+ 	rdc321x_wdt_device.queue = 0;
+@@ -240,7 +252,7 @@ static int __devinit rdc321x_wdt_probe(struct platform_device *pdev)
+ 
+ 	rdc321x_wdt_device.default_ticks = ticks;
+ 
+-	printk(KERN_INFO PFX "watchdog init success\n");
++	dev_info(&pdev->dev, "watchdog init success\n");
+ 
+ 	return 0;
+ }
