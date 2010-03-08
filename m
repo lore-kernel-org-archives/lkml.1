@@ -1,81 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762Ab0CHUV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:21:26 -0500
-Received: from gwu.lbox.cz ([62.245.111.132]:40792 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755620Ab0CHUVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:21:20 -0500
-Date: Mon, 8 Mar 2010 21:21:10 +0100
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>, nikola.ciprich@linuxbox.cz
-Subject: Re: [Bug #14943] nfs regression?
-Message-ID: <20100308202110.GA4731@nik-comp.linuxbox.cz>
-References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
- <wj3ZQZlk_KB.A.M6B.QsagLB@chimera>
- <2375c9f91002211813m8f637c1g73c4314eab96f81e@mail.gmail.com>
+	id S1755780Ab0CHUWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 15:22:17 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:55069 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755714Ab0CHUWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 15:22:06 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4B947393.2050002@kernel.org>
+	<1268031640.4389.11.camel@mulgrave.site>
+	<yq1vdd6bzgz.fsf@sermon.lab.mkp.net>
+	<yq1mxyibz7o.fsf@sermon.lab.mkp.net>
+	<yq1iq96bz22.fsf@sermon.lab.mkp.net> <4B9546E6.6050006@zytor.com>
+Date: Mon, 08 Mar 2010 15:19:05 -0500
+In-Reply-To: <4B9546E6.6050006@zytor.com> (H. Peter Anvin's message of "Mon,
+	08 Mar 2010 10:50:14 -0800")
+Message-ID: <yq1fx4aa7nq.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2375c9f91002211813m8f637c1g73c4314eab96f81e@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Milter-Copy-Status: O
-X-Milter-Copy-Status: O
-X-Milter-Copy-Status: L
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3509228 records(08-03-2010)
-X-Spam-Score: N/A (trusted relay)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B955C20.00D8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YES!
-seems like 2.6.32.8 with your patch included finally doesn't
-spit any backtraces and peername failed errors!
-will You push this upstream + to stable?
-thanks a lot for Your help!
-have a nice day
-with best regards
-nik
+>>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
 
-> This seems that we missed checking XPT_DEAD too.
-> 
-> Nikola, does adding !test_bit(XPT_DEAD, &xprt->xpt_flags) in the same
-> place as commit b292cf9ce70d221c3f04f help?
-> 
-> Something like:
-> 
-> diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
-> index 7d1f9e9..7b66c7f 100644
-> --- a/net/sunrpc/svc_xprt.c
-> +++ b/net/sunrpc/svc_xprt.c
-> @@ -700,7 +700,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
-> 
->         len = 0;
->         if (test_bit(XPT_LISTENER, &xprt->xpt_flags) &&
-> -           !test_bit(XPT_CLOSE, &xprt->xpt_flags)) {
-> +           !test_bit(XPT_CLOSE, &xprt->xpt_flags) &&
-> +           !test_bit(XPT_DEAD, &xprt->xpt_flags)) {
->                 struct svc_xprt *newxpt;
->                 newxpt = xprt->xpt_ops->xpo_accept(xprt);
->                 if (newxpt) {
-> 
+hpa> On the flipside, though, there really is very little net benefit to
+hpa> 4K as opposed to 512 byte logical sectors: the additional protocol
+hpa> overhead is relatively minimal, and as long as writes are aligned
+hpa> full blocks, there shouldn't be any additional overhead on either
+hpa> the OS or the drive side.  On the plus side, you get full
+hpa> compatibility with the existing software stack.  The equation
+hpa> really seems rather simple.
+
+4KB sectors are not a win for anybody except the drive vendors.
+
+There is a push in the industry right now to keep the 512-byte logical
+blocks forever.  The first step would be to report misaligned accesses
+or accesses that are not a multiple of the physical block size.  Second
+step would be to eventually reject any write that's not a properly
+aligned multiple of the physical block size.
 
 -- 
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
-
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-
-www.linuxbox.cz
-
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+Martin K. Petersen	Oracle Linux Engineering
