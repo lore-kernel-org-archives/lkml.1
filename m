@@ -1,53 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248Ab0CHMso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 07:48:44 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50089 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125Ab0CHMsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 07:48:40 -0500
-Date: Mon, 8 Mar 2010 12:42:48 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Cyril Hrubis <metan@ucw.cz>
-Cc: Stanislav Brabec <utx@penguin.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       dbaryshkov@gmail.com, arminlitzel@web.de,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       lenz@cs.wisc.edu, rpurdie@rpsys.net, omegamoon@gmail.com,
-       Pavel Machek <pavel@ucw.cz>, thommycheck@gmail.com,
-       zaurus-devel@www.linuxtogo.org,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: bit errors on spitz
-Message-ID: <20100308124248.GB12363@n2100.arm.linux.org.uk>
-References: <20100305212708.GC21773@elf.ucw.cz> <f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com> <20100308072858.GA29939@atrey.karlin.mff.cuni.cz> <20100308082530.GA1982@atrey.karlin.mff.cuni.cz> <1268048916.6477.9.camel@utx.utx.cz> <20100308121634.GA14904@atrey.karlin.mff.cuni.cz>
+	id S1753400Ab0CHMv2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 07:51:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:52006 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880Ab0CHMvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 07:51:25 -0500
+Date: Mon, 8 Mar 2010 13:51:23 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Micki Balanga <micki@n-trig.com>
+Cc: rafi@seas.upenn.edu, chatty@enac.fr, peterhuewe@gmx.de,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: N-trig Finger Pen Multitouch fix
+In-Reply-To: <48A28051AC6D7A48B64F28272458190301AF29@Exchange-IL.n-trig.com>
+Message-ID: <alpine.LNX.2.00.1003081348470.17799@pobox.suse.cz>
+References: <48A28051AC6D7A48B64F28272458190301AF29@Exchange-IL.n-trig.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100308121634.GA14904@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 01:16:35PM +0100, Cyril Hrubis wrote:
-> Hi!
-> > - And I see display noise while CF Wi-Fi card is active.
+On Sun, 7 Mar 2010, Micki Balanga wrote:
+
+> The purpose of this patch is to enable Linux users to experience the 
+> complete N-trig DuoSense pen and true multi-touch solution capabilities 
+> over a Linux platform. This driver has been carefully and thoroughly 
+> tested by N-trig, over a period of several months.
 > 
-> Forgotten about this one. See for yourself, notice short black vertical lines
-> flashing randomly.
+> N-trig is changing the way people interact with computers by providing a 
+> dual-mode pen and true multi-touch input device, specifically designed 
+> for today's advanced computing world. N-trig DuoSense® solution provides 
+> a real Hands-on computing® experience, and sets the stage for OEMs and 
+> ISVs to introduce innovative computer products and applications for an 
+> intuitive, Hands-on® experience directly onscreen. DuoSense digitizers 
+> are easily integrated into existing technologies, support all LCDs, keep 
+> devices slim and light, and can be implemented in a broad range of 
+> products, ranging from small notebooks to large LCDs. N-trig has offices 
+> in Israel, the US, Taiwan and Japan.
+> 
+> Signed-off-by: Micki Balanga <micki@n-trig.com>
 
-I haven't looked at the video.
+Thanks for the patch.
 
-Is this display rotated by 90 degrees?
+As you are very well aware, we already have n-trig driver written by Rafi 
+Rubin. I understand that your patch is implementing new features that 
+Rafi's patch is not able to handle, and also re-factoring the driver in a 
+non-trivial way.
 
-If so, they're actually horizontal lines as far as the display scanning
-is concerned - and that tends to suggest that there's insufficient system
-bus bandwidth for all the activity taking place, and the LCD controller
-is being starved of data.
+Therefore it would be nice, if you could separate out the individual 
+changes/additions to be based on top of the driver that we already have, 
+and accompany them with nice changelog describing what changes are being 
+done and why 
 
-I've seen similar (described) effects on SA1110 systems in past years
-with low clock rates.
+Or even Rafi volunteered to do this, as I can see -- thanks for that! It 
+would still be nice to get Acked-by from the N-Trig guys for the changes 
+at least.
 
-Some of the reports suggest that this happens with multiple kernel versions
-and is not something new to the latest kernels.  Please confirm when the
-problem started.
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
