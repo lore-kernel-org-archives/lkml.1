@@ -1,68 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617Ab0CHUss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:48:48 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:43820 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755362Ab0CHUsi (ORCPT
+	id S1755673Ab0CHUtg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 15:49:36 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:55452 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560Ab0CHUt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:48:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HzB6FHFBkgyFpAH567St7J1mpjSlR4pgh2Kd6RsmtiG1527fuF5JoyI1P+dKJWSCWI
-         Yo42tlDfldNLOK5KnHQFV9AZ2xMEsj7AxiUJzSwWKbTB4A/vQ8u9mYqXsU483S01xS4o
-         Fn36X/hvWIE0V0uaDI6qYma79KlER0LPfiRO8=
-Message-ID: <4B9562A1.2020205@gmail.com>
-Date: Mon, 08 Mar 2010 15:48:33 -0500
-From: jim owens <owens6336@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 8 Mar 2010 15:49:29 -0500
+X-Auth-Info: mhupzUFjHPv7lqZifRe+O94p9ubqwzWwArKgMZ4XBFM=
+Message-ID: <4B95627E.1050301@grandegger.com>
+Date: Mon, 08 Mar 2010 21:47:58 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: David Newall <davidn@davidnewall.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
-Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag
- (EXT4_IOC_MOVE_EXT) in 32bit compat mode)
-References: <201003072132.10579.borntraeger@de.ibm.com> <4B94367E.9080506@garzik.org> <201003080853.42978.borntraeger@de.ibm.com> <4B9518DA.8010201@davidnewall.com>            <4B952437.8020607@gmail.com> <4987.1268077130@localhost>
-In-Reply-To: <4987.1268077130@localhost>
+To: David Miller <davem@davemloft.net>
+CC: vapier@gentoo.org, urs.thuermann@volkswagen.de,
+       linux-kernel@vger.kernel.org, barry.song@analog.com,
+       socketcan-core@lists.berlios.de, oliver.hartkopp@volkswagen.de,
+       stable-review@kernel.org, stable@kernel.org
+Subject: Re: [PATCH] can: fix bfin_can build error after alloc_candev() change
+References: <1268066144-26830-1-git-send-email-vapier@gentoo.org>	<4B955460.4030904@grandegger.com> <20100308.121445.71193029.davem@davemloft.net>
+In-Reply-To: <20100308.121445.71193029.davem@davemloft.net>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 08 Mar 2010 11:22:15 EST, jim owens said:
+David Miller wrote:
+> From: Wolfgang Grandegger <wg@grandegger.com>
+> Date: Mon, 08 Mar 2010 20:47:44 +0100
 > 
->> No.  Your logic would be correct if rotating disks had
->> similar speed at all locations.  Current disks are much
->> faster at the 0 end than at the middle or highest address.
+>> Mike Frysinger wrote:
+>>> From: Barry Song <barry.song@analog.com>
+>>>
+>>> Looks like commit a6e4bc530403 didn't include updates to drivers so the
+>>> Blackfin CAN driver fails to build now.
+>>>
+>>> Signed-off-by: Barry Song <barry.song@analog.com>
+>>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> Oops, it did include updates for the drivers but at that time the bfin
+>> driver was not yet mainline but somewhere in the patch pipeline.
 >>
->> It is not unusual to see 2x difference in transfer speed
->> so you always want the important stuff as low as possible.
+>> Acked-by: Wolfgang Grandegger <wg@grandegger.com>
 > 
-> On the flip side, seek time is so much larger than the time spent
-> actually reading that minimizing the seeks will improve total throughput
-> more.  Sure, maybe you spend 0.05ms reading instead of 0.1ms - but if
-> the seek took 0.75ms rather than 0.5ms you're still in the hole.
+> Applied.
+> 
+> Wolfgang et al., can we add netdev to the MAINTAINERS entry
+> for CAN stuff so that I don't miss stuff like this?
 
-Agree that seek proximity is important, but seeking at the low end
-for N blocks is also faster than seeking the same N blocks at the
-slow high end of the disk. 
+I see. Just sent a patch for net-2.6 adding "L: netdev@vger.kernel.org".
 
-So my point is you want to pack the data together when you can
-at the low address end of the disk to maximize performance.
-And we should include some free space in the fast zone because
-much of our performance involves short-lived writes.
-
-If you are filling and accessing all of the disk, then maybe
-"pack from the middle" will average out better, but we hope
-most filesystems have a small hot subset.  If you are often
-accessing outside the hot zone a lot then you probably will
-get end-to-end seek penalties anyway if you are defragging
-to an "old, free, hot, free, old" layout.
-
-jim 
+Wolfgang.
