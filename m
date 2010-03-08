@@ -1,57 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480Ab0CHQcf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 11:32:35 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:47124 "EHLO smtp.gentoo.org"
+	id S1755483Ab0CHQe4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 11:34:56 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:36157 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459Ab0CHQc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 11:32:28 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: socketcan-core@lists.berlios.de,
-       Urs Thuermann <urs.thuermann@volkswagen.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Cc: stable@kernel.org, stable-review@kernel.org, linux-kernel@vger.kernel.org,
-       Barry Song <barry.song@analog.com>
-Subject: [PATCH] can: fix bfin_can build error after alloc_candev() change
-Date: Mon,  8 Mar 2010 11:35:44 -0500
-Message-Id: <1268066144-26830-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.7.0
+	id S1755333Ab0CHQes convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 11:34:48 -0500
+From: "Gadiyar, Anand" <gadiyar@ti.com>
+To: Mike Frysinger <vapier@gentoo.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+CC: "stable@kernel.org" <stable@kernel.org>,
+       "stable-review@kernel.org" <stable-review@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sonic Zhang <sonic.zhang@analog.com>
+Date: Mon, 8 Mar 2010 22:01:45 +0530
+Subject: RE: [PATCH] USB: musb: fix build error introduced by isoc change
+Thread-Topic: [PATCH] USB: musb: fix build error introduced by isoc change
+Thread-Index: Acq+26YzuNfvU4OJR3ug3Lt1blFnVQAATIaw
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0321623721@dbde02.ent.ti.com>
+References: <1268065561-24350-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1268065561-24350-1-git-send-email-vapier@gentoo.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Barry Song <barry.song@analog.com>
+Mike Frysinger wrote:
+> 
+> From: Sonic Zhang <sonic.zhang@analog.com>
+> 
+> The recent commit "usb: musb: Fix for isochronous IN transfer" (f82a689fa)
+> seems to have been against an older kernel version.  It uses the old style
+> naming of variables.  Unfortunately, this breaks building for most MUSB
+> users out there since "bDesiredMode" has been renamed to "desired_mode".
+> 
 
-Looks like commit a6e4bc530403 didn't include updates to drivers so the
-Blackfin CAN driver fails to build now.
+Looks like this code is under a "#ifdef USE_MODE1" check; that's why
+we did not find this during regular builds. Felipe's upcoming patches
+would make this code redundant anyway.
 
-Signed-off-by: Barry Song <barry.song@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/net/can/bfin_can.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Till then, we might as well fix it.
 
-diff --git a/drivers/net/can/bfin_can.c b/drivers/net/can/bfin_can.c
-index 680060d..fe10a17 100644
---- a/drivers/net/can/bfin_can.c
-+++ b/drivers/net/can/bfin_can.c
-@@ -27,6 +27,7 @@
- 
- #define DRV_NAME "bfin_can"
- #define BFIN_CAN_TIMEOUT 100
-+#define TX_ECHO_SKB_MAX  1
- 
- /*
-  * bfin can private data
-@@ -507,7 +508,7 @@ struct net_device *alloc_bfin_candev(void)
- 	struct net_device *dev;
- 	struct bfin_can_priv *priv;
- 
--	dev = alloc_candev(sizeof(*priv));
-+	dev = alloc_candev(sizeof(*priv), TX_ECHO_SKB_MAX);
- 	if (!dev)
- 		return NULL;
- 
--- 
-1.7.0
+> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
+Acked-by: Anand Gadiyar <gadiyar@ti.com>
+
+> ---
+>  drivers/usb/musb/musb_host.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
+> index d21fffa..ef29f38 100644
+> --- a/drivers/usb/musb/musb_host.c
+> +++ b/drivers/usb/musb/musb_host.c
+> @@ -1689,7 +1689,7 @@ void musb_host_rx(struct musb *musb, u8 epnum)
+>                                 dma->desired_mode = 1;
+>                         if (rx_count < hw_ep->max_packet_sz_rx) {
+>                                 length = rx_count;
+> -                               dma->bDesiredMode = 0;
+> +                               dma->desired_mode = 0;
+>                         } else {
+>                                 length = urb->transfer_buffer_length;
+>                         }
+> 
