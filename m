@@ -1,57 +1,217 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189Ab0CIPWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 10:22:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48559 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751642Ab0CIPW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 10:22:27 -0500
-Message-ID: <4B9667AB.9050507@redhat.com>
-Date: Tue, 09 Mar 2010 10:22:19 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S1754645Ab0CIPbH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 10:31:07 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:37674 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753632Ab0CIPbE (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Tue, 9 Mar 2010 10:31:04 -0500
+Date: Mon, 8 Mar 2010 11:55:00 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [LKML] [RFC PATCH v3 04/11] swiotlb: support
+	NOT_COHERENT_CACHE PowerPC platforms
+Message-ID: <20100308165500.GB4568@phenom.dumpdata.com>
+References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es> <1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH -tip][URGENT] kprobes: Calculate the index correctly when
- freeing the out-of-line execution slot.
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B96697F.0101:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From : Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+On Sun, Mar 07, 2010 at 01:11:45PM +0100, Albert Herranz wrote:
+> The current SWIOTLB code does not support NOT_COHERENT_CACHE platforms.
+> This patch adds support for NOT_COHERENT_CACHE platforms to SWIOTLB by
+> adding two platform specific functions swiotlb_dma_sync_page() and
+> swiotlb_dma_sync() which can be used to explicitly manage cache coherency.
 
-When freeing the instruction slot, the arithmetic to calculate the index
-of the slot in the page needs to account for the total size of the
-instruction on the various architectures.
+Hey Albert,
 
-Calculate the index correctly when freeing the out-of-line execution slot.
+I've been doing some posting in this area to split the physical / bus
+address translation so that multiple platforms can utilize it. I was
+wondering if it makes sense to utilize some of those concepts (ie, extend it
+for DMA coherency) for your code:
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
-Index: linux-8mar/kernel/kprobes.c
-===================================================================
---- linux-8mar.orig/kernel/kprobes.c	2010-03-08 17:10:33.000000000 +0530
-+++ linux-8mar/kernel/kprobes.c	2010-03-08 17:12:12.000000000 +0530
-@@ -259,7 +259,8 @@
- 	struct kprobe_insn_page *kip;
- 
- 	list_for_each_entry(kip, &c->pages, list) {
--		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
-+		long idx = ((long)slot - (long)kip->insns) /
-+				(c->insn_size * sizeof(kprobe_opcode_t));
- 		if (idx >= 0 && idx < slots_per_page(c)) {
- 			WARN_ON(kip->slot_used[idx] != SLOT_USED);
- 			if (dirty) {
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+https://lists.linux-foundation.org/pipermail/iommu/2010-February/002066.html
+
+And here is the git tree that goes on top of those patches:
+git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git xen-swiotlb-0.5
+
+
+> 
+> On PowerPC these functions are mapped to their corresponding
+> __dma_sync_page() and __dma_sync() functions.
+> On other architectures using SWIOTLB these functions are optimized out.
+> 
+> This will be used later to support SWIOTLB on the Nintendo Wii video game
+> console.
+> 
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-kernel@vger.kernel.org
+> CC: x86@kernel.org
+> CC: linux-ia64@vger.kernel.org
+> ---
+>  arch/ia64/include/asm/swiotlb.h    |   10 ++++++++++
+>  arch/powerpc/include/asm/swiotlb.h |    3 +++
+>  arch/x86/include/asm/swiotlb.h     |   10 ++++++++++
+>  lib/swiotlb.c                      |   30 ++++++++++++++++++++++++------
+>  4 files changed, 47 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
+> index f0acde6..6722090 100644
+> --- a/arch/ia64/include/asm/swiotlb.h
+> +++ b/arch/ia64/include/asm/swiotlb.h
+> @@ -14,4 +14,14 @@ static inline void pci_swiotlb_init(void)
+>  }
+>  #endif
+>  
+> +static inline void swiotlb_dma_sync_page(struct page *page,
+> +					 unsigned long offset,
+> +					 size_t size, int direction)
+> +{
+> +}
+> +
+> +static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
+> +{
+> +}
+> +
+>  #endif /* ASM_IA64__SWIOTLB_H */
+> diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+> index 8979d4c..603b343 100644
+> --- a/arch/powerpc/include/asm/swiotlb.h
+> +++ b/arch/powerpc/include/asm/swiotlb.h
+> @@ -22,4 +22,7 @@ int __init swiotlb_setup_bus_notifier(void);
+>  
+>  extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+>  
+> +#define swiotlb_dma_sync_page __dma_sync_page
+> +#define swiotlb_dma_sync __dma_sync
+> +
+>  #endif /* __ASM_SWIOTLB_H */
+> diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+> index 8085277..e5f6d9c 100644
+> --- a/arch/x86/include/asm/swiotlb.h
+> +++ b/arch/x86/include/asm/swiotlb.h
+> @@ -20,4 +20,14 @@ static inline void pci_swiotlb_init(void)
+>  
+>  static inline void dma_mark_clean(void *addr, size_t size) {}
+>  
+> +static inline void swiotlb_dma_sync_page(struct page *page,
+> +					 unsigned long offset,
+> +					 size_t size, int direction)
+> +{
+> +}
+> +
+> +static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
+> +{
+> +}
+> +
+>  #endif /* _ASM_X86_SWIOTLB_H */
+> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> index 94db5df..8f2dad9 100644
+> --- a/lib/swiotlb.c
+> +++ b/lib/swiotlb.c
+> @@ -346,10 +346,13 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+>  			local_irq_save(flags);
+>  			buffer = kmap_atomic(pfn_to_page(pfn),
+>  					     KM_BOUNCE_READ);
+> -			if (dir == DMA_TO_DEVICE)
+> +			if (dir == DMA_TO_DEVICE) {
+>  				memcpy(dma_addr, buffer + offset, sz);
+> -			else
+> +				swiotlb_dma_sync(dma_addr, sz, dir);
+> +			} else {
+> +				swiotlb_dma_sync(dma_addr, sz, dir);
+>  				memcpy(buffer + offset, dma_addr, sz);
+> +			}
+>  			kunmap_atomic(buffer, KM_BOUNCE_READ);
+>  			local_irq_restore(flags);
+>  
+> @@ -359,10 +362,14 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+>  			offset = 0;
+>  		}
+>  	} else {
+> -		if (dir == DMA_TO_DEVICE)
+> +		if (dir == DMA_TO_DEVICE) {
+>  			memcpy(dma_addr, phys_to_virt(phys), size);
+> -		else
+> +			swiotlb_dma_sync(dma_addr, size, dir);
+> +
+> +		} else {
+> +			swiotlb_dma_sync(dma_addr, size, dir);
+>  			memcpy(phys_to_virt(phys), dma_addr, size);
+> +		}
+>  	}
+>  }
+>  
+> @@ -542,6 +549,8 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+>  	}
+>  }
+>  
+> +#ifndef CONFIG_NOT_COHERENT_CACHE
+> +
+>  void *
+>  swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+>  		       dma_addr_t *dma_handle, gfp_t flags)
+> @@ -606,6 +615,8 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+>  }
+>  EXPORT_SYMBOL(swiotlb_free_coherent);
+>  
+> +#endif /* !CONFIG_NOT_COHERENT_CACHE */
+> +
+>  static void
+>  swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+>  {
+> @@ -652,8 +663,10 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+>  	 * we can safely return the device addr and not worry about bounce
+>  	 * buffering it.
+>  	 */
+> -	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
+> +	if (dma_capable(dev, dev_addr, size) && !swiotlb_force) {
+> +		swiotlb_dma_sync_page(page, offset, size, dir);
+>  		return dev_addr;
+> +	}
+>  
+>  	/*
+>  	 * Oh well, have to allocate and map a bounce buffer.
+> @@ -739,6 +752,8 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+>  		return;
+>  	}
+>  
+> +	swiotlb_dma_sync(phys_to_virt(paddr), size, dir);
+> +
+>  	if (dir != DMA_FROM_DEVICE)
+>  		return;
+>  
+> @@ -835,8 +850,11 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+>  				return 0;
+>  			}
+>  			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+> -		} else
+> +		} else {
+> +			swiotlb_dma_sync_page(sg_page(sg), sg->offset,
+> +					      sg->length, dir);
+>  			sg->dma_address = dev_addr;
+> +		}
+>  		sg->dma_length = sg->length;
+>  	}
+>  	return nelems;
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
