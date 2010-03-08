@@ -1,55 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773Ab0CHKdK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 05:33:10 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:62000 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123Ab0CHKdI (ORCPT
+	id S1754019Ab0CHK5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 05:57:13 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:42851 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753348Ab0CHK5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 05:33:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=H6QROzS3wTb5hhlyvLcvokKof/S5vHdLUHbA4+tFvHvHwnFpSRjM+ZKEJfiz3gXSXl
-         T7PbKG+EWLOZtu2mBVi3URJ+s2fnvotxz9W7E0VcdQbm+3u9OHJ+vivFpO134G6OXagz
-         4T6MErbPjlbMMdYsEyr+P4+r2N7JBb+1E9CBk=
-MIME-Version: 1.0
-In-Reply-To: <20100305174203.GA19638@sgi.com>
-References: <20100305174203.GA19638@sgi.com>
-Date: Mon, 8 Mar 2010 11:33:04 +0100
-Message-ID: <b647ffbd1003080233y5f06797fucaca3cf839e4de57@mail.gmail.com>
-Subject: Re: [PATCH] x86: Intel microcode loader performance improvement
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Mar 2010 05:57:08 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James.Bottomley@HansenPartnership.com, benh@kernel.crashing.org,
+       linux@arm.linux.org.uk, mdharm-kernel@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
+       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
+       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20100307082344.GB1987@elf.ucw.cz>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+	 <1267716956.6526.491.camel@e102109-lin.cambridge.arm.com>
+	 <20100307082344.GB1987@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Mon, 08 Mar 2010 10:57:04 +0000
+Message-ID: <1268045824.14199.37.camel@e102109-lin.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Mar 2010 10:57:05.0267 (UTC) FILETIME=[16FBD430:01CABEAE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 March 2010 18:42, Dimitri Sivanich <sivanich@sgi.com> wrote:
-> We've noticed that on large SGI UV system configurations, running
-> microcode.ctl can take very long periods of time.  This is due to
-> the large number of vmalloc/vfree calls made by the Intel
-> generic_load_microcode() logic.
->
-> By reusing allocated space, the following patch reduces the time
-> to run microcode.ctl on a 1024 cpu system from approximately 80
-> seconds down to 1 or 2 seconds.
->
-> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+On Sun, 2010-03-07 at 08:23 +0000, Pavel Machek wrote:
+> > > Seems like ARM has requirement other architectures do not, that is
+> > > a) not documented anywhere
+> > > b) causes problems
+> >
+> > Well, ARM is pretty similar to other architectures in this respect. And
+> > I'm sure other architectures have similar problems, only that they only
+> > become visible in some circumstances they may not have encountered (i.e.
+> > PIO drivers + filesystem that doesn't call flush_dcache_page like ext*).
+> > Some other architectures may do heavier flushing
+> >
+> > Of course, a Documentation/arm/cachetlb.txt file would make sense.
+> 
+> Actually, short/simple documentation for driver authors would be even
+> better. Then you can claim it is bug in driver :-).
 
-This approach seems reasonable in the scope of the current framework.
+That would help, but only once we agree whether it's a driver bug or the
+arch code needs changing.
 
-Acked-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+-- 
+Catalin
 
-However, I think a better approach would be to have some kind of
-shared storage for loaded microcode updates. Given that for the
-majority of SMP systems all the cpus are normally updated to the very
-same new instance of microcode, it should be enough to do a search for
-the first cpu, cache the instance of microcode and then reuse it for
-others.
-
-
--- Dmitry
