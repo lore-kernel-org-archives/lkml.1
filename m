@@ -1,77 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813Ab0CHN2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 08:28:23 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:33072 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497Ab0CHN2T (ORCPT
+	id S1754077Ab0CHN3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 08:29:21 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:33419 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497Ab0CHN3S convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 08:28:19 -0500
-X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 08:28:19 EST
-Date: Mon, 8 Mar 2010 08:07:39 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: still worth running kernel cleanup scripts after merge windows?
-Message-ID: <alpine.LFD.2.00.1003080801560.3620@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 8 Mar 2010 08:29:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ibzm0GSk1wEh/Kyd/ZNJ9JK6ckYhbz0cHtGDHCnWzqnXiw4IFbOOyhQuPZspeBC/mZ
+         9Yk3D9nNQfCxp4s+JSvV616j+MBMLbmlT+nXnao+0k8iWtzA2EeKXGOunI9s0qN6HOYn
+         21dBYmkMxFBwXi8ibJ8NNVwqz/YnEIWke2JQM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+Date: Mon, 8 Mar 2010 15:29:16 +0200
+X-Google-Sender-Auth: b53069534c428bc1
+Message-ID: <84144f021003080529w1b20c08dmf6871bd46381bc71@mail.gmail.com>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 8, 2010 at 11:21 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> __zone_pcp_update() iterates over NR_CPUS instead of limiting the
+> access to the possible cpus. This might result in access to
+> uninitialized areas as the per cpu allocator only populates the per
+> cpu memory for possible cpus.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-  just curious if there's still value in running my kernel scanning
-scripts after each merge window closes and posting results.  there's
-still a fair bit of inconsistency and mismatches in the Kconfig files.
+Looks OK to me.
 
-  as a single example, here's a snippet from the
-drivers/message/fusion directory, identifying an apparently bad
-reference to a non-existent CONFIG variable:
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
->>>>> FUSION_MAX_FC_SGE
-drivers/message/fusion/mptbase.h:179:#ifdef CONFIG_FUSION_MAX_FC_SGE
-drivers/message/fusion/mptbase.h:180:#if CONFIG_FUSION_MAX_FC_SGE  < 16
-drivers/message/fusion/mptbase.h:182:#elif CONFIG_FUSION_MAX_FC_SGE  > 256
-drivers/message/fusion/mptbase.h:185:#define MPT_SCSI_FC_SG_DEPTH  CONFIG_FUSION_MAX_FC_SGE
-
-  but there is no such Kconfig variable FUSION_MAX_FC_SGE.  however:
-
-$ grep -r FUSION_MAX drivers/message/fusion
-drivers/message/fusion/Kconfig:config FUSION_MAX_SGE
-drivers/message/fusion/mptbase.h:#ifdef CONFIG_FUSION_MAX_SGE
-drivers/message/fusion/mptbase.h:#if CONFIG_FUSION_MAX_SGE  < 16
-drivers/message/fusion/mptbase.h:#elif CONFIG_FUSION_MAX_SGE  > 128
-drivers/message/fusion/mptbase.h:#define MPT_SCSI_SG_DEPTH	CONFIG_FUSION_MAX_SGE
-drivers/message/fusion/mptbase.h:#ifdef CONFIG_FUSION_MAX_FC_SGE
-drivers/message/fusion/mptbase.h:#if CONFIG_FUSION_MAX_FC_SGE  < 16
-drivers/message/fusion/mptbase.h:#elif CONFIG_FUSION_MAX_FC_SGE  > 256
-drivers/message/fusion/mptbase.h:#define MPT_SCSI_FC_SG_DEPTH	CONFIG_FUSION_MAX_FC_SGE
-$
-
-  so is that a typo?  should "FUSION_MAX_FC_SGE" really be just
-"FUSION_MAX_SGE"?  anyway, you get the idea.  or maybe i should just
-put the scripts up at my wiki and people can run their at their
-leisure on whatever part of the source tree interests them.
-
-rday
---
-
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -3224,7 +3224,7 @@ static int __zone_pcp_update(void *data)
+>        int cpu;
+>        unsigned long batch = zone_batchsize(zone), flags;
+>
+> -       for (cpu = 0; cpu < NR_CPUS; cpu++) {
+> +       for_each_possible_cpu(cpu) {
+>                struct per_cpu_pageset *pset;
+>                struct per_cpu_pages *pcp;
+>
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
