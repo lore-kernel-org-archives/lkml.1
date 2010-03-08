@@ -1,75 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483Ab0CHQe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 11:34:56 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:36157 "EHLO bear.ext.ti.com"
+	id S1755498Ab0CHQig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 11:38:36 -0500
+Received: from mail.perches.com ([173.55.12.10]:1510 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755333Ab0CHQes convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 11:34:48 -0500
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: Mike Frysinger <vapier@gentoo.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-CC: "stable@kernel.org" <stable@kernel.org>,
-       "stable-review@kernel.org" <stable-review@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sonic Zhang <sonic.zhang@analog.com>
-Date: Mon, 8 Mar 2010 22:01:45 +0530
-Subject: RE: [PATCH] USB: musb: fix build error introduced by isoc change
-Thread-Topic: [PATCH] USB: musb: fix build error introduced by isoc change
-Thread-Index: Acq+26YzuNfvU4OJR3ug3Lt1blFnVQAATIaw
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0321623721@dbde02.ent.ti.com>
-References: <1268065561-24350-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1268065561-24350-1-git-send-email-vapier@gentoo.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1755466Ab0CHQib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 11:38:31 -0500
+Subject: [PATCH] net/sunrpc: Convert (void)snprintf to snprintf
+From: Joe Perches <joe@perches.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       linux-nfs <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B951BF0.9050403@oracle.com>
+References: <1267857980.849.22.camel@Joe-Laptop.home>
+	 <4B951BF0.9050403@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Mar 2010 08:38:30 -0800
+Message-ID: <1268066310.1925.26.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> 
-> From: Sonic Zhang <sonic.zhang@analog.com>
-> 
-> The recent commit "usb: musb: Fix for isochronous IN transfer" (f82a689fa)
-> seems to have been against an older kernel version.  It uses the old style
-> naming of variables.  Unfortunately, this breaks building for most MUSB
-> users out there since "bDesiredMode" has been renamed to "desired_mode".
-> 
+(Applies on top of "Remove uses of NIPQUAD, use %pI4")
 
-Looks like this code is under a "#ifdef USE_MODE1" check; that's why
-we did not find this during regular builds. Felipe's upcoming patches
-would make this code redundant anyway.
+Casts to void of snprintf are most uncommon in kernel source.
+9 use casts, 1301 do not.
 
-Till then, we might as well fix it.
+Remove the remaining uses in net/sunrpc/
 
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/sunrpc/xprtrdma/transport.c |    6 +++---
+ net/sunrpc/xprtsock.c           |    4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Acked-by: Anand Gadiyar <gadiyar@ti.com>
+diff --git a/net/sunrpc/xprtrdma/transport.c b/net/sunrpc/xprtrdma/transport.c
+index 83d339f..f96c2fe 100644
+--- a/net/sunrpc/xprtrdma/transport.c
++++ b/net/sunrpc/xprtrdma/transport.c
+@@ -160,15 +160,15 @@ xprt_rdma_format_addresses(struct rpc_xprt *xprt)
+ 	(void)rpc_ntop(sap, buf, sizeof(buf));
+ 	xprt->address_strings[RPC_DISPLAY_ADDR] = kstrdup(buf, GFP_KERNEL);
+ 
+-	(void)snprintf(buf, sizeof(buf), "%u", rpc_get_port(sap));
++	snprintf(buf, sizeof(buf), "%u", rpc_get_port(sap));
+ 	xprt->address_strings[RPC_DISPLAY_PORT] = kstrdup(buf, GFP_KERNEL);
+ 
+ 	xprt->address_strings[RPC_DISPLAY_PROTO] = "rdma";
+ 
+-	(void)snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
++	snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+ 	xprt->address_strings[RPC_DISPLAY_HEX_ADDR] = kstrdup(buf, GFP_KERNEL);
+ 
+-	(void)snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
++	snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
+ 	xprt->address_strings[RPC_DISPLAY_HEX_PORT] = kstrdup(buf, GFP_KERNEL);
+ 
+ 	/* netid */
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 11f417b..75ab08e 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -314,10 +314,10 @@ static void xs_format_common_peer_ports(struct rpc_xprt *xprt)
+ 	struct sockaddr *sap = xs_addr(xprt);
+ 	char buf[128];
+ 
+-	(void)snprintf(buf, sizeof(buf), "%u", rpc_get_port(sap));
++	snprintf(buf, sizeof(buf), "%u", rpc_get_port(sap));
+ 	xprt->address_strings[RPC_DISPLAY_PORT] = kstrdup(buf, GFP_KERNEL);
+ 
+-	(void)snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
++	snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
+ 	xprt->address_strings[RPC_DISPLAY_HEX_PORT] = kstrdup(buf, GFP_KERNEL);
+ }
+ 
 
-> ---
->  drivers/usb/musb/musb_host.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
-> index d21fffa..ef29f38 100644
-> --- a/drivers/usb/musb/musb_host.c
-> +++ b/drivers/usb/musb/musb_host.c
-> @@ -1689,7 +1689,7 @@ void musb_host_rx(struct musb *musb, u8 epnum)
->                                 dma->desired_mode = 1;
->                         if (rx_count < hw_ep->max_packet_sz_rx) {
->                                 length = rx_count;
-> -                               dma->bDesiredMode = 0;
-> +                               dma->desired_mode = 0;
->                         } else {
->                                 length = urb->transfer_buffer_length;
->                         }
-> 
+
