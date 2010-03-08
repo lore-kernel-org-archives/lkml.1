@@ -1,184 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480Ab0CHCXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 21:23:16 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:41533 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241Ab0CHCXG (ORCPT
+	id S1753449Ab0CHCbo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 21:31:44 -0500
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:64863 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184Ab0CHCbh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 21:23:06 -0500
-Date: Mon, 8 Mar 2010 11:17:24 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure
-Message-Id: <20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1267995474-9117-1-git-send-email-arighi@develer.com>
-	<1267995474-9117-4-git-send-email-arighi@develer.com>
-	<20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
-	<20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Mar 2010 21:31:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nBlWM0WVQQu+8efzgjPhqXHIv7NAfErSRPOh69NAE0al/vbt0E6+P/s//z7emdmmb2
+         UsLrxPLDJb/uzvg6JYVL9tiBjZfo292aOyjgjnRUb+gded+uhtrDDxYDMqEnSEabACz6
+         xT9iVaxCxIChDZcn8PKgOmrdSKDDYkCAuMlMg=
+MIME-Version: 1.0
+In-Reply-To: <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
+	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
+	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+Date: Mon, 8 Mar 2010 10:31:36 +0800
+Message-ID: <2375c9f91003071831x4104dd8dp82967c0409391bd5@mail.gmail.com>
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: rostedt@goodmis.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010 10:56:41 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Mon, 8 Mar 2010 10:44:47 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > > +/*
-> > > + * mem_cgroup_update_page_stat_locked() - update memcg file cache's accounting
-> > > + * @page:	the page involved in a file cache operation.
-> > > + * @idx:	the particular file cache statistic.
-> > > + * @charge:	true to increment, false to decrement the statistic specified
-> > > + *		by @idx.
-> > > + *
-> > > + * Update memory cgroup file cache's accounting from a locked context.
-> > > + *
-> > > + * NOTE: must be called with mapping->tree_lock held.
-> > > + */
-> > > +void mem_cgroup_update_page_stat_locked(struct page *page,
-> > > +			enum mem_cgroup_write_page_stat_item idx, bool charge)
-> > > +{
-> > > +	struct address_space *mapping = page_mapping(page);
-> > > +	struct page_cgroup *pc;
-> > > +
-> > > +	if (mem_cgroup_disabled())
-> > > +		return;
-> > > +	WARN_ON_ONCE(!irqs_disabled());
-> > > +	WARN_ON_ONCE(mapping && !spin_is_locked(&mapping->tree_lock));
-> > > +
-> > I think this is a wrong place to insert assertion.
-> > The problem about page cgroup lock is that it can be interrupted in current implementation.
-> > So,
-> > 
-> > a) it must not be aquired under another lock which can be aquired in interrupt context,
-> >    such as mapping->tree_lock, to avoid:
-> > 
-> > 		context1			context2
-> > 					lock_page_cgroup(pcA)
-> > 	spin_lock_irq(&tree_lock)
-> > 		lock_page_cgroup(pcA)		<interrupted>
-> > 		=>fail				spin_lock_irqsave(&tree_lock)
-> > 						=>fail
-> > 
-> > b) it must not be aquired in interrupt context to avoid:
-> > 
-> > 	lock_page_cgroup(pcA)
-> > 		<interrupted>
-> > 		lock_page_cgroup(pcA)
-> > 		=>fail
-> > 
-> > I think something like this would be better:
-> > 
-> > @@ -83,8 +83,14 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
-> >         return page_zonenum(pc->page);
-> >  }
-> > 
-> > +#include <linux/irqflags.h>
-> > +#include <linux/hardirq.h>
-> >  static inline void lock_page_cgroup(struct page_cgroup *pc)
-> >  {
-> > +#ifdef CONFIG_DEBUG_VM
-> > +       WARN_ON_ONCE(irqs_disabled());
-> > +       WARN_ON_ONCE(in_interrupt());
-> > +#endif
-> >         bit_spin_lock(PCG_LOCK, &pc->flags);
-> >  }
-> > 
-> > > +	pc = lookup_page_cgroup(page);
-> > > +	if (unlikely(!pc) || !PageCgroupUsed(pc))
-> > > +		return;
-> > > +	mem_cgroup_update_page_stat(pc, idx, charge);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_locked);
-> > > +
-> > > +/*
-> > > + * mem_cgroup_update_page_stat_unlocked() - update memcg file cache's accounting
-> > > + * @page:	the page involved in a file cache operation.
-> > > + * @idx:	the particular file cache statistic.
-> > > + * @charge:	true to increment, false to decrement the statistic specified
-> > > + *		by @idx.
-> > > + *
-> > > + * Update memory cgroup file cache's accounting from an unlocked context.
-> > > + */
-> > > +void mem_cgroup_update_page_stat_unlocked(struct page *page,
-> > > +			enum mem_cgroup_write_page_stat_item idx, bool charge)
-> > > +{
-> > > +	struct page_cgroup *pc;
-> > > +
-> > > +	if (mem_cgroup_disabled())
-> > > +		return;
-> > > +	pc = lookup_page_cgroup(page);
-> > > +	if (unlikely(!pc) || !PageCgroupUsed(pc))
-> > > +		return;
-> > > +	lock_page_cgroup(pc);
-> > > +	mem_cgroup_update_page_stat(pc, idx, charge);
-> > >  	unlock_page_cgroup(pc);
-> > >  }
-> > > +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_unlocked);
-> > >  
-> > IIUC, test_clear_page_writeback(at least) can be called under interrupt context.
-> > This means lock_page_cgroup() is called under interrupt context, that is,
-> > the case b) above can happen.
-> > hmm... I don't have any good idea for now except disabling irq around page cgroup lock
-> > to avoid all of these mess things.
-> > 
-> 
-> Hmm...simply IRQ-off for all updates ?
-I think so in current code.
-But after these changes, we must use local_irq_save()/restore()
-instead of local_irq_disable()/enable() in mem_cgroup_update_page_stat().
-
-> But IIRC, clear_writeback is done under treelock.... No ?
-> 
-The place where NR_WRITEBACK is updated is out of tree_lock.
-
-   1311 int test_clear_page_writeback(struct page *page)
-   1312 {
-   1313         struct address_space *mapping = page_mapping(page);
-   1314         int ret;
-   1315
-   1316         if (mapping) {
-   1317                 struct backing_dev_info *bdi = mapping->backing_dev_info;
-   1318                 unsigned long flags;
-   1319
-   1320                 spin_lock_irqsave(&mapping->tree_lock, flags);
-   1321                 ret = TestClearPageWriteback(page);
-   1322                 if (ret) {
-   1323                         radix_tree_tag_clear(&mapping->page_tree,
-   1324                                                 page_index(page),
-   1325                                                 PAGECACHE_TAG_WRITEBACK);
-   1326                         if (bdi_cap_account_writeback(bdi)) {
-   1327                                 __dec_bdi_stat(bdi, BDI_WRITEBACK);
-   1328                                 __bdi_writeout_inc(bdi);
-   1329                         }
-   1330                 }
-   1331                 spin_unlock_irqrestore(&mapping->tree_lock, flags);
-   1332         } else {
-   1333                 ret = TestClearPageWriteback(page);
-   1334         }
-   1335         if (ret)
-   1336                 dec_zone_page_state(page, NR_WRITEBACK);
-   1337         return ret;
-   1338 }
-   1339
+On Fri, Mar 5, 2010 at 11:06 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Fri, 2010-03-05 at 15:16 +0800, Américo Wang wrote:
+>> On Fri, Mar 5, 2010 at 12:14 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> > On Thu, Mar 4, 2010 at 9:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>> >> On Wed, 2010-03-03 at 14:04 +0800, Américo Wang wrote:
+>> >>> I am not sure if this is ftrace's fault, but it is ftrace who triggers
+>> >>> the soft lockup. On my machine, it is pretty easy, just run:
+>> >>>
+>> >>> echo function_graph > current_tracer
+>> >>>
+>
+>> >
+>> > I can't say that because I didn't try -rc6.
+>> >
+>>
+>> Sigh, 2.6.33-rc6 doesn't work, even 2.6.32 doesn't work...
+>
+> So basically you are saying that the function_graph tracer, when enabled
+> has a high overhead? Well, unfortunately, that's expected.
 
 
-Thanks,
-Daisuke Nishimura.
+A unusable system is expected? ;-)
+Here my machine is too slow to use.
+
+>
+> So my question to you is, have you seen the function graph perform
+> better with the same configs in previous kernels? Also, the function
+> graph makes other debugging (like lockdep) have a greater impact to
+> performance than they usually do.
+
+
+Oh, sorry, I still don't find a working kernel, I will try today.
+
+>
+> Now some things you can do to help performance. One is not to trace
+> functions that are known to have a high hit rate. You can do this with
+> the set_ftrace_notrace file, or add "ftrace_notrace=func1,func2,func3"
+> to the command line where func1,func2,func3 are the functions you do not
+> want to trace. This just adds these by default to the set_ftrace_notrace
+> and can be removed at runtime.
+>
+>
+> The functions I commonly write to are:
+>
+> echo '*spin_lock*' '*spin_unlock*' '*spin_try*' '*rcu_read*' > set_ftace_notrace
+>
+> since these functions are hit quite intensively, by not tracing them it
+> helps a bit with performance.
+
+I will try this now.
+
+Thanks!
