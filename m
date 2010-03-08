@@ -1,86 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945Ab0CHRKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 12:10:17 -0500
-Received: from mtagate4.uk.ibm.com ([194.196.100.164]:36807 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656Ab0CHRKL (ORCPT
+	id S1752915Ab0CHRL3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 12:11:29 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:35707 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367Ab0CHRLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 12:10:11 -0500
-Date: Mon, 8 Mar 2010 18:10:20 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       dipankar@in.ibm.com, josh@freedesktop.org, paulmck@linux.vnet.ibm.com,
-       oleg@redhat.com, akpm@linux-foundation.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 2/4] stop_machine: reimplement using cpuhog
-Message-ID: <20100308171020.GC2557@osiris.boeblingen.de.ibm.com>
-References: <1268063603-7425-1-git-send-email-tj@kernel.org>
- <1268063603-7425-3-git-send-email-tj@kernel.org>
+	Mon, 8 Mar 2010 12:11:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wOyBgtdcgqgsiKEVJtfDqXdiczsKhspZHrL0sqYj3Zrw4WYuu4UdpPxNl81mBkphFZ
+         pdCi33AAOCExJ4BtI7c8n7bJx23R6xr7VdXsiIUPTyBZVSHfuTf3oWybJ0BjOADKNZ6o
+         tmNN5EdUuf44Bqk1dN7CPp/kvd/1YKk9Y+0JM=
+Message-ID: <4B952FB5.2060600@gmail.com>
+Date: Mon, 08 Mar 2010 12:11:17 -0500
+From: jim owens <owens6336@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268063603-7425-3-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Greg Freemyer <greg.freemyer@gmail.com>
+CC: David Newall <davidn@davidnewall.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
+Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag
+ 	(EXT4_IOC_MOVE_EXT) in 32bit compat mode)
+References: <201003072132.10579.borntraeger@de.ibm.com>	 <4B94367E.9080506@garzik.org>	 <201003080853.42978.borntraeger@de.ibm.com>	 <4B9518DA.8010201@davidnewall.com> <4B952437.8020607@gmail.com> <87f94c371003080831n4d310e10i2b9badf4290f1ede@mail.gmail.com>
+In-Reply-To: <87f94c371003080831n4d310e10i2b9badf4290f1ede@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 12:53:21AM +0900, Tejun Heo wrote:
-> Reimplement stop_machine using cpuhog.  As cpuhogs are guaranteed to
-> be available for all online cpus, stop_machine_create/destroy() are no
-> longer necessary and removed.
+Greg Freemyer wrote:
 > 
-> With resource management and synchronization handled by cpuhog, the
-> new implementation is much simpler.  Asking the cpuhog to execute the
-> stop_cpu() state machine on all online cpus with cpu hotplug disabled
-> is enough.
+> Jim, I should know this, but is sector 0 on the outside edge, or the inner edge?
 > 
-> stop_machine itself doesn't need to manage any global resources
-> anymore, so all per-instance information is rolled into struct
-> stop_machine_data and the mutex and all static data variables are
-> removed.
-> 
-> The previous implementation created and destroyed RT workqueues as
-> necessary which made stop_machine() calls highly expensive on very
-> large machines.  According to Dimitri Sivanich, preventing the dynamic
-> creation/destruction makes booting faster more than twice on very
-> large machines.  cpuhog resources are preallocated for all online cpus
-> and should have the same effect.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Cc: Dimitri Sivanich <sivanich@sgi.com>
-> ---
->  arch/s390/kernel/time.c      |    1 -
->  drivers/xen/manage.c         |   14 +---
->  include/linux/stop_machine.h |   20 -----
->  kernel/cpu.c                 |    8 --
->  kernel/module.c              |   14 +---
->  kernel/stop_machine.c        |  162 ++++++++++--------------------------------
->  6 files changed, 42 insertions(+), 177 deletions(-)
-> 
-> diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-> index 65065ac..afe429e 100644
-> --- a/arch/s390/kernel/time.c
-> +++ b/arch/s390/kernel/time.c
-> @@ -397,7 +397,6 @@ static void __init time_init_wq(void)
->  	if (time_sync_wq)
->  		return;
->  	time_sync_wq = create_singlethread_workqueue("timesync");
-> -	stop_machine_create();
->  }
-> 
->  /*
+> I assume outer so that the linear speed of the platter under the head
+> is faster and thus more data per second is passing under the head.
 
-The reason we introduced stop_machine_create/destroy was to have a non-failing
-variant that doesn't rely on I/O.
-If we ever see a timesync machine check no I/O will succeed (it blocks) until
-clocks have been synchronized. That means also that we rely on the non-blocking
-semantics that those functions must have that are called via stop_machine.
-This isn't true anymore with the cpu hog infrastructure:
-if passed a blocking function that could wait on I/O we won't see any progress
-anymore and the machine is dead.
+Correct.  AFAIK everyone starts 0 at the outer edge for that reason,
+it makes for better benchmarks ;)
+
+When I only worried about a few OEM drives, I used to read the zone
+geometry from the drive to see where each speed transition was as the
+density decreased.  But that is just not worth the effort in linux
+filesystems IMO, it is enough to pack low.
+
+jim
