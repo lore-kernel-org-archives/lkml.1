@@ -1,64 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019Ab0CHK5N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 05:57:13 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:42851 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753348Ab0CHK5I (ORCPT
+	id S1754086Ab0CHLJu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 06:09:50 -0500
+Received: from sd-11162.dedibox.fr ([88.191.70.230]:46246 "EHLO
+	sd-11162.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510Ab0CHLJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 05:57:08 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James.Bottomley@HansenPartnership.com, benh@kernel.crashing.org,
-       linux@arm.linux.org.uk, mdharm-kernel@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
-       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
-       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100307082344.GB1987@elf.ucw.cz>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
-	 <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-	 <1267716956.6526.491.camel@e102109-lin.cambridge.arm.com>
-	 <20100307082344.GB1987@elf.ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Mon, 08 Mar 2010 10:57:04 +0000
-Message-ID: <1268045824.14199.37.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Mar 2010 10:57:05.0267 (UTC) FILETIME=[16FBD430:01CABEAE]
+	Mon, 8 Mar 2010 06:09:46 -0500
+X-Greylist: delayed 382 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 06:09:46 EST
+Date: Mon, 8 Mar 2010 12:03:21 +0100
+From: Stelian Pop <stelian@popies.net>
+To: Bdale Garbee <bdale@gag.com>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Gertjan van Wingerde <gwingerde@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>, tytso@mit.edu,
+       Eric Sandeen <sandeen@redhat.com>, debian-gcc@lists.debian.org
+Subject: Re: dump/restore not supported for ext4
+Message-ID: <20100308110320.GA3480@calypso>
+Reply-To: Stelian Pop <stelian@popies.net>
+Mail-Followup-To: Stelian Pop <stelian@popies.net>,
+	Bdale Garbee <bdale@gag.com>,
+	Justin Piszcz <jpiszcz@lucidpixels.com>,
+	Gertjan van Wingerde <gwingerde@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	Alan Piszcz <ap@solarrain.com>, tytso@mit.edu,
+	Eric Sandeen <sandeen@redhat.com>, debian-gcc@lists.debian.org
+References: <alpine.DEB.2.00.1003041704230.17723@p34.internal.lan>
+ <4B90A366.9080201@gmail.com>
+ <alpine.DEB.2.00.1003050412260.17723@p34.internal.lan>
+ <87lje620z8.fsf@gag.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87lje620z8.fsf@gag.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AV-Checked: ClamAV using ClamSMTP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-03-07 at 08:23 +0000, Pavel Machek wrote:
-> > > Seems like ARM has requirement other architectures do not, that is
-> > > a) not documented anywhere
-> > > b) causes problems
-> >
-> > Well, ARM is pretty similar to other architectures in this respect. And
-> > I'm sure other architectures have similar problems, only that they only
-> > become visible in some circumstances they may not have encountered (i.e.
-> > PIO drivers + filesystem that doesn't call flush_dcache_page like ext*).
-> > Some other architectures may do heavier flushing
-> >
-> > Of course, a Documentation/arm/cachetlb.txt file would make sense.
-> 
-> Actually, short/simple documentation for driver authors would be even
-> better. Then you can claim it is bug in driver :-).
+On Fri, Mar 05, 2010 at 09:21:31AM -0700, Bdale Garbee wrote:
 
-That would help, but only once we agree whether it's a driver bug or the
-arch code needs changing.
+> Thanks for noticing those!  I've made those changes in my git repo for
+> the next Debian package upload.  Hopefully Stelian will also fix those
+> in his next release, I see you've copied him on this.
 
+Done !
+
+Stelian.
 -- 
-Catalin
-
+Stelian Pop <stelian@popies.net>
