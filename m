@@ -1,93 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913Ab0CHWWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 17:22:23 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:37018 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755839Ab0CHWWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 17:22:20 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Weird wireless/wpa_supplicant screw-up.
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1268086939_3979P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 08 Mar 2010 17:22:19 -0500
-Message-ID: <7197.1268086939@localhost>
-X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020209.4B95789B.00E7,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	id S1755944Ab0CHWWf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 17:22:35 -0500
+Received: from mga11.intel.com ([192.55.52.93]:61947 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755918Ab0CHWWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 17:22:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,604,1262592000"; 
+   d="scan'208";a="779050322"
+Message-Id: <20100308221946.842728363@sbs-t61.sc.intel.com>
+User-Agent: quilt/0.47-1
+Date: Mon, 08 Mar 2010 14:19:36 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@linux.jf.intel.com>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Yanmin Zhang <yanmin_zhang@linux.jf.intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch v2 1/2] sched: check for prev_cpu == this_cpu before calling wake_affine()
+Content-Disposition: inline; filename=fix_wake_affine.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1268086939_3979P
-Content-Type: text/plain; charset=us-ascii
+On a single cpu system with SMT, in the scenario of one SMT thread being
+idle with another SMT thread running a task and doing a non sync wakeup of
+another task, we see (from the traces) that the woken up task ends up running
+on the busy thread instead of the idle thread. Idle balancing that comes
+in little bit later is fixing the scernaio.
 
-(This could be user error/userspace bug, feel free to point me in the right
-direction if you think so.  Hopefully somebody knows what I've broken this
-time...)
+But fixing this wake balance and running the woken up task directly on the
+idle SMT thread improved the performance (phoronix 7zip compression workload)
+by ~9% on an atom platform.
 
-Fedora Rawhide as of this morning, 2.6.33-mmotm0304 kernel, wpa_supplicant-0.6.8-8.fc13.x86_64
-wireless-tools-29-5.1.fc12.x86_64.  Dell Latitude E6500, Intel 5100AGN card.
+During the process wakeup, select_task_rq_fair() and wake_affine() makes
+the decision to wakeup the task either on the previous cpu that the task
+ran or the cpu that the task is currently woken up.
 
-So I finally get a few spare cycles, and re-try getting WPA2 working on our
-enterprise wireless network, and wpa_supplicant reports it completed
-successfully and set the keys, but 'iwconfig' reports back:
+select_task_rq_fair() also goes through to see if there are any idle siblings
+for the cpu that the task is woken up on. This is to ensure that we select
+any idle sibling rather than choose a busy cpu.
 
-wlan0     IEEE 802.11abgn  ESSID:"VT-Wireless"  
-          Mode:Managed  Frequency:2.412 GHz  Access Point: 00:0F:F7:14:2A:91   
-          Bit Rate=1 Mb/s   Tx-Power=15 dBm   
-          Retry  long limit:7   RTS thr:off   Fragment thr:off
-          Encryption key:off
-          Power Management:off
-          Link Quality=42/70  Signal level=-68 dBm  
-          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+In the above load scenario, it so happens that the prev_cpu (that the
+task ran before) and this_cpu (where it is woken up currently) are the same. And
+in this case, it looks like wake_affine() returns 0 and ultimately not selecting
+the idle sibling chosen by select_idle_sibling() in select_task_rq_fair().
+Further down the path of select_task_rq_fair(), we ultimately select
+the currently running cpu (busy SMT thread instead of the idle SMT thread).
 
-No encryption key. Yee. Hah.
+Check for prev_cpu == this_cpu before calling wake_affine() and no need to do
+any fancy stuff(and ultimately taking wrong decisions) in this case.
 
-But wait... 'iwlist keys' reports:
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+Changes from v1:
+   Move the "this_cpu == prev_cpu" check before calling wake_affine()
+---
+ kernel/sched_fair.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-wlan0     2 key sizes : 40, 104bits
-          4 keys available :
-                [1]: off
-                [2]: 6A7D-5232-BDE6-E40A-71C5-EC21-6399-00F3-5CAD-D394-D1E5-1261-BD99-0115-F4A8-63B2 (256 bits)
-                [3]: off
-                [4]: off
-          Current Transmit Key: [1]
+Index: tip/kernel/sched_fair.c
+===================================================================
+--- tip.orig/kernel/sched_fair.c
++++ tip/kernel/sched_fair.c
+@@ -1454,6 +1454,7 @@ static int select_task_rq_fair(struct ta
+ 	int want_affine = 0;
+ 	int want_sd = 1;
+ 	int sync = wake_flags & WF_SYNC;
++	int this_cpu = cpu;
+ 
+ 	if (sd_flag & SD_BALANCE_WAKE) {
+ 		if (sched_feat(AFFINE_WAKEUPS) &&
+@@ -1545,8 +1546,10 @@ static int select_task_rq_fair(struct ta
+ 			update_shares(tmp);
+ 	}
+ 
+-	if (affine_sd && wake_affine(affine_sd, p, sync))
+-		return cpu;
++	if (affine_sd) {
++		if (this_cpu == prev_cpu || wake_affine(affine_sd, p, sync))
++			return cpu;
++	}
+ 
+ 	while (sd) {
+ 		int load_idx = sd->forkexec_idx;
 
-So we got a perfectly good key, but we're not using it.
-
-Anybody got any ideas/hints?
-
-
-
---==_Exmh_1268086939_3979P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLlXibcC3lWbTT17ARAoRRAJ9cnA9eNaACHwt/XrT7mGVQsDy+jgCfQZUW
-7CeL6/hsCptoeZcdxeqye54=
-=03dn
------END PGP SIGNATURE-----
-
---==_Exmh_1268086939_3979P--
 
