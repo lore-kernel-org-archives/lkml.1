@@ -1,94 +1,189 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800Ab0CHVNQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:13:16 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:44861 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755695Ab0CHVNL convert rfc822-to-8bit (ORCPT
+	id S1755922Ab0CHVOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:14:05 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:62249 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755537Ab0CHVOA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:13:11 -0500
+	Mon, 8 Mar 2010 16:14:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
          :content-type:content-transfer-encoding;
-        b=ha4LoPVO7ny4d2Tir9l4WPvH6N4/3znimo1bvswOiA4fhVlaHusN0zrB5xNAfsNryT
-         688YsFEMXxIIECwHzyuG9y5GeM9wwOImWxqkeXTEPMwlOI2DXvmVKLPQZ/OTxz6fNEnS
-         dQE15dor0ekN/2LLTk9mLK3DRnAQ5KcYc/Iqc=
+        b=c2b4ourwZrQjOcmGSO0jUa6HjhAF7Hb1XCyj43CIgFCkYV6ldi7YehzpPdLWK5OyWQ
+         B+IOYq6IldaFaTn2HTLxUs7brbRimBH5K4zkL36ZZiDNshuiWHlXc39I8FnDxIK3N6Fh
+         IDo9yj+1PgX9BT6EFPuKEEG9QifqozALB1rss=
+From: mickib1@gmail.com
+To: jkosina@suse.cz, rafi@seas.upenn.edu, chatty@enac.fr, peterhuewe@gmx.de,
+       micki@n-trig.com
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7] HID: N-trig MTM Driver fix and cleanup patch 1
+Date: Mon,  8 Mar 2010 23:13:41 +0200
+Message-Id: <1268082827-2680-1-git-send-email-micki@n-trig.com>
+X-Mailer: git-send-email 1.6.3.3
 MIME-Version: 1.0
-In-Reply-To: <aa4c40ff1003081107n78e9f052n2a754680e5491c68@mail.gmail.com>
-References: <aa4c40ff1003081107n78e9f052n2a754680e5491c68@mail.gmail.com>
-Date: Mon, 8 Mar 2010 13:13:10 -0800
-Message-ID: <aa4c40ff1003081313s7492513bk14a48c6097b90407@mail.gmail.com>
-Subject: Re: SIIG DP CyberSerial 4S PCIe Support
-From: James Lamanna <jlamanna@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 8, 2010 at 11:07 AM, James Lamanna <jlamanna@gmail.com> wrote:
-> Hi,
-> I recently purchased a SIIG DP CyberSerial 4S PCIe card, however the
-> kernel doesn't seem to recognize it.
-> There are no messages in dmesg or anything about it.
-> Currently I'm at 2.6.24, but looking at drivers/serial/8250_pci.c
-> between 2.6.24 and 2.6.32 there doesn't
-> seem to be real changes with SIIG cards.
-> Seems like other SIIG cards are supported, so are we just missing the
-> PCI IDs for this card?
->
-> Here's the lspci -nnvvvvvv output:
->
-> 01:00.0 Serial controller [0700]: Oxford Semiconductor Ltd Unknown
-> device [1415:c208] (prog-if 06 [16950])
->        Subsystem: Siig Inc Unknown device [131f:2250]
->        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Interrupt: pin A routed to IRQ 16
->        Region 0: Memory at fe8fc000 (32-bit, non-prefetchable) [size=16K]
->        Region 1: Memory at fe600000 (32-bit, non-prefetchable) [size=2M]
->        Region 2: Memory at fe400000 (32-bit, non-prefetchable) [size=2M]
->        Capabilities: [40] Power Management version 3
->                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=55mA
-> PME(D0-,D1+,D2+,D3hot+,D3cold+)
->                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
->        Capabilities: [70] Express Endpoint IRQ 0
->                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
->                Device: Latency L0s <128ns, L1 <2us
->                Device: AtnBtn- AtnInd- PwrInd-
->                Device: Errors: Correctable- Non-Fatal+ Fatal+ Unsupported-
->                Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
->                Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
->                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
->                Link: Latency L0s <512ns, L1 <64us
->                Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
->                Link: Speed 2.5Gb/s, Width x1
->        Capabilities: [b0] MSI-X: Enable- Mask- TabSize=16
->                Vector table: BAR=1 offset=001b3000
->                PBA: BAR=1 offset=001b2000
+From: micki <micki@micki-laptop.(none)>
 
-After some more digging I found these messages in dmesg which doesn't
-exactly sound good:
+Add Change Log and defines of MTM firmware.
+Add debug Paramater change Driver name in hid_driver structure
 
-[   52.104180] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level,
-low) -> IRQ 16
-[   52.104189] ACPI: PCI interrupt for device 0000:01:00.0 disabled
+N-trig is changing the way people interact with computers by providing a dual-mode pen and true multi-touch input device, specifically designed for today's advanced computing world.
+N-trig DuoSenseÂ® solution provides a real Hands-on computingÂ® experience, and sets the stage for OEMs and ISVs to introduce innovative computer products and applications for an intuitive, Hands-onÂ® experience directly onscreen.
+DuoSense digitizers are easily integrated into existing technologies, support all LCDs, keep devices slim and light, and can be implemented in a broad range of products, ranging from small notebooks to large LCDs.
+N-trig has offices in Israel, the US, Taiwan and Japan.
 
-01:00.0 is the device ID of the SIIG card.
-Any reason ACPI would disable interrupts for this card?
+Signed-off-by: Micki Balanga <micki@n-trig.com>
+---
+ drivers/hid/hid-ntrig.c |   94 ++++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 89 insertions(+), 5 deletions(-)
 
-Thanks.
+diff --git a/drivers/hid/hid-ntrig.c b/drivers/hid/hid-ntrig.c
+index 3234c72..e99342d 100644
+--- a/drivers/hid/hid-ntrig.c
++++ b/drivers/hid/hid-ntrig.c
+@@ -3,7 +3,18 @@
+  *
+  *  Copyright (c) 2008 Rafi Rubin
+  *  Copyright (c) 2009 Stephane Chatty
++ *  Copyright (c) 2010 N-TRIG
+  *
++ *	1.0 - Rafi Rubin ( Version From 2010-02-13 02:13:05)
++ *		This cleans up the identification of multitouch
++ *		groups and enables the end of group sync.
++ *		Taps are now explicitly handled to adjust for the changes in the
++ *		event stream in multitouch mode.
++ *		Added triple and quad tap for the benefit of
++ *		tools that recognize different tap types but
++ *		do not have full multi touch support.
++ *	1.1 - N-trig - Add Change Log and defines of MTM firmware.
++ *		Add debug Paramater change Driver name in hid_driver structure
+  */
+ 
+ /*
+@@ -16,8 +27,78 @@
+ #include <linux/device.h>
+ #include <linux/hid.h>
+ #include <linux/module.h>
+-
++#include <linux/usb.h>
+ #include "hid-ids.h"
++#include "usbhid/usbhid.h"
++
++/*
++ * Pen Event Field Declaration
++ */
++#define	EVENT_PEN_TIP		0x03
++#define	EVENT_PEN_RIGHT		0x05
++#define	EVENT_TOUCH_PEN		0x07
++#define EVENT_PEN_IN_RANGE	0x01
++
++/*
++ * MTM 4 last bytes of report descriptor
++ */
++#define REPORT_GENERIC1		0x01
++#define REPORT_MT		0x02
++#define REPORT_PALM		0x03
++#define REPORT_GENERIC2		0x04
++
++#define NTRIG_USB_DEVICE_ID	0x0001
++
++/*
++ * MTM fields
++ */
++#define PEN_REPORT_SIZE		0x48
++#define MAX_FINGERS_SUPPORT	0x06
++#define END_OF_REPORT		0x64
++
++/*
++ * Dummy Finger Declaration
++ */
++#define X_CORD_VAL		0x00
++#define Y_CORD_VAL		0x00
++#define DX_CORD_VAL		0xFA
++#define DY_CORD_VAL		0x96
++#define GENERIC_BYTE_VAL	0x0D
++
++/*
++ * MTM Parse Event
++ */
++#define MTM_FRAME_INDEX		0xff000001
++#define MTM_PROPROETARY		0xff000002
++
++/*
++ * MTM  Set Feature Commands
++ */
++#define REPORTID_DRIVER_ALIVE	0x0A
++#define REPORTID_CALIBRATION	0x0B
++#define REPORTID_GET_VERSION	0x0C
++#define REPORTID_GET_MODE	0x0D
++#define REPORTID_SET_MODE_PEN	0x0E
++#define REPORTID_SET_MODE_TOUCH	0x0F
++#define REPORTID_SET_MODE_DUAL	0x10
++#define REPORTID_CALIBRATION_RESPOND	0x11
++#define HID_CAPACITORS_CALIB	0x12
++#define HID_GET_CAPACITORS_CALIB_DONE	0x13
++
++
++static int debug;
++
++#define MODULE_NAME "hid_ntrig"
++
++
++#define info(format, arg...) \
++	printk(KERN_INFO "%s: " format , MODULE_NAME , ## arg)
++#define ntrig_dbg(format, arg...) \
++	do { \
++		if (debug) \
++			printk(KERN_DEBUG "%s: " format, \
++			MODULE_NAME , ## arg); \
++	} while (0)
+ 
+ #define NTRIG_DUPLICATE_USAGES	0x001
+ 
+@@ -123,8 +204,8 @@ static int ntrig_input_mapped(struct hid_device *hdev, struct hid_input *hi,
+  * decide whether we are in multi or single touch mode
+  * and call input_mt_sync after each point if necessary
+  */
+-static int ntrig_event (struct hid_device *hid, struct hid_field *field,
+-		                        struct hid_usage *usage, __s32 value)
++static int ntrig_event(struct hid_device *hid, struct hid_field *field,
++			struct hid_usage *usage, __s32 value)
+ {
+ 	struct input_dev *input = field->hidinput->input;
+ 	struct ntrig_data *nd = hid_get_drvdata(hid);
+@@ -133,7 +214,7 @@ static int ntrig_event (struct hid_device *hid, struct hid_field *field,
+ 	if (field->application == HID_DG_PEN)
+ 		return 0;
+ 
+-        if (hid->claimed & HID_CLAIMED_INPUT) {
++	if (hid->claimed & HID_CLAIMED_INPUT) {
+ 		switch (usage->hid) {
+ 		case 0xff000001:
+ 			/* Tag indicating the start of a multitouch group */
+@@ -362,7 +443,7 @@ static const struct hid_usage_id ntrig_grabbed_usages[] = {
+ };
+ 
+ static struct hid_driver ntrig_driver = {
+-	.name = "ntrig",
++	.name = MODULE_NAME,
+ 	.id_table = ntrig_devices,
+ 	.probe = ntrig_probe,
+ 	.remove = ntrig_remove,
+@@ -384,4 +465,7 @@ static void __exit ntrig_exit(void)
+ 
+ module_init(ntrig_init);
+ module_exit(ntrig_exit);
++
++MODULE_PARM_DESC(debug, "Debug mode enable disable");
++module_param(debug, bool, 0644);
+ MODULE_LICENSE("GPL");
+-- 
+1.6.3.3
 
--- James
-
->
-> Please CC me for I am not subscribed.
->
-> Thanks.
->
-> -- James
->
