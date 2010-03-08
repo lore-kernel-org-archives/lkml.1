@@ -1,71 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101Ab0CHNOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 08:14:55 -0500
-Received: from mail09.linbit.com ([212.69.161.110]:48200 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753922Ab0CHNOv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 08:14:51 -0500
-Date: Mon, 8 Mar 2010 14:14:49 +0100
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, Alasdair G Kergon <agk@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>, jens.axboe@oracle.com,
+	id S1753944Ab0CHNT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 08:19:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15797 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497Ab0CHNT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 08:19:56 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20100305230957.GA22614@redhat.com>
+References: <20100305230957.GA22614@redhat.com> <20100226205300.GA26171@redhat.com> <20100226200357.GB16092@redhat.com> <20100226182325.GA31674@redhat.com> <20100225181500.GA18008@redhat.com> <16951.1267207238@redhat.com> <17603.1267209668@redhat.com> <20100226200313.GA16092@redhat.com> <23363.1267216958@redhat.com> <29907.1267226649@redhat.com> <20100305225243.GA21790@redhat.com> 
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dm: max_segments=1 if merge_bvec_fn is not supported
-Message-ID: <20100308131449.GA15156@racke>
-References: <20100306211012.GA9689@racke>
- <20100308163345.42841480@notabene.brown>
- <Pine.LNX.4.64.1003080321190.25635@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1003080321190.25635@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Subject: Re: [PATCH,RESEND -mm 1/2] umh && creds: convert call_usermodehelper_keys() to use subprocess_info->init()
+Date: Mon, 08 Mar 2010 13:19:28 +0000
+Message-ID: <19925.1268054368@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 03:35:37AM -0500, Mikulas Patocka wrote:
-> Hi
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> (on top of kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch)
 > 
-> That patch with limits->max_segments = 1; is wrong. It fixes this bug 
-> sometimes and sometimes not.
+> call_usermodehelper_keys() uses call_usermodehelper_setkeys() to change
+> subprocess_info->cred in advance. Now that we have info->init() we can
+> change this code to set tgcred->session_keyring in context of execing
+> kernel thread.
 > 
-> The problem is, if someone attempts to create a bio with two vector 
-> entries, the first maps the last sector contained in some page and the 
-> second maps the first sector of the next physical page: it has one 
-> segment, it has size <= PAGE_SIZE, but it still may cross raid stripe and 
-> the raid driver will reject it.
-
-Now that you put it that way ;)
-You are right.
-
-My asumption that "single segment" was  
-equalvalent in practice with "single bvec"
-does not hold true in that case.
-
-Then, what about adding seg_boundary_mask restrictions as well?
-	max_sectors = PAGE_SIZE >> 9;
-	max_segments = 1;
-	seg_boundary_mask = PAGE_SIZE -1;
-or some such.
-
-> > > This is not the first time this has been patched, btw.
-> > > See https://bugzilla.redhat.com/show_bug.cgi?id=440093
-> > > and the patch by Mikulas:
-> > > https://bugzilla.redhat.com/attachment.cgi?id=342638&action=diff
+> Note: since currently call_usermodehelper_keys() is never called with
+> UMH_NO_WAIT, call_usermodehelper_keys()->key_get() and umh_keys_cleanup()
+> are not really needed, we could rely on install_session_keyring_to_cred()
+> which does key_get() on success.
 > 
-> Look at this patch, it is the proper way how to fix it: create a 
-> merge_bvec_fn that reject more than one biovec entry.
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-If adding seg_boundary_mask is still not sufficient,
-lets merge that patch instead?
-Why has it been dropped, respectively never been merged?
-It became obsolete for dm-linear by 7bc3447b,
-but in general the bug is still there, or am I missing something?
-
-
-
-	Lars
+Acked-by: David Howells <dhowells@redhat.com>
