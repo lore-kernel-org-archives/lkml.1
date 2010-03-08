@@ -1,74 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022Ab0CHXLs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:11:48 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:60388 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174Ab0CHXLq (ORCPT
+	id S1756036Ab0CHXL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:11:58 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:58456 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970Ab0CHXLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:11:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=meMQVXfDyCFwNfBu/haAr+EptPlRlTrsALO4q0OAw+4xW0kbHCFXBtII5g9ACh/l6C
-         UMbC7Tv76mnfD7W7YjAfuP201SwItfNbveftFj/ShNj5omTDHuc9+SBtuG/O6cNvn5Xq
-         rx4xBC6dFB5BoD3fvTJXNiLzh7TkyeIdXWd1M=
-From: Chihau Chau <chihau@gmail.com>
-To: jmorris@namei.org
-Cc: dhowells@redhat.com, paulmck@linux.vnet.ibm.com, mingo@elte.hu,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chihau Chau <chihau@gmail.com>
-Subject: [PATCH] Security: key: keyring: fix some code style issues
-Date: Mon,  8 Mar 2010 20:11:34 -0300
-Message-Id: <1268089894-28691-1-git-send-email-chihau@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Mon, 8 Mar 2010 18:11:54 -0500
+To: Avi Kivity <avi@redhat.com>
+Cc: Gleb Natapov <gleb@redhat.com>,
+       john cooper <john.cooper@third-harmonic.com>,
+       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, mtosatti@redhat.com,
+       zamsden@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+References: <20100301091819.GD16909@redhat.com>
+	<4B8BB6FA.1000505@oss.ntt.co.jp> <20100301125223.GI16909@redhat.com>
+	<4B8BBE61.3020503@oss.ntt.co.jp> <20100301132609.GJ16909@redhat.com>
+	<4B8C11DC.1060004@third-harmonic.com>
+	<20100302072809.GS16909@redhat.com> <4B936B27.1050207@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 08 Mar 2010 15:11:49 -0800
+In-Reply-To: <4B936B27.1050207@redhat.com> (Avi Kivity's message of "Sun\, 07 Mar 2010 11\:00\:23 +0200")
+Message-ID: <m1aauipfwq.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chihau Chau <chihau@gmail.com>
+Avi Kivity <avi@redhat.com> writes:
 
-This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
-code style issues like to put a else sentence below close brace '}' and
-to replace a tab instead of some space characters.
+> On 03/02/2010 09:28 AM, Gleb Natapov wrote:
+>> On Mon, Mar 01, 2010 at 02:13:32PM -0500, john cooper wrote:
+>>    
+>>> Gleb Natapov wrote:
+>>>
+>>>      
+>>>> Think about what happens if in the middle of
+>>>> instruction emulation some data from device emulated in userspace is
+>>>> needed. Emulator should be able to tell KVM that exit to userspace is
+>>>> needed and restart instruction emulation when data is available.
+>>>>        
+>>> setjmp/longjmp are useful constructs in general but
+>>> IME are better suited for infrequent exceptions vs.
+>>> routine usage.
+>>>      
+>> Exception condition during instruction emulation _is_
+>> infrequent.
+>
+> Well, with mmio you'd expect it to happen every read access.
 
-Signed-off-by: Chihau Chau <chihau@gmail.com>
----
- security/keys/keyring.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Of course if you are hitting that kind of case very often
+you don't want to do the emulation in the kernel but
+in userspace so you don't have to take the context switch
+overhead and everything else.
 
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index e814d21..840be66 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -17,7 +17,7 @@
- #include <linux/seq_file.h>
- #include <linux/err.h>
- #include <keys/keyring-type.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- #include "internal.h"
- 
- /*
-@@ -306,7 +306,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
- 	key_check(keyring);
- 
- 	/* top keyring must have search permission to begin the search */
--        err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
-+	err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
- 	if (err < 0) {
- 		key_ref = ERR_PTR(err);
- 		goto error;
-@@ -775,8 +775,7 @@ int __key_link(struct key *keyring, struct key *key)
- 		smp_wmb();
- 		klist->nkeys++;
- 		smp_wmb();
--	}
--	else {
-+	} else {
- 		/* grow the key list */
- 		max = 4;
- 		if (klist)
--- 
-1.5.6.3
+I know running emulations in userspace was for dosemu
+the difference between a 16 color ega emulation on X
+that was unusable to one that was good enough to play video
+games like wolfenstein and doom.
+
+Eric
 
