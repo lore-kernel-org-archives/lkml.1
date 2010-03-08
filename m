@@ -1,24 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112Ab0CHRiB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 12:38:01 -0500
-Received: from ppp173-197.broadband.gorge.net ([209.216.173.197]:38633 "EHLO
+	id S1753822Ab0CHRlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 12:41:46 -0500
+Received: from ppp173-197.broadband.gorge.net ([209.216.173.197]:33513 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754550Ab0CHRh5 (ORCPT
+	with ESMTP id S1751136Ab0CHRll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 12:37:57 -0500
-Date: Mon, 8 Mar 2010 17:30:08 +0000
+	Mon, 8 Mar 2010 12:41:41 -0500
+Date: Mon, 8 Mar 2010 17:40:27 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-Message-ID: <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100308094647.GA14268@elte.hu>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
-	<20100308094647.GA14268@elte.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
+       Oliver Neukum <oliver@neukum.org>,
+       Andrew Morton <akpm@linux-foundation.org>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial: Fix usb serial console open/close
+ regression
+Message-ID: <20100308174027.59284ba4@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.1003081028400.1596-100000@iolanthe.rowland.org>
+References: <1268061698-9846-1-git-send-email-jason.wessel@windriver.com>
+	<Pine.LNX.4.44L0.1003081028400.1596-100000@iolanthe.rowland.org>
 X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.7; i686-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,23 +29,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In that sense it appears to me that it's pretty much a universal truth that 
-> 'pathnames' are a far more fitting abstraction to any 'human based security 
+> This is a little unfortunate.  It would be better to prevent
+> tty_port_shutdown() from clearing ASYNCB_INITIALIZED in the first
+> place.  The problem is that the tty core doesn't know when the port is
+> being used as a console.  There ought to be a way to tell it.
 
-Ingo - just about all the serious security work disagrees with you.
-Pathnames are references to objects and keep changing. What matters is
-the object itself. This is also how Unix has always worked
-
-Imagine if chmod applied to the path not the inode ?
-
-> Also, why was/(is?) AppArmor considered as a 'hostile competitor' 
-
-I don't believe it was. It was perceived as a technical failure, and then
-the file system people shredded the bits the security folks didn't.
-
-There are certain things path name bases security works quite nicely for,
-primarily systems that have no concept of links. It's why it works
-ok-ish for httpd but for the general case nobody has ever really made it
-work properly.
+Agreed - there should probably be a port.console flag to push it up into
+the tty_port logic as well.
 
 Alan
