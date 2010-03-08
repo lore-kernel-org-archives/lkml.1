@@ -1,58 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557Ab0CHMw4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 07:52:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29896 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331Ab0CHMww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 07:52:52 -0500
-Date: Mon, 8 Mar 2010 13:51:22 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: inconsistent lock state
-Message-ID: <20100308125122.GA11242@redhat.com>
-References: <20100307192305.GA598@elte.hu>
+	id S1753670Ab0CHNDW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 08:03:22 -0500
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:58316 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752253Ab0CHNDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 08:03:20 -0500
+Message-ID: <4B94F594.7050205@in.ibm.com>
+Date: Mon, 08 Mar 2010 18:33:16 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100307192305.GA598@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: ananth@in.ibm.com
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>, mhiramat@redhat.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PowerPC] 2.6.33-git11 : Badness at kernel/kprobes.c:264
+References: <4B920E06.4060508@in.ibm.com> <20100308101152.GA2557@osiris.boeblingen.de.ibm.com> <20100308120009.GC14199@in.ibm.com>
+In-Reply-To: <20100308120009.GC14199@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Senozhatsky wrote:
+Ananth N Mavinakayanahalli wrote:
+>>> 2.6.33-git10(64ba99267...) was OK.
+>>>
+>>> This WARN_ON was introduced by commit 4610ee1d36...
+>>>
+>>> kprobes: Introduce generic insn_slot framework
+>>>       
+>> FWIW, same on s390...
+>>     
 >
-> Hello,
+> This patch should fix it:
 >
-> Hardly reproducible.
-> /*
-> * 2.6.33. x86. ASUS f3jc
-> */
+> When freeing the instruction slot, the arithmetic to calculate the index
+> of the slot in the page needs to account for the total size of the
+> instruction on the various architectures.
 >
-> [329645.010697] =================================
-> [329645.010699] [ INFO: inconsistent lock state ]
-> [329645.010703] 2.6.33-33-0-dbg #31
-> [329645.010705] ---------------------------------
-> [329645.010708] inconsistent {IN-SOFTIRQ-W} -> {SOFTIRQ-ON-W} usage.
+> Calculate the index correctly when freeing the out-of-line execution slot.
 >
-> ...
->
-> [329645.011083]  [<c128858d>] netif_receive_skb+0x340/0x360
-> [329645.011093]  [<fd1ab6f4>] rtl8169_rx_interrupt+0x2bf/0x37e [r8169]
-> [329645.011100]  [<fd1aba02>] rtl8169_reset_task+0x38/0xcd [r8169]
-> [329645.011105]  [<c1044f71>] worker_thread+0x1ac/0x27c
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>   
+Thanks Ananth. Boots fine on my POWER6 box without any WAR_ON.
 
-I don't understand this code, but at first glance drivers/net/r8169.c
-is obviously buggy.
+Regards
+-Sachin
 
-The work->func, rtl8169_reset_task(), calls rtl8169_rx_interrupt() ->
-netif_receive_skb(), and the last one may only be called from softirq.
+> ---
+> Index: linux-8mar/kernel/kprobes.c
+> ===================================================================
+> --- linux-8mar.orig/kernel/kprobes.c	2010-03-08 17:10:33.000000000 +0530
+> +++ linux-8mar/kernel/kprobes.c	2010-03-08 17:12:12.000000000 +0530
+> @@ -259,7 +259,8 @@
+>  	struct kprobe_insn_page *kip;
+>
+>  	list_for_each_entry(kip, &c->pages, list) {
+> -		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
+> +		long idx = ((long)slot - (long)kip->insns) /
+> +				(c->insn_size * sizeof(kprobe_opcode_t));
+>  		if (idx >= 0 && idx < slots_per_page(c)) {
+>  			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+>  			if (dirty) {
+>
+>
+>
+>   
 
-Oleg.
 
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
