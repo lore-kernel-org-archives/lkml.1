@@ -1,70 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810Ab0CHIll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 03:41:41 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:34993 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950Ab0CHIlj (ORCPT
+	id S1752866Ab0CHInX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 03:43:23 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:52227 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857Ab0CHInV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 03:41:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hG+mXxNnKJb4zHhfwJRKO8uCcSnINY/xhAjuoTy5qZ25FDJ6EXnYedNAnyr/tGiLXT
-         QEfFO77wRNWkaqf0NPMnvPbwDKXlfojuYptmgshxryEK6vLVHYzqaE5ra7FPqWbDBrRb
-         A/hscAdxtRIIONYvlULsxveC6ty2DUjAXW26Q=
-Date: Mon, 8 Mar 2010 00:36:06 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Christopher Heiny <cheiny@synaptics.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Allie Xiong <axiong@synaptics.com>,
-       William Manson <WManson@synaptics.com>
-Subject: Re: [RFC PATCH 1/1] input/touchscreen: Synaptics Touchscreen Driver
-Message-ID: <20100308083605.GC14856@core.coreip.homeip.net>
-References: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
- <1266446258-16209-3-git-send-email-cheiny@synaptics.com>
- <20100302091246.GA21014@core.coreip.homeip.net>
- <4B905B59.8020209@synaptics.com>
+	Mon, 8 Mar 2010 03:43:21 -0500
+Message-ID: <4B94B892.8000209@rs.jp.nec.com>
+Date: Mon, 08 Mar 2010 17:42:58 +0900
+From: Akira Fujita <a-fujita@rs.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1 ThunderBrowse/3.2.8.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B905B59.8020209@synaptics.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext4: allow defrag (EXT4_IOC_MOVE_EXT) in 32bit compat
+ mode
+References: <201003072132.10579.borntraeger@de.ibm.com>
+In-Reply-To: <201003072132.10579.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 05:16:09PM -0800, Christopher Heiny wrote:
-> On 03/02/2010 01:12 AM, Dmitry Torokhov wrote:
-> >Hi Christofer,
-> >
-> >I assume that since you sent it with git-send-email it was your
-> >corporate mail server that murdered all identation and whitespace.
-> >Please try sending next version using alternative server, like gmail or
-> >maybe your personal account. On the off chance that the formatting used
-> >in the driver was preserved intact - please remember that kernel uses
-> >hard tabs for identation (8 chars, no expanding). Camel-casing is also
-> >frowned upon.
-> 
-> Actually, the strange indenting/whitespace is due to a day-long struggle
-> with checkpatch.pl to get it to accept something - anything - without
-> complaining.  Personally I thought the formatting that checkpatch
-> finally accepted was kind of strange, but went with it.
-> 
-> We'll update to 8-space hard tabs only, and ignore any future
-> checkpatch complaints in that department.
 
-Umm, generally speaking checkpatch is "telling the truth" and if you run
-it aginst most of the krenle code you shold get very few complaints. The
-only thing I tend to ignore is the 80 column limit (which I think is
-being liften in recent version).
+Hi Christian,
 
-Also, while you are at it - consider using dev_xxx() for printing
-messages when you have 'struct device *' available and pr_xxx() when you
-do not have it instead of using "naked" printks.
+(2010/03/08 5:32), Christian Borntraeger wrote:
+> I have an x86_64 kernel with i386 userspace. e4defrag fails on the
+> EXT4_IOC_MOVE_EXT ioctl because it is not wired up for the compat
+> case. It seems that struct move_extent is compat save, only types
+> with fixed widths are used:
+> {
+>          __u32 reserved;         /* should be zero */
+>          __u32 donor_fd;         /* donor file descriptor */
+>          __u64 orig_start;       /* logical start offset in block for orig */
+>          __u64 donor_start;      /* logical start offset in block for donor */
+>          __u64 len;              /* block length to be moved */
+>          __u64 moved_len;        /* moved block length */
+> };
+>
+> Lets just wire up EXT4_IOC_MOVE_EXT for the compat case.
+>
+> Signed-off-by: Christian Borntraeger<borntraeger@de.ibm.com>
+> CCed: Akira Fujita<a-fujita@rs.jp.nec.com>
+>
+> ---
+>   fs/ext4/ioctl.c |    2 ++
+>   1 file changed, 2 insertions(+)
+>
+> --- a/fs/ext4/ioctl.c
+> +++ b/fs/ext4/ioctl.c
+> @@ -375,6 +375,8 @@ long ext4_compat_ioctl(struct file *file
+>   		break;
+>   	case EXT4_IOC_GROUP_ADD:
+>   		break;
+> +	case EXT4_IOC_MOVE_EXT:
+> +		break;
+>   	default:
+>   		return -ENOIOCTLCMD;
+>   	}
 
-Thanks.
+Looks good for me.
+Thank you for your work.
 
--- 
-Dmitry
+Regards,
+Akira Fujita
+
+
