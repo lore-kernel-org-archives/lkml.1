@@ -1,92 +1,315 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752458Ab0CHHyn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 02:54:43 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40506 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395Ab0CHHyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 02:54:40 -0500
-Message-ID: <4B94ACE8.4060400@zytor.com>
-Date: Sun, 07 Mar 2010 23:53:12 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, mkp@mkp.net
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <1268031640.4389.11.camel@mulgrave.site>
-In-Reply-To: <1268031640.4389.11.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752572Ab0CHHzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 02:55:18 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:54349 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612Ab0CHHzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 02:55:15 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, mitake@dcl.info.waseda.ac.jp,
+       h.mitake@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perf: Make printing table easily
+Date: Mon,  8 Mar 2010 16:55:10 +0900
+Message-Id: <1268034910-12544-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/2010 11:00 PM, James Bottomley wrote:
-> Just a quick note:
->
-> The 2TB size for msdos partitions is a problem independent of the 4k
-> sector issue.  Traditional 512 byte sector drives are now available in
-> those sizes.  It looks like we're going to have to move to a new
-> partitioning label to solve this.
->
-> There's actually another barrier at 8 or 16TB, which is where a 4k
-> logical sector filesystem tops out using 32 bit block offsets (it's 8TB
-> if the fs hasn't been proof checked against sign extension problems).
->
-> However, for 4k sectors, the main issues which have shown up in testing
-> by others (mostly Martin) are
->
->       1. In native 4k mode, we work perfectly fine.  *however*, most
->          BIOSs can't boot native 4k drives.
->       2. Even if the BIOS can boot native 4k, our own boot loaders seem
->          to be hard coded for 512 byte sectors in several places.
->       3. If we run in the 512 byte sector emulation mode, we end up with
->          the partition alignment problems you allude to.
->       4. The aligment problem is made more complex by drives that make
->          use of the offset exponent feature (what you refer to as offset
->          by one) ... fortunately very few of these have been seen in the
->          wild and we're hopeful they can be shot before they breed.
->       5. I'm really, really sorry to have to mention it, but it looks
->          like uefi is going to be the only way we can boot non-msdos
->          partitioned devices with native 4k sectors.
->
-> so the bottom line seems to be that if you want the device as a non boot
-> disk, use native 4k sectors and a non-msdos partition label.  If you
-> want to boot from the drive and your bios won't book 4k natively,
-> partition everything using the 512 emulation and try to align the
-> partitions correctly.  If your bios/uefi will boot 4k natively, just use
-> it and whatever partition label the bios/uefi supports.
->
-> Martin can fill in the pieces I've left out.
->
+Hi,
 
-I would very much like a reference for a platform which has firmware 
-which can successfully boot from 4K-logical media.  It would be very 
-useful for bootloader testing.
+Making table of matrix by printf is painful work,
+but it can be found in perf here and there.
+So I'd like to propose semi-automation of making table.
+New files util/table.c provides stuffs for easy table printing.
 
-Aligning partitions is something we should have done long ago.  It 
-affects RAID and many flash drives just as much or more than 4K-sectored 
-disks.
+At first, user has to allocate struct table like this:
+   	  struct table *t = table_new();
 
-Legacy BIOS doesn't care at all how the disk is partitioned, so as long 
-as the BIOS can read the disk at all the rest is up to the bootloader. 
-Of course, since there hasn't been the opportunity to test, bootloaders 
-generally don't handle it correctly (early versions of Syslinux 
-supported any sector size, but that bitrotted, and for the lack of 
-testing I eventually ended up hard-coding the number.  Now I'd like to 
-get it working properly.)
+Then, user can define columns by table_add_fixed() for stuffs
+registers can contain or table_add_string() for string.
+	  table_add_fixed(t, "%p", SIZE_OF_ADDR);
+	  table_add_string(t, "%30s", 30);
+First argument is pointer to struct table.
+Second one is format specifier.
 
-As far as partitioning... I believe we should be using GPT partition 
-tables where possible.  Even on non-EFI systems, it's simply a much 
-better partition table format.
+Third argument for table_add_fixed() is size of objects in rows.
+Third one for table_add_string() is maximum length of
+printing string. If it is 0, no truncate will be done.
 
-	-hpa
+After making columns, user can print each rows like this:
+      	  table_printf(t, table_test, 2501, "one");
+
+Example of use:
+
+| /* program */
+| static void table_test(void)
+| {
+| 	struct table *t = table_new();
+|
+| 	table_add_fixed(t, "%p", SIZE_OF_ADDR);
+| 	table_add_fixed(t, "%10d", sizeof(int));
+| 	table_add_string(t, "%30s", 30);
+|
+| 	table_printf(t, table_test, 2501, "one");
+| 	table_printf(t, t, 0x2501, "two");
+| 	table_printf(t, table_printf, 42, "Answer to the Ultimate Question of "
+| 		     "Life, the Universe, and Everything");
+|
+| 	table_free(t);
+| }
+|
+| int main(void)
+| {
+| 	table_test();
+| }
+
+| /* output */
+| 0x420340       2501                            one
+| 0xc9c080       9473                            two
+| 0x450e90         42 Answer to the Ultimate Questi~   <- Third argument is truncated
+
+Current util/table.c is too weak, but this can be a basic start point.
+I think this is useful, how do you think?
+
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ tools/perf/Makefile     |    2 +
+ tools/perf/util/table.c |  157 +++++++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/table.h |   32 ++++++++++
+ 3 files changed, 191 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/util/table.c
+ create mode 100644 tools/perf/util/table.h
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 54a5b50..93ecf09 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -387,6 +387,7 @@ LIB_H += util/thread.h
+ LIB_H += util/trace-event.h
+ LIB_H += util/probe-finder.h
+ LIB_H += util/probe-event.h
++LIB_H += util/table.h
+ 
+ LIB_OBJS += util/abspath.o
+ LIB_OBJS += util/alias.o
+@@ -433,6 +434,7 @@ LIB_OBJS += util/sort.o
+ LIB_OBJS += util/hist.o
+ LIB_OBJS += util/probe-event.o
+ LIB_OBJS += util/util.o
++LIB_OBJS += util/table.o
+ 
+ BUILTIN_OBJS += builtin-annotate.o
+ 
+diff --git a/tools/perf/util/table.c b/tools/perf/util/table.c
+new file mode 100644
+index 0000000..a8b770d
+--- /dev/null
++++ b/tools/perf/util/table.c
+@@ -0,0 +1,157 @@
++
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <stdarg.h>
++
++#include <linux/kernel.h>
++
++#include "util.h"
++#include "table.h"
++
++struct table *table_new(void)
++{
++	struct table *new;
++
++	new = zalloc(sizeof(struct table));
++	new->column_formats.next = &new->column_formats;
++	new->column_formats.prev = &new->column_formats;
++	return new;
++}
++
++void table_free(struct table *t)
++{
++	struct list_head *l;
++
++	list_for_each_prev(l, &t->column_formats) {
++		struct column_format *fmt
++			= container_of(l, struct column_format, formats);
++		free(fmt);
++	}
++
++	free(t);
++}
++
++static void table_add_column(struct table *t, struct column_format *new)
++{
++	list_add_tail(&new->formats, &t->column_formats);
++}
++
++void table_add_fixed(struct table *t, const char *spec, int size)
++{
++	struct column_format *fmt;
++
++	fmt = zalloc(sizeof(struct column_format));
++	fmt->spec = spec;
++	fmt->size = size;
++	table_add_column(t, fmt);
++}
++
++void table_add_string(struct table *t, const char *spec, int trunc)
++{
++	struct column_format *fmt;
++
++	BUG_ON(trunc < 0);
++
++	fmt = zalloc(sizeof(struct column_format));
++	fmt->spec = spec;
++	fmt->size = SIZE_OF_ADDR;
++	fmt->attr |= TABLE_ATTR_STRING;
++	fmt->trunc = trunc;
++	table_add_column(t, fmt);
++}
++
++void table_printf(struct table *t, ...)
++{
++	va_list ap;
++	struct list_head *l;
++
++	unsigned char byte = 0;
++	unsigned short word = 0;
++	unsigned long dword = 0;
++	unsigned long long qword = 0;
++	char *str = NULL;
++
++	va_start(ap, t);
++
++	list_for_each(l, &t->column_formats) {
++		struct column_format *fmt
++			= container_of(l, struct column_format, formats);
++
++		if (fmt->attr & TABLE_ATTR_STRING) {
++			BUG_ON(fmt->size != SIZE_OF_ADDR);
++
++			str = va_arg(ap, char *);
++
++			if (!fmt->trunc || (strlen(str) < fmt->trunc)) {
++				printf(fmt->spec, str);
++			} else {
++				char *trunced = zalloc(fmt->trunc + 1);
++				memcpy(trunced, str, fmt->trunc);
++				trunced[fmt->trunc - 1] = '~';
++				printf(fmt->spec, trunced);
++			}
++		} else {
++			switch (fmt->size) {
++			case 1:
++				byte = (unsigned char)va_arg(ap, unsigned int);
++				printf(fmt->spec, byte);
++				break;
++			case 2:
++				word = (unsigned short)va_arg(ap, unsigned int);
++				printf(fmt->spec, word);
++				break;
++			case 4:
++				dword = va_arg(ap, unsigned long);
++				printf(fmt->spec, dword);
++				break;
++			case 8:
++				qword = va_arg(ap, unsigned long long);
++				printf(fmt->spec, qword);
++				break;
++			default:
++				die("table_printf(): unknown size:%d\n",
++				    fmt->size);
++				break;
++			}
++		}
++
++		if (l->next != &t->column_formats)
++			printf(" ");
++	}
++
++	printf("\n");
++	va_end(ap);
++}
++
++#if 0
++/* usage sample */
++
++/* program */
++static void table_test(void)
++{
++	struct table *t = table_new();
++
++	table_add_fixed(t, "%p", SIZE_OF_ADDR);
++	table_add_fixed(t, "%10d", sizeof(int));
++	table_add_string(t, "%30s", 30);
++
++	table_printf(t, table_test, 2501, "one");
++	table_printf(t, t, 0x2501, "two");
++	table_printf(t, table_printf, 42, "Answer to the Ultimate Question of "
++		     "Life, the Universe, and Everything");
++
++	table_free(t);
++}
++
++int main(void)
++{
++	table_test();
++}
++
++/* output */
++0x420340       2501                            one
++0xc9c080       9473                            two
++0x450e90         42 Answer to the Ultimate Questi~
++
++#endif
+diff --git a/tools/perf/util/table.h b/tools/perf/util/table.h
+new file mode 100644
+index 0000000..8a7c7d8
+--- /dev/null
++++ b/tools/perf/util/table.h
+@@ -0,0 +1,32 @@
++
++#ifndef __PERF_TABLE_H
++#define __PERF_TABLE_H
++
++#include <linux/list.h>
++
++#define SIZE_OF_ADDR sizeof(void *)
++
++#define TABLE_ATTR_STRING 0x00000001
++
++struct column_format {
++	struct list_head formats;
++
++	const char       *spec;
++	int              size;
++	int              attr;
++	unsigned int     trunc;
++};
++
++struct table {
++	int columns;
++	struct list_head column_formats;
++};
++
++struct table *table_new(void);
++void table_free(struct table *t);
++void table_printf(struct table *t, ...);
++
++void table_add_fixed(struct table *t, const char *spec, int size);
++void table_add_string(struct table *t, const char *spec, int trunc);
++
++#endif	/* __PERF_TABLE_H */
+-- 
+1.6.5.2
+
