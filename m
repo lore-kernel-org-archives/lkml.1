@@ -1,28 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755295Ab0CHTFi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 14:05:38 -0500
-Received: from mail2.tundra.com ([142.46.200.162]:46740 "EHLO mx2.tundra.com"
+	id S1755207Ab0CHTGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 14:06:32 -0500
+Received: from mail2.tundra.com ([142.46.200.162]:46766 "EHLO mx2.tundra.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754044Ab0CHTFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 14:05:21 -0500
-X-ASG-Debug-ID: 1268074234-6bd9000a0000-xx1T2L
+	id S1753798Ab0CHTG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 14:06:26 -0500
+X-ASG-Debug-ID: 1268075184-6bd9002d0000-xx1T2L
 X-Barracuda-URL: http://142.46.200.162:8000/cgi-bin/mark.cgi
 X-Barracuda-Envelope-From: abounine@tundra.com
-Date: Mon, 8 Mar 2010 13:49:31 -0500
+Date: Mon, 8 Mar 2010 14:05:37 -0500
 From: Alexandre Bounine <abounine@tundra.com>
 To: mporter@kernel.crashing.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       thomas.moll@sysgo.com
-X-ASG-Orig-Subj: [PATCH v2 1/7] RapidIO: Add IDT CPS/TSI switches
-Subject: [PATCH v2 1/7] RapidIO: Add IDT CPS/TSI switches
-Message-ID: <20100308184931.GA4324@amak.tundra.com>
+       thomas.moll@sysgo.com, abounine@tundra.com
+X-ASG-Orig-Subj: [PATCH v2 4/7] powerpc/85xx: Add Port-Write message handler for SRIO port
+Subject: [PATCH v2 4/7] powerpc/85xx: Add Port-Write message handler for SRIO port
+Message-ID: <20100308190537.GD4324@amak.tundra.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.4.1i
 X-Barracuda-Connect: UNKNOWN[142.46.200.189]
-X-Barracuda-Start-Time: 1268074234
+X-Barracuda-Start-Time: 1268075184
 X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at tundra.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,679 +31,370 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 
-Extentions to RapidIO switch support:
-1. modify switch route operation declarations to allow using single
-   switch-specific file for family of switches that share the same route
-   table operations.
-2. add standard route table operations for switches that that support
-   route table manipulation registers as defined in the Rev.1.3 of RapidIO
-   specification.
-3. add clear-route-table operation for switches
-4. add CPSxx and TSIxxx families of RapidIO switches 
+Add RapidIO Port-Write message handler for Freescale SoCs with RapidIO port.
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Tested-by: Thomas Moll <thomas.moll@sysgo.com>
 ---
 
- drivers/rapidio/rio-scan.c        |   17 +++++-
- drivers/rapidio/rio.c             |  104 +++++++++++++++++++++++++++++++++++++
- drivers/rapidio/rio.h             |   20 +++++--
- drivers/rapidio/switches/Makefile |    2 
- drivers/rapidio/switches/idtcps.c |   89 +++++++++++++++++++++++++++++++
- drivers/rapidio/switches/tsi500.c |    2 
- drivers/rapidio/switches/tsi568.c |  106 ++++++++++++++++++++++++++++++++++++++
- drivers/rapidio/switches/tsi57x.c |  106 ++++++++++++++++++++++++++++++++++++++
- include/linux/rio.h               |    6 ++
- include/linux/rio_ids.h           |   14 +++++
- include/linux/rio_regs.h          |   14 ++++-
- 11 files changed, 469 insertions(+), 11 deletions(-)
+ fsl_rio.c |  263 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 260 insertions(+), 3 deletions(-)
 
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/rio-scan.c w33b/drivers/rapidio/rio-scan.c
---- w33a/drivers/rapidio/rio-scan.c	2010-03-01 11:10:12.306460000 -0500
-+++ w33b/drivers/rapidio/rio-scan.c	2010-03-01 10:42:08.349219000 -0500
-@@ -55,6 +55,7 @@ static int rio_mport_phys_table[] = {
- static int rio_sport_phys_table[] = {
- 	RIO_EFB_PAR_EP_FREE_ID,
- 	RIO_EFB_SER_EP_FREE_ID,
-+	RIO_EFB_SER_EP_FREC_ID,
- 	-1,
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/arch/powerpc/sysdev/fsl_rio.c w33b/arch/powerpc/sysdev/fsl_rio.c
+--- w33a/arch/powerpc/sysdev/fsl_rio.c	2010-03-08 09:52:20.996352000 -0500
++++ w33b/arch/powerpc/sysdev/fsl_rio.c	2010-03-08 10:28:57.611303000 -0500
+@@ -1,6 +1,11 @@
+ /*
+  * Freescale MPC85xx/MPC86xx RapidIO support
+  *
++ * Copyright 2009 Integrated Device Technology, Inc.
++ * Alex Bounine <alexandre.bounine@idt.com>
++ * - Added Port-Write message handling
++ * - Added Machine Check exception handling
++ *
+  * Copyright (C) 2007, 2008 Freescale Semiconductor, Inc.
+  * Zhang Wei <wei.zhang@freescale.com>
+  *
+@@ -23,19 +28,26 @@
+ #include <linux/rio_drv.h>
+ #include <linux/of_platform.h>
+ #include <linux/delay.h>
++#include <linux/kfifo.h>
+ 
+ #include <asm/io.h>
+ 
++#undef DEBUG_PW	/* Port-Write debugging */
++
+ /* RapidIO definition irq, which read from OF-tree */
+ #define IRQ_RIO_BELL(m)		(((struct rio_priv *)(m->priv))->bellirq)
+ #define IRQ_RIO_TX(m)		(((struct rio_priv *)(m->priv))->txirq)
+ #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
++#define IRQ_RIO_PW(m)		(((struct rio_priv *)(m->priv))->pwirq)
+ 
+ #define RIO_ATMU_REGS_OFFSET	0x10c00
+ #define RIO_P_MSG_REGS_OFFSET	0x11000
+ #define RIO_S_MSG_REGS_OFFSET	0x13000
+ #define RIO_ESCSR		0x158
+ #define RIO_CCSR		0x15c
++#define RIO_LTLEDCSR		0x0608
++#define RIO_LTLEECSR		0x060c
++#define RIO_EPWISR		0x10010
+ #define RIO_ISR_AACR		0x10120
+ #define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
+ #define RIO_MAINT_WIN_SIZE	0x400000
+@@ -54,6 +66,18 @@
+ #define RIO_MSG_ISR_QFI		0x00000010
+ #define RIO_MSG_ISR_DIQI	0x00000001
+ 
++#define RIO_IPWMR_SEN		0x00100000
++#define RIO_IPWMR_QFIE		0x00000100
++#define RIO_IPWMR_EIE		0x00000020
++#define RIO_IPWMR_CQ		0x00000002
++#define RIO_IPWMR_PWE		0x00000001
++
++#define RIO_IPWSR_QF		0x00100000
++#define RIO_IPWSR_TE		0x00000080
++#define RIO_IPWSR_QFI		0x00000010
++#define RIO_IPWSR_PWD		0x00000008
++#define RIO_IPWSR_PWB		0x00000004
++
+ #define RIO_MSG_DESC_SIZE	32
+ #define RIO_MSG_BUFFER_SIZE	4096
+ #define RIO_MIN_TX_RING_SIZE	2
+@@ -120,7 +144,7 @@ struct rio_msg_regs {
+ 	u32 pad10[26];
+ 	u32 pwmr;
+ 	u32 pwsr;
+-	u32 pad11;
++	u32 epwqbar;
+ 	u32 pwqbar;
  };
  
-@@ -246,10 +247,20 @@ static void rio_route_set_ops(struct rio
- 			pr_debug("RIO: adding routing ops for %s\n", rio_name(rdev));
- 			rdev->rswitch->add_entry = cur->add_hook;
- 			rdev->rswitch->get_entry = cur->get_hook;
-+			rdev->rswitch->clr_table = cur->clr_hook;
-+			break;
- 		}
- 		cur++;
- 	}
+@@ -159,6 +183,14 @@ struct rio_msg_rx_ring {
+ 	void *dev_id;
+ };
  
-+	if ((cur >= end) && (rdev->pef & RIO_PEF_STD_RT)) {
-+		pr_debug("RIO: adding STD routing ops for %s\n",
-+			rio_name(rdev));
-+		rdev->rswitch->add_entry = rio_std_route_add_entry;
-+		rdev->rswitch->get_entry = rio_std_route_get_entry;
-+		rdev->rswitch->clr_table = rio_std_route_clr_table;
-+	}
++struct rio_port_write_msg {
++	void *virt;
++	dma_addr_t phys;
++	u32 msg_count;
++	u32 err_count;
++	u32 discard_count;
++};
 +
- 	if (!rdev->rswitch->add_entry || !rdev->rswitch->get_entry)
- 		printk(KERN_ERR "RIO: missing routing ops for %s\n",
- 		       rio_name(rdev));
-@@ -349,7 +360,7 @@ static struct rio_dev __devinit *rio_set
- 	if (rio_is_switch(rdev)) {
- 		rio_mport_read_config_32(port, destid, hopcount,
- 					 RIO_SWP_INFO_CAR, &rdev->swpinfo);
--		rswitch = kmalloc(sizeof(struct rio_switch), GFP_KERNEL);
-+		rswitch = kzalloc(sizeof(struct rio_switch), GFP_KERNEL);
- 		if (!rswitch)
- 			goto cleanup;
- 		rswitch->switchid = next_switchid;
-@@ -369,6 +380,10 @@ static struct rio_dev __devinit *rio_set
- 			     rdev->rswitch->switchid);
- 		rio_route_set_ops(rdev);
- 
-+		if (do_enum && rdev->rswitch->clr_table)
-+			rdev->rswitch->clr_table(port, destid, hopcount,
-+						 RIO_GLOBAL_TABLE);
-+
- 		list_add_tail(&rswitch->node, &rio_switches);
- 
- 	} else
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/rio.c w33b/drivers/rapidio/rio.c
---- w33a/drivers/rapidio/rio.c	2010-03-01 11:10:12.388399000 -0500
-+++ w33b/drivers/rapidio/rio.c	2010-03-01 09:24:28.076732000 -0500
-@@ -451,6 +451,110 @@ struct rio_dev *rio_get_device(u16 vid, 
- 	return rio_get_asm(vid, did, RIO_ANY_ID, RIO_ANY_ID, from);
- }
- 
-+/**
-+ * rio_std_route_add_entry - Add switch route table entry using standard
-+ *   registers defined in RIO specification rev.1.3
-+ * @mport: Master port to issue transaction
-+ * @destid: Destination ID of the device
-+ * @hopcount: Number of switch hops to the device
-+ * @table: routing table ID (global or port-specific)
-+ * @route_destid: destID entry in the RT
-+ * @route_port: destination port for specified destID
-+ */
-+int rio_std_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 route_port)
-+{
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_DESTID_SEL_CSR,
-+				(u32)route_destid);
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR,
-+				(u32)route_port);
-+	}
-+	udelay(10);
-+	return 0;
-+}
-+
-+/**
-+ * rio_std_route_get_entry - Read switch route table entry (port number)
-+ *   assosiated with specified destID using standard registers defined in RIO
-+ *   specification rev.1.3
-+ * @mport: Master port to issue transaction
-+ * @destid: Destination ID of the device
-+ * @hopcount: Number of switch hops to the device
-+ * @table: routing table ID (global or port-specific)
-+ * @route_destid: destID entry in the RT
-+ * @route_port: returned destination port for specified destID
-+ */
-+int rio_std_route_get_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 *route_port)
-+{
-+	u32 result;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_DESTID_SEL_CSR, route_destid);
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR, &result);
-+
-+		*route_port = (u8)result;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * rio_std_route_clr_table - Clear swotch route table using standard registers
-+ *   defined in RIO specification rev.1.3.
-+ * @mport: Master port to issue transaction
-+ * @local: Indicate a local master port or remote device access
-+ * @destid: Destination ID of the device
-+ * @hopcount: Number of switch hops to the device
-+ * @table: routing table ID (global or port-specific)
-+ */
-+int rio_std_route_clr_table(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table)
-+{
-+	u32 max_destid = 0xff;
-+	u32 i, pef, id_inc = 1, ext_cfg = 0;
-+	u32 port_sel = RIO_INVALID_ROUTE;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+					 RIO_PEF_CAR, &pef);
-+
-+		if (mport->sys_size) {
-+			rio_mport_read_config_32(mport, destid, hopcount,
-+						 RIO_SWITCH_RT_LIMIT,
-+						 &max_destid);
-+			max_destid &= RIO_RT_MAX_DESTID;
-+		}
-+
-+		if (pef & RIO_PEF_EXT_RT) {
-+			ext_cfg = 0x80000000;
-+			id_inc = 4;
-+			port_sel = (RIO_INVALID_ROUTE << 24) |
-+				   (RIO_INVALID_ROUTE << 16) |
-+				   (RIO_INVALID_ROUTE << 8) |
-+				   RIO_INVALID_ROUTE;
-+		}
-+
-+		for (i = 0; i <= max_destid;) {
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+					RIO_STD_RTE_CONF_DESTID_SEL_CSR,
-+					ext_cfg | i);
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+					RIO_STD_RTE_CONF_PORT_SEL_CSR,
-+					port_sel);
-+			i += id_inc;
-+		}
-+	}
-+
-+	udelay(10);
-+	return 0;
-+}
-+
- static void rio_fixup_device(struct rio_dev *dev)
- {
- }
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/rio.h w33b/drivers/rapidio/rio.h
---- w33a/drivers/rapidio/rio.h	2010-03-01 11:10:12.391379000 -0500
-+++ w33b/drivers/rapidio/rio.h	2010-03-01 09:24:28.079738000 -0500
-@@ -21,6 +21,14 @@ extern u32 rio_mport_get_feature(struct 
- extern int rio_create_sysfs_dev_files(struct rio_dev *rdev);
- extern int rio_enum_mport(struct rio_mport *mport);
- extern int rio_disc_mport(struct rio_mport *mport);
-+extern int rio_std_route_add_entry(struct rio_mport *mport, u16 destid,
-+				   u8 hopcount, u16 table, u16 route_destid,
-+				   u8 route_port);
-+extern int rio_std_route_get_entry(struct rio_mport *mport, u16 destid,
-+				   u8 hopcount, u16 table, u16 route_destid,
-+				   u8 *route_port);
-+extern int rio_std_route_clr_table(struct rio_mport *mport, u16 destid,
-+				   u8 hopcount, u16 table);
- 
- /* Structures internal to the RIO core code */
- extern struct device_attribute rio_dev_attrs[];
-@@ -30,9 +38,9 @@ extern struct rio_route_ops __start_rio_
- extern struct rio_route_ops __end_rio_route_ops[];
- 
- /* Helpers internal to the RIO core code */
--#define DECLARE_RIO_ROUTE_SECTION(section, vid, did, add_hook, get_hook)  \
--	static struct rio_route_ops __rio_route_ops __used   \
--	__section(section)= { vid, did, add_hook, get_hook };
-+#define DECLARE_RIO_ROUTE_SECTION(section, name, vid, did, add_hook, get_hook, clr_hook) \
-+	static const struct rio_route_ops __rio_route_##name __used \
-+	__section(section) = { vid, did, add_hook, get_hook, clr_hook };
+ struct rio_priv {
+ 	struct device *dev;
+ 	void __iomem *regs_win;
+@@ -171,9 +203,14 @@ struct rio_priv {
+ 	struct rio_dbell_ring dbell_ring;
+ 	struct rio_msg_tx_ring msg_tx_ring;
+ 	struct rio_msg_rx_ring msg_rx_ring;
++	struct rio_port_write_msg port_write_msg;
+ 	int bellirq;
+ 	int txirq;
+ 	int rxirq;
++	int pwirq;
++	struct work_struct pw_work;
++	struct kfifo pw_fifo;
++	spinlock_t pw_fifo_lock;
+ };
  
  /**
-  * DECLARE_RIO_ROUTE_OPS - Registers switch routing operations
-@@ -47,9 +55,9 @@ extern struct rio_route_ops __end_rio_ro
-  * rio_route_ops is initialized with the ops and placed into a
-  * RIO-specific kernel section.
-  */
--#define DECLARE_RIO_ROUTE_OPS(vid, did, add_hook, get_hook)		\
--	DECLARE_RIO_ROUTE_SECTION(.rio_route_ops,			\
--			vid, did, add_hook, get_hook)
-+#define DECLARE_RIO_ROUTE_OPS(vid, did, add_hook, get_hook, clr_hook)	\
-+	DECLARE_RIO_ROUTE_SECTION(.rio_route_ops, vid##did,		\
-+			vid, did, add_hook, get_hook, clr_hook)
- 
- #define RIO_GET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x00ff0000) >> 16))
- #define RIO_SET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x000000ff) << 16))
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/switches/Makefile w33b/drivers/rapidio/switches/Makefile
---- w33a/drivers/rapidio/switches/Makefile	2010-03-01 11:10:12.575194000 -0500
-+++ w33b/drivers/rapidio/switches/Makefile	2010-03-01 09:24:28.100711000 -0500
-@@ -2,4 +2,4 @@
- # Makefile for RIO switches
- #
- 
--obj-$(CONFIG_RAPIDIO)	+= tsi500.o
-+obj-$(CONFIG_RAPIDIO)	+= tsi500.o tsi568.o tsi57x.o idtcps.o
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/switches/idtcps.c w33b/drivers/rapidio/switches/idtcps.c
---- w33a/drivers/rapidio/switches/idtcps.c	1969-12-31 19:00:00.000000000 -0500
-+++ w33b/drivers/rapidio/switches/idtcps.c	2010-03-01 10:58:56.340654000 -0500
-@@ -0,0 +1,89 @@
-+/*
-+ * IDT CPS RapidIO switches support
-+ *
-+ * Copyright 2009 Integrated Device Technology, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/rio_ids.h>
-+#include "../rio.h"
-+
-+#define CPS_NO_ROUTE 0xdf
-+
-+static int
-+idtcps_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 route_port)
-+{
-+	u32 result;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_DESTID_SEL_CSR, route_destid);
-+
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR, &result);
-+
-+		result = (0xffffff00 & result) | (u32)route_port;
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR, result);
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+idtcps_route_get_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 *route_port)
-+{
-+	u32 result;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_DESTID_SEL_CSR, route_destid);
-+
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR, &result);
-+
-+		if (CPS_NO_ROUTE == (u8)result)
-+			result = RIO_INVALID_ROUTE;
-+
-+		*route_port = (u8)result;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+idtcps_route_clr_table(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table)
-+{
-+	u32 i;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		for (i = 0x80000000; i <= 0x800000ff;) {
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_DESTID_SEL_CSR, i);
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+				RIO_STD_RTE_CONF_PORT_SEL_CSR,
-+				(RIO_INVALID_ROUTE << 24) |
-+				(RIO_INVALID_ROUTE << 16) |
-+				(RIO_INVALID_ROUTE << 8) | RIO_INVALID_ROUTE);
-+			i += 4;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDTCPS6Q, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDTCPS8, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDTCPS10Q, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDTCPS12, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDTCPS16, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_IDT, RIO_DID_IDT70K200, idtcps_route_add_entry, idtcps_route_get_entry, idtcps_route_clr_table);
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/switches/tsi500.c w33b/drivers/rapidio/switches/tsi500.c
---- w33a/drivers/rapidio/switches/tsi500.c	2010-03-01 11:10:12.613190000 -0500
-+++ w33b/drivers/rapidio/switches/tsi500.c	2010-03-01 09:24:28.113701000 -0500
-@@ -57,4 +57,4 @@ tsi500_route_get_entry(struct rio_mport 
- 	return ret;
+@@ -929,6 +966,223 @@ static int fsl_rio_doorbell_init(struct 
+ 	return rc;
  }
  
--DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI500, tsi500_route_add_entry, tsi500_route_get_entry);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI500, tsi500_route_add_entry, tsi500_route_get_entry, NULL);
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/switches/tsi568.c w33b/drivers/rapidio/switches/tsi568.c
---- w33a/drivers/rapidio/switches/tsi568.c	1969-12-31 19:00:00.000000000 -0500
-+++ w33b/drivers/rapidio/switches/tsi568.c	2010-03-01 09:24:28.120691000 -0500
-@@ -0,0 +1,106 @@
-+/*
-+ * RapidIO Tsi568 switch support
++/**
++ * fsl_rio_port_write_handler - MPC85xx port write interrupt handler
++ * @irq: Linux interrupt number
++ * @dev_instance: Pointer to interrupt-specific data
 + *
-+ * Copyright 2009-2010 Integrated Device Technology, Inc.
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Handles port write interrupts. Parses a list of registered
++ * port write event handlers and executes a matching event handler.
 + */
-+
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/rio_ids.h>
-+#include <linux/delay.h>
-+#include "../rio.h"
-+
-+/* Global (broadcast) route registers */
-+#define SPBC_ROUTE_CFG_DESTID	0x10070
-+#define SPBC_ROUTE_CFG_PORT	0x10074
-+
-+/* Per port route registers */
-+#define SPP_ROUTE_CFG_DESTID(n)	(0x11070 + 0x100*n)
-+#define SPP_ROUTE_CFG_PORT(n)	(0x11074 + 0x100*n)
-+
-+static int
-+tsi568_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 route_port)
++static irqreturn_t
++fsl_rio_port_write_handler(int irq, void *dev_instance)
 +{
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPBC_ROUTE_CFG_DESTID, route_destid);
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPBC_ROUTE_CFG_PORT, route_port);
-+	} else {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPP_ROUTE_CFG_DESTID(table),
-+					route_destid);
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPP_ROUTE_CFG_PORT(table), route_port);
++	u32 ipwmr, ipwsr;
++	struct rio_mport *port = (struct rio_mport *)dev_instance;
++	struct rio_priv *priv = port->priv;
++	u32 epwisr, tmp;
++
++	ipwmr = in_be32(&priv->msg_regs->pwmr);
++	ipwsr = in_be32(&priv->msg_regs->pwsr);
++
++	epwisr = in_be32(priv->regs_win + RIO_EPWISR);
++	if (epwisr & 0x80000000) {
++		tmp = in_be32(priv->regs_win + RIO_LTLEDCSR);
++		pr_info("RIO_LTLEDCSR = 0x%x\n", tmp);
++		out_be32(priv->regs_win + RIO_LTLEDCSR, 0);
 +	}
 +
-+	udelay(10);
++	if (!(epwisr & 0x00000001))
++		return IRQ_HANDLED;
 +
-+	return 0;
-+}
++#ifdef DEBUG_PW
++	pr_debug("PW Int->IPWMR: 0x%08x IPWSR: 0x%08x (", ipwmr, ipwsr);
++	if (ipwsr & RIO_IPWSR_QF)
++		pr_debug(" QF");
++	if (ipwsr & RIO_IPWSR_TE)
++		pr_debug(" TE");
++	if (ipwsr & RIO_IPWSR_QFI)
++		pr_debug(" QFI");
++	if (ipwsr & RIO_IPWSR_PWD)
++		pr_debug(" PWD");
++	if (ipwsr & RIO_IPWSR_PWB)
++		pr_debug(" PWB");
++	pr_debug(" )\n");
++#endif
++	out_be32(&priv->msg_regs->pwsr,
++		 ipwsr & (RIO_IPWSR_TE | RIO_IPWSR_QFI | RIO_IPWSR_PWD));
 +
-+static int
-+tsi568_route_get_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 *route_port)
-+{
-+	int ret = 0;
-+	u32 result;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPBC_ROUTE_CFG_DESTID, route_destid);
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+					SPBC_ROUTE_CFG_PORT, &result);
-+	} else {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPP_ROUTE_CFG_DESTID(table),
-+					route_destid);
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+					SPP_ROUTE_CFG_PORT(table), &result);
++	if ((ipwmr & RIO_IPWMR_EIE) && (ipwsr & RIO_IPWSR_TE)) {
++		priv->port_write_msg.err_count++;
++		pr_info("RIO: Port-Write Transaction Err (%d)\n",
++			 priv->port_write_msg.err_count);
++	}
++	if (ipwsr & RIO_IPWSR_PWD) {
++		priv->port_write_msg.discard_count++;
++		pr_info("RIO: Port Discarded Port-Write Msg(s) (%d)\n",
++			 priv->port_write_msg.discard_count);
 +	}
 +
-+	*route_port = result;
-+	if (*route_port > 15)
-+		ret = -1;
-+
-+	return ret;
-+}
-+
-+static int
-+tsi568_route_clr_table(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table)
-+{
-+	u32 route_idx;
-+	u32 lut_size;
-+
-+	lut_size = (mport->sys_size) ? 0x1ff : 0xff;
-+
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPBC_ROUTE_CFG_DESTID, 0x80000000);
-+		for (route_idx = 0; route_idx <= lut_size; route_idx++)
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+						SPBC_ROUTE_CFG_PORT,
-+						RIO_INVALID_ROUTE);
-+	} else {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					SPP_ROUTE_CFG_DESTID(table),
-+					0x80000000);
-+		for (route_idx = 0; route_idx <= lut_size; route_idx++)
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+						SPP_ROUTE_CFG_PORT(table),
-+						RIO_INVALID_ROUTE);
++	/* Schedule deferred processing if PW was received */
++	if (ipwsr & RIO_IPWSR_QFI) {
++		/* Save PW message (if there is room in FIFO),
++		 * otherwise discard it.
++		 */
++		if (kfifo_avail(&priv->pw_fifo) >= RIO_PW_MSG_SIZE) {
++			priv->port_write_msg.msg_count++;
++			kfifo_in(&priv->pw_fifo, priv->port_write_msg.virt,
++				 RIO_PW_MSG_SIZE);
++		} else {
++			priv->port_write_msg.discard_count++;
++			pr_info("RIO: ISR Discarded Port-Write Msg(s) (%d)\n",
++				 priv->port_write_msg.discard_count);
++		}
++		schedule_work(&priv->pw_work);
 +	}
 +
-+	return 0;
++	/* Issue Clear Queue command. This allows another
++	 * port-write to be received.
++	 */
++	out_be32(&priv->msg_regs->pwmr, ipwmr | RIO_IPWMR_CQ);
++
++	return IRQ_HANDLED;
 +}
 +
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI568, tsi568_route_add_entry, tsi568_route_get_entry, tsi568_route_clr_table);
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/drivers/rapidio/switches/tsi57x.c w33b/drivers/rapidio/switches/tsi57x.c
---- w33a/drivers/rapidio/switches/tsi57x.c	1969-12-31 19:00:00.000000000 -0500
-+++ w33b/drivers/rapidio/switches/tsi57x.c	2010-03-01 09:24:28.125682000 -0500
-@@ -0,0 +1,106 @@
-+/*
-+ * RapidIO Tsi57x switch family support
-+ *
-+ * Copyright 2009 Integrated Device Technology, Inc.
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++static void fsl_pw_dpc(struct work_struct *work)
++{
++	struct rio_priv *priv = container_of(work, struct rio_priv, pw_work);
++	unsigned long flags;
++	u32 msg_buffer[RIO_PW_MSG_SIZE/sizeof(u32)];
++
++	/*
++	 * Process port-write messages
++	 */
++	spin_lock_irqsave(&priv->pw_fifo_lock, flags);
++	while (kfifo_out(&priv->pw_fifo, (unsigned char *)msg_buffer,
++			 RIO_PW_MSG_SIZE)) {
++		/* Process one message */
++		spin_unlock_irqrestore(&priv->pw_fifo_lock, flags);
++#ifdef DEBUG_PW
++		{
++		u32 i;
++		pr_debug("%s : Port-Write Message:", __func__);
++		for (i = 0; i < RIO_PW_MSG_SIZE/sizeof(u32); i++) {
++			if ((i%4) == 0)
++				pr_debug("\n0x%02x: 0x%08x", i*4,
++					 msg_buffer[i]);
++			else
++				pr_debug(" 0x%08x", msg_buffer[i]);
++		}
++		pr_debug("\n");
++		}
++#endif
++		/* Pass the port-write message to RIO core for processing */
++		rio_inb_pwrite_handler((union rio_pw_msg *)msg_buffer);
++		spin_lock_irqsave(&priv->pw_fifo_lock, flags);
++	}
++	spin_unlock_irqrestore(&priv->pw_fifo_lock, flags);
++}
++
++/**
++ * fsl_rio_pw_enable - enable/disable port-write interface init
++ * @mport: Master port implementing the port write unit
++ * @enable:    1=enable; 0=disable port-write message handling
 + */
-+
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/rio_ids.h>
-+#include <linux/delay.h>
-+#include "../rio.h"
-+
-+/* Global (broadcast) route registers */
-+#define SPBC_ROUTE_CFG_DESTID	0x10070
-+#define SPBC_ROUTE_CFG_PORT	0x10074
-+
-+/* Per port route registers */
-+#define SPP_ROUTE_CFG_DESTID(n)	(0x11070 + 0x100*n)
-+#define SPP_ROUTE_CFG_PORT(n)	(0x11074 + 0x100*n)
-+
-+static int
-+tsi57x_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 route_port)
++static int fsl_rio_pw_enable(struct rio_mport *mport, int enable)
 +{
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					  SPBC_ROUTE_CFG_DESTID, route_destid);
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					  SPBC_ROUTE_CFG_PORT, route_port);
-+	} else {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_DESTID(table), route_destid);
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_PORT(table), route_port);
-+	}
++	struct rio_priv *priv = mport->priv;
++	u32 rval;
 +
-+	udelay(10);
++	rval = in_be32(&priv->msg_regs->pwmr);
++
++	if (enable)
++		rval |= RIO_IPWMR_PWE;
++	else
++		rval &= ~RIO_IPWMR_PWE;
++
++	out_be32(&priv->msg_regs->pwmr, rval);
 +
 +	return 0;
 +}
 +
-+static int
-+tsi57x_route_get_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table, u16 route_destid, u8 *route_port)
++/**
++ * fsl_rio_port_write_init - MPC85xx port write interface init
++ * @mport: Master port implementing the port write unit
++ *
++ * Initializes port write unit hardware and DMA buffer
++ * ring. Called from fsl_rio_setup(). Returns %0 on success
++ * or %-ENOMEM on failure.
++ */
++static int fsl_rio_port_write_init(struct rio_mport *mport)
 +{
-+	int ret = 0;
-+	u32 result;
++	struct rio_priv *priv = mport->priv;
++	int rc = 0;
 +
-+	if (table == RIO_GLOBAL_TABLE) {
-+		/* Use local RT of the ingress port to avoid possible
-+		   race condition */
-+		rio_mport_read_config_32(mport, destid, hopcount,
-+			RIO_SWP_INFO_CAR, &result);
-+		table = (result & RIO_SWP_INFO_PORT_NUM_MASK);
++	/* Following configurations require a disabled port write controller */
++	out_be32(&priv->msg_regs->pwmr,
++		 in_be32(&priv->msg_regs->pwmr) & ~RIO_IPWMR_PWE);
++
++	/* Initialize port write */
++	priv->port_write_msg.virt = dma_alloc_coherent(priv->dev,
++					RIO_PW_MSG_SIZE,
++					&priv->port_write_msg.phys, GFP_KERNEL);
++	if (!priv->port_write_msg.virt) {
++		pr_err("RIO: unable allocate port write queue\n");
++		return -ENOMEM;
 +	}
 +
-+	rio_mport_write_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_DESTID(table), route_destid);
-+	rio_mport_read_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_PORT(table), &result);
++	priv->port_write_msg.err_count = 0;
++	priv->port_write_msg.discard_count = 0;
 +
-+	*route_port = (u8)result;
-+	if (*route_port > 15)
-+		ret = -1;
++	/* Point dequeue/enqueue pointers at first entry */
++	out_be32(&priv->msg_regs->epwqbar, 0);
++	out_be32(&priv->msg_regs->pwqbar, (u32) priv->port_write_msg.phys);
 +
-+	return ret;
-+}
++	pr_debug("EIPWQBAR: 0x%08x IPWQBAR: 0x%08x\n",
++		 in_be32(&priv->msg_regs->epwqbar),
++		 in_be32(&priv->msg_regs->pwqbar));
 +
-+static int
-+tsi57x_route_clr_table(struct rio_mport *mport, u16 destid, u8 hopcount,
-+		       u16 table)
-+{
-+	u32 route_idx;
-+	u32 lut_size;
++	/* Clear interrupt status IPWSR */
++	out_be32(&priv->msg_regs->pwsr,
++		 (RIO_IPWSR_TE | RIO_IPWSR_QFI | RIO_IPWSR_PWD));
 +
-+	lut_size = (mport->sys_size) ? 0x1ff : 0xff;
++	/* Configure port write contoller for snooping enable all reporting,
++	   clear queue full */
++	out_be32(&priv->msg_regs->pwmr,
++		 RIO_IPWMR_SEN | RIO_IPWMR_QFIE | RIO_IPWMR_EIE | RIO_IPWMR_CQ);
 +
-+	if (table == RIO_GLOBAL_TABLE) {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+					  SPBC_ROUTE_CFG_DESTID, 0x80000000);
-+		for (route_idx = 0; route_idx <= lut_size; route_idx++)
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+						  SPBC_ROUTE_CFG_PORT,
-+						  RIO_INVALID_ROUTE);
-+	} else {
-+		rio_mport_write_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_DESTID(table), 0x80000000);
-+		for (route_idx = 0; route_idx <= lut_size; route_idx++)
-+			rio_mport_write_config_32(mport, destid, hopcount,
-+				SPP_ROUTE_CFG_PORT(table) , RIO_INVALID_ROUTE);
++
++	/* Hook up port-write handler */
++	rc = request_irq(IRQ_RIO_PW(mport), fsl_rio_port_write_handler, 0,
++			 "port-write", (void *)mport);
++	if (rc < 0) {
++		pr_err("MPC85xx RIO: unable to request inbound doorbell irq");
++		goto err_out;
 +	}
 +
-+	return 0;
++	INIT_WORK(&priv->pw_work, fsl_pw_dpc);
++	spin_lock_init(&priv->pw_fifo_lock);
++	if (kfifo_alloc(&priv->pw_fifo, RIO_PW_MSG_SIZE * 32, GFP_KERNEL)) {
++		pr_err("FIFO allocation failed\n");
++		rc = -ENOMEM;
++		goto err_out_irq;
++	}
++
++	pr_debug("IPWMR: 0x%08x IPWSR: 0x%08x\n",
++		 in_be32(&priv->msg_regs->pwmr),
++		 in_be32(&priv->msg_regs->pwsr));
++
++	return rc;
++
++err_out_irq:
++	free_irq(IRQ_RIO_PW(mport), (void *)mport);
++err_out:
++	dma_free_coherent(priv->dev, RIO_PW_MSG_SIZE,
++			  priv->port_write_msg.virt,
++			  priv->port_write_msg.phys);
++	return rc;
 +}
 +
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI572, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
-+DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/include/linux/rio.h w33b/include/linux/rio.h
---- w33a/include/linux/rio.h	2010-03-01 11:10:12.625186000 -0500
-+++ w33b/include/linux/rio.h	2010-03-01 09:24:28.159648000 -0500
-@@ -213,6 +213,7 @@ struct rio_net {
-  * @route_table: Copy of switch routing table
-  * @add_entry: Callback for switch-specific route add function
-  * @get_entry: Callback for switch-specific route get function
-+ * @clr_table: Callback for switch-specific clear route table function
-  */
- struct rio_switch {
- 	struct list_head node;
-@@ -224,6 +225,8 @@ struct rio_switch {
- 			  u16 table, u16 route_destid, u8 route_port);
- 	int (*get_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
- 			  u16 table, u16 route_destid, u8 * route_port);
-+	int (*clr_table) (struct rio_mport *mport, u16 destid, u8 hopcount,
-+			  u16 table);
- };
+ static char *cmdline = NULL;
  
- /* Low-level architecture-dependent routines */
-@@ -307,6 +310,7 @@ struct rio_device_id {
-  * @did: RIO device ID
-  * @add_hook: Callback that adds a route entry
-  * @get_hook: Callback that gets a route entry
-+ * @clr_hook: Callback that clears a switch route table (may be NULL)
-  *
-  * Defines the operations that are necessary to manipulate the route
-  * tables for a particular RIO switch device.
-@@ -317,6 +321,8 @@ struct rio_route_ops {
- 			 u16 table, u16 route_destid, u8 route_port);
- 	int (*get_hook) (struct rio_mport * mport, u16 destid, u8 hopcount,
- 			 u16 table, u16 route_destid, u8 * route_port);
-+	int (*clr_hook) (struct rio_mport *mport, u16 destid, u8 hopcount,
-+			 u16 table);
- };
+ static int fsl_rio_get_hdid(int index)
+@@ -1066,6 +1320,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 	ops->cread = fsl_rio_config_read;
+ 	ops->cwrite = fsl_rio_config_write;
+ 	ops->dsend = fsl_rio_doorbell_send;
++	ops->pwenable = fsl_rio_pw_enable;
  
- /* Architecture and hardware-specific functions */
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/include/linux/rio_ids.h w33b/include/linux/rio_ids.h
---- w33a/include/linux/rio_ids.h	2010-03-01 11:10:12.630185000 -0500
-+++ w33b/include/linux/rio_ids.h	2010-03-01 11:06:18.127603000 -0500
-@@ -20,5 +20,19 @@
+ 	port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
+ 	if (!port) {
+@@ -1088,11 +1343,12 @@ int fsl_rio_setup(struct of_device *dev)
+ 	port->iores.flags = IORESOURCE_MEM;
+ 	port->iores.name = "rio_io_win";
  
- #define RIO_VID_TUNDRA			0x000d
- #define RIO_DID_TSI500			0x0500
-+#define RIO_DID_TSI568			0x0568
-+#define RIO_DID_TSI572			0x0572
-+#define RIO_DID_TSI574			0x0574
-+#define RIO_DID_TSI576			0x0578 /* Same ID as Tsi578 */
-+#define RIO_DID_TSI577			0x0577
-+#define RIO_DID_TSI578			0x0578
-+
-+#define RIO_VID_IDT			0x0038
-+#define RIO_DID_IDT70K200		0x0310
-+#define RIO_DID_IDTCPS8			0x035c
-+#define RIO_DID_IDTCPS12		0x035d
-+#define RIO_DID_IDTCPS16		0x035b
-+#define RIO_DID_IDTCPS6Q		0x035f
-+#define RIO_DID_IDTCPS10Q		0x035e
++	priv->pwirq   = irq_of_parse_and_map(dev->node, 0);
+ 	priv->bellirq = irq_of_parse_and_map(dev->node, 2);
+ 	priv->txirq = irq_of_parse_and_map(dev->node, 3);
+ 	priv->rxirq = irq_of_parse_and_map(dev->node, 4);
+-	dev_info(&dev->dev, "bellirq: %d, txirq: %d, rxirq %d\n", priv->bellirq,
+-				priv->txirq, priv->rxirq);
++	dev_info(&dev->dev, "pwirq: %d, bellirq: %d, txirq: %d, rxirq %d\n",
++		 priv->pwirq, priv->bellirq, priv->txirq, priv->rxirq);
  
- #endif				/* LINUX_RIO_IDS_H */
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33a/include/linux/rio_regs.h w33b/include/linux/rio_regs.h
---- w33a/include/linux/rio_regs.h	2010-03-01 11:10:12.635202000 -0500
-+++ w33b/include/linux/rio_regs.h	2010-03-01 09:24:28.165643000 -0500
-@@ -39,6 +39,8 @@
- #define  RIO_PEF_INB_MBOX2		0x00200000	/* [II] Mailbox 2 */
- #define  RIO_PEF_INB_MBOX3		0x00100000	/* [II] Mailbox 3 */
- #define  RIO_PEF_INB_DOORBELL		0x00080000	/* [II] Doorbells */
-+#define  RIO_PEF_EXT_RT			0x00000200	/* [III, 1.3] Extended route table support */
-+#define  RIO_PEF_STD_RT			0x00000100	/* [III, 1.3] Standard route table support */
- #define  RIO_PEF_CTLS			0x00000010	/* [III] CTLS */
- #define  RIO_PEF_EXT_FEATURES		0x00000008	/* [I] EFT_PTR valid */
- #define  RIO_PEF_ADDR_66		0x00000004	/* [I] 66 bits */
-@@ -91,7 +93,10 @@
- #define  RIO_OPS_ATOMIC_CLR		0x00000010	/* [I] Atomic clr op */
- #define  RIO_OPS_PORT_WRITE		0x00000004	/* [I] Port-write op */
+ 	rio_init_dbell_res(&port->riores[RIO_DOORBELL_RESOURCE], 0, 0xffff);
+ 	rio_init_mbox_res(&port->riores[RIO_INB_MBOX_RESOURCE], 0, 0);
+@@ -1174,6 +1430,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 			(law_start + RIO_MAINT_WIN_SIZE) >> 12);
+ 	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);	/* 4k */
+ 	fsl_rio_doorbell_init(port);
++	fsl_rio_port_write_init(port);
  
--					/* 0x20-0x3c *//* Reserved */
-+					/* 0x20-0x30 *//* Reserved */
-+
-+#define	RIO_SWITCH_RT_LIMIT	0x34	/* [III, 1.3] Switch Route Table Destination ID Limit CAR */
-+#define	 RIO_RT_MAX_DESTID		0x0000ffff
- 
- #define RIO_MBOX_CSR		0x40	/* [II] Mailbox CSR */
- #define  RIO_MBOX0_AVAIL		0x80000000	/* [II] Mbox 0 avail */
-@@ -153,7 +158,11 @@
- #define RIO_HOST_DID_LOCK_CSR	0x68	/* [III] Host Base Device ID Lock CSR */
- #define RIO_COMPONENT_TAG_CSR	0x6c	/* [III] Component Tag CSR */
- 
--					/* 0x70-0xf8 *//* Reserved */
-+#define RIO_STD_RTE_CONF_DESTID_SEL_CSR	0x70
-+#define RIO_STD_RTE_CONF_PORT_SEL_CSR	0x74
-+#define RIO_STD_RTE_DEFAULT_PORT	0x78
-+
-+					/* 0x7c-0xf8 *//* Reserved */
- 					/* 0x100-0xfff8 *//* [I] Extended Features Space */
- 					/* 0x10000-0xfffff8 *//* [I] Implementation-defined Space */
- 
-@@ -186,6 +195,7 @@
- #define RIO_EFB_SER_EP_ID	0x0004	/* [VI] LP/Serial EP Devices */
- #define RIO_EFB_SER_EP_REC_ID	0x0005	/* [VI] LP/Serial EP Recovery Devices */
- #define RIO_EFB_SER_EP_FREE_ID	0x0006	/* [VI] LP/Serial EP Free Devices */
-+#define RIO_EFB_SER_EP_FREC_ID	0x0009  /* [VI] LP/Serial EP Free Recovery Devices */
- 
- /*
-  * Physical 8/16 LP-LVDS
+ 	return 0;
+ err:
 
 ---
 
