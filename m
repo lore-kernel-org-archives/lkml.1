@@ -1,62 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780Ab0CHUWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:22:17 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:55069 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755714Ab0CHUWG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:22:06 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
-       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B947393.2050002@kernel.org>
-	<1268031640.4389.11.camel@mulgrave.site>
-	<yq1vdd6bzgz.fsf@sermon.lab.mkp.net>
-	<yq1mxyibz7o.fsf@sermon.lab.mkp.net>
-	<yq1iq96bz22.fsf@sermon.lab.mkp.net> <4B9546E6.6050006@zytor.com>
-Date: Mon, 08 Mar 2010 15:19:05 -0500
-In-Reply-To: <4B9546E6.6050006@zytor.com> (H. Peter Anvin's message of "Mon,
-	08 Mar 2010 10:50:14 -0800")
-Message-ID: <yq1fx4aa7nq.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	id S1755797Ab0CHUW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 15:22:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15171 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755684Ab0CHUWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 15:22:50 -0500
+Message-ID: <4B955C8D.6030907@RedHat.com>
+Date: Mon, 08 Mar 2010 15:22:37 -0500
+From: Steve Dickson <SteveD@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100225 Fedora/3.0.2-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B955C20.00D8:SCFMA4539814,ss=1,fgs=0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [git pull] vfs part 3 (write_inode mess)
+References: <1267802800.5174.6.camel@localhost.localdomain> <20100305154823.GV30031@ZenIV.linux.org.uk> <20100305174017.GX30031@ZenIV.linux.org.uk>
+In-Reply-To: <20100305174017.GX30031@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
+On 03/05/2010 12:40 PM, Al Viro wrote:
+> On Fri, Mar 05, 2010 at 03:48:23PM +0000, Al Viro wrote:
+>> I'm going to push the next VFS pile in about half an hour and get to the
+>> write_inode situation.  I'm not sure what's the best course here.  Note
+>> that since you've pulled it, you also have conflicts with what's in the
+>> mainline.  I can do *another* backmerge (already had one due to gfs2 trivial
+>> conflicts) and push the result.  Which will suck, since XFS conflicts
+>> are not entirely trivial and we'll get a really ugly merge node, with
+>> conflict resolution both hidden and not quite obvious.
+> 
+> OK, a backmerge it is.  Linus, could you please pull
+> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ write_inode
+> or suggest a saner way to do that?
+> 
+> I've done backmerges of two points in mainline (trees that got merged
+> into mainline, actually) that created conflicts.  So at that point it's
+> (a) descendent of what's been pulled into NFS tree and (b) merges clean
+> with mainline.  All for two patches (at commit 716c28c..) ;-/
+> 
+> It's independent from the previous VFS pull; there's more stuff, hopefully
+> for later today, but the worst of the mess should be gone with that one.
+Has there been any kind of testing that show this approach does indeed
+improve performance? Any hardcore number? 
 
-hpa> On the flipside, though, there really is very little net benefit to
-hpa> 4K as opposed to 512 byte logical sectors: the additional protocol
-hpa> overhead is relatively minimal, and as long as writes are aligned
-hpa> full blocks, there shouldn't be any additional overhead on either
-hpa> the OS or the drive side.  On the plus side, you get full
-hpa> compatibility with the existing software stack.  The equation
-hpa> really seems rather simple.
+Just curious....
 
-4KB sectors are not a win for anybody except the drive vendors.
+steved.
 
-There is a push in the industry right now to keep the 512-byte logical
-blocks forever.  The first step would be to report misaligned accesses
-or accesses that are not a multiple of the physical block size.  Second
-step would be to eventually reject any write that's not a properly
-aligned multiple of the physical block size.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
