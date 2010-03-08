@@ -1,81 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715Ab0CHVJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:09:18 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:59665 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755410Ab0CHVJP convert rfc822-to-8bit (ORCPT
+	id S1755800Ab0CHVNQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:13:16 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:44861 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755695Ab0CHVNL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:09:15 -0500
-To: =?utf-8?Q?Cl=C3=A1udio?= Martins <ctpm@ist.utl.pt>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>,
-       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B947393.2050002@kernel.org>
-	<1268031640.4389.11.camel@mulgrave.site>
-	<yq1vdd6bzgz.fsf@sermon.lab.mkp.net>
-	<yq1mxyibz7o.fsf@sermon.lab.mkp.net>
-	<yq1iq96bz22.fsf@sermon.lab.mkp.net> <4B9546E6.6050006@zytor.com>
-	<1268074705.10660.23.camel@mulgrave.site>
-	<20100308200206.dac60db7.ctpm@ist.utl.pt>
-Date: Mon, 08 Mar 2010 16:07:14 -0500
-In-Reply-To: <20100308200206.dac60db7.ctpm@ist.utl.pt> (=?utf-8?Q?=22Cl?=
- =?utf-8?Q?=C3=A1udio?= Martins"'s
-	message of "Mon, 8 Mar 2010 20:02:06 +0000")
-Message-ID: <yq1bpeya5fh.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Mon, 8 Mar 2010 16:13:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=ha4LoPVO7ny4d2Tir9l4WPvH6N4/3znimo1bvswOiA4fhVlaHusN0zrB5xNAfsNryT
+         688YsFEMXxIIECwHzyuG9y5GeM9wwOImWxqkeXTEPMwlOI2DXvmVKLPQZ/OTxz6fNEnS
+         dQE15dor0ekN/2LLTk9mLK3DRnAQ5KcYc/Iqc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <aa4c40ff1003081107n78e9f052n2a754680e5491c68@mail.gmail.com>
+References: <aa4c40ff1003081107n78e9f052n2a754680e5491c68@mail.gmail.com>
+Date: Mon, 8 Mar 2010 13:13:10 -0800
+Message-ID: <aa4c40ff1003081313s7492513bk14a48c6097b90407@mail.gmail.com>
+Subject: Re: SIIG DP CyberSerial 4S PCIe Support
+From: James Lamanna <jlamanna@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B956756.009C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Cl√°udio" == Cl√°udio Martins <ctpm@ist.utl.pt> writes:
+On Mon, Mar 8, 2010 at 11:07 AM, James Lamanna <jlamanna@gmail.com> wrote:
+> Hi,
+> I recently purchased a SIIG DP CyberSerial 4S PCIe card, however the
+> kernel doesn't seem to recognize it.
+> There are no messages in dmesg or anything about it.
+> Currently I'm at 2.6.24, but looking at drivers/serial/8250_pci.c
+> between 2.6.24 and 2.6.32 there doesn't
+> seem to be real changes with SIIG cards.
+> Seems like other SIIG cards are supported, so are we just missing the
+> PCI IDs for this card?
+>
+> Here's the lspci -nnvvvvvv output:
+>
+> 01:00.0 Serial controller [0700]: Oxford Semiconductor Ltd Unknown
+> device [1415:c208] (prog-if 06 [16950])
+> † † † †Subsystem: Siig Inc Unknown device [131f:2250]
+> † † † †Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+> † † † †Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> † † † †Interrupt: pin A routed to IRQ 16
+> † † † †Region 0: Memory at fe8fc000 (32-bit, non-prefetchable) [size=16K]
+> † † † †Region 1: Memory at fe600000 (32-bit, non-prefetchable) [size=2M]
+> † † † †Region 2: Memory at fe400000 (32-bit, non-prefetchable) [size=2M]
+> † † † †Capabilities: [40] Power Management version 3
+> † † † † † † † †Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=55mA
+> PME(D0-,D1+,D2+,D3hot+,D3cold+)
+> † † † † † † † †Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> † † † †Capabilities: [70] Express Endpoint IRQ 0
+> † † † † † † † †Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+> † † † † † † † †Device: Latency L0s <128ns, L1 <2us
+> † † † † † † † †Device: AtnBtn- AtnInd- PwrInd-
+> † † † † † † † †Device: Errors: Correctable- Non-Fatal+ Fatal+ Unsupported-
+> † † † † † † † †Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
+> † † † † † † † †Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+> † † † † † † † †Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+> † † † † † † † †Link: Latency L0s <512ns, L1 <64us
+> † † † † † † † †Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+> † † † † † † † †Link: Speed 2.5Gb/s, Width x1
+> † † † †Capabilities: [b0] MSI-X: Enable- Mask- TabSize=16
+> † † † † † † † †Vector table: BAR=1 offset=001b3000
+> † † † † † † † †PBA: BAR=1 offset=001b2000
 
-Cl√°udio> So the question is: what are hard drive makers guaranteeing (if
-Cl√°udio> anything at all)?
+After some more digging I found these messages in dmesg which doesn't
+exactly sound good:
 
-No guarantees.  Nothing that you can get in writing, anyway.
+[   52.104180] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level,
+low) -> IRQ 16
+[   52.104189] ACPI: PCI interrupt for device 0000:01:00.0 disabled
 
+01:00.0 is the device ID of the SIIG card.
+Any reason ACPI would disable interrupts for this card?
 
-Cl√°udio> Was a 512B sector write really atomic?
+Thanks.
 
-Sometimes.
+-- James
 
-
-Cl√°udio> Is a 4k one?  
-
-Sometimes, maybe.
-
-The problem with 4KB physical blocks is that if you do a partial or
-misaligned write you'll end up having to do read-modify-write.  And that
-introduces are scenario where a subsequent write error will affect
-logical blocks that were not part of the I/O request.
-
-However, you also have that with regular drives because they often write
-more than the actual block undergoing I/O.  For instance to reduce
-hotspot bleed to adjacent sectors.
-
-There have been several unsuccessful attempts at nudging the drive
-vendors into giving us real guarantees (supercapacitors, NVRAM or
-flash-backed write cache).  No luck so far.  So people that care use
-arrays with non-volatile caches.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+>
+> Please CC me for I am not subscribed.
+>
+> Thanks.
+>
+> -- James
+>
