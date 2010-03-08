@@ -1,51 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396Ab0CHQIA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 11:08:00 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41312 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755360Ab0CHQH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 11:07:58 -0500
-Date: Mon, 8 Mar 2010 11:07:56 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jason Wessel <jason.wessel@windriver.com>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       Andrew Morton <akpm@linux-foundation.org>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] usb-serial: Fix usb serial console open/close regression
-In-Reply-To: <4B951B0E.3000801@windriver.com>
-Message-ID: <Pine.LNX.4.44L0.1003081105240.1596-100000@iolanthe.rowland.org>
+	id S1755407Ab0CHQJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 11:09:40 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48174 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755363Ab0CHQJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 11:09:38 -0500
+Date: Mon, 8 Mar 2010 16:09:21 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+Message-ID: <20100308160920.GA13788@csn.ul.ie>
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010, Jason Wessel wrote:
-
-> > This is a little unfortunate.  It would be better to prevent
-> > tty_port_shutdown() from clearing ASYNCB_INITIALIZED in the first
-> > place.  The problem is that the tty core doesn't know when the port is
-> > being used as a console.  There ought to be a way to tell it.
-> >   
+On Mon, Mar 08, 2010 at 10:21:04AM +0100, Thomas Gleixner wrote:
+> __zone_pcp_update() iterates over NR_CPUS instead of limiting the
+> access to the possible cpus. This might result in access to
+> uninitialized areas as the per cpu allocator only populates the per
+> cpu memory for possible cpus.
 > 
-> I agree, but presently there is no way to do so.   Up until 2.6.33 the
-> ASYNCB_INITIALIZED was being used to track this, but now it is used a
-> bit differently.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+Looks good.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> We still also have the same sort of issue for the passing in the initial
-> baud.  I don't know if you want to go for a short term approach this
-> way, or try to implement something different right now.  When you do
-> consider something longer term, I would like it to incorporate the other
-> serial settings as well, such that if the console initializes them first
-> the get correctly inherited by the tty open().
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -3224,7 +3224,7 @@ static int __zone_pcp_update(void *data)
+>  	int cpu;
+>  	unsigned long batch = zone_batchsize(zone), flags;
+>  
+> -	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+> +	for_each_possible_cpu(cpu) {
+>  		struct per_cpu_pageset *pset;
+>  		struct per_cpu_pages *pcp;
+>  
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
-I don't want to make any changes before hearing from Alan Cox.  Doing 
-the right thing probably means switching all the tty drivers over to 
-the tty_port model.  I don't know which ones still need to be changed.
-
-Alan Stern
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
