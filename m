@@ -1,54 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797Ab0CHUW5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:22:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15171 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755684Ab0CHUWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:22:50 -0500
-Message-ID: <4B955C8D.6030907@RedHat.com>
-Date: Mon, 08 Mar 2010 15:22:37 -0500
-From: Steve Dickson <SteveD@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100225 Fedora/3.0.2-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.2
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: [git pull] vfs part 3 (write_inode mess)
-References: <1267802800.5174.6.camel@localhost.localdomain> <20100305154823.GV30031@ZenIV.linux.org.uk> <20100305174017.GX30031@ZenIV.linux.org.uk>
-In-Reply-To: <20100305174017.GX30031@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755793Ab0CHUZe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 15:25:34 -0500
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:35331 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753798Ab0CHUZ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 15:25:27 -0500
+X-Greylist: delayed 3425 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 15:25:26 EST
+Date: Mon, 8 Mar 2010 19:27:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: Upstream first policy
+Message-ID: <20100308192744.5f40a5ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
+	<20100308094647.GA14268@elte.hu>
+	<20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+	<20100308190857.400bde09@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.7; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/05/2010 12:40 PM, Al Viro wrote:
-> On Fri, Mar 05, 2010 at 03:48:23PM +0000, Al Viro wrote:
->> I'm going to push the next VFS pile in about half an hour and get to the
->> write_inode situation.  I'm not sure what's the best course here.  Note
->> that since you've pulled it, you also have conflicts with what's in the
->> mainline.  I can do *another* backmerge (already had one due to gfs2 trivial
->> conflicts) and push the result.  Which will suck, since XFS conflicts
->> are not entirely trivial and we'll get a really ugly merge node, with
->> conflict resolution both hidden and not quite obvious.
-> 
-> OK, a backmerge it is.  Linus, could you please pull
-> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ write_inode
-> or suggest a saner way to do that?
-> 
-> I've done backmerges of two points in mainline (trees that got merged
-> into mainline, actually) that created conflicts.  So at that point it's
-> (a) descendent of what's been pulled into NFS tree and (b) merges clean
-> with mainline.  All for two patches (at commit 716c28c..) ;-/
-> 
-> It's independent from the previous VFS pull; there's more stuff, hopefully
-> for later today, but the worst of the mess should be gone with that one.
-Has there been any kind of testing that show this approach does indeed
-improve performance? Any hardcore number? 
+> That's the point. Just admit that, and then let the calm of "Ooh, there 
+> are different kinds of circumstances that may want different kinds of 
+> rules" permeate you.
 
-Just curious....
+man restorecond
 
-steved.
+I don't think the SELinux folks would or could deny that case existed...
 
+Alan
