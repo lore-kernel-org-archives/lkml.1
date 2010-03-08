@@ -1,41 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965Ab0CHMQk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 07:16:40 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:34257 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754604Ab0CHMQg (ORCPT
+	id S1755138Ab0CHMcL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 07:32:11 -0500
+Received: from 89-230.252-81.static-ip.oleane.fr ([81.252.230.89]:37456 "EHLO
+	smtp.lii-enac.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480Ab0CHMcJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 07:16:36 -0500
-Date: Mon, 8 Mar 2010 13:16:35 +0100
-From: Cyril Hrubis <metan@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       zaurus-devel@www.linuxtogo.org
-Subject: Re: bit errors on spitz
-Message-ID: <20100308121634.GA14904@atrey.karlin.mff.cuni.cz>
-References: <20100305212708.GC21773@elf.ucw.cz> <f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com> <20100308072858.GA29939@atrey.karlin.mff.cuni.cz> <20100308082530.GA1982@atrey.karlin.mff.cuni.cz> <1268048916.6477.9.camel@utx.utx.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268048916.6477.9.camel@utx.utx.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Mar 2010 07:32:09 -0500
+X-Greylist: delayed 383 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 07:32:09 EST
+In-Reply-To: <4B94541C.5090509@seas.upenn.edu>
+References: <48A28051AC6D7A48B64F28272458190301AF29@Exchange-IL.n-trig.com> <4B94541C.5090509@seas.upenn.edu>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <0DBCC204-5684-434A-92C3-0DD3C6FE588E@enac.fr>
+Cc: Micki Balanga <micki@n-trig.com>, jkosina@suse.cz, peterhuewe@gmx.de,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+From: =?ISO-8859-1?Q?St=E9phane_Chatty?= <chatty@enac.fr>
+Subject: Re: [PATCH] USB: N-trig Finger Pen Multitouch fix
+Date: Mon, 8 Mar 2010 13:25:40 +0100
+To: Rafi Rubin <rafi@seas.upenn.edu>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> - And I see display noise while CF Wi-Fi card is active.
 
-Forgotten about this one. See for yourself, notice short black vertical lines
-flashing randomly.
+Le 8 mars 10 à 02:34, Rafi Rubin a écrit :
 
-http://atrey.karlin.mff.cuni.cz/~metan/outgoing/zaurus_sickness.mpg
+> (...)
 
--- 
-metan
+> I see quite a number of changes that handle the protocol better  
+> than my version,
+> would you be offended if I begin to absorb those and submit joint  
+> patches?  I'm
+> not sure about the proper etiquette for that.
+
+I would support this option.
+
+St.
+
