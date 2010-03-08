@@ -1,70 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816Ab0CHX2f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:28:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42077 "EHLO smtps.tip.net.au"
+	id S1756065Ab0CHXhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:37:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44724 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070Ab0CHX2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:28:32 -0500
-Date: Tue, 9 Mar 2010 10:28:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH] i2c: update for semaphore to mutex conversion of devices
-Message-Id: <20100309102828.18351564.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756012Ab0CHXhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:37:39 -0500
+Message-ID: <4B958ABC.3010401@kernel.org>
+Date: Tue, 09 Mar 2010 08:39:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, sivanich@sgi.com, torvalds@linux-foundation.org,
+       mingo@elte.hu, peterz@infradead.org, dipankar@in.ibm.com,
+       josh@freedesktop.org, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 2/4] stop_machine: reimplement using cpuhog
+References: <1268063603-7425-1-git-send-email-tj@kernel.org> <1268063603-7425-3-git-send-email-tj@kernel.org> <20100308171020.GC2557@osiris.boeblingen.de.ibm.com> <20100308182708.GA8504@redhat.com> <20100308193737.GA2466@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20100308193737.GA2466@osiris.boeblingen.de.ibm.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 23:36:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been carrying this patch in linux-next for some time and now
-mainline needs it.
+Hello,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/i2c/i2c-smbus.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+On 03/09/2010 04:37 AM, Heiko Carstens wrote:
+>> How cpuhog can make a difference? Afaics, we shouldn't pass a
+>> blocking callback to hog_cpus/hog_one_cpu.
+> 
+> Well, it might me true that this shouldn't be done. But I don't see
+> a reason why in general it wouldn't work to pass a function that
+> would block.  So it's just a matter of time until somebody uses it
+> for such a purpose.  For the current stop_machine implementation it
+> would be broken to pass a blocking function (preemption disabled,
+> interrupts disabled).
 
-diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-index 333527c..52aa775 100644
---- a/drivers/i2c/i2c-smbus.c
-+++ b/drivers/i2c/i2c-smbus.c
-@@ -27,6 +27,7 @@
- #include <linux/workqueue.h>
- #include <linux/i2c.h>
- #include <linux/i2c-smbus.h>
-+#include <linux/mutex.h>
- 
- struct i2c_smbus_alert {
- 	unsigned int		alert_edge_triggered:1;
-@@ -55,7 +56,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
- 	 * Drivers should either disable alerts, or provide at least
- 	 * a minimal handler.  Lock so client->driver won't change.
- 	 */
--	down(&dev->sem);
-+	device_lock(dev);
- 	if (client->driver) {
- 		if (client->driver->alert)
- 			client->driver->alert(client, data->flag);
-@@ -63,7 +64,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
- 			dev_warn(&client->dev, "no driver alert()!\n");
- 	} else
- 		dev_dbg(&client->dev, "alert with no driver\n");
--	up(&dev->sem);
-+	device_unlock(dev);
- 
- 	/* Stop iterating after we find the device */
- 	return -EBUSY;
--- 
-1.6.6.2
+Well, all current users don't block and it definitely can be enforced
+by turning off preemption around the callback.  stop_machine() uses
+busy waiting for every state transition so something else blocking on
+a cpu could waste a lot of cpu cycles on other cpus even if the wait
+is guaranteed to be finite.  Would that sooth your concern?
 
+Thanks.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+tejun
