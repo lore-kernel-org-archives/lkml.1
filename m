@@ -1,33 +1,32 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968Ab0CHVO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 16:14:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:34719 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755941Ab0CHVOM (ORCPT
+	id S1755979Ab0CHVOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 16:14:45 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:62249 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755537Ab0CHVOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 16:14:12 -0500
+	Mon, 8 Mar 2010 16:14:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :mime-version:content-type:content-transfer-encoding;
-        b=inLb0DS/HDjRf6/Cz3aQbWMXASwxamzN5Ktu+qdB347k9Sk2kWAT1GMqLqnTx2wVBL
-         z3+c5HuSZnSip8UbEFcCWxdOfuZTn46o/A1+Gs5xSt53+k7E9TvaLncwHBmxXnVd5+1M
-         mg4PJDa8k6bELbsFYLSMPb3kDOBgc0KjGzYj8=
+        b=Vg91pPFYomN17x/YN0pcektXUd81M5jNOVWo5AuolpuBgCnB74SJTA5cBjnobw7K11
+         6NwoftyLtErrgKwMkQQx1CzJSxNBcfX4SAw7U5dyCFw2jeI9fPx8/xJousXYRsOJErUK
+         PI5j+9ew2T7NQzsSpIaY9/cp7VYOQXX9L0yYk=
 From: mickib1@gmail.com
 To: jkosina@suse.cz, rafi@seas.upenn.edu, chatty@enac.fr, peterhuewe@gmx.de,
        micki@n-trig.com
 Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/7] HID: N-trig MTM Driver fix And cleanup patch 6
-Date: Mon,  8 Mar 2010 23:13:46 +0200
-Message-Id: <1268082827-2680-6-git-send-email-micki@n-trig.com>
+Subject: [PATCH 5/7] HID: N-trig MTM Driver fix And cleanup patch 5
+Date: Mon,  8 Mar 2010 23:13:45 +0200
+Message-Id: <1268082827-2680-5-git-send-email-micki@n-trig.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1268082827-2680-5-git-send-email-micki@n-trig.com>
+In-Reply-To: <1268082827-2680-4-git-send-email-micki@n-trig.com>
 References: <1268082827-2680-1-git-send-email-micki@n-trig.com>
  <1268082827-2680-2-git-send-email-micki@n-trig.com>
  <1268082827-2680-3-git-send-email-micki@n-trig.com>
  <1268082827-2680-4-git-send-email-micki@n-trig.com>
- <1268082827-2680-5-git-send-email-micki@n-trig.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -37,7 +36,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: micki <micki@micki-laptop.(none)>
 
-Update struct hid_driver ntrig_driver. add debug module parameters
+udpate ntrig_probe - add call to ntrig_send_report function
+to initialize firmware to switch to Multi-touch mode.
+Delete input-name our driver don't distinguish pen and touch.
+Will be inserted in next version.
 
 N-trig is changing the way people interact with computers by providing a dual-mode pen and true multi-touch input device, specifically designed for today's advanced computing world.
 N-trig DuoSense® solution provides a real Hands-on computing® experience, and sets the stage for OEMs and ISVs to introduce innovative computer products and applications for an intuitive, Hands-on® experience directly onscreen.
@@ -46,54 +48,82 @@ N-trig has offices in Israel, the US, Taiwan and Japan.
 
 Signed-off-by: Micki Balanga <micki@n-trig.com>
 ---
- drivers/hid/hid-ntrig.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ drivers/hid/hid-ntrig.c |   41 ++++++-----------------------------------
+ 1 files changed, 6 insertions(+), 35 deletions(-)
 
 diff --git a/drivers/hid/hid-ntrig.c b/drivers/hid/hid-ntrig.c
-index 8bf796c..f88533e 100644
+index 8cdb3c2..8bf796c 100644
 --- a/drivers/hid/hid-ntrig.c
 +++ b/drivers/hid/hid-ntrig.c
-@@ -21,6 +21,9 @@
+@@ -19,6 +19,8 @@
+  *	1.3 - N-trig - Change ntrig_input_mapped
+  *	1.4 - N-trig - Add ntrig_send_report function
   *		send set feature command to firmware
-  *	1.5 - N-trig udpate ntrig_probe
-  *		add call to ntrig_send_report function
-+ *	1.6 - N-trig Update ntrig_init print version number
-+ *		update struct hid_driver
-+ *		update struct hid_device_id
++ *	1.5 - N-trig udpate ntrig_probe
++ *		add call to ntrig_send_report function
   */
  
  /*
-@@ -458,15 +461,11 @@ static void ntrig_remove(struct hid_device *hdev)
- 
- static const struct hid_device_id ntrig_devices[] = {
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_TOUCH_SCREEN),
--		.driver_data = NTRIG_DUPLICATE_USAGES },
-+		.driver_data = NTRIG_USB_DEVICE_ID },
- 	{ }
- };
- MODULE_DEVICE_TABLE(hid, ntrig_devices);
- 
--static const struct hid_usage_id ntrig_grabbed_usages[] = {
--	{ HID_ANY_ID, HID_ANY_ID, HID_ANY_ID },
--	{ HID_ANY_ID - 1, HID_ANY_ID - 1, HID_ANY_ID - 1 }
--};
- 
- static struct hid_driver ntrig_driver = {
- 	.name = MODULE_NAME,
-@@ -475,12 +474,12 @@ static struct hid_driver ntrig_driver = {
- 	.remove = ntrig_remove,
- 	.input_mapping = ntrig_input_mapping,
- 	.input_mapped = ntrig_input_mapped,
--	.usage_table = ntrig_grabbed_usages,
- 	.event = ntrig_event,
- };
- 
- static int __init ntrig_init(void)
+@@ -415,11 +417,6 @@ static int ntrig_probe(struct hid_device *hdev, const struct hid_device_id *id)
  {
-+	info("N-trig Driver Version 1.6\n");
- 	return hid_register_driver(&ntrig_driver);
- }
+ 	int ret;
+ 	struct ntrig_data *nd;
+-	struct hid_input *hidinput;
+-	struct input_dev *input;
+-
+-	if (id->driver_data)
+-		hdev->quirks |= HID_QUIRK_MULTI_INPUT;
  
+ 	nd = kmalloc(sizeof(struct ntrig_data), GFP_KERNEL);
+ 	if (!nd) {
+@@ -427,7 +424,6 @@ static int ntrig_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ 		return -ENOMEM;
+ 	}
+ 
+-	nd->reading_mt = 0;
+ 	hid_set_drvdata(hdev, nd);
+ 
+ 	ret = hid_parse(hdev);
+@@ -442,35 +438,10 @@ static int ntrig_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ 		goto err_free;
+ 	}
+ 
+-
+-	list_for_each_entry(hidinput, &hdev->inputs, list) {
+-		input = hidinput->input;
+-		switch (hidinput->report->field[0]->application) {
+-		case HID_DG_PEN:
+-			input->name = "N-Trig Pen";
+-			break;
+-		case HID_DG_TOUCHSCREEN:
+-			__clear_bit(BTN_TOOL_PEN, input->keybit);
+-			/*
+-			 * A little something special to enable
+-			 * two and three finger taps.
+-			 */
+-			__set_bit(BTN_TOOL_DOUBLETAP, input->keybit);
+-			__set_bit(BTN_TOOL_TRIPLETAP, input->keybit);
+-			__set_bit(BTN_TOOL_QUADTAP, input->keybit);
+-			/*
+-			 * The physical touchscreen (single touch)
+-			 * input has a value for physical, whereas
+-			 * the multitouch only has logical input
+-			 * fields.
+-			 */
+-			input->name =
+-				(hidinput->report->field[0]
+-				 ->physical) ?
+-				"N-Trig Touchscreen" :
+-				"N-Trig MultiTouch";
+-			break;
+-		}
++	ret = ntrig_send_report(hdev);
++	if (ret) {
++		dev_err(&hdev->dev, "send set feature failed\n");
++		goto err_free;
+ 	}
+ 
+ 	return 0;
 -- 
 1.6.3.3
 
