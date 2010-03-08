@@ -1,62 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087Ab0CHXji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:39:38 -0500
-Received: from mail.perches.com ([173.55.12.10]:1519 "EHLO mail.perches.com"
+	id S1756101Ab0CHXm0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:42:26 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56084 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755893Ab0CHXjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:39:37 -0500
-Subject: Re: [PATCH] vsprintf.c: Use noinline_for_stack
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <1267929215.1937.18.camel@Joe-Laptop.home>
-References: <cover.1267682641.git.joe@perches.com>
-	 <20100304143837.af39845d.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
-	 <1267911399.849.39.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-	 <1267914654.849.81.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
-	 <1267918554.849.89.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
-	 <1267924214.1937.12.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
-	 <1267929215.1937.18.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Mar 2010 15:39:35 -0800
-Message-ID: <1268091575.1925.61.camel@Joe-Laptop.home>
+	id S1756053Ab0CHXmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:42:23 -0500
+Date: Tue, 9 Mar 2010 10:42:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: [PATCH] ar9170: fix for driver-core ABI change
+Message-Id: <20100309104221.aedc5e7e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-06 at 18:33 -0800, Joe Perches wrote:
-> On Sat, 2010-03-06 at 18:03 -0800, Linus Torvalds wrote:
-> > A few noinlines might be appropriate.
-> Mark static functions with noinline_for_stack
 
-It's fine by me that the vsnprintf recursion and
-(pr|dev|netdev)_<level> text reduction patches didn't make .34.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/wireless/ath/ar9170/usb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-I'd like to know what you think necessary to get them into .35.
+Hi Dave,
 
-Perhaps it'd be useful if they could go into -next as-is for a
-bit of wider testing.
+I have been carrying this patch in linux-next for some time as a fixup
+for the driver-core tree.  It is now needed in net-2.6 (i.e. my
+net-current) (since you merged the wireless tree) *after* you merge with
+Linus' tree i.e. the down()/up() are present in the net-2.6 tree and the
+changes to the driver core to use mutexes are in Linus' tree.
 
-http://patchwork.kernel.org/patch/83940/
-http://patchwork.kernel.org/patch/83724/
-http://patchwork.kernel.org/patch/83726/
-http://patchwork.kernel.org/patch/83725/
+diff --git a/drivers/net/wireless/ath/ar9170/usb.c b/drivers/net/wireless/ath/ar9170/usb.c
+index 4e30197..7fc1034 100644
+--- a/drivers/net/wireless/ath/ar9170/usb.c
++++ b/drivers/net/wireless/ath/ar9170/usb.c
+@@ -41,6 +41,7 @@
+ #include <linux/usb.h>
+ #include <linux/firmware.h>
+ #include <linux/etherdevice.h>
++#include <linux/mutex.h>
+ #include <net/mac80211.h>
+ #include "ar9170.h"
+ #include "cmd.h"
+@@ -726,10 +727,10 @@ static void ar9170_usb_firmware_failed(struct ar9170_usb *aru)
+ 
+ 	/* unbind anything failed */
+ 	if (parent)
+-		down(&parent->sem);
++		device_lock(parent);
+ 	device_release_driver(&aru->udev->dev);
+ 	if (parent)
+-		up(&parent->sem);
++		device_unlock(parent);
+ }
+ 
+ static void ar9170_usb_firmware_finish(const struct firmware *fw, void *context)
+-- 
+1.7.0
 
-
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
