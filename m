@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975Ab0CHKMA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 05:12:00 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:1807 "EHLO
+	id S1754008Ab0CHKRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 05:17:18 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:2158 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424Ab0CHKLq convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753769Ab0CHKRQ convert rfc822-to-8bit (ORCPT
 	<rfc822;groupwise-JBeulich@novell.com:4:1>);
-	Mon, 8 Mar 2010 05:11:46 -0500
-Message-Id: <4B94DB6E0200007800033370@vpn.id2.novell.com>
+	Mon, 8 Mar 2010 05:17:16 -0500
+Message-Id: <4B94DCB7020000780003337B@vpn.id2.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Mon, 08 Mar 2010 10:11:42 +0000
+Date: Mon, 08 Mar 2010 10:17:11 +0000
 From: "Jan Beulich" <JBeulich@novell.com>
 To: <linux@dominikbrodowski.net>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <alan@redhat.com>
+       <alan@linux.intel.com>
 Cc: <linux-kernel@vger.kernel.org>
 Subject: pcmcia's use of IRQ_NOAUTOEN
 Mime-Version: 1.0
@@ -22,6 +22,8 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(re-sending to correct Alan's email address)
 
 Commit 635416ef393e8cec5a89fc6c1de710ee9596a51e introduced
 this, but I can't see how it can take effect - the argument passed to
