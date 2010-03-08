@@ -1,60 +1,154 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641Ab0CHLki (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 06:40:38 -0500
-Received: from mail-ew0-f225.google.com ([209.85.219.225]:42585 "EHLO
-	mail-ew0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341Ab0CHLkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 06:40:36 -0500
-X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 06:40:35 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:message-id:x-mailer;
-        b=G4vQOsDAZ5Iml3StglGlAG7GuB3nixBXX+r43j9uLthakgKne2I8oZaBkpiUlFBfiC
-         UuiZe3btSDQPnt8yzIC4K4Shub1/drF4RZmOCDy+zHiYAFJx5wu/hMAMZehcsIYhHtuZ
-         3fTangdIgukPLpxld7l6JqmDqL2CScBRY60AY=
-From: Maurice Dawson <mauricedawson2699@googlemail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 11/11] Staging: comedi: Fix spaces coding style issue in adl_pci9111.c
-Date: Mon,  8 Mar 2010 11:33:48 +0000
-Message-Id: <1268048028-3088-1-git-send-email-mauricedawson2699@googlemail.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S1754647Ab0CHLnO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 06:43:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:49019 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754232Ab0CHLnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 06:43:10 -0500
+From: Thomas Renninger <trenn@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
+       "Yinghai Lu" <yinghai@kernel.org>, akpm@linux-foundation.org,
+       mingo@elte.hu, "Avi Kivity" <avi@redhat.com>,
+       Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec - V4
+Date: Mon,  8 Mar 2010 12:43:02 +0100
+Message-Id: <1268048582-12219-1-git-send-email-trenn@suse.de>
+X-Mailer: git-send-email 1.6.3
+In-Reply-To: <20100308113452.GK6004@lenovo>
+References: <20100308113452.GK6004@lenovo>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch to the adl_pci9111.c file that fixes a spaces warning found by the checkpatch.pl tool
+From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
 
-Signed-off-by: Maurice Dawson <mauricedawson2699@googlemail.com>
+When the SMP kernel decides to crash_kexec() the local APICs may have
+pending interrupts in their vector tables.
+The setup routine for the local APIC has a deficient mechanism for
+clearing these interrupts, it only handles interrupts that has already
+been dispatched to the local core for servicing (the ISR register)
+safely, it doesn't consider lower prioritized queued interrupts stored
+in the IRR register.
+
+If you have more than one pending interrupt within the same 32 bit word
+in the LAPIC vector table registers you may find yourself entering the
+IO APIC setup with pending interrupts left in the LAPIC. This is a
+situation for wich the IO APIC setup is not prepared. Depending of
+what/which interrupt vector/vectors are stuck in the APIC tables your
+system may show various degrees of malfunctioning.
+That was the reason why the check_timer() failed in our system, the
+timer interrupts was blocked by pending interrupts from the old kernel
+when routed trough the IO APIC.
+
+Additional comment from Jiri Bohac:
+==============
+If this should go into stable release,
+I'd add some kind of limit on the number of iterations, just to be safe from
+hard to debug lock-ups:
+
++if (loops++  > MAX_LOOPS) {
++        printk("LAPIC pending clean-up")
++        break;
++}
+ while (queued);
+
+with MAX_LOOPS something like 1E9 this would leave plenty of time for the
+pending IRQs to be cleared and would and still cause at most a second of delay
+if the loop were to lock-up for whatever reason.
+==============
+
+>From trenn@suse.de:
+V2: Use tsc if avail to bail out after 1 sec due to possible virtual apic_read
+    calls which may take rather long (suggested by: Avi Kivity <avi@redhat.com>)
+    If no tsc is available bail out quickly after cpu_khz, if we broke out too
+    early and still have irqs pending (which should never happen?) we still
+    get a WARN_ON...
+
+V3: - Fixed indentation -> checkpatch clean
+    - max_loops must be signed
+
+V4: - Fix typo, mixed up tsc and ntsc in first rdtscll() call
+
+CC: jbohac@novell.com
+CC: "Yinghai Lu" <yinghai@kernel.org>
+CC: akpm@linux-foundation.org
+CC: mingo@elte.hu
+CC: "Kerstin Jonsson" <kerstin.jonsson@ericsson.com>
+CC: "Avi Kivity" <avi@redhat.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- drivers/staging/comedi/drivers/adl_pci9111.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/apic/apic.c |   41 +++++++++++++++++++++++++++++++++--------
+ 1 files changed, 33 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/staging/comedi/drivers/adl_pci9111.c b/drivers/staging/comedi/drivers/adl_pci9111.c
-index 969044a..bf47f79 100644
---- a/drivers/staging/comedi/drivers/adl_pci9111.c
-+++ b/drivers/staging/comedi/drivers/adl_pci9111.c
-@@ -216,15 +216,15 @@ Add external multiplexer support.
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3987e44..414a5df 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -51,6 +51,7 @@
+ #include <asm/smp.h>
+ #include <asm/mce.h>
+ #include <asm/kvm_para.h>
++#include <asm/tsc.h>
  
- #define pci9111_is_fifo_full() \
-   ((inb(PCI9111_IO_BASE+PCI9111_REGISTER_RANGE_STATUS_READBACK)& \
--    PCI9111_FIFO_FULL_MASK)==0)
-+    PCI9111_FIFO_FULL_MASK) == 0)
+ unsigned int num_processors;
  
- #define pci9111_is_fifo_half_full() \
-   ((inb(PCI9111_IO_BASE+PCI9111_REGISTER_RANGE_STATUS_READBACK)& \
--    PCI9111_FIFO_HALF_FULL_MASK)==0)
-+    PCI9111_FIFO_HALF_FULL_MASK) == 0)
+@@ -1151,8 +1152,13 @@ static void __cpuinit lapic_setup_esr(void)
+  */
+ void __cpuinit setup_local_APIC(void)
+ {
+-	unsigned int value;
+-	int i, j;
++	unsigned int value, queued;
++	int i, j, acked = 0;
++	unsigned long long tsc = 0, ntsc;
++	long long max_loops = cpu_khz;
++
++	if (cpu_has_tsc)
++		rdtscll(tsc);
  
- #define pci9111_is_fifo_empty() \
-   ((inb(PCI9111_IO_BASE+PCI9111_REGISTER_RANGE_STATUS_READBACK)& \
--    PCI9111_FIFO_EMPTY_MASK)==0)
-+    PCI9111_FIFO_EMPTY_MASK) == 0)
+ 	if (disable_apic) {
+ 		arch_disable_smp_support();
+@@ -1204,13 +1210,32 @@ void __cpuinit setup_local_APIC(void)
+ 	 * the interrupt. Hence a vector might get locked. It was noticed
+ 	 * for timer irq (vector 0x31). Issue an extra EOI to clear ISR.
+ 	 */
+-	for (i = APIC_ISR_NR - 1; i >= 0; i--) {
+-		value = apic_read(APIC_ISR + i*0x10);
+-		for (j = 31; j >= 0; j--) {
+-			if (value & (1<<j))
+-				ack_APIC_irq();
++	do {
++		queued = 0;
++		for (i = APIC_ISR_NR - 1; i >= 0; i--)
++			queued |= apic_read(APIC_IRR + i*0x10);
++
++		for (i = APIC_ISR_NR - 1; i >= 0; i--) {
++			value = apic_read(APIC_ISR + i*0x10);
++			for (j = 31; j >= 0; j--) {
++				if (value & (1<<j)) {
++					ack_APIC_irq();
++					acked++;
++				}
++			}
+ 		}
+-	}
++		if (acked > 256) {
++			printk(KERN_ERR "LAPIC pending interrupts after %d EOI\n",
++			       acked);
++			break;
++		}
++		if (cpu_has_tsc) {
++			rdtscll(ntsc);
++			max_loops = (cpu_khz << 10) - (ntsc - tsc);
++		} else
++			max_loops--;
++	} while (queued && max_loops > 0);
++	WARN_ON(!max_loops);
  
- #define pci9111_ai_channel_set(channel) \
-   outb((channel)&PCI9111_CHANNEL_MASK, \
+ 	/*
+ 	 * Now that we are all set up, enable the APIC
 -- 
-1.6.3.3
+1.6.3
 
