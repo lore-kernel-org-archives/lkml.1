@@ -1,67 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407Ab0CHQJk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 11:09:40 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48174 "EHLO gir.skynet.ie"
+	id S1755414Ab0CHQO7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 11:14:59 -0500
+Received: from mail.perches.com ([173.55.12.10]:1504 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363Ab0CHQJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 11:09:38 -0500
-Date: Mon, 8 Mar 2010 16:09:21 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
-Message-ID: <20100308160920.GA13788@csn.ul.ie>
-References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1755333Ab0CHQO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 11:14:57 -0500
+Subject: Re: [PATCH resend] net/sunrpc: Remove uses of NIPQUAD, use %pI4
+From: Joe Perches <joe@perches.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       linux-nfs <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B951BF0.9050403@oracle.com>
+References: <1267857980.849.22.camel@Joe-Laptop.home>
+	 <4B951BF0.9050403@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Mar 2010 08:14:55 -0800
+Message-ID: <1268064895.1925.18.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 10:21:04AM +0100, Thomas Gleixner wrote:
-> __zone_pcp_update() iterates over NR_CPUS instead of limiting the
-> access to the possible cpus. This might result in access to
-> uninitialized areas as the per cpu allocator only populates the per
-> cpu memory for possible cpus.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+On Mon, 2010-03-08 at 10:46 -0500, Chuck Lever wrote:
+> Why remove the (void) here, but not in xprtrdma/transport.c?  IMO the 
+> (void) cast should be left in place at all three call sites.
 
-Looks good.
+I didn't notice it in xprtrdma/transport.c, otherwise I'd've
+removed it there too.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+When the result is not used, snprintf is most commonly not
+cast at all.
 
-> ---
->  mm/page_alloc.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -3224,7 +3224,7 @@ static int __zone_pcp_update(void *data)
->  	int cpu;
->  	unsigned long batch = zone_batchsize(zone), flags;
->  
-> -	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-> +	for_each_possible_cpu(cpu) {
->  		struct per_cpu_pageset *pset;
->  		struct per_cpu_pages *pcp;
->  
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+(There's a space and a tab in the brackets of the grep string)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+$ grep -rP --include=*.[ch] "^[ 	]+snprintf\s*\(" * | wc -l
+1301
+
+$ grep -rP --include=*.[ch] "^[ 	]+\(\s*void\s*\)\s*snprintf\s*\(" * | wc -l
+9
+
+net/sunrpc/ has 7 of those.
+
+I'll get around to submitting patches for all of them.
+
