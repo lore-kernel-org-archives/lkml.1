@@ -1,56 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579Ab0CHRdu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 12:33:50 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:52969 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751Ab0CHRdq (ORCPT
+	id S1754735Ab0CHRg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 12:36:58 -0500
+Received: from ppp173-197.broadband.gorge.net ([209.216.173.197]:38628 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753922Ab0CHRgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 12:33:46 -0500
-Message-ID: <4B9534BA.4020903@oracle.com>
-Date: Mon, 08 Mar 2010 09:32:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH -next] sound: fix opti92x-ad1848 build
-References: <20100308152740.a007e8cb.sfr@canb.auug.org.au>
-In-Reply-To: <20100308152740.a007e8cb.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Mar 2010 12:36:52 -0500
+Date: Mon, 8 Mar 2010 17:35:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Johan Hovold <jhovold@gmail.com>,
+       Alan Cox <alan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>,
+       "Mark J. Adamson" <mark.adamson@ftdichip.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Fix locking for change_speed() function
+Message-ID: <20100308173548.3c414cb5@lxorguk.ukuu.org.uk>
+In-Reply-To: <1268053803-7666-1-git-send-email-abogani@texware.it>
+References: <1268053803-7666-1-git-send-email-abogani@texware.it>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.7; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B9534F1.009A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon,  8 Mar 2010 14:10:03 +0100
+Alessio Igor Bogani <abogani@texware.it> wrote:
 
-Fix 'else' placement in ifdef block so that build succeeds:
+> The change_speed() function set the baudrate of the device: so this function
+> should be serialized against multiple calls. Use the cfg_lock mutex to do this.
 
-sound/isa/opti9xx/opti92x-ad1848.c:221: error: 'else' without a previous 'if'
+Should be ok anyway the set_termios callback occurs under the tty termios
+lock, and will not occur in parallel with an initial open or final close.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc:	Jaroslav Kysela <perex@perex.cz>
-Cc:	Takashi Iwai <tiwai@suse.de>
----
- sound/isa/opti9xx/opti92x-ad1848.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- linux-next-20100308.orig/sound/isa/opti9xx/opti92x-ad1848.c
-+++ linux-next-20100308/sound/isa/opti9xx/opti92x-ad1848.c
-@@ -217,8 +217,9 @@ static int __devinit snd_opti9xx_init(st
- 	if (isapnp && chip->mc_base)
- 		/* PnP resource gives the least 10 bits */
- 		chip->mc_base |= 0xc00;
-+	else
- #endif	/* CONFIG_PNP */
--	else {
-+	{
- 		chip->mc_base = 0xf8c;
- 		chip->mc_base_size = opti9xx_mc_size[hardware];
- 	}
+Alan
