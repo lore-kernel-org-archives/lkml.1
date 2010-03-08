@@ -1,41 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721Ab0CHUP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 15:15:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36401
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755587Ab0CHUPv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 15:15:51 -0500
-Date: Mon, 08 Mar 2010 12:16:10 -0800 (PST)
-Message-Id: <20100308.121610.51678711.davem@davemloft.net>
-To: joe@perches.com
-Cc: chuck.lever@oracle.com, Trond.Myklebust@netapp.com,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net/sunrpc: Convert (void)snprintf to snprintf
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1268066310.1925.26.camel@Joe-Laptop.home>
-References: <1267857980.849.22.camel@Joe-Laptop.home>
-	<4B951BF0.9050403@oracle.com>
-	<1268066310.1925.26.camel@Joe-Laptop.home>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1755762Ab0CHUV0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 15:21:26 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:40792 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755620Ab0CHUVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 15:21:20 -0500
+Date: Mon, 8 Mar 2010 21:21:10 +0100
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>, nikola.ciprich@linuxbox.cz
+Subject: Re: [Bug #14943] nfs regression?
+Message-ID: <20100308202110.GA4731@nik-comp.linuxbox.cz>
+References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
+ <wj3ZQZlk_KB.A.M6B.QsagLB@chimera>
+ <2375c9f91002211813m8f637c1g73c4314eab96f81e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2375c9f91002211813m8f637c1g73c4314eab96f81e@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Milter-Copy-Status: O
+X-Milter-Copy-Status: O
+X-Milter-Copy-Status: L
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3509228 records(08-03-2010)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
-Date: Mon, 08 Mar 2010 08:38:30 -0800
+YES!
+seems like 2.6.32.8 with your patch included finally doesn't
+spit any backtraces and peername failed errors!
+will You push this upstream + to stable?
+thanks a lot for Your help!
+have a nice day
+with best regards
+nik
 
-> (Applies on top of "Remove uses of NIPQUAD, use %pI4")
+> This seems that we missed checking XPT_DEAD too.
 > 
-> Casts to void of snprintf are most uncommon in kernel source.
-> 9 use casts, 1301 do not.
+> Nikola, does adding !test_bit(XPT_DEAD, &xprt->xpt_flags) in the same
+> place as commit b292cf9ce70d221c3f04f help?
 > 
-> Remove the remaining uses in net/sunrpc/
+> Something like:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
+> index 7d1f9e9..7b66c7f 100644
+> --- a/net/sunrpc/svc_xprt.c
+> +++ b/net/sunrpc/svc_xprt.c
+> @@ -700,7 +700,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
+> 
+>         len = 0;
+>         if (test_bit(XPT_LISTENER, &xprt->xpt_flags) &&
+> -           !test_bit(XPT_CLOSE, &xprt->xpt_flags)) {
+> +           !test_bit(XPT_CLOSE, &xprt->xpt_flags) &&
+> +           !test_bit(XPT_DEAD, &xprt->xpt_flags)) {
+>                 struct svc_xprt *newxpt;
+>                 newxpt = xprt->xpt_ops->xpo_accept(xprt);
+>                 if (newxpt) {
+> 
 
-Also applied, thanks Joe.
+-- 
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
+
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+
+www.linuxbox.cz
+
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
