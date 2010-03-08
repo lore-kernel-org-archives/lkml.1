@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752335Ab0CHHSF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 02:18:05 -0500
-Received: from mga14.intel.com ([143.182.124.37]:15840 "EHLO mga14.intel.com"
+	id S1752452Ab0CHHSP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 02:18:15 -0500
+Received: from mga01.intel.com ([192.55.52.88]:63413 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763Ab0CHHRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751723Ab0CHHRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Mar 2010 02:17:34 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,601,1262592000"; 
-   d="scan'208";a="251982409"
+   d="scan'208";a="546994701"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Keir Fraser <keir.fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
@@ -16,9 +16,9 @@ To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
 Cc: Ian Campbell <Ian.Campbell@citrix.com>, linux-kernel@vger.kernel.org,
        xen-devel <xen-devel@lists.xensource.com>,
        Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 6/7] xen: Enable PV clocksource for HVM
-Date: Mon,  8 Mar 2010 15:18:51 +0800
-Message-Id: <1268032732-8025-7-git-send-email-sheng@linux.intel.com>
+Subject: [PATCH 3/7] xen: Make pv drivers only work with xen_pv_domain()
+Date: Mon,  8 Mar 2010 15:18:48 +0800
+Message-Id: <1268032732-8025-4-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1268032732-8025-1-git-send-email-sheng@linux.intel.com>
 References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com>
@@ -26,115 +26,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PV clocksource can provide a reliable clocksource for HVM running on Xen.
-
-To enable it, put following line to the HVM configure file:
-
-cpuid = [ '0x40000002:edx=0x3' ]
-
-It would set bit 0 and bit 1 in 0x40000002:edx, which enable PV extension
-framework and PV clocksource.
+Otherwise they would still try to enable with HVM domain type.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
- arch/x86/xen/hvmpv.c   |   24 ++++++++++++++++++++++++
- arch/x86/xen/time.c    |   12 +++++++++++-
- arch/x86/xen/xen-ops.h |    1 +
- 3 files changed, 36 insertions(+), 1 deletions(-)
+ drivers/block/xen-blkfront.c      |    2 +-
+ drivers/input/xen-kbdfront.c      |    2 +-
+ drivers/net/xen-netfront.c        |    2 +-
+ drivers/video/xen-fbfront.c       |    2 +-
+ drivers/xen/grant-table.c         |    2 +-
+ drivers/xen/xenbus/xenbus_probe.c |    4 ++--
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
-index 540eef4..e944caf 100644
---- a/arch/x86/xen/hvmpv.c
-+++ b/arch/x86/xen/hvmpv.c
-@@ -43,6 +43,8 @@ static void __init xen_hvm_pv_banner(void)
- 		pv_info.name);
- 	printk(KERN_INFO "Xen version: %d.%d%s\n",
- 		version >> 16, version & 0xffff, extra.extraversion);
-+	if (xen_hvm_pv_clock_enabled())
-+		printk(KERN_INFO "PV feature: PV clocksource enabled\n");
- }
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 05a31e5..32e28bd 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -1068,7 +1068,7 @@ static struct xenbus_driver blkfront = {
  
- static int __init xen_para_available(void)
-@@ -82,6 +84,9 @@ static int __init init_hvm_pv_info(void)
- 	if (!(edx & XEN_CPUID_FEAT2_HVM_PV))
+ static int __init xlblk_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
  		return -ENODEV;
  
-+	if (edx & XEN_CPUID_FEAT2_HVM_PV_CLOCK)
-+		xen_hvm_pv_features |= XEN_HVM_PV_CLOCK_ENABLED;
-+
- 	if (pages < 1)
+ 	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index c721c0a..0c3f4ca 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -338,7 +338,7 @@ static struct xenbus_driver xenkbd_driver = {
+ 
+ static int __init xenkbd_init(void)
+ {
+-	if (!xen_domain())
++	if (!xen_pv_domain())
  		return -ENODEV;
  
-@@ -112,6 +117,23 @@ static int __init init_shared_info(void)
- 	return 0;
- }
+ 	/* Nothing to do if running in dom0. */
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index a869b45..e3ae126 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1804,7 +1804,7 @@ static struct xenbus_driver netfront_driver = {
  
-+static void __init init_pv_clocksource(void)
-+{
-+	if (!xen_hvm_pv_clock_enabled())
-+		return;
-+
-+	if (enable_hvm_pv(HVM_PV_CLOCK))
-+		BUG();
-+
-+	pv_time_ops.sched_clock = xen_sched_clock;
-+
-+	x86_platform.calibrate_tsc = xen_tsc_khz;
-+	x86_platform.get_wallclock = xen_get_wallclock;
-+	x86_platform.set_wallclock = xen_set_wallclock;
-+
-+	xen_register_clocksource();
-+}
-+
- void __init xen_guest_init(void)
+ static int __init netif_init(void)
  {
- 	int r;
-@@ -134,4 +156,6 @@ void __init xen_guest_init(void)
- 	pv_info = xen_hvm_pv_info;
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
  
- 	xen_domain_type = XEN_HVM_DOMAIN;
-+
-+	init_pv_clocksource();
- }
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 0d3f07c..06b3e72 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -472,11 +472,21 @@ void xen_timer_resume(void)
- 	}
- }
+ 	if (xen_initial_domain())
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 603598f..3360470 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -683,7 +683,7 @@ static struct xenbus_driver xenfb_driver = {
  
-+static bool xen_clocksource_enabled;
-+
-+void xen_register_clocksource(void)
-+{
-+	if (!xen_clocksource_enabled) {
-+		clocksource_register(&xen_clocksource);
-+		xen_clocksource_enabled = 1;
-+	}
-+}
-+
- __init void xen_time_init(void)
+ static int __init xenfb_init(void)
  {
- 	int cpu = smp_processor_id();
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
  
--	clocksource_register(&xen_clocksource);
-+	xen_register_clocksource();
+ 	/* Nothing to do if running in dom0. */
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+index 4c6c0bd..ade7f3d 100644
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -510,7 +510,7 @@ static int __devinit gnttab_init(void)
+ 	unsigned int max_nr_glist_frames, nr_glist_frames;
+ 	unsigned int nr_init_grefs;
  
- 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
- 		/* Successfully turned off 100Hz tick, so we have the
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index f9153a3..d56b660 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -48,6 +48,7 @@ cycle_t xen_clocksource_read(void);
- void xen_setup_cpu_clockevents(void);
- unsigned long xen_tsc_khz(void);
- void __init xen_time_init(void);
-+void xen_register_clocksource(void);
- unsigned long xen_get_wallclock(void);
- int xen_set_wallclock(unsigned long time);
- unsigned long long xen_sched_clock(void);
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		return -ENODEV;
+ 
+ 	nr_grant_frames = 1;
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 2f7aaa9..a5712cd 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -786,7 +786,7 @@ static int __init xenbus_probe_init(void)
+ 	DPRINTK("");
+ 
+ 	err = -ENODEV;
+-	if (!xen_domain())
++	if (!xen_pv_domain())
+ 		goto out_error;
+ 
+ 	/* Register ourselves with the kernel bus subsystem */
+@@ -922,7 +922,7 @@ static void wait_for_devices(struct xenbus_driver *xendrv)
+ 	struct device_driver *drv = xendrv ? &xendrv->driver : NULL;
+ 	unsigned int seconds_waited = 0;
+ 
+-	if (!ready_to_wait_for_devices || !xen_domain())
++	if (!ready_to_wait_for_devices || !xen_pv_domain())
+ 		return;
+ 
+ 	while (exists_connecting_device(drv)) {
 -- 
 1.5.4.5
 
