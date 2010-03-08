@@ -1,56 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105Ab0CHPBb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:01:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36307 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657Ab0CHPB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:01:28 -0500
-Message-ID: <4B951143.1050807@suse.cz>
-Date: Mon, 08 Mar 2010 16:01:23 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       geert@linux-m68k.org, elendil@planet.nl, cloos@jhcloos.com
-Subject: Re: [PATCH 0/2] v4 kconfig: place git SHA1 in .config output if in
- SCM
-References: <20100305194305.GA23009@linux.vnet.ibm.com>
-In-Reply-To: <20100305194305.GA23009@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755172Ab0CHPDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:03:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64267 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754029Ab0CHPDS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 10:03:18 -0500
+X-Authority-Analysis: v=1.0 c=1 a=drjUTJznMZEA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=omOdbC7AAAAA:8 a=jLi6EhibbEP4c3Lg2VkA:9 a=8MJZsihnVcqJWlBz1rYA:7 a=AxWqq8iKe2n763JNzxO8HEKuyc0A:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B949E43.2010906@cn.fujitsu.com>
+References: <4B94936B.8030409@cn.fujitsu.com>
+	 <4B949E43.2010906@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 08 Mar 2010 10:03:16 -0500
+Message-ID: <1268060596.10871.1805.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5.3.2010 20:43, Paul E. McKenney wrote:
-> This patch appends the localversion string to the Linux kernel version.
-> For example, in a git tree with uncommitted changes, the .config file
-> might start as follows (but with leading hash marks):
+On Mon, 2010-03-08 at 14:50 +0800, Lai Jiangshan wrote:
+> Li Zefan wrote:
+> > While running a ftrace test, a kernel warning showed up. The bug is not so
+> > easy to reproduce, normally it takes 30 mins to 2 hours.
+> > 
+> > After revering 3c05d7482777f15e71bb4cb1ba78dee2800dfec6, I ran the test
+> > for 15 hours, and the bug seems disapeared.
+> > 
 > 
-> 	Automatically generated make config: don't edit
-> 	Linux kernel version: 2.6.33-01836-g90a6501-dirty
-> 	Mon Mar  1 17:05:59 2010
+> This bug exhausted us, we found a issue: a tiny window which is
+> one of causes of this bug. This patch is to close this tiny window.
+> (bug is not fixed)
 > 
-> The "-01836-g90a6501-dirty" string is added by this patch.
+> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+> 
+> ringbuffer resizing and reseting will increase the ->record_disabled
+> and then wait until a rcu_shced grace period passes.
+> 
+> Contrarily, testing ->record_disabled should be at the same
+> preempt disabled critical region as writing into ringbuffer, otherwise
+> it will leave a window break ringbuffer resizing or reseting.
 
-kbuild in linux-next already has
-commit 85a256d8e0116c8f5ad276730830f5d4d473344d
-Author: David Rientjes <rientjes@google.com>
-Date:   Wed Jan 13 13:01:05 2010 -0800
+So the resizing and the resetting need a synchronize_sched() after the
+disabling of the buffers, right?
 
-    kbuild: improve version string logic
+-- Steve
 
-which results in a scripts/setlocalversion call during each build. And
-with CONFIG_LOCALVERSION_AUTO, it stores exactly the string you want in
-include/config/kernel.release. So we could change kconfig to read that
-file instead of building the version string again. To also cover the
-!CONFIG_LOCALVERSION_AUTO case, we can add a
-include/config/kernel.release.full file to hold the full string each time.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 8c1b2d2..54191d6 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -2232,12 +2232,12 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
+>  	if (ring_buffer_flags != RB_BUFFERS_ON)
+>  		return NULL;
+>  
+> -	if (atomic_read(&buffer->record_disabled))
+> -		return NULL;
+> -
+>  	/* If we are tracing schedule, we don't want to recurse */
+>  	resched = ftrace_preempt_disable();
+>  
+> +	if (atomic_read(&buffer->record_disabled))
+> +		goto out_nocheck;
+> +
+>  	if (trace_recursive_lock())
+>  		goto out_nocheck;
+>  
+> @@ -2469,11 +2469,11 @@ int ring_buffer_write(struct ring_buffer *buffer,
+>  	if (ring_buffer_flags != RB_BUFFERS_ON)
+>  		return -EBUSY;
+>  
+> -	if (atomic_read(&buffer->record_disabled))
+> -		return -EBUSY;
+> -
+>  	resched = ftrace_preempt_disable();
+>  
+> +	if (atomic_read(&buffer->record_disabled))
+> +		goto out;
+> +
+>  	cpu = raw_smp_processor_id();
+>  
+>  	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+> 
+> 
 
-Sorry for jumping in so late in the discussion, I had a bit of backlog
-in mail directed to me and linux-kbuild@vger.kernel.org, let alone LKML ;).
 
-Michal
