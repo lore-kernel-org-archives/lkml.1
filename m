@@ -1,53 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220Ab0CHPDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:03:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15180 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755202Ab0CHPD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:03:26 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FS-Cache: Remove the EXPERIMENTAL flag
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-cachefs@redhat.com,
-       Christian Kujau <lists@nerdbynature.de>,
-       David Howells <dhowells@redhat.com>
-Date: Mon, 08 Mar 2010 15:03:09 +0000
-Message-ID: <20100308150309.31935.9800.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1755204Ab0CHPHm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:07:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:36097 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754029Ab0CHPHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 10:07:40 -0500
+X-Authority-Analysis: v=1.0 c=1 a=drjUTJznMZEA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=csHddyWDuWC53NlmwnYA:9 a=0KgVS6q1dzLNK2VwybBboKP-I0cA:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1268060596.10871.1805.camel@gandalf.stny.rr.com>
+References: <4B94936B.8030409@cn.fujitsu.com>
+	 <4B949E43.2010906@cn.fujitsu.com>
+	 <1268060596.10871.1805.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 08 Mar 2010 10:07:38 -0500
+Message-ID: <1268060858.10871.1807.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Kujau <lists@nerdbynature.de>
+On Mon, 2010-03-08 at 10:03 -0500, Steven Rostedt wrote:
 
-Remove the EXPERIMENTAL flag from FS-Cache so that Ubuntu can make use of the
-facility.
+> > ringbuffer resizing and reseting will increase the ->record_disabled
+> > and then wait until a rcu_shced grace period passes.
+> > 
+> > Contrarily, testing ->record_disabled should be at the same
+> > preempt disabled critical region as writing into ringbuffer, otherwise
+> > it will leave a window break ringbuffer resizing or reseting.
+> 
+> So the resizing and the resetting need a synchronize_sched() after the
+> disabling of the buffers, right?
 
-Signed-off-by: Christian Kujau <lists@nerdbynature.de>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Looking at the code, the synchronize_sched() is already done in
+ring_buffer_resize, and the caller (trace.c:tracing_reset() ) also
+disables the ring buffer and calls synchronize_sched().
 
- fs/fscache/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+With that, what other window is still opened (after this fix)?
 
-diff --git a/fs/fscache/Kconfig b/fs/fscache/Kconfig
-index 864dac2..cc94bb9 100644
---- a/fs/fscache/Kconfig
-+++ b/fs/fscache/Kconfig
-@@ -1,7 +1,6 @@
- 
- config FSCACHE
- 	tristate "General filesystem local caching manager"
--	depends on EXPERIMENTAL
- 	select SLOW_WORK
- 	help
- 	  This option enables a generic filesystem caching manager that can be
+-- Steve
+
+
 
