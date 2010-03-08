@@ -1,84 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148Ab0CHOPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 09:15:37 -0500
-Received: from eu1sys200aog104.obsmtp.com ([207.126.144.117]:43483 "EHLO
-	eu1sys200aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754623Ab0CHOPe (ORCPT
+	id S1755169Ab0CHORd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 09:17:33 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:58356 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320Ab0CHOR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 09:15:34 -0500
-X-Greylist: delayed 1585 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 09:15:33 EST
-Message-ID: <4B950042.1030007@st.com>
-Date: Mon, 08 Mar 2010 14:48:50 +0100
-From: Armando VISCONTI <armando.visconti@st.com>
+	Mon, 8 Mar 2010 09:17:29 -0500
+Message-ID: <4B9506F1.1030709@canonical.com>
+Date: Mon, 08 Mar 2010 15:17:21 +0100
+From: Stefan Bader <stefan.bader@canonical.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: viresh kumar <viresh.linux@gmail.com>, linux@arm.linux.org.uk
-Cc: linux-arm-kernel@lists.infradead.org, rajeev-dlh.kumar@st.com,
-       shiraz.hashim@st.com, ashish.priyadarshi@st.com,
-       linux-kernel@vger.kernel.org, vipin.kumar@st.com, amit.goel@st.com,
-       deepak.sikri@st.com
-Subject: Re: [PATCH 00/11] Adding Support for SPEAr Platform under ARM 	architecture
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com> <22dbbef21003070754l6c99f777ycd99cfa892169736@mail.gmail.com>
-In-Reply-To: <22dbbef21003070754l6c99f777ycd99cfa892169736@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/20] KVM: x86 emulator: fix memory access during x86
+ emulation
+References: <1266414330-27444-1-git-send-email-avi@redhat.com> <1266414330-27444-14-git-send-email-avi@redhat.com> <4B925E66.5@canonical.com> <4B937AF5.5020004@redhat.com> <4B950542.2030306@canonical.com> <4B9505E6.1040501@redhat.com>
+In-Reply-To: <4B9505E6.1040501@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Russell,
+Avi Kivity wrote:
+> On 03/08/2010 04:10 PM, Stefan Bader wrote:
+>> Avi Kivity wrote:
+>>   
+>>> On 03/06/2010 03:53 PM, Stefan Bader wrote:
+>>>     
+>>>> i Avi,
+>>>>
+>>>> we currently try to integrate this patch for an update into a 2.6.32
+>>>> based
+>>>> system (amongst other kvm updates). But as soon as this patch gets
+>>>> added kvm
+>>>> will die on startup in kvm_leave_lazy_mmu. This has been documented
+>>>> here:
+>>>>
+>>>> https://bugs.edge.launchpad.net/ubuntu/+source/linux/+bug/531823
+>>>>
+>>>> I have placed the backports of your patches, which are currently in
+>>>> linux-next
+>>>> and marked for stable here:
+>>>>
+>>>> git://kernel.ubuntu.com/smb/linux-2.6.32.y kvm
+>>>>
+>>>> I have tested the failure with a version that got only the following
+>>>> patches in:
+>>>> KVM: x86 emulator: Add Virtual-8086 mode of emulation
+>>>> KVM: x86 emulator: fix memory access during x86 emulation
+>>>> KVM: x86 emulator: Check IOPL level during io instruction emulation
+>>>> KVM: x86 emulator: Fix popf emulation
+>>>> KVM: x86 emulator: Check CPL level during privilege instruction
+>>>> emulation
+>>>>
+>>>> and also with a version that takes all stable patches up to the bad
+>>>> one:
+>>>> KVM: VMX: Trap and invalid MWAIT/MONITOR instruction
+>>>> KVM: x86 emulator: Add group8 instruction decoding
+>>>> KVM: x86 emulator: Add group9 instruction decoding
+>>>> KVM: x86 emulator: Add Virtual-8086 mode of emulation
+>>>> KVM: x86 emulator: fix memory access during x86 emulation
+>>>>
+>>>> But as soon as the fix for memory access gets added, the bug will
+>>>> occur. Would
+>>>> you have an idea what might be causing this?
+>>>>
+>>>>        
+>>> Does the same guest, using the same qemu-kvm, work on kvm.git or
+>>> upstream?
+>>>
+>>>      
+>> The test was done with a kvm user-space package based on 0.12.3 (which
+>> seems to
+>> be the current upstream version). I try to do a test on the git version.
+>>    
+> 
+> I meant keep the same userspace without change, and try it on a Linus
+> kernel or kvm.git master
+> (http://git.kernel.org/?p=virt/kvm/kvm.git;a=summary).
+> 
 
-We really would like to contribute back to the linux community
-with the SPEAr architecture, as we already did for the u-boot loader.
-
-We started just adding the minimum required to boot up the system,
-but we will definetely add all the remaining peripheral in the
-next merging windows.
-
-Can you possibly just spend some times on this patch set and give us
-your feedback? We would really appreciate.
-:-)
-
-
-Thx very much,
-Armando
-
-
-viresh kumar wrote:
-> Hello Russell,
->
-> On Wed, Mar 3, 2010 at 10:37 AM, Viresh KUMAR <viresh.kumar@st.com> wrote:
->   
->> Following set of patches are for adding ST Microelctronics SPEAr Platform under
->> ARM architecture in Linux.
->>
->> Hierarchy in SPEAr is as follows:
->> SPEAr (Platform)
->>        - SPEAr3XX (3XX SOC series, based on ARM9)
->>                - SPEAr300 (SOC)
->>                        - SPEAr300_EVB (Evaluation Board)
->>                - SPEAr310 (SOC)
->>                        - SPEAr310_EVB (Evaluation Board)
->>                - SPEAr320 (SOC)
->>                        - SPEAr320_EVB (Evaluation Board)
->>        - SPEAr6XX (6XX SOC series, based on ARM9)
->>                - SPEAr600 (SOC)
->>                        - SPEAr600_EVB (Evaluation Board)
->>        - SPEAr13XX (13XX SOC series, based on ARM CORTEXA9)
->>                - SPEAr1300 (SOC)
->>
->> Current patch will add support for SPEAr3XX and SPEAr6XX family. SPEAr13XX is
->> under development phase.
->>
->>     
->
-> Is this patch set fine? Or do i need resubmit it?
->
->
-> regards,
-> viresh kumar,
-> ST Microelectronics
->   
-
+Ok, sorry I misunderstood that. As I see Linus just pulled your patches in, I
+will get that compiled and tested.
 
