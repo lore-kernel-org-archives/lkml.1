@@ -1,70 +1,268 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963Ab0CHKLu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 05:11:50 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:60959 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917Ab0CHKLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 05:11:42 -0500
-Date: Mon, 8 Mar 2010 11:11:52 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, mhiramat@redhat.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PowerPC] 2.6.33-git11 : Badness at kernel/kprobes.c:264
-Message-ID: <20100308101152.GA2557@osiris.boeblingen.de.ibm.com>
-References: <4B920E06.4060508@in.ibm.com>
+	id S1753566Ab0CHKLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 05:11:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50311 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753361Ab0CHKLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 05:11:12 -0500
+Message-ID: <4B94CC6D.2070502@cn.fujitsu.com>
+Date: Mon, 08 Mar 2010 18:07:41 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B920E06.4060508@in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Paul Menage <menage@google.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH V2 3/4] cpuset: alloc nodemask_t at heap not stack
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 06, 2010 at 01:40:46PM +0530, Sachin Sant wrote:
-> With latest 33 git(2.6.33-git11 : 64096c1741...) on a POWER6 box
-> 
-> type=2000 audit(1267853400.180:1): initialized
-> Kprobe smoke test started
-> ------------[ cut here ]------------
-> Badness at kernel/kprobes.c:264
-> NIP: c0000000006251e0 LR: c000000000625190 CTR: c00000000007914c
-> REGS: c0000000fecc3680 TRAP: 0700   Not tainted  (2.6.33-git11-autotest)
-> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000048  XER: 2000000b
-> TASK = c0000000feca0000[1] 'swapper' THREAD: c0000000fecc0000 CPU: 2
-> GPR00: 0000000000000001 c0000000fecc3900 c000000000b297b0 c0000000fc680000
-> GPR04: 0000000000000004 0000000000000000 0000000024022024 c000000000a2b9d0
-> GPR08: 0000000000004000 c0000000fc680004 0000000000010000 0000000000000004
-> GPR12: 0000000022000024 c000000000bc2b00 0000000000051bc3 0000000000051aa1
-> GPR16: 0000000000051bbb 0000000000d00000 c0000000008011f8 c0000000007f1ba1
-> GPR20: 00000000015e87a8 c0000000008e87a8 c0000000fecc3cc8 c0000000fecc3cd0
-> GPR24: c0000000fecc3cd8 c0000000fecc3cc0 c0000000fecc3be0 0000000000000000
-> GPR28: 0000000000000000 c000000000a2b8b8 c000000000a94888 d000000000bd0004
-> NIP [c0000000006251e0] .free_insn_slot+0x84/0x12c
-> LR [c000000000625190] .free_insn_slot+0x34/0x12c
-> Call Trace:
-> [c0000000fecc3900] [c000000000625190] .free_insn_slot+0x34/0x12c (unreliable)
-> [c0000000fecc3990] [c000000000622050] .arch_remove_kprobe+0x28/0x48
-> [c0000000fecc3a10] [c000000000623f58] .__unregister_kprobe_bottom+0x28/0x8c
-> [c0000000fecc3aa0] [c00000000062419c] .unregister_kprobes+0xc0/0xf0
-> [c0000000fecc3b40] [c0000000006241ec] .unregister_kprobe+0x20/0x30
-> [c0000000fecc3bb0] [c0000000000e081c] .init_test_probes+0xc4/0x66c
-> [c0000000fecc3c50] [c0000000008c288c] .init_kprobes+0x1f0/0x230
-> [c0000000fecc3e30] [c0000000000097a4] .do_one_initcall+0x88/0x1bc
-> [c0000000fecc3ee0] [c0000000008a0490] .kernel_init+0x220/0x2dc
-> [c0000000fecc3f90] [c00000000002c4d0] .kernel_thread+0x54/0x70
-> Instruction dump:
-> 7c00f850 7c804b92 2fa40000 419c007c 7d0a5b92 7fa44000 409c0070 7d232214
-> 88090020 68000002 7c0000d0 78000fe0 <0b000000> 2fbc0000 419e0044 8123001c
-> 
-> 2.6.33-git10(64ba99267...) was OK.
-> 
-> This WARN_ON was introduced by commit 4610ee1d36...
-> 
-> kprobes: Introduce generic insn_slot framework
+Changes from V1 to V2:
+- None
 
-FWIW, same on s390...
+Allocating nodemask_t at heap instead of stack.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+---
+ kernel/cpuset.c |   93 ++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 65 insertions(+), 28 deletions(-)
+
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 9c5bb4f..f36e577 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -970,15 +970,20 @@ static void cpuset_change_nodemask(struct task_struct *p,
+ 	struct cpuset *cs;
+ 	int migrate;
+ 	const nodemask_t *oldmem = scan->data;
+-	nodemask_t newmems;
++	NODEMASK_ALLOC(nodemask_t, newmems, GFP_KERNEL);
++
++	if (!newmems)
++		return;
+ 
+ 	cs = cgroup_cs(scan->cg);
+-	guarantee_online_mems(cs, &newmems);
++	guarantee_online_mems(cs, newmems);
+ 
+ 	task_lock(p);
+-	cpuset_change_task_nodemask(p, &newmems);
++	cpuset_change_task_nodemask(p, newmems);
+ 	task_unlock(p);
+ 
++	NODEMASK_FREE(newmems);
++
+ 	mm = get_task_mm(p);
+ 	if (!mm)
+ 		return;
+@@ -1048,16 +1053,21 @@ static void update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem,
+ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
+ 			   const char *buf)
+ {
+-	nodemask_t oldmem;
++	NODEMASK_ALLOC(nodemask_t, oldmem, GFP_KERNEL);
+ 	int retval;
+ 	struct ptr_heap heap;
+ 
++	if (!oldmem)
++		return -ENOMEM;
++
+ 	/*
+ 	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
+ 	 * it's read-only
+ 	 */
+-	if (cs == &top_cpuset)
+-		return -EACCES;
++	if (cs == &top_cpuset) {
++		retval = -EACCES;
++		goto done;
++	}
+ 
+ 	/*
+ 	 * An empty mems_allowed is ok iff there are no tasks in the cpuset.
+@@ -1073,11 +1083,13 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
+ 			goto done;
+ 
+ 		if (!nodes_subset(trialcs->mems_allowed,
+-				node_states[N_HIGH_MEMORY]))
+-			return -EINVAL;
++				node_states[N_HIGH_MEMORY])) {
++			retval =  -EINVAL;
++			goto done;
++		}
+ 	}
+-	oldmem = cs->mems_allowed;
+-	if (nodes_equal(oldmem, trialcs->mems_allowed)) {
++	*oldmem = cs->mems_allowed;
++	if (nodes_equal(*oldmem, trialcs->mems_allowed)) {
+ 		retval = 0;		/* Too easy - nothing to do */
+ 		goto done;
+ 	}
+@@ -1093,10 +1105,11 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
+ 	cs->mems_allowed = trialcs->mems_allowed;
+ 	mutex_unlock(&callback_mutex);
+ 
+-	update_tasks_nodemask(cs, &oldmem, &heap);
++	update_tasks_nodemask(cs, oldmem, &heap);
+ 
+ 	heap_free(&heap);
+ done:
++	NODEMASK_FREE(oldmem);
+ 	return retval;
+ }
+ 
+@@ -1381,39 +1394,46 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+ 			  struct cgroup *oldcont, struct task_struct *tsk,
+ 			  bool threadgroup)
+ {
+-	nodemask_t from, to;
+ 	struct mm_struct *mm;
+ 	struct cpuset *cs = cgroup_cs(cont);
+ 	struct cpuset *oldcs = cgroup_cs(oldcont);
++	NODEMASK_ALLOC(nodemask_t, from, GFP_KERNEL);
++	NODEMASK_ALLOC(nodemask_t, to, GFP_KERNEL);
++
++	if (from == NULL || to == NULL)
++		return;
+ 
+ 	if (cs == &top_cpuset) {
+ 		cpumask_copy(cpus_attach, cpu_possible_mask);
+ 	} else {
+ 		guarantee_online_cpus(cs, cpus_attach);
+ 	}
+-	guarantee_online_mems(cs, &to);
++	guarantee_online_mems(cs, to);
+ 
+ 	/* do per-task migration stuff possibly for each in the threadgroup */
+-	cpuset_attach_task(tsk, &to, cs);
++	cpuset_attach_task(tsk, to, cs);
+ 	if (threadgroup) {
+ 		struct task_struct *c;
+ 		rcu_read_lock();
+ 		list_for_each_entry_rcu(c, &tsk->thread_group, thread_group) {
+-			cpuset_attach_task(c, &to, cs);
++			cpuset_attach_task(c, to, cs);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+ 
+ 	/* change mm; only needs to be done once even if threadgroup */
+-	from = oldcs->mems_allowed;
+-	to = cs->mems_allowed;
++	*from = oldcs->mems_allowed;
++	*to = cs->mems_allowed;
+ 	mm = get_task_mm(tsk);
+ 	if (mm) {
+-		mpol_rebind_mm(mm, &to);
++		mpol_rebind_mm(mm, to);
+ 		if (is_memory_migrate(cs))
+-			cpuset_migrate_mm(mm, &from, &to);
++			cpuset_migrate_mm(mm, from, to);
+ 		mmput(mm);
+ 	}
++
++	NODEMASK_FREE(from);
++	NODEMASK_FREE(to);
+ }
+ 
+ /* The various types of files and directories in a cpuset file system */
+@@ -1558,13 +1578,21 @@ static int cpuset_sprintf_cpulist(char *page, struct cpuset *cs)
+ 
+ static int cpuset_sprintf_memlist(char *page, struct cpuset *cs)
+ {
+-	nodemask_t mask;
++	NODEMASK_ALLOC(nodemask_t, mask, GFP_KERNEL);
++	int retval;
++
++	if (mask == NULL)
++		return -ENOMEM;
+ 
+ 	mutex_lock(&callback_mutex);
+-	mask = cs->mems_allowed;
++	*mask = cs->mems_allowed;
+ 	mutex_unlock(&callback_mutex);
+ 
+-	return nodelist_scnprintf(page, PAGE_SIZE, mask);
++	retval = nodelist_scnprintf(page, PAGE_SIZE, *mask);
++
++	NODEMASK_FREE(mask);
++
++	return retval;
+ }
+ 
+ static ssize_t cpuset_common_file_read(struct cgroup *cont,
+@@ -1993,7 +2021,10 @@ static void scan_for_empty_cpusets(struct cpuset *root)
+ 	struct cpuset *cp;	/* scans cpusets being updated */
+ 	struct cpuset *child;	/* scans child cpusets of cp */
+ 	struct cgroup *cont;
+-	nodemask_t oldmems;
++	NODEMASK_ALLOC(nodemask_t, oldmems, GFP_KERNEL);
++
++	if (oldmems == NULL)
++		return;
+ 
+ 	list_add_tail((struct list_head *)&root->stack_list, &queue);
+ 
+@@ -2010,7 +2041,7 @@ static void scan_for_empty_cpusets(struct cpuset *root)
+ 		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
+ 			continue;
+ 
+-		oldmems = cp->mems_allowed;
++		*oldmems = cp->mems_allowed;
+ 
+ 		/* Remove offline cpus and mems from this cpuset. */
+ 		mutex_lock(&callback_mutex);
+@@ -2026,9 +2057,10 @@ static void scan_for_empty_cpusets(struct cpuset *root)
+ 			remove_tasks_in_empty_cpuset(cp);
+ 		else {
+ 			update_tasks_cpumask(cp, NULL);
+-			update_tasks_nodemask(cp, &oldmems, NULL);
++			update_tasks_nodemask(cp, oldmems, NULL);
+ 		}
+ 	}
++	NODEMASK_FREE(oldmems);
+ }
+ 
+ /*
+@@ -2086,16 +2118,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
+ static int cpuset_track_online_nodes(struct notifier_block *self,
+ 				unsigned long action, void *arg)
+ {
+-	nodemask_t oldmems;
++	NODEMASK_ALLOC(nodemask_t, oldmems, GFP_KERNEL);
++
++	if (oldmems == NULL)
++		return NOTIFY_DONE;
+ 
+ 	cgroup_lock();
+ 	switch (action) {
+ 	case MEM_ONLINE:
+-		oldmems = top_cpuset.mems_allowed;
++		*oldmems = top_cpuset.mems_allowed;
+ 		mutex_lock(&callback_mutex);
+ 		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+ 		mutex_unlock(&callback_mutex);
+-		update_tasks_nodemask(&top_cpuset, &oldmems, NULL);
++		update_tasks_nodemask(&top_cpuset, oldmems, NULL);
+ 		break;
+ 	case MEM_OFFLINE:
+ 		scan_for_empty_cpusets(&top_cpuset);
+@@ -2104,6 +2139,8 @@ static int cpuset_track_online_nodes(struct notifier_block *self,
+ 		break;
+ 	}
+ 	cgroup_unlock();
++
++	NODEMASK_FREE(oldmems);
+ 	return NOTIFY_OK;
+ }
+ #endif
+-- 
+1.6.5.2
+
+
