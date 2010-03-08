@@ -1,54 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032Ab0CHXTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:19:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36931 "EHLO hera.kernel.org"
+	id S1756061Ab0CHXT2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:19:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10146 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972Ab0CHXTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:19:17 -0500
-Message-ID: <4B958673.3000105@kernel.org>
-Date: Tue, 09 Mar 2010 08:21:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
+	id S1750972Ab0CHXTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:19:24 -0500
+Message-ID: <4B9585BD.6070904@redhat.com>
+Date: Mon, 08 Mar 2010 18:18:21 -0500
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
-       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       peterz@infradead.org, dipankar@in.ibm.com, josh@freedesktop.org,
-       paulmck@linux.vnet.ibm.com, oleg@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/4] stop_machine: reimplement using cpuhog
-References: <1268063603-7425-1-git-send-email-tj@kernel.org>	<1268063603-7425-3-git-send-email-tj@kernel.org> <20100308083204.1300b97a@infradead.org>
-In-Reply-To: <20100308083204.1300b97a@infradead.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: Upstream first policy
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org> <20100308094647.GA14268@elte.hu> <20100308173008.7ae389ab@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 23:18:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 03/08/2010 01:08 PM, Linus Torvalds wrote:
 
-On 03/09/2010 01:32 AM, Arjan van de Ven wrote:
-> On Tue,  9 Mar 2010 00:53:21 +0900
-> Tejun Heo <tj@kernel.org> wrote:
-> 
->> Reimplement stop_machine using cpuhog.  As cpuhogs are guaranteed to
->> be available for all online cpus, stop_machine_create/destroy() are no
->> longer necessary and removed.
-> 
-> question;
-> stop_machine pretty much also stops interrupts (it has to, at least for
-> the users of stop_machine).. do cpu_hogs do this too?
-> 
-> (if they don't, cpu_hogs aren't safe for some of the users of
-> stop_machine, like code patching etc)
+> Things like "/etc/passwd" really are about the _pathname_, not the inode.
+> It really is the _path_ that is special, because that is fundamentally the
+> thing you trust.
 
-That is and has always been done by stop_machine cpuhog callback
-stop_cpu().  Only the thread pool is changed.  The logic stays the
-same.
+On the other hand, '/etc/shadow' has the opposite constraint,
+where the system will not trust most of the applications with
+the data from that file.
 
-Thanks.
+Using label security to protect the contents makes sense there.
 
--- 
-tejun
+Your example appears to be about "can the application trust
+the data?", while the label based security solves "can the
+application be trusted with the data?"
+
+These are two different things.
