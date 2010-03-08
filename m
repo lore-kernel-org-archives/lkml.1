@@ -1,58 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058Ab0CHXWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:22:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38014 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750972Ab0CHXVz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:21:55 -0500
-Date: Mon, 8 Mar 2010 15:21:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Eric Paris <eparis@parisplace.org>
-cc: Ulrich Drepper <drepper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-In-Reply-To: <7e0fb38c1003081512j36b4fbbfpa5f93f988495f621@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1003081516300.3669@localhost.localdomain>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>  <20100308094647.GA14268@elte.hu>  <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>  <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>  <a36005b51003081412u536c34cbu46b5288e32c73397@mail.gmail.com>
- <7e0fb38c1003081512j36b4fbbfpa5f93f988495f621@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755816Ab0CHX2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:28:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42077 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751070Ab0CHX2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:28:32 -0500
+Date: Tue, 9 Mar 2010 10:28:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] i2c: update for semaphore to mutex conversion of devices
+Message-Id: <20100309102828.18351564.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have been carrying this patch in linux-next for some time and now
+mainline needs it.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/i2c/i2c-smbus.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
+index 333527c..52aa775 100644
+--- a/drivers/i2c/i2c-smbus.c
++++ b/drivers/i2c/i2c-smbus.c
+@@ -27,6 +27,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-smbus.h>
++#include <linux/mutex.h>
+ 
+ struct i2c_smbus_alert {
+ 	unsigned int		alert_edge_triggered:1;
+@@ -55,7 +56,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
+ 	 * Drivers should either disable alerts, or provide at least
+ 	 * a minimal handler.  Lock so client->driver won't change.
+ 	 */
+-	down(&dev->sem);
++	device_lock(dev);
+ 	if (client->driver) {
+ 		if (client->driver->alert)
+ 			client->driver->alert(client, data->flag);
+@@ -63,7 +64,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
+ 			dev_warn(&client->dev, "no driver alert()!\n");
+ 	} else
+ 		dev_dbg(&client->dev, "alert with no driver\n");
+-	up(&dev->sem);
++	device_unlock(dev);
+ 
+ 	/* Stop iterating after we find the device */
+ 	return -EBUSY;
+-- 
+1.6.6.2
 
 
-On Mon, 8 Mar 2010, Eric Paris wrote:
->
-> answering a different post in the same email: I accept "THERE ARE
-> DIFFERENT CASES."  You go on to say "So I'm not suggesting we
-> _replace_ content-based security with pathname-based security. I'm
-> just saying that pathnames actually do matter for security, and that
-> they are an independent issue."  But what you are suggesting is
-> EXACTLY that our users should _replace_ content-based security with
-> pathname-based security when they have to boot with security=TOMOYO
-> instead of security=SMACK.
-
-No.
-
-Because we already _have_ content-based security. The traditional UNIX 
-model is all about "labeling", ie the inode-based security.
-
-The fact that the extended security is then using something else in Tomoyo 
-or AppArmor doesn't remove the traditional security model.
-
-Again, your whole email is just "assuming" that selinux is the thing to 
-be. No logic to your post at all. If you are using a AppArmor-based thing, 
-you're not "switching" from SELinux to AppArmor. You're just using it.
-
-Get it? The Ubuntu people seem to be happy with AppArmor. Deal with it. 
-SELinux isn't the end-all and be-all of everything.
-
-			Linus
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
