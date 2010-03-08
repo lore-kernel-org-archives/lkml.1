@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342Ab0CHHRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 02:17:52 -0500
-Received: from mga02.intel.com ([134.134.136.20]:21812 "EHLO mga02.intel.com"
+	id S1752335Ab0CHHSF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 02:18:05 -0500
+Received: from mga14.intel.com ([143.182.124.37]:15840 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760Ab0CHHRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751763Ab0CHHRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Mar 2010 02:17:34 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,601,1262592000"; 
-   d="scan'208";a="498669664"
+   d="scan'208";a="251982409"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Keir Fraser <keir.fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
@@ -16,9 +16,9 @@ To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
 Cc: Ian Campbell <Ian.Campbell@citrix.com>, linux-kernel@vger.kernel.org,
        xen-devel <xen-devel@lists.xensource.com>,
        Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 5/7] x86/xen: The entrance for PV extension of HVM
-Date: Mon,  8 Mar 2010 15:18:50 +0800
-Message-Id: <1268032732-8025-6-git-send-email-sheng@linux.intel.com>
+Subject: [PATCH 6/7] xen: Enable PV clocksource for HVM
+Date: Mon,  8 Mar 2010 15:18:51 +0800
+Message-Id: <1268032732-8025-7-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1268032732-8025-1-git-send-email-sheng@linux.intel.com>
 References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com>
@@ -26,51 +26,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-xen_guest_init() would setup the environment.
+PV clocksource can provide a reliable clocksource for HVM running on Xen.
+
+To enable it, put following line to the HVM configure file:
+
+cpuid = [ '0x40000002:edx=0x3' ]
+
+It would set bit 0 and bit 1 in 0x40000002:edx, which enable PV extension
+framework and PV clocksource.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
- arch/x86/include/asm/xen/hypervisor.h |    6 ++++++
- arch/x86/kernel/setup.c               |    4 ++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ arch/x86/xen/hvmpv.c   |   24 ++++++++++++++++++++++++
+ arch/x86/xen/time.c    |   12 +++++++++++-
+ arch/x86/xen/xen-ops.h |    1 +
+ 3 files changed, 36 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
-index 396ff4c..13e089a 100644
---- a/arch/x86/include/asm/xen/hypervisor.h
-+++ b/arch/x86/include/asm/xen/hypervisor.h
-@@ -37,4 +37,10 @@
- extern struct shared_info *HYPERVISOR_shared_info;
- extern struct start_info *xen_start_info;
+diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
+index 540eef4..e944caf 100644
+--- a/arch/x86/xen/hvmpv.c
++++ b/arch/x86/xen/hvmpv.c
+@@ -43,6 +43,8 @@ static void __init xen_hvm_pv_banner(void)
+ 		pv_info.name);
+ 	printk(KERN_INFO "Xen version: %d.%d%s\n",
+ 		version >> 16, version & 0xffff, extra.extraversion);
++	if (xen_hvm_pv_clock_enabled())
++		printk(KERN_INFO "PV feature: PV clocksource enabled\n");
+ }
  
-+#ifdef CONFIG_XEN_HVM_PV
-+void __init xen_guest_init(void);
-+#else
-+static inline void xen_guest_init(void) {};
-+#endif
+ static int __init xen_para_available(void)
+@@ -82,6 +84,9 @@ static int __init init_hvm_pv_info(void)
+ 	if (!(edx & XEN_CPUID_FEAT2_HVM_PV))
+ 		return -ENODEV;
+ 
++	if (edx & XEN_CPUID_FEAT2_HVM_PV_CLOCK)
++		xen_hvm_pv_features |= XEN_HVM_PV_CLOCK_ENABLED;
 +
- #endif /* _ASM_X86_XEN_HYPERVISOR_H */
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 5d9e40c..1cc4786 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -113,6 +113,8 @@
- #endif
- #include <asm/mce.h>
+ 	if (pages < 1)
+ 		return -ENODEV;
  
-+#include <asm/xen/hypervisor.h>
+@@ -112,6 +117,23 @@ static int __init init_shared_info(void)
+ 	return 0;
+ }
+ 
++static void __init init_pv_clocksource(void)
++{
++	if (!xen_hvm_pv_clock_enabled())
++		return;
 +
- /*
-  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-  * The direct mapping extends to max_pfn_mapped, so that we can directly access
-@@ -740,6 +742,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	x86_init.oem.arch_setup();
- 
-+	xen_guest_init();
++	if (enable_hvm_pv(HVM_PV_CLOCK))
++		BUG();
 +
- 	setup_memory_map();
- 	parse_setup_data();
- 	/* update the e820_saved too */
++	pv_time_ops.sched_clock = xen_sched_clock;
++
++	x86_platform.calibrate_tsc = xen_tsc_khz;
++	x86_platform.get_wallclock = xen_get_wallclock;
++	x86_platform.set_wallclock = xen_set_wallclock;
++
++	xen_register_clocksource();
++}
++
+ void __init xen_guest_init(void)
+ {
+ 	int r;
+@@ -134,4 +156,6 @@ void __init xen_guest_init(void)
+ 	pv_info = xen_hvm_pv_info;
+ 
+ 	xen_domain_type = XEN_HVM_DOMAIN;
++
++	init_pv_clocksource();
+ }
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index 0d3f07c..06b3e72 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -472,11 +472,21 @@ void xen_timer_resume(void)
+ 	}
+ }
+ 
++static bool xen_clocksource_enabled;
++
++void xen_register_clocksource(void)
++{
++	if (!xen_clocksource_enabled) {
++		clocksource_register(&xen_clocksource);
++		xen_clocksource_enabled = 1;
++	}
++}
++
+ __init void xen_time_init(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+-	clocksource_register(&xen_clocksource);
++	xen_register_clocksource();
+ 
+ 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
+ 		/* Successfully turned off 100Hz tick, so we have the
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index f9153a3..d56b660 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -48,6 +48,7 @@ cycle_t xen_clocksource_read(void);
+ void xen_setup_cpu_clockevents(void);
+ unsigned long xen_tsc_khz(void);
+ void __init xen_time_init(void);
++void xen_register_clocksource(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+ unsigned long long xen_sched_clock(void);
 -- 
 1.5.4.5
 
