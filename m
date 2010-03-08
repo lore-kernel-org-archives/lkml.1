@@ -1,65 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850Ab0CHG2q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 01:28:46 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:41132 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070Ab0CHG2k (ORCPT
+	id S1751874Ab0CHG3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 01:29:50 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:58710 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070Ab0CHG3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 01:28:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=EUOSg53E3nixpgje1wyek0FGmDrQQmzASC+jjbj2TxfP9uaTpbDu9pDkjaOWV8qoIQ
-         svVzGVt32G/AY98pd9OhYvXtWTrkZAP/kz53TAMj4L+mpJKGQ61SQAfBSm57bNknUpoK
-         DgD41QBb6ZePyOpW6vaB+3XiQv1GqpMW1cHfg=
+	Mon, 8 Mar 2010 01:29:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=ErW+m6IemfNgOhPoUPz1gFtNnxZA/FQPau5gUXcGvBSQjA1snjrBzIVrnALlJEI0H
+	eNyWdoeoXIBqbhAgHzP3A==
 MIME-Version: 1.0
-In-Reply-To: <1264522249.3067.79.camel@odin>
-References: <771cded01001120041ue24edabk8e4638ef7151c947@mail.gmail.com>
-	 <20100112115156.GA546@rakim.wolfsonmicro.main>
-	 <771cded01001250301q465a9f8ma484f597ae9a292f@mail.gmail.com>
-	 <20100125135628.GB26613@rakim.wolfsonmicro.main>
-	 <771cded01001252226k342723b3p3ea235fe79c46843@mail.gmail.com>
-	 <20100126110420.GI15759@rakim.wolfsonmicro.main>
-	 <771cded01001260354y7c7db25bqa8bbfe000e0c0380@mail.gmail.com>
-	 <20100126120058.GN15759@rakim.wolfsonmicro.main>
-	 <771cded01001260414q4c8df1e0k303772b87bc725eb@mail.gmail.com>
-	 <1264522249.3067.79.camel@odin>
-Date: Mon, 8 Mar 2010 01:28:39 -0500
-Message-ID: <771cded01003072228i1a6249f0tc0026794cc512bd2@mail.gmail.com>
-Subject: Re: [PATCH 01/01] regulator: support max8649
-From: Haojian Zhuang <haojian.zhuang@gmail.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20100307204933.GC17727@core.coreip.homeip.net>
+References: <4B8C1867.7040201@cam.ac.uk>
+	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
+	 <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
+	 <20100303184132.GA11471@core.coreip.homeip.net>
+	 <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+	 <20100303190753.GB11471@core.coreip.homeip.net>
+	 <4B8EB99F.4080104@jic23.retrosnub.co.uk>
+	 <20100303230229.77df3ac3@hyperion.delvare>
+	 <404ea8001003031508p32641b2bj8781ce2b88e1f9cb@mail.gmail.com>
+	 <20100307204933.GC17727@core.coreip.homeip.net>
+Date: Sun, 7 Mar 2010 22:29:35 -0800
+Message-ID: <404ea8001003072229n47269b44r5d1fc17385c5bbc9@mail.gmail.com>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+From: Dima Zavin <dmitriyz@google.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>
 Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 11:10 AM, Liam Girdwood <lrg@slimlogic.co.uk> wrote:
-> On Tue, 2010-01-26 at 07:14 -0500, Haojian Zhuang wrote:
->> On Tue, Jan 26, 2010 at 7:00 AM, Mark Brown
->> <broonie@opensource.wolfsonmicro.com> wrote:
->> >
+On Sun, Mar 7, 2010 at 12:49 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> On Wed, Mar 03, 2010 at 03:08:29PM -0800, Dima Zavin wrote:
 >>
->> update this patch.
+>> As it came up earlier in the thread, adding an ABS_AMBIENT_LIGHT_LEVEL
+>> or equivalent is much simpler and provides a clean, concise, and
+>> useful interface to userspace.
+>>
+>> Note that for many applications, you actually get configurable
+>> threshold levels, and the hardware triggers an interrupt when the
+>> light level crosses those thresholds. This makes using an input device
+>> very useful, and that is in fact how we use ALS devices today. I have
+>> several pieces of hardware that do this, and I don't see how this new
+>> als subsystem helps me handle that problem. With the suggested API,
+>> I'll have to poll the sysfs files manually to see if they've changed
+>> (which is suboptimal), or still add a non-standard input device to do
+>> what I want.
 >>
 >
-> Applied.
->
-> Thanks
->
-> Liam
->
->
+> OK, so from what you are saying it looks you just like the _interface_,
+> or transport, that input subsystem provides, not the fact that you
+> considering the device to be a HID-type device. If this is the case then
+> this indicates that we need to take another look at the proposed
+> interface and make sure that it allows proper poll() support.
 
-Hi Liam & Mark,
+Yes, you are right. Though, the filtering that the input subsystem
+provides can also be useful.
 
-I just want to confirm whether max8649 is merged into regulator
-codebase. It seems that I can't find max8649 in regulator git tree.
-
-Thanks
-Haojian
+--Dima
