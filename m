@@ -1,51 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682Ab0CHRad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 12:30:33 -0500
-Received: from smtpgate4.pacific.net.sg ([203.120.68.34]:35498 "HELO
-	smtpgate4.pacific.net.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753076Ab0CHRa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 12:30:28 -0500
-Message-ID: <20100309010611.wib8h83p4wwssgck@wm4.web.pacific.net.sg>
-Date: Tue, 09 Mar 2010 01:06:11 +0800
-From: Mr Evans Green <e.green22091962@googlemail.com>
-Reply-to: evans195604@gncn.net
-To: undisclosed-recipients:;
-Subject: 
+	id S1754097Ab0CHRdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 12:33:19 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36385 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753076Ab0CHRdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 12:33:13 -0500
+Date: Mon, 8 Mar 2010 09:33:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] driver core patches for 2.6.33-git
+Message-ID: <20100308173306.GA1875@suse.de>
+References: <20100302230933.GA32287@kroah.com>
+ <20100308141234.GA2911@kroah.com>
+ <alpine.LFD.2.00.1003080926480.3989@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+In-Reply-To: <alpine.LFD.2.00.1003080926480.3989@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 08, 2010 at 09:28:09AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 8 Mar 2010, Greg KH wrote:
+> > 
+> > Please pull from:
+> > 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
+> 
+> Forgot to push out?
 
+Crap, yes, I did.  It's there now.
 
-Good Day.
+thanks,
 
-Although you might be apprehensive about my email as we have not met before, I
-am Mr Evans Green,I am a Banker i work with Bank Of England,There is  
-the sum of
-$20,600,000.00 in my Bank "Bank Of England"London, There were no beneficiaries
-stated  concerning these funds which means no one would ever come forward to
-claim it.
-
-That is why I ask that we work together so as to have the sum  
-transfered out of
-my Bank into your Bank Account or any other account of your chioce. I will be
-pleased to see if you can help me and also be a good and trusted person.
-
-Once the funds have been transferred to your Nominated Bank Account we shall
-then share in the ratio of 60% for me, 40% for you.do send me a mail  
-as soon as
-possible  for more details here is my email address:evans195604@gncn.net
-
-Regards
-Mr Evans Green.
-
+greg k-h
