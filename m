@@ -1,51 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751811Ab0CHGDq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 01:03:46 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62382 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165Ab0CHGDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 01:03:40 -0500
-Message-ID: <4B94936B.8030409@cn.fujitsu.com>
-Date: Mon, 08 Mar 2010 14:04:27 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S1751623Ab0CHG0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 01:26:12 -0500
+Received: from ns1.siteground211.com ([209.62.36.12]:56762 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070Ab0CHG0H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 01:26:07 -0500
+X-Greylist: delayed 1324 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 01:26:07 EST
+Date: Mon, 8 Mar 2010 08:04:06 +0200
+From: Felipe Balbi <me@felipebalbi.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: The gregkh patch scripts
+Message-ID: <20100308060405.GA3885@gandalf>
+Reply-To: me@felipebalbi.com
+References: <20100307181649.GD3718@kroah.com>
+ <Pine.LNX.4.44L0.1003071546000.8502-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003071546000.8502-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While running a ftrace test, a kernel warning showed up. The bug is not so
-easy to reproduce, normally it takes 30 mins to 2 hours.
+Hi,
 
-After revering 3c05d7482777f15e71bb4cb1ba78dee2800dfec6, I ran the test
-for 15 hours, and the bug seems disapeared.
+On Sun, Mar 07, 2010 at 03:54:25PM -0500, Alan Stern wrote:
+> Let's ask some other people on the USB list (CC'ed).  My main concern 
+> is to avoid rebasing too often, whichever source-code management system 
+> is used.
 
-------------[ cut here ]------------
-WARNING: at kernel/trace/ring_buffer.c:3420 ring_buffer_reset_cpu+0x5a/0x9c()
-Hardware name: PRIMERGY                      
-Modules linked in: ipt_MASQUERADE iptable_nat nf_nat bridge stp llc deflate zlib_deflate ctr camellia cast5 rmd160 crypto_null ccm serpent blowfish twofish_x86_64 twofish_common ecb xcbc cbc sha256_generic sha512_generic des_generic cryptd aes_x86_64 aes_generic ah6 ah4 esp6 esp4 xfrm4_mode_beet xfrm4_tunnel tunnel4 xfrm4_mode_tunnel xfrm4_mode_transport xfrm6_mode_transport xfrm6_mode_beet ipcomp ipcomp6 xfrm_ipcomp xfrm6_tunnel tunnel6 af_key autofs4 sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_multipath uinput i5k_amb hwmon e1000e i5000_edac edac_core iTCO_wdt iTCO_vendor_support shpchp i2c_i801 i2c_core serio_raw pcspkr pata_acpi ata_generic mptsas mptscsih ata_piix mptbase scsi_transport_sas dm_mod [last unloaded: speedstep_lib]
-Pid: 2108, comm: ftrace_current_ Tainted: G        W  2.6.33-tip+ #2
-Call Trace:
- [<ffffffff8104ebd0>] warn_slowpath_common+0x7c/0x94
- [<ffffffff8104ebfc>] warn_slowpath_null+0x14/0x16
- [<ffffffff810a50f5>] ring_buffer_reset_cpu+0x5a/0x9c
- [<ffffffff810aa3f0>] tracing_reset_online_cpus+0x4a/0x79
- [<ffffffff810aa434>] tracer_init+0x15/0x20
- [<ffffffff810aa601>] tracing_set_tracer+0x1c2/0x1e7
- [<ffffffff810d9847>] ? might_fault+0x5c/0xac
- [<ffffffff810aa6b2>] tracing_set_trace_write+0x8c/0xbc
- [<ffffffff810a8e79>] ? trace_buffer_lock_reserve+0x21/0x56
- [<ffffffff810a95ce>] ? trace_current_buffer_lock_reserve+0x16/0x18
- [<ffffffff813ef135>] ? retint_swapgs+0x13/0x1b
- [<ffffffff81104618>] vfs_write+0xae/0x10b
- [<ffffffff81104735>] sys_write+0x4a/0x6e
- [<ffffffff81009da6>] tracesys+0xd0/0xd5
----[ end trace f7002f0890d5b023 ]---
+personally, I'm more used to git and find it difficult (or annoying) when
+I need to rebase my own patches on top of Greg's quilt tree. git
+quiltimport doesn't work always and I have to refresh patches on my own
+and run git quiltimport later again.
+
+Moving to a git tree would help me, but then again, I don't want to
+become a burden. Whatever is better for Greg, I'll be adapating to ;-)
+
+What I use currently to have a tree which people can pull from and still
+be able to rebase on top of Greg's patches is something like:
+
+$ git fetch linus
+$ git reset --hard linus/master
+$ git quiltimport --patches gregkh
+$ git rebase greg my_patches
+$ git merge -s ours master
+$ git checkout master
+$ git merge my_patches
+
+it helps although rebuilding the tree always is a bit messy :-p
+
+-- 
+balbi
+
