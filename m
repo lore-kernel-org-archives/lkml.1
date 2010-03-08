@@ -1,66 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013Ab0CHPAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 10:00:48 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41905 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754029Ab0CHPAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 10:00:46 -0500
-Date: Mon, 8 Mar 2010 09:47:03 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-wireless@vger.kernel.org, cbe-oss-dev@lists.ozlabs.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ps3_gelic_wireless: fix format warning
-Message-ID: <20100308144702.GA20622@tuxdriver.com>
-References: <201003022006.o22K6QqH019931@hera.kernel.org> <10f740e81003072233j1f9f6a0fr633e1fc65f4e5a5a@mail.gmail.com>
+	id S1755105Ab0CHPBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 10:01:31 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36307 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754657Ab0CHPB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 10:01:28 -0500
+Message-ID: <4B951143.1050807@suse.cz>
+Date: Mon, 08 Mar 2010 16:01:23 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <10f740e81003072233j1f9f6a0fr633e1fc65f4e5a5a@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       geert@linux-m68k.org, elendil@planet.nl, cloos@jhcloos.com
+Subject: Re: [PATCH 0/2] v4 kconfig: place git SHA1 in .config output if in
+ SCM
+References: <20100305194305.GA23009@linux.vnet.ibm.com>
+In-Reply-To: <20100305194305.GA23009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 07:33:27AM +0100, Geert Uytterhoeven wrote:
-> On Tue, Mar 2, 2010 at 21:06, Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org> wrote:
-> > Gitweb:     http://git.kernel.org/linus/c6c97bdaa3307d0811f14c99c38c63a8dae36e1f
-> > Commit:     c6c97bdaa3307d0811f14c99c38c63a8dae36e1f
-> > Parent:     d3a571971e5af241074947fc80f6284677f6e014
-> > Author:     John W. Linville <linville@tuxdriver.com>
-> > AuthorDate: Mon Feb 1 09:55:56 2010 -0500
-> > Committer:  John W. Linville <linville@tuxdriver.com>
-> > CommitDate: Mon Feb 1 09:55:56 2010 -0500
-> >
-> >    ps3_gelic_wireless: fix format warning
-> >
-> >    Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> > ---
-> >  drivers/net/ps3_gelic_wireless.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
-> > index d520e9e..448c5b6 100644
-> > --- a/drivers/net/ps3_gelic_wireless.c
-> > +++ b/drivers/net/ps3_gelic_wireless.c
-> > @@ -1449,7 +1449,7 @@ static int gelic_wl_start_scan(struct gelic_wl_info *wl, int always_scan,
-> >        void *buf = NULL;
-> >        size_t len;
-> >
-> > -       pr_debug("%s: <- always=%d essid_len=%d\n", __func__,
-> > +       pr_debug("%s: <- always=%d essid_len=%z\n", __func__,
+On 5.3.2010 20:43, Paul E. McKenney wrote:
+> This patch appends the localversion string to the Linux kernel version.
+> For example, in a git tree with uncommitted changes, the .config file
+> might start as follows (but with leading hash marks):
 > 
-> `z' is just a modifier for a (missing) type, so this should be `%zu'.
+> 	Automatically generated make config: don't edit
+> 	Linux kernel version: 2.6.33-01836-g90a6501-dirty
+> 	Mon Mar  1 17:05:59 2010
+> 
+> The "-01836-g90a6501-dirty" string is added by this patch.
 
-Ugh...yes, correct.  I'll fix it.
+kbuild in linux-next already has
+commit 85a256d8e0116c8f5ad276730830f5d4d473344d
+Author: David Rientjes <rientjes@google.com>
+Date:   Wed Jan 13 13:01:05 2010 -0800
 
-Thanks!
+    kbuild: improve version string logic
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+which results in a scripts/setlocalversion call during each build. And
+with CONFIG_LOCALVERSION_AUTO, it stores exactly the string you want in
+include/config/kernel.release. So we could change kconfig to read that
+file instead of building the version string again. To also cover the
+!CONFIG_LOCALVERSION_AUTO case, we can add a
+include/config/kernel.release.full file to hold the full string each time.
+
+Sorry for jumping in so late in the discussion, I had a bit of backlog
+in mail directed to me and linux-kbuild@vger.kernel.org, let alone LKML ;).
+
+Michal
