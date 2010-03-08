@@ -1,172 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859Ab0CHBnw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Mar 2010 20:43:52 -0500
-Received: from LION.seas.upenn.edu ([158.130.12.194]:37009 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963Ab0CHBnp (ORCPT
+	id S1753121Ab0CHBxb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Mar 2010 20:53:31 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:53847 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672Ab0CHBx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Mar 2010 20:43:45 -0500
-Message-ID: <4B94541C.5090509@seas.upenn.edu>
-Date: Sun, 07 Mar 2010 20:34:20 -0500
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Micki Balanga <micki@n-trig.com>
-CC: jkosina@suse.cz, chatty@enac.fr, peterhuewe@gmx.de,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: N-trig Finger Pen Multitouch fix
-References: <48A28051AC6D7A48B64F28272458190301AF29@Exchange-IL.n-trig.com>
-In-Reply-To: <48A28051AC6D7A48B64F28272458190301AF29@Exchange-IL.n-trig.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Mar 2010 20:53:26 -0500
+Date: Mon, 8 Mar 2010 10:44:47 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-Id: <20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <1267995474-9117-4-git-send-email-arighi@develer.com>
+References: <1267995474-9117-1-git-send-email-arighi@develer.com>
+	<1267995474-9117-4-git-send-email-arighi@develer.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-First let me thank you for contributing to the development of this driver.
-
-
-I suggest you use scripts/checkpatch.pl it will catch a number of style issues.
- Dmitry was kind enough to point it out when I sent in my recent set of patches.
-
-
-Mostly it looks like this patch is the delta from an almost completely
-independently developed driver.  That makes it considerably more work to analyze
-the fundamental differences.  I would have preferred to see a set of patches
-which first mutate the existing code to match your naming conventions (if that
-is so desired) and then patches that show how things are actually different (A
-lesson I've learned the hard way).
-
-I see quite a number of changes that handle the protocol better than my version,
-would you be offended if I begin to absorb those and submit joint patches?  I'm
-not sure about the proper etiquette for that.
-
-
-On 03/07/10 14:04, Micki Balanga wrote:
-> The purpose of this patch is to enable Linux users to experience the
-> complete N-trig DuoSense pen and true multi-touch solution capabilities
-> over a Linux platform. This driver has been carefully and thoroughly
-> tested by N-trig, over a period of several months.
-
-What user space tools have you tested this driver with?  It does not seem to
-work well with the wacom and evdev drivers.
-
-What improvements beyond the driver that's in 2.6.33 are you targeting?
-
-
-> + * The driver will support MTM firwmare Pen, Finger (Up to 6)
-
-Is this code intended to support older firmwares as well?  It would be best not
-to break the driver for users with legacy firmwares without reason.
-
-
-> +#define PEN_REPORT_SIZE                0x48
-> +#define MAX_FINGERS_SUPPORT    0x06
-
-Are these guaranteed to be kept constant for the foreseeable future?  I've
-already seen hints that N-Trig may move to 10+ fingers in the not to distant future.
-
-http://www.n-trig.com/Content.aspx?Page=PressReleases&PressReleaseId=541
-
-I was starting to move to non-fixed finger limits before I pulled the finger
-tracking code.
-
-> -       if (field->application == HID_DG_PEN)
-> -               return 0;
-
-> +               if (PEN_REPORT_SIZE == field->report->size) {
-
-What was wrong with using field->application to detect the pen?  On a side note,
-after splitting the touch and pen events to separate input devices, I found that
-the pen events conform quite well to the hid spec and don't need special
-handling.  Is there something I missed?
-
-
-
-> +#define MODULE_NAME "hid_ntrig"
+> +/*
+> + * mem_cgroup_update_page_stat_locked() - update memcg file cache's accounting
+> + * @page:	the page involved in a file cache operation.
+> + * @idx:	the particular file cache statistic.
+> + * @charge:	true to increment, false to decrement the statistic specified
+> + *		by @idx.
+> + *
+> + * Update memory cgroup file cache's accounting from a locked context.
+> + *
+> + * NOTE: must be called with mapping->tree_lock held.
+> + */
+> +void mem_cgroup_update_page_stat_locked(struct page *page,
+> +			enum mem_cgroup_write_page_stat_item idx, bool charge)
+> +{
+> +	struct address_space *mapping = page_mapping(page);
+> +	struct page_cgroup *pc;
 > +
+> +	if (mem_cgroup_disabled())
+> +		return;
+> +	WARN_ON_ONCE(!irqs_disabled());
+> +	WARN_ON_ONCE(mapping && !spin_is_locked(&mapping->tree_lock));
 > +
-> +#define info(format, arg...) \
-> +       printk(KERN_INFO "%s: " format , MODULE_NAME , ## arg)
-> +#define ntrig_dbg(format, arg...) \
-> +       do { \
-> +               if (debug) \
-> +                       printk(KERN_DEBUG "%s: " format, \
-> +                       MODULE_NAME , ## arg); \
-> +       } while (0)
+I think this is a wrong place to insert assertion.
+The problem about page cgroup lock is that it can be interrupted in current implementation.
+So,
 
->  static struct hid_driver ntrig_driver = {
->         .name = "ntrig",
+a) it must not be aquired under another lock which can be aquired in interrupt context,
+   such as mapping->tree_lock, to avoid:
 
-Might want to use the #define for that too.
+		context1			context2
+					lock_page_cgroup(pcA)
+	spin_lock_irq(&tree_lock)
+		lock_page_cgroup(pcA)		<interrupted>
+		=>fail				spin_lock_irqsave(&tree_lock)
+						=>fail
+
+b) it must not be aquired in interrupt context to avoid:
+
+	lock_page_cgroup(pcA)
+		<interrupted>
+		lock_page_cgroup(pcA)
+		=>fail
+
+I think something like this would be better:
+
+@@ -83,8 +83,14 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+        return page_zonenum(pc->page);
+ }
+
++#include <linux/irqflags.h>
++#include <linux/hardirq.h>
+ static inline void lock_page_cgroup(struct page_cgroup *pc)
+ {
++#ifdef CONFIG_DEBUG_VM
++       WARN_ON_ONCE(irqs_disabled());
++       WARN_ON_ONCE(in_interrupt());
++#endif
+        bit_spin_lock(PCG_LOCK, &pc->flags);
+ }
+
+> +	pc = lookup_page_cgroup(page);
+> +	if (unlikely(!pc) || !PageCgroupUsed(pc))
+> +		return;
+> +	mem_cgroup_update_page_stat(pc, idx, charge);
+> +}
+> +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_locked);
+> +
+> +/*
+> + * mem_cgroup_update_page_stat_unlocked() - update memcg file cache's accounting
+> + * @page:	the page involved in a file cache operation.
+> + * @idx:	the particular file cache statistic.
+> + * @charge:	true to increment, false to decrement the statistic specified
+> + *		by @idx.
+> + *
+> + * Update memory cgroup file cache's accounting from an unlocked context.
+> + */
+> +void mem_cgroup_update_page_stat_unlocked(struct page *page,
+> +			enum mem_cgroup_write_page_stat_item idx, bool charge)
+> +{
+> +	struct page_cgroup *pc;
+> +
+> +	if (mem_cgroup_disabled())
+> +		return;
+> +	pc = lookup_page_cgroup(page);
+> +	if (unlikely(!pc) || !PageCgroupUsed(pc))
+> +		return;
+> +	lock_page_cgroup(pc);
+> +	mem_cgroup_update_page_stat(pc, idx, charge);
+>  	unlock_page_cgroup(pc);
+>  }
+> +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_unlocked);
+>  
+IIUC, test_clear_page_writeback(at least) can be called under interrupt context.
+This means lock_page_cgroup() is called under interrupt context, that is,
+the case b) above can happen.
+hmm... I don't have any good idea for now except disabling irq around page cgroup lock
+to avoid all of these mess things.
 
 
-> +                       case HID_DG_CONTACTCOUNT:
-> +                               nt_rpt->real_fingers = value;
-> +                               nt_rpt->fake_fingers =
-> MAX_FINGERS_SUPPORT - value;
-
-> +                                               if (MAX_FINGERS_SUPPORT
-> == nt_rpt->fake_fingers--) {
-
-Would you care to explain "fake_fingers"?  I'm not really seeing why it helps
-when you already have real_fingers.  It looks like you use that to detect some
-ghost events, but really again, fingers should be fine at that point.
-
-That does remind me that I pulled that special case when I cleaned up my last
-patch set and forgot to put it back.
-
-Are the fake finger events intentional or just a bug?
-
-> -               case HID_DG_PEN:
-> -                       input->name = "N-Trig Pen";
-> -                       break;
-> -               case HID_DG_TOUCHSCREEN:
-> -                       input->name =
-> -                               (hidinput->report->field[0]
-> -                                ->physical) ?
-> -                               "N-Trig Touchscreen" :
-> -                               "N-Trig MultiTouch";
-
-Do you have something against the device naming, or did you delete that
-unintentionally?
-
-> +                     /*
-> +                      * These command will implement later accroding to
-> demand
-> +                      */
-> +               case REPORTID_SET_MODE_DUAL:    /* FALLTHRU */
-> +               case REPORTID_CALIBRATION:      /* FALLTHRU */
-> +               case REPORTID_GET_VERSION:      /* FALLTHRU */
-> +               case REPORTID_GET_MODE:         /* FALLTHRU */
-> +               case REPORTID_SET_MODE_PEN:     /* FALLTHRU */
-> +               case REPORTID_SET_MODE_TOUCH:   /* FALLTHRU */
-> +               case REPORTID_CALIBRATION_RESPOND:/* FALLTHRU */
-> +               case HID_CAPACITORS_CALIB:      /* FALLTHRU */
-> +               case HID_GET_CAPACITORS_CALIB_DONE:
-
-Getting the firmware version would be my top priority, its been on my list of
-things to write for months.  I'd like to see the firmware version printed when
-the module is loaded and available through sysfs.
-
-I've heard a few people complain about calibration, but most users, including
-myself, have not seen any calibration issues.
-
-Any chance of getting a tool to install firmware updates?
-
-
-
-Rafi
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkuUVBkACgkQwuRiAT9o60+htACgt+S+ON/9GWwXP+dliEU9GdQN
-TaoAoPUW4Ndlfg0MAWnoEcg4H1ZHU1VO
-=NQkb
------END PGP SIGNATURE-----
+Thanks,
+Daisuke Nishimura.
