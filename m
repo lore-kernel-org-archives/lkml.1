@@ -1,88 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042Ab0CHXSZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 18:18:25 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:3639 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972Ab0CHXSW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 18:18:22 -0500
+	id S1756032Ab0CHXTV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 18:19:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36931 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750972Ab0CHXTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 18:19:17 -0500
+Message-ID: <4B958673.3000105@kernel.org>
+Date: Tue, 09 Mar 2010 08:21:23 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <m1fx4apgch.fsf@fess.ebiederm.org>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
-	 <20100308094647.GA14268@elte.hu>
-	 <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
-	 <20100308190857.400bde09@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
-	 <m1fx4apgch.fsf@fess.ebiederm.org>
-Date: Mon, 8 Mar 2010 18:18:21 -0500
-Message-ID: <7e0fb38c1003081518o7cddd121wa9c363a4e8211115@mail.gmail.com>
-Subject: Re: Upstream first policy
-From: Eric Paris <eparis@parisplace.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
+       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, dipankar@in.ibm.com, josh@freedesktop.org,
+       paulmck@linux.vnet.ibm.com, oleg@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/4] stop_machine: reimplement using cpuhog
+References: <1268063603-7425-1-git-send-email-tj@kernel.org>	<1268063603-7425-3-git-send-email-tj@kernel.org> <20100308083204.1300b97a@infradead.org>
+In-Reply-To: <20100308083204.1300b97a@infradead.org>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Mar 2010 23:18:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 8, 2010 at 6:02 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
->
->> On Mon, 8 Mar 2010, Alan Cox wrote:
->>>
->>> Quite untrue. I've actually *used* path based security systems (DEC10
->>> ACLs) and for almost every case its brain-dead.
->>>
->>> Imagine a world where this happened
->>
->> Alan, stop right there.
->>
->> You're making the same silly and incorrect mistake that Al did.
->>
->> Namely thinking that you have to have just one or the other.
->>
->> When you say "your /etc/passwd example is a special case", you are
->> admitting that there are two different cases, but then after that,  you
->> still don't see the whole point I'm trying to make.
->>
->> Let me try again:
->>
->>   THERE ARE DIFFERENT CASES
->>
->> That's the point. Just admit that, and then let the calm of "Ooh, there
->> are different kinds of circumstances that may want different kinds of
->> rules" permeate you.
->>
->> My whole (and only) argument is against the "only one way is correct"
->> mentality.
->
->
-> Reading through all of this it occurred to me there is a case where
-> path names are fundamentally important shows up for me all of the
-> time.  If pathnames were not fundamentally important we could apply
-> a patch like the one below and allow unprivileged users to unshare
-> the mount namespace and mount filesystems wherever.  There is nothing
-> fundamental about those operations that require root privileges except
-> that you are manipulating the pathnames of objects.
->
-> Unfortunately if we did that suid executables would become impossible
-> because they couldn't trust anything to start with.
+Hello,
 
-You do realize that with content based security systems the pathnames
-aren't important and you could implement your example patch?  Sure a
-user could mount something on /lib and put their own files there, but
-since that user couldn't get them labelled correctly the suid app
-would not be able to use them and would fail.  Users would have new
-and interesting way to break their computers!  I thank you for your
-vote for content based security systems instead of pathname systems
-and look forward to your future contributions to either that body of
-knowledge or the bridging of the gap between the two *smile*
+On 03/09/2010 01:32 AM, Arjan van de Ven wrote:
+> On Tue,  9 Mar 2010 00:53:21 +0900
+> Tejun Heo <tj@kernel.org> wrote:
+> 
+>> Reimplement stop_machine using cpuhog.  As cpuhogs are guaranteed to
+>> be available for all online cpus, stop_machine_create/destroy() are no
+>> longer necessary and removed.
+> 
+> question;
+> stop_machine pretty much also stops interrupts (it has to, at least for
+> the users of stop_machine).. do cpu_hogs do this too?
+> 
+> (if they don't, cpu_hogs aren't safe for some of the users of
+> stop_machine, like code patching etc)
 
--Eric
+That is and has always been done by stop_machine cpuhog callback
+stop_cpu().  Only the thread pool is changed.  The logic stays the
+same.
+
+Thanks.
+
+-- 
+tejun
