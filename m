@@ -1,154 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647Ab0CHLnO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 06:43:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:49019 "EHLO mx1.suse.de"
+	id S1754511Ab0CHLs3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 06:48:29 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44037 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754232Ab0CHLnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 06:43:10 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
-       "Yinghai Lu" <yinghai@kernel.org>, akpm@linux-foundation.org,
-       mingo@elte.hu, "Avi Kivity" <avi@redhat.com>,
-       Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec - V4
-Date: Mon,  8 Mar 2010 12:43:02 +0100
-Message-Id: <1268048582-12219-1-git-send-email-trenn@suse.de>
-X-Mailer: git-send-email 1.6.3
-In-Reply-To: <20100308113452.GK6004@lenovo>
-References: <20100308113452.GK6004@lenovo>
+	id S1753701Ab0CHLs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 06:48:27 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org
+Cc: Nick Piggin <npiggin@suse.de>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: [RFC PATCH 0/3] Avoid the use of congestion_wait under zone pressure
+Date: Mon,  8 Mar 2010 11:48:20 +0000
+Message-Id: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+(CC'ing some people who were involved in the last discussion on the use of
+congestion_wait() in the VM)
 
-When the SMP kernel decides to crash_kexec() the local APICs may have
-pending interrupts in their vector tables.
-The setup routine for the local APIC has a deficient mechanism for
-clearing these interrupts, it only handles interrupts that has already
-been dispatched to the local core for servicing (the ISR register)
-safely, it doesn't consider lower prioritized queued interrupts stored
-in the IRR register.
+Under memory pressure, the page allocator and kswapd can go to sleep using
+congestion_wait(). In two of these cases, it may not be the appropriate
+action as congestion may not be the problem. This patchset replaces two
+sets of instances of congestion_wait() usage with a waitqueue sleep with
+the view of having the VM behaviour depend on the relevant state of the
+zone instead of on congestion which may or may not be a factor. A third
+patch updates the frequency zone pressure is checked.
 
-If you have more than one pending interrupt within the same 32 bit word
-in the LAPIC vector table registers you may find yourself entering the
-IO APIC setup with pending interrupts left in the LAPIC. This is a
-situation for wich the IO APIC setup is not prepared. Depending of
-what/which interrupt vector/vectors are stuck in the APIC tables your
-system may show various degrees of malfunctioning.
-That was the reason why the check_timer() failed in our system, the
-timer interrupts was blocked by pending interrupts from the old kernel
-when routed trough the IO APIC.
+The first patch addresses the page allocator which calls congestion_wait()
+to back off. The patch adds a zone->pressure_wq to sleep on instead of the
+congestion queues.. If a direct reclaimer or kswapd brings the zone over
+the min watermark, processes on the waitqueue are woken up.
 
-Additional comment from Jiri Bohac:
-==============
-If this should go into stable release,
-I'd add some kind of limit on the number of iterations, just to be safe from
-hard to debug lock-ups:
+The second patch checks zone pressure when a batch of pages from the PCP lists
+are freed. The assumption is that there is a reasonable change if processes
+are sleeping that a batch of frees can push a zone above its watermark.
 
-+if (loops++  > MAX_LOOPS) {
-+        printk("LAPIC pending clean-up")
-+        break;
-+}
- while (queued);
+The third patch address kswapd going to sleep when it is raising priority. As
+vmscan makes more appropriate checks on congestion elsewhere, this patch
+puts kswapd back on its own waitqueue to wait for either a timeout or
+another process to call wakeup_kswapd.
 
-with MAX_LOOPS something like 1E9 this would leave plenty of time for the
-pending IRQs to be cleared and would and still cause at most a second of delay
-if the loop were to lock-up for whatever reason.
-==============
+The tricky problem is determining if this patch is really doing the right
+thing. I took three machines X86, X86-64 and PPC64 booted with 1GB of RAM and
+ran a series of tests including sysbench, iozone and a desktop latency test.
+The performance results that did not involve memory pressure were fine -
+no major impact due to the zone_pressure check in the free path. However,
+the sysbench and iozone results varied wildly and depended somewhat on the
+starting state of the machine. The objective was to see if the tests completed
+faster because less time was needlessly spent waiting on congestion but the
+fact is the benchmarks were really IO-bound meant there was little difference
+with the patch applied. For the record, there were both massive gains and
+losses with the patch applied but it was not consistently reproducible.
 
->From trenn@suse.de:
-V2: Use tsc if avail to bail out after 1 sec due to possible virtual apic_read
-    calls which may take rather long (suggested by: Avi Kivity <avi@redhat.com>)
-    If no tsc is available bail out quickly after cpu_khz, if we broke out too
-    early and still have irqs pending (which should never happen?) we still
-    get a WARN_ON...
+I'm somewhat at an impasse to identify a reasonable scenario the patch
+can make a real difference to. It might depend on a setup like Christian's
+with many disks which I cannot reproduce unfortunately. Otherwise, it's a
+case of eyeballing the patch and stating whether it makes sense or not.
 
-V3: - Fixed indentation -> checkpatch clean
-    - max_loops must be signed
+Nick, I haven't implemented the
+queueing-if-a-process-is-already-waiting-for-fairness yet largely because
+a proper way has to be devised to measure how "good" or "bad" this patch is.
 
-V4: - Fix typo, mixed up tsc and ntsc in first rdtscll() call
+Any comments on whether this patch is really doing the right thing or
+suggestions on how it should be properly tested? Christian, minimally it
+would be nice if you could retest your iozone tests to confirm the symptoms
+of your problem are still being dealt with.
 
-CC: jbohac@novell.com
-CC: "Yinghai Lu" <yinghai@kernel.org>
-CC: akpm@linux-foundation.org
-CC: mingo@elte.hu
-CC: "Kerstin Jonsson" <kerstin.jonsson@ericsson.com>
-CC: "Avi Kivity" <avi@redhat.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- arch/x86/kernel/apic/apic.c |   41 +++++++++++++++++++++++++++++++++--------
- 1 files changed, 33 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 3987e44..414a5df 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -51,6 +51,7 @@
- #include <asm/smp.h>
- #include <asm/mce.h>
- #include <asm/kvm_para.h>
-+#include <asm/tsc.h>
- 
- unsigned int num_processors;
- 
-@@ -1151,8 +1152,13 @@ static void __cpuinit lapic_setup_esr(void)
-  */
- void __cpuinit setup_local_APIC(void)
- {
--	unsigned int value;
--	int i, j;
-+	unsigned int value, queued;
-+	int i, j, acked = 0;
-+	unsigned long long tsc = 0, ntsc;
-+	long long max_loops = cpu_khz;
-+
-+	if (cpu_has_tsc)
-+		rdtscll(tsc);
- 
- 	if (disable_apic) {
- 		arch_disable_smp_support();
-@@ -1204,13 +1210,32 @@ void __cpuinit setup_local_APIC(void)
- 	 * the interrupt. Hence a vector might get locked. It was noticed
- 	 * for timer irq (vector 0x31). Issue an extra EOI to clear ISR.
- 	 */
--	for (i = APIC_ISR_NR - 1; i >= 0; i--) {
--		value = apic_read(APIC_ISR + i*0x10);
--		for (j = 31; j >= 0; j--) {
--			if (value & (1<<j))
--				ack_APIC_irq();
-+	do {
-+		queued = 0;
-+		for (i = APIC_ISR_NR - 1; i >= 0; i--)
-+			queued |= apic_read(APIC_IRR + i*0x10);
-+
-+		for (i = APIC_ISR_NR - 1; i >= 0; i--) {
-+			value = apic_read(APIC_ISR + i*0x10);
-+			for (j = 31; j >= 0; j--) {
-+				if (value & (1<<j)) {
-+					ack_APIC_irq();
-+					acked++;
-+				}
-+			}
- 		}
--	}
-+		if (acked > 256) {
-+			printk(KERN_ERR "LAPIC pending interrupts after %d EOI\n",
-+			       acked);
-+			break;
-+		}
-+		if (cpu_has_tsc) {
-+			rdtscll(ntsc);
-+			max_loops = (cpu_khz << 10) - (ntsc - tsc);
-+		} else
-+			max_loops--;
-+	} while (queued && max_loops > 0);
-+	WARN_ON(!max_loops);
- 
- 	/*
- 	 * Now that we are all set up, enable the APIC
--- 
-1.6.3
+ include/linux/mmzone.h |    3 ++
+ mm/internal.h          |    4 +++
+ mm/mmzone.c            |   47 ++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c        |   53 +++++++++++++++++++++++++++++++++++++++++++----
+ mm/vmscan.c            |   13 ++++++++---
+ 5 files changed, 111 insertions(+), 9 deletions(-)
 
