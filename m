@@ -1,43 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313Ab0CIQTt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:19:49 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:55099 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755122Ab0CIQTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:19:46 -0500
-Message-ID: <4B96751D.10804@davidnewall.com>
-Date: Wed, 10 Mar 2010 02:49:41 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: jim owens <owens6336@gmail.com>
-CC: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
-Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag
- (EXT4_IOC_MOVE_EXT) in 32bit compat mode)
-References: <201003072132.10579.borntraeger@de.ibm.com> <4B94367E.9080506@garzik.org> <201003080853.42978.borntraeger@de.ibm.com> <4B9518DA.8010201@davidnewall.com> <4B952437.8020607@gmail.com>
-In-Reply-To: <4B952437.8020607@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755206Ab0CIQWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:22:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58163 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751813Ab0CIQWh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 11:22:37 -0500
+Date: Tue, 9 Mar 2010 08:22:03 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [2.6.34-rc1] CPU stalls when closing TCP sockets.
+Message-ID: <20100309082203.18c13609@nehalam>
+In-Reply-To: <1268150156.3113.12.camel@edumazet-laptop>
+References: <201003090319.o293J6WF026448@www262.sakura.ne.jp>
+	<1268116647.2819.64.camel@edumazet-laptop>
+	<201003090654.o296sCnh065487@www262.sakura.ne.jp>
+	<1268150156.3113.12.camel@edumazet-laptop>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jim owens wrote:
-> No.  Your logic would be correct if rotating disks had
-> similar speed at all locations.  Current disks are much
-> faster at the 0 end than at the middle or highest address.
->   
+On Tue, 09 Mar 2010 16:55:56 +0100
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-I think  my logic is still correct, although I wished I had said "closer 
-to the middle."  In fact, simplistic ideas for placement of files are 
-unlikely to produce fabulous results (and that includes placing commonly 
-used files towards the middle of the disk, say at the inside edge of the 
-outermost zone.)  The effort that BSD went to in FFS, placing 
-directories with files and meta-data in cylinder groups, illustrates 
-that disk performance is a sophisticated problem.
+> Le mardi 09 mars 2010 à 15:54 +0900, Tetsuo Handa a écrit :
+> > Eric Dumazet wrote:
+> > > Nothing comes to my mind, I'll try to reproduce this here.
+> > 
+> > When stopped at (8), Ctrl-C doesn't work.
+> > 
+> > > Is 2.6.33 OK ?
+> > 
+> > Yes. 2.6.33 and earlier are OK.
+> 
+> OK thanks !
+> 
+> I believe commit d218d11133d888f9745802146a50255a4781d37a
+> (tcp: Generalized TTL Security Mechanism) might be the bug origin.
+> 
+> I am testing following patch, based on latest net-2.6 tree (including
+> the LINUX_MIB_TCPMINTTLDROP bit)
+> 
+> [PATCH] tcp: Fix tcp_v4_rcv()
+> 
+> Commit d218d111 (tcp: Generalized TTL Security Mechanism) added a bug
+> for TIMEWAIT sockets. We should not test min_ttl for TW sockets.
+> 
+> Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> ---
+> diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+> index 8d51d39..70df409 100644
+> --- a/net/ipv4/tcp_ipv4.c
+> +++ b/net/ipv4/tcp_ipv4.c
+> @@ -1651,15 +1651,15 @@ int tcp_v4_rcv(struct sk_buff *skb)
+>  	if (!sk)
+>  		goto no_tcp_socket;
+>  
+> +process:
+> +	if (sk->sk_state == TCP_TIME_WAIT)
+> +		goto do_time_wait;
+> +
+>  	if (unlikely(iph->ttl < inet_sk(sk)->min_ttl)) {
+>  		NET_INC_STATS_BH(net, LINUX_MIB_TCPMINTTLDROP);
+>  		goto discard_and_relse;
+>  	}
+>  
+> -process:
+> -	if (sk->sk_state == TCP_TIME_WAIT)
+> -		goto do_time_wait;
+> -
+>  	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
+>  		goto discard_and_relse;
+>  	nf_reset(skb);
+> 
+> 
 
-Why don't we use BSD FFS/FFS2?
+Agreed.
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+
+
+-- 
