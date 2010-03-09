@@ -1,46 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532Ab0CIScl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:32:41 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:22300 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107Ab0CIScj (ORCPT
+	id S1753568Ab0CITjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:39:55 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:16739 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973Ab0CITjx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:32:39 -0500
-X-IMAP-Sender: achiang
-Date: Tue, 9 Mar 2010 11:32:27 -0700
-X-OfflineIMAP-x2122322631-6c646c-494e424f582e4f7574626f78: 1268159558-0998911378209-v6.2.0
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: sarah.a.sharp@linux.intel.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] small xhci cleanups
-Message-ID: <20100309183227.GD15974@grease.lan>
-References: <20100309174815.29339.96173.stgit@bob.kio> <20100309181413.GB31027@kroah.com>
+	Tue, 9 Mar 2010 14:39:53 -0500
+X-IronPort-AV: E=Sophos;i="4.49,610,1262581200"; 
+   d="scan'208";a="13858907"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Analog Devices, Inc.
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [git pull] Input updates for 2.6.34-rc0
+Date: Tue, 9 Mar 2010 14:39:48 -0500
+User-Agent: KMail/1.9.5
+CC: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>
+References: <20100301080342.GH765@core.coreip.homeip.net> <8bd0f97a1003091013q565f8b1bse66b48d9c9a25600@mail.gmail.com> <20100309182013.GC19814@core.coreip.homeip.net>
+In-Reply-To: <20100309182013.GC19814@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20100309181413.GB31027@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <201003091439.49023.rgetz@blackfin.uclinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <greg@kroah.com>:
-> On Tue, Mar 09, 2010 at 10:52:43AM -0700, Alex Chiang wrote:
+On Tue 9 Mar 2010 13:20, Dmitry Torokhov pondered:
+> On Tue, Mar 09, 2010 at 01:13:34PM -0500, Mike Frysinger wrote:
+> > On Tue, Mar 9, 2010 at 13:10, Dmitry Torokhov wrote:
+> > > On Tue, Mar 09, 2010 at 12:58:24PM -0500, Mike Frysinger wrote:
+> > >> On Tue, Mar 9, 2010 at 12:51, Dmitry Torokhov wrote:
+> > >> > On Tue, Mar 09, 2010 at 09:44:08AM -0500, Mike Frysinger wrote:
+[snip]
+> > >> i understand the ADXL34x is a bit wonky, but what else would you
+> > >> propose ?  or just leave the driver in limbo forever until people
+> > >> forget about it ?
+> > >
+> > > No, just till we have proper framework for it to be merged into.
+> > 
+> > that sounds fine, but is there actually something in progress for that
+> > ?  waiting for a framework no one is working on is the same in
+> > practice ...
 > 
-> >       USB: xhci: move all debug code under CONFIG_XHCI_HCD_DEBUGGING
-> 
-> Does this conflict with Sarah's other debugging patch she just sent out?
+> I have high hopes that IIO will fill the needs of these kinds of devices.
 
-I'm assuming you're talking about this patch:
+The fact of things is that many people are using this as pointing device.
 
-	http://thread.gmane.org/gmane.linux.usb.general/28681
-
-Yes, we'll definitely have conflicts. If you agree that we should
-move the debug code under the Kconfig option, then the best
-course of action would be for Sarah to rebase her work on top of
-my patches (since they're intrusive).
-
-/ac
+I'm not convinced that IIO is the best place for these types of things...
 
