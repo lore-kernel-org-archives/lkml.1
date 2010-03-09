@@ -1,61 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308Ab0CIQbS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:31:18 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41016 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755211Ab0CIQbO (ORCPT
+	id S1755254Ab0CIQc6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:32:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54612 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595Ab0CIQcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:31:14 -0500
-Date: Tue, 9 Mar 2010 16:30:24 +0000
-From: Russell King <rmk@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC:PATCH] Correct cpu_relax() documentation
-Message-ID: <20100309163024.GA17428@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 9 Mar 2010 11:32:54 -0500
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+From: Peter Zijlstra <peterz@infradead.org>
+To: Borislav Petkov <bp@amd64.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+In-Reply-To: <20100309162352.GB2371@aftab>
+References: <20100223175457.GA2401@aftab> <4B841BC3.1000908@zytor.com>
+	 <20100223190614.GB2401@aftab> <4B875BBD.4060104@zytor.com>
+	 <20100226074714.GA15310@aftab> <4B88097E.7010608@zytor.com>
+	 <20100227082807.GA21706@aftab> <4B8979DA.9000201@zytor.com>
+	 <20100309153628.GA2371@aftab> <1268149840.5037.3.camel@laptop>
+	 <20100309162352.GB2371@aftab>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Mar 2010 17:32:49 +0100
+Message-ID: <1268152369.5037.10.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Correct cpu_relax() documentation
+On Tue, 2010-03-09 at 17:23 +0100, Borislav Petkov wrote:
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Tue, Mar 09, 2010 at 04:50:40PM +0100
+> 
+> > Should all be fine as it is, that patch
+> > ( http://lkml.org/lkml/2010/2/4/119 ) is against a kernel with fce877e3
+> > in, I've just checked and it still applies to tip/master as of this
+> > writing (although it grew a single 2 line offset for 1 hunk).
+> 
+> Well, this way, I'm getting
+> 
+> ...
+> In file included from include/linux/kernel.h:15,
+>                  from /home/linux-2.6/arch/x86/include/asm/percpu.h:45,
+>                  from /home/linux-2.6/arch/x86/include/asm/current.h:5,
+>                  from /home/linux-2.6/arch/x86/include/asm/processor.h:15,
+>                  from /home/linux-2.6/arch/x86/include/asm/atomic.h:6,
+>                  from include/linux/crypto.h:20,
+>                  from arch/x86/kernel/asm-offsets_64.c:8,
+>                  from arch/x86/kernel/asm-offsets.c:4:
+> include/linux/bitops.h:52:1: warning: "HWEIGHT8" redefined
+> ...
+> 
+> due to the fact that we have multiple definitions of HWEIGHT*:
+> 
+> The one batch is in <include/linux/bitops.h> introduced by fce877e3.
+> 
+> The other is in <include/asm-generic/bitops/const_hweight.h> which
+> is pulled in into <include/linux/bitops.h> through "#include
+> <asm/bitops.h>", which, in turn, <includes asm/arch_hweight.h> and
+> <include/asm-generic/bitops/const_hweight.h>.
+> 
+> The obvious resolution is to remove the HWEIGHT* batch from
+> <include/asm-generic/bitops/const_hweight.h> since they're functionally
+> identical with the ones in <include/linux/bitops.h>, no?
 
-cpu_relax() is documented in volatile-considered-harmful.txt to be a
-memory barrier.  However, everyone with the exception of Blackfin and
-possibly ia64 defines cpu_relax() to be a compiler barrier.
+I thought the patch did that, see this hunk (straight from
+http://lkml.org/lkml/2010/2/4/119 ):
 
-Make the documentation reflect the general concensus.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- Documentation/volatile-considered-harmful.txt |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/volatile-considered-harmful.txt b/Documentation/volatile-considered-harmful.txt
-index 991c26a..db0cb22 100644
---- a/Documentation/volatile-considered-harmful.txt
-+++ b/Documentation/volatile-considered-harmful.txt
-@@ -63,9 +63,9 @@ way to perform a busy wait is:
-         cpu_relax();
+Index: linux-2.6/include/linux/bitops.h
+===================================================================
+--- linux-2.6.orig/include/linux/bitops.h
++++ linux-2.6/include/linux/bitops.h
+@@ -45,31 +45,6 @@ static inline unsigned long hweight_long
+ 	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+ }
  
- The cpu_relax() call can lower CPU power consumption or yield to a
--hyperthreaded twin processor; it also happens to serve as a memory barrier,
--so, once again, volatile is unnecessary.  Of course, busy-waiting is
--generally an anti-social act to begin with.
-+hyperthreaded twin processor; it also happens to serve as a compiler
-+barrier, so, once again, volatile is unnecessary.  Of course, busy-
-+waiting is generally an anti-social act to begin with.
- 
- There are still a few rare situations where volatile makes sense in the
- kernel:
+-/*
+- * Clearly slow versions of the hweightN() functions, their benefit is
+- * of course compile time evaluation of constant arguments.
+- */
+-#define HWEIGHT8(w)					\
+-      (	BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) +	\
+-	(!!((w) & (1ULL << 0))) +			\
+-	(!!((w) & (1ULL << 1))) +			\
+-	(!!((w) & (1ULL << 2))) +			\
+-	(!!((w) & (1ULL << 3))) +			\
+-	(!!((w) & (1ULL << 4))) +			\
+-	(!!((w) & (1ULL << 5))) +			\
+-	(!!((w) & (1ULL << 6))) +			\
+-	(!!((w) & (1ULL << 7)))	)
+-
+-#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8((w) >> 8))
+-#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16((w) >> 16))
+-#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32((w) >> 32))
+-
+-/*
+- * Type invariant version that simply casts things to the
+- * largest type.
+- */
+-#define HWEIGHT(w)   HWEIGHT64((u64)(w))
+-
+ /**
+  * rol32 - rotate a 32-bit value left
+  * @word: value to rotate
 
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
