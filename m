@@ -1,148 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067Ab0CIBzP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 20:55:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52445 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756324Ab0CIBzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 20:55:11 -0500
-Message-ID: <4B95AA4C.2030303@kernel.org>
-Date: Tue, 09 Mar 2010 10:54:20 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1756559Ab0CIBz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 20:55:29 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56068 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756526Ab0CIBz0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 20:55:26 -0500
+Date: Tue, 9 Mar 2010 01:55:18 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Luca Barbieri <luca.barbieri@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: Upstream first policy
+Message-ID: <20100309015518.GS30031@ZenIV.linux.org.uk>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
+ <20100308094647.GA14268@elte.hu>
+ <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+ <20100308184521.GK30031@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1003081051130.3989@localhost.localdomain>
+ <ff13bc9a1003081718k1e7964f5ta9e582866dea94ee@mail.gmail.com>
+ <20100309012552.GR30031@ZenIV.linux.org.uk>
+ <ff13bc9a1003081751s535fbf71l9d261b303587b23a@mail.gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: odd lockdep messages
-References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop>
-In-Reply-To: <1268073831.4997.69.camel@laptop>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 01:54:22 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ff13bc9a1003081751s535fbf71l9d261b303587b23a@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 03:43 AM, Peter Zijlstra wrote:
->> [    1.899537] BUG: key ffff88011c57e670 not in .data!
->>
->> (-0302 threw BUG: 3 times, the first 2 and the last. In -0304, the third
->> one appears as well).
->>
->> Worth instrumenting and chasing down? If so, what should a crash test dummy
->> be doing here? ;)
+On Tue, Mar 09, 2010 at 02:51:55AM +0100, Luca Barbieri wrote:
+> >> 4. It doesn't matter at all if anyone reads a file that happens to be
+> >> at /etc/shadow while not containing shadow passwords (with the same
+> >> path, but different content)
+> >
+> > What the hell are you smoking?
 > 
-> Can that be wreckage due to the new per-cpu stuff?
-> 
-> Its a message printed when the below function fails, and that per-cpu
-> stuff seems the one most likely to break, given that there was quite a
-> lot of churn in that department recently.
+> I mean, what is interesting for security of reading is the fact that
+> the file contains shadow passwords (and thus is labeled as "secret" or
+> with a specific label), not that it is at /etc/shadow.
 
-Yeap, PERCPU_ENOUGH_ROOM test doesn't hold anymore.  Does the
-following patch fix the problem?
-
-Thanks.
-
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index a93e5bf..6d300f5 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -137,6 +137,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
- extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align);
- extern void __percpu *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void __percpu *__pdata);
-+extern bool is_static_percpu_address(unsigned long addr);
- extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
- 
- #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-@@ -163,6 +164,12 @@ static inline void free_percpu(void __percpu *p)
- 	kfree(p);
- }
- 
-+/* can't distinguish from other static vars, always %false */
-+static inline bool is_static_percpu_address(unsigned long addr)
-+{
-+	return false;
-+}
-+
- static inline phys_addr_t per_cpu_ptr_to_phys(void *addr)
- {
- 	return __pa(addr);
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 0c30d04..4206f6f 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -582,9 +582,6 @@ static int static_obj(void *obj)
- 	unsigned long start = (unsigned long) &_stext,
- 		      end   = (unsigned long) &_end,
- 		      addr  = (unsigned long) obj;
--#ifdef CONFIG_SMP
--	int i;
--#endif
- 
- 	/*
- 	 * static variable?
-@@ -595,19 +592,11 @@ static int static_obj(void *obj)
- 	if (arch_is_kernel_data(addr))
- 		return 1;
- 
--#ifdef CONFIG_SMP
- 	/*
- 	 * percpu var?
- 	 */
--	for_each_possible_cpu(i) {
--		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
--		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
--					+ per_cpu_offset(i);
--
--		if ((addr >= start) && (addr < end))
--			return 1;
--	}
--#endif
-+	if (is_static_percpu_address(addr))
-+		return 1;
- 
- 	/*
- 	 * module var?
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 768419d..ae4d058 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -1304,6 +1304,32 @@ void free_percpu(void __percpu *ptr)
- EXPORT_SYMBOL_GPL(free_percpu);
- 
- /**
-+ * is_static_percpu_address - test whether address is from static percpu area
-+ * @addr: address to test
-+ *
-+ * Test whether @addr belongs to static percpu area.  Module static
-+ * percpu areas allocated via __alloc_reserved_percpu() is not
-+ * considered.  Use is_module_address() for those.
-+ *
-+ * RETURNS:
-+ * %true if @addr is from static percpu area, %false otherwise.
-+ */
-+bool is_static_percpu_address(unsigned long addr)
-+{
-+	const size_t static_size = __per_cpu_end - __per_cpu_start;
-+	void __percpu *base = __addr_to_pcpu_ptr(pcpu_base_addr);
-+	unsigned int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		void *start = per_cpu_ptr(base, cpu);
-+
-+		if ((void *)addr >= start && (void *)addr < start + static_size)
-+			return true;
-+        }
-+	return false;
-+}
-+
-+/**
-  * per_cpu_ptr_to_phys - convert translated percpu address to physical address
-  * @addr: the address to be converted to physical address
-  *
-
--- 
-tejun
+<sarcasm>
+Yeah, especially when it's read by sshd.  Who cares, indeed?  So it's got
+a passwordless root, that's even better, right?  Nobody will see your
+real root password that way...
+</sarcasm>
