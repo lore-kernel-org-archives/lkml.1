@@ -1,75 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764Ab0CIL2k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:28:40 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:36042
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754070Ab0CIL2i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:28:38 -0500
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dN936eM4015L62a3Lzz1202hzzz32i6bh2a8h43h61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KZ0III-02-1ZI-02
-X-M-MSG: 
-Date: Tue, 9 Mar 2010 12:27:52 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [GIT PULL] oprofile: updates for v2.6.34
-Message-ID: <20100309112752.GG3650@erda.amd.com>
-References: <20100302164405.GJ13205@erda.amd.com>
- <20100304105005.GA21977@elte.hu>
- <20100304174422.GQ13205@erda.amd.com>
+	id S1754789Ab0CIL3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:29:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:60421 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754704Ab0CIL3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 06:29:52 -0500
+Date: Tue, 9 Mar 2010 11:29:35 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] page-allocator: Check zone pressure when batch of
+	pages are freed
+Message-ID: <20100309112934.GE4883@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-3-git-send-email-mel@csn.ul.ie> <20100309095342.GD8653@laptop> <20100309100835.GA4883@csn.ul.ie> <20100309102345.GG8653@laptop> <20100309103608.GD4883@csn.ul.ie> <20100309111117.GI8653@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20100304174422.GQ13205@erda.amd.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 09 Mar 2010 11:27:53.0128 (UTC) FILETIME=[8ECECA80:01CABF7B]
-X-Reverse-DNS: unknown
+In-Reply-To: <20100309111117.GI8653@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.03.10 18:44:22, Robert Richter wrote:
-> On 04.03.10 11:50:05, Ingo Molnar wrote:
-> > 
-> > * Robert Richter <robert.richter@amd.com> wrote:
-> > 
-> > > Ingo,
+On Tue, Mar 09, 2010 at 10:11:18PM +1100, Nick Piggin wrote:
+> On Tue, Mar 09, 2010 at 10:36:08AM +0000, Mel Gorman wrote:
+> > On Tue, Mar 09, 2010 at 09:23:45PM +1100, Nick Piggin wrote:
+> > > On Tue, Mar 09, 2010 at 10:08:35AM +0000, Mel Gorman wrote:
+> > > > On Tue, Mar 09, 2010 at 08:53:42PM +1100, Nick Piggin wrote:
+> > > > > Cool, you found this doesn't hurt performance too much?
+> > > > > 
+> > > > 
+> > > > Nothing outside the noise was measured. I didn't profile it to be
+> > > > absolutly sure but I expect it's ok.
 > > > 
-> > > it's only one patch, please pull from:
+> > > OK. Moving the waitqueue cacheline out of the fastpath footprint
+> > > and doing the flag thing might be a good idea?
 > > > 
-> > >  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
-> > > 
-> > > (It seems the git mirror is not yet sync'ed.)
 > > 
-> > Still cannot pull - forgot to push out?
+> > Probably, I'll do it as a separate micro-optimisation patch so it's
+> > clear what I'm doing.
 > 
-> No, it is already out, at least it is available now:
+> Fair enough.
 > 
->  http://git.kernel.org/?p=linux/kernel/git/rric/oprofile.git;a=shortlog;h=refs/heads/urgent
+> > > > > Can't you remove the check from the reclaim code now? (The check
+> > > > > here should give a more timely wait anyway)
+> > > > > 
+> > > > 
+> > > > I'll try and see what the timing and total IO figures look like.
+> > > 
+> > > Well reclaim goes through free_pages_bulk anyway, doesn't it? So
+> > > I don't see why you would have to run any test.
+> > >  
+> > 
+> > It should be fine but no harm in double checking. The tests I'm doing
+> > are not great anyway. I'm somewhat depending on people familar with
+> > IO-related performance testing to give this a whirl or tell me how they
+> > typically benchmark low-memory situations.
+> 
+> I don't really like that logic. It makes things harder to understand
+> down the road if you have double checks.
 
-Ingo,
+There *should* be no difference and that is my expectation. If there is,
+it means I'm missing something important. Hence, the double check.
 
-can you try to send that one patch in urgent upstream for .34? It is
-already in the queue for 1 week.
+> > > > > This is good because it should eliminate most all cases of extra
+> > > > > waiting. I wonder if you've also thought of doing the check in the
+> > > > > allocation path too as we were discussing? (this would give a better
+> > > > > FIFO behaviour under memory pressure but I could easily agree it is not
+> > > > > worth the cost)
+> > > > > 
+> > > > 
+> > > > I *could* make the check but as I noted in the leader, there isn't
+> > > > really a good test case that determines if these changes are "good" or
+> > > > "bad". Removing congestion_wait() seems like an obvious win but other
+> > > > modifications that alter how and when processes wait are less obvious.
+> > > 
+> > > Fair enough. But we could be sure it increases fairness, which is a
+> > > good thing. So then we'd just have to check it against performance.
+> > > 
+> > 
+> > Ordinarily, I'd agree but we've seen bug reports before from applications
+> > that depended on unfairness for good performance. dbench figures depended
+> > at one point in unfair behaviour (specifically being allowed to dirty the
+> > whole system). volanomark was one that suffered when the scheduler became
+> > more fair (think sched_yield was also a biggie). The new behaviour was
+> > better and arguably the applications were doing the wrong thing but I'd
+> > still like to treat "increase fairness in the page allocator" as a
+> > separate patch as a result.
+> 
+> Yeah sure it would be done as another patch. I don't think there is much
+> question that making things fairer is better. Especially if the
+> alternative is a theoretical starvation.
+> 
 
-Could you also pull the oprofile core tree with the reservation code
-to tip/oprofile? I also want to merge this to perf/core after pending
-perf patches esp. pebs are applied to tip. When do you think perf/core
-can be updated?
+Agreed.
 
-Thanks,
+> That's not to say that batching shouldn't then be used to help improve
+> performance of fairly scheduled resources. But it should be done in a
+> carefully designed and controlled way, so that neither the fairness /
+> starvation, nor the good performance from batching, depend on timing
+> and behaviours of the hardware interconnect etc.
+> 
 
--Robert
+Indeed. Batching is less clear-cut in this context. We are already
+batching on a per-CPU basis but not on a per-process basis. My feeling
+is that the problem to watch out for with queueing in the allocation
+path is 2+ processes waiting on the queue and then allocating too much
+on the per-cpu lists. Easy enough to handle that one but there are
+probably a few more gotchas in there somewhere. Will revisit for sure
+though.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
