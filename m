@@ -1,83 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865Ab0CJAIc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 19:08:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40110 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752218Ab0CJAI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 19:08:27 -0500
-Message-ID: <4B96E29E.3060305@kernel.org>
-Date: Tue, 09 Mar 2010 16:06:54 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1755969Ab0CJAIk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 19:08:40 -0500
+Received: from p01c11o148.mxlogic.net ([208.65.144.71]:56821 "EHLO
+	p01c11o148.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755899Ab0CJAIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 19:08:37 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 19:08:37 EST
+X-MXL-Hash: 4b96e3052ec54fc3-f9fe04f9b3a51d9cd5ce0bd2f89adf5da8e4696d
+X-MXL-Hash: 4b96e1257303b855-af7c8305b1b1bf0a0698e63fbd1e3baba742ea88
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "linux-security-module@vger.kernel.org" 
+	<linux-security-module@vger.kernel.org>,
+       "zohar@us.ibm.com" <zohar@us.ibm.com>,
+       "jmorris@namei.org" <jmorris@namei.org>
+Date: Tue, 9 Mar 2010 17:59:59 -0600
+Subject: [PATCH] security/ima: replace gcc specific __FUNCTION__ with
+ __func__
+Thread-Topic: [PATCH] security/ima: replace gcc specific __FUNCTION__ with
+ __func__
+Thread-Index: Acq/5KAq8g4vxqEMRvmXPVVteUDoKw==
+Message-ID: <0D753D10438DA54287A00B027084269763682CE03C@AUSP01VMBX24.collaborationhost.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-arch@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: further plans on bootmem, was: Re: - bootmem-avoid-dma32-zone-by-default.patch
- removed from -mm tree
-References: <201003091940.o29Je4Iq000754@imap1.linux-foundation.org> <4B96B923.7020805@kernel.org> <20100309134902.171ba2ae.akpm@linux-foundation.org> <20100310000121.GA9985@cmpxchg.org>
-In-Reply-To: <20100310000121.GA9985@cmpxchg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010030401)]
+X-MAIL-FROM: <hartleys@visionengravers.com>
+X-SOURCE-IP: [216.166.12.98]
+X-AnalysisOut: [v=1.0 c=1 a=DvTzUY8MHoYA:10 a=VphdPIyG4kEA:10 a=IkcTkHD0fZ]
+X-AnalysisOut: [MA:10 a=IRTT+DMug47mVLgYdXzmDg==:17 a=i00gxMtYAAAA:8 a=VnN]
+X-AnalysisOut: [F1IyMAAAA:8 a=K6HrmWtEAAAA:8 a=3pEPeB9bZirFsIv29vIA:9 a=f9]
+X-AnalysisOut: [KwhrZpmw-8RBCz3DEA:7 a=9C2X-6nlg5g5uaKJ9ZNt8Vtz-bUA:4 a=QE]
+X-AnalysisOut: [XdDO2ut3YA:10 a=x1WnkoZAwusA:10 a=ux7RaoK8vTIA:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o2A091mE005939
 
-On 03/09/2010 04:01 PM, Johannes Weiner wrote:
-> On Tue, Mar 09, 2010 at 01:49:02PM -0800, Andrew Morton wrote:
->> On Tue, 09 Mar 2010 13:09:55 -0800
->> Yinghai Lu <yinghai@kernel.org> wrote:
->>
->>> On 03/09/2010 11:40 AM, akpm@linux-foundation.org wrote:
->>>> The patch titled
->>>>      bootmem: avoid DMA32 zone by default
->>>> has been removed from the -mm tree.  Its filename was
->>>>      bootmem-avoid-dma32-zone-by-default.patch
->>>>
->>>> This patch was dropped because I'm all confused
->>>>
->>>
->>> Thanks for that...
->>
->> Well.  I did drop it because I'm all confused.  It may come back.
->>
->> If Johannes is working in the direction of removing and simplifying
->> code then that's a high priority.  So I'm waiting to see where this
->> discussion leads (on the mailing list, please!)
-> 
-> I am not working on simplifying in this area at the moment.  I am just
-> questioning the discrepancy between the motivation of Yinghai's patch
-> series to skip bootmem on x86 and its actual outcome.
-> 
-> The stated reason for the series was that the amount of memory allocators
-> involved in bootstrapping mm on x86 'seemed a bit excessive'. [1]
-> 
-> I am perfectly fine with the theory: select one mechanism and see whether
-> it can be bridged and consequently _removed_.  To shrink the code base,
-> shrink text size, make the boot process less complex, more robust etc.
-> 
-> What I take away from this patchset, however, is that all it really does
-> is make the early_res stuff from x86 generic code and add a semantically
-> different version of the bootmem API on top of it, selectable with a config
-> option.  The diffstat balance is an increase of around 900 lines of code.
-> 
-> Note that it still uses bootmem to actually bootstrap the page allocator,
-> that we now have two implementations of the bootmem interface and no real
-> plan - as far as I am informed - to actually change this.
-> 
-> I also found it weird that it makes x86 skip an allocator level that all
-> the other architectures are using, and replaces it with 'generic' code that
-> nobody but x86 is using (sparc, powerpc, sh and microblaze  appear to have
-> lib/lmb.c at this stage and for this purpose? lmb was also suggested by
-> benh [4] but I have to admit I do not understand Yinghai's response to it).
-> 
+As noted by checkpatch.pl, __func__ should be used instead of gcc
+specific __FUNCTION__.
 
-next steps:
-1. create kernel/fw_memmap.c, and move common code from arch/x86/kernel/e820.c to it
-2. merge lmb with fw_memmap.c/early_res.c
-   so some arch that use lmb will fw_memmap/earl_res.c 
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Mimi Zohar <zohar@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>
 
-YH
+---
 
+diff --git a/security/integrity/ima/ima_iint.c b/security/integrity/ima/ima_iint.c
+index 2d4d05d..6cc2243 100644
+--- a/security/integrity/ima/ima_iint.c
++++ b/security/integrity/ima/ima_iint.c
+@@ -79,17 +79,17 @@ void iint_free(struct kref *kref)
+ 	iint->version = 0;
+ 	iint->flags = 0UL;
+ 	if (iint->readcount != 0) {
+-		printk(KERN_INFO "%s: readcount: %ld\n", __FUNCTION__,
++		printk(KERN_INFO "%s: readcount: %ld\n", __func__,
+ 		       iint->readcount);
+ 		iint->readcount = 0;
+ 	}
+ 	if (iint->writecount != 0) {
+-		printk(KERN_INFO "%s: writecount: %ld\n", __FUNCTION__,
++		printk(KERN_INFO "%s: writecount: %ld\n", __func__,
+ 		       iint->writecount);
+ 		iint->writecount = 0;
+ 	}
+ 	if (iint->opencount != 0) {
+-		printk(KERN_INFO "%s: opencount: %ld\n", __FUNCTION__,
++		printk(KERN_INFO "%s: opencount: %ld\n", __func__,
+ 		       iint->opencount);
+ 		iint->opencount = 0;
+ 	}
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 294b005..983037f 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -194,7 +194,7 @@ static void ima_dec_counts(struct ima_iint_cache *iint, struct inode *inode,
+ 	     (iint->writecount < 0)) &&
+ 	    !ima_limit_imbalance(file)) {
+ 		printk(KERN_INFO "%s: open/free imbalance (r:%ld w:%ld o:%ld)\n",
+-		       __FUNCTION__, iint->readcount, iint->writecount,
++		       __func__, iint->readcount, iint->writecount,
+ 		       iint->opencount);
+ 		dump_stack();
+ 	}
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
