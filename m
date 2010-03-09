@@ -1,62 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542Ab0CIVPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 16:15:06 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60209 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751758Ab0CIVPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 16:15:00 -0500
-Date: Tue, 9 Mar 2010 22:14:58 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/5] drivers/staging/otus: drop redundant memset
-Message-ID: <Pine.LNX.4.64.1003092214350.4974@ask.diku.dk>
+	id S1754221Ab0CIVPW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 16:15:22 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:34253 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963Ab0CIVPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 16:15:03 -0500
+Date: Tue, 9 Mar 2010 21:14:59 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Joey Lee <jlee@novell.com>, mzxreary@0pointer.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that is
+	need load SCM
+Message-ID: <20100309211459.GA4390@srcf.ucam.org>
+References: <4B96DD0202000023000146D6@novprvlin0050.provo.novell.com> <20100309210150.GC32299@suse.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-511516320-430609882-1268169298=:4974"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100309210150.GC32299@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Mar 09, 2010 at 01:01:50PM -0800, Greg KH wrote:
+> On Tue, Mar 09, 2010 at 05:42:58AM -0700, Joey Lee wrote:
+> > Hi Greg, 
+> > 
+> > Please kindly review the attached patch for removed the non-standard
+> > interface "threeg" in msi-laptop driver.
+> 
+> Looks good to me.
+> 
+> Matthew, are you going to be taking patches like this now?
 
----511516320-430609882-1268169298=:4974
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+I am.
 
-From: Julia Lawall <julia@diku.dk>
+> If so, feel free to add:
+> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> to the patch.
 
-The region set by the call to memset is immediately overwritten by the
-subsequent call to memcpy.
+Will do.
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression e1,e2,e3,e4;
-@@
-
-- memset(e1,e2,e3);
-  memcpy(e1,e4,e3);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/staging/otus/wwrap.c |    1 -
- 1 file changed, 1 deletion(-)
-
-diff -u -p a/drivers/staging/otus/wwrap.c b/drivers/staging/otus/wwrap.c
---- a/drivers/staging/otus/wwrap.c
-+++ b/drivers/staging/otus/wwrap.c
-@@ -955,7 +955,6 @@ int zfLnxCencSendMsg(struct sock *netlin
- 	/*填写数据报相关信息*/
- 	nlh = NLMSG_PUT(skb, 0, 0, WAI_K_MSG, size-sizeof(*nlh));
- 	pos = NLMSG_DATA(nlh);
--	memset(pos, 0, len);
- 
- 	/*传输到用户空间的数据*/
- 	memcpy(pos, msg,  len);
----511516320-430609882-1268169298=:4974--
+Thanks,
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
