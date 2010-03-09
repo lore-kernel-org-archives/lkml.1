@@ -1,68 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544Ab0CIBwz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 20:52:55 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40253 "EHLO smtps.tip.net.au"
+	id S932067Ab0CIBzP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 20:55:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52445 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756256Ab0CIBwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 20:52:51 -0500
-Date: Tue, 9 Mar 2010 12:52:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: [PATCH] ar9170: fix for driver-core ABI change
-Message-Id: <20100309125245.c25e5ca4.sfr@canb.auug.org.au>
-In-Reply-To: <20100309104221.aedc5e7e.sfr@canb.auug.org.au>
-References: <20100309104221.aedc5e7e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__9_Mar_2010_12_52_45_+1100_Ay92DLu+zl5zo5f."
+	id S1756324Ab0CIBzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 20:55:11 -0500
+Message-ID: <4B95AA4C.2030303@kernel.org>
+Date: Tue, 09 Mar 2010 10:54:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: odd lockdep messages
+References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop>
+In-Reply-To: <1268073831.4997.69.camel@laptop>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 01:54:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__9_Mar_2010_12_52_45_+1100_Ay92DLu+zl5zo5f.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 03/09/2010 03:43 AM, Peter Zijlstra wrote:
+>> [    1.899537] BUG: key ffff88011c57e670 not in .data!
+>>
+>> (-0302 threw BUG: 3 times, the first 2 and the last. In -0304, the third
+>> one appears as well).
+>>
+>> Worth instrumenting and chasing down? If so, what should a crash test dummy
+>> be doing here? ;)
+> 
+> Can that be wreckage due to the new per-cpu stuff?
+> 
+> Its a message printed when the below function fails, and that per-cpu
+> stuff seems the one most likely to break, given that there was quite a
+> lot of churn in that department recently.
 
-Hi Dave,
+Yeap, PERCPU_ENOUGH_ROOM test doesn't hold anymore.  Does the
+following patch fix the problem?
 
-On Tue, 9 Mar 2010 10:42:21 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/net/wireless/ath/ar9170/usb.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
->=20
-> I have been carrying this patch in linux-next for some time as a fixup
-> for the driver-core tree.  It is now needed in net-2.6 (i.e. my
-> net-current) (since you merged the wireless tree) *after* you merge with
-> Linus' tree i.e. the down()/up() are present in the net-2.6 tree and the
-> changes to the driver core to use mutexes are in Linus' tree.
+Thanks.
 
-Greg tells me that the semaphore to mutex change didn't go into Linus'
-tree.  However, this patch can still be applied as the device_lock/unlock
-primitives did go in.  I guess that the include of mutex.h is not needed.
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index a93e5bf..6d300f5 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -137,6 +137,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
+ extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align);
+ extern void __percpu *__alloc_percpu(size_t size, size_t align);
+ extern void free_percpu(void __percpu *__pdata);
++extern bool is_static_percpu_address(unsigned long addr);
+ extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
+ 
+ #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+@@ -163,6 +164,12 @@ static inline void free_percpu(void __percpu *p)
+ 	kfree(p);
+ }
+ 
++/* can't distinguish from other static vars, always %false */
++static inline bool is_static_percpu_address(unsigned long addr)
++{
++	return false;
++}
++
+ static inline phys_addr_t per_cpu_ptr_to_phys(void *addr)
+ {
+ 	return __pa(addr);
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 0c30d04..4206f6f 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -582,9 +582,6 @@ static int static_obj(void *obj)
+ 	unsigned long start = (unsigned long) &_stext,
+ 		      end   = (unsigned long) &_end,
+ 		      addr  = (unsigned long) obj;
+-#ifdef CONFIG_SMP
+-	int i;
+-#endif
+ 
+ 	/*
+ 	 * static variable?
+@@ -595,19 +592,11 @@ static int static_obj(void *obj)
+ 	if (arch_is_kernel_data(addr))
+ 		return 1;
+ 
+-#ifdef CONFIG_SMP
+ 	/*
+ 	 * percpu var?
+ 	 */
+-	for_each_possible_cpu(i) {
+-		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
+-		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
+-					+ per_cpu_offset(i);
+-
+-		if ((addr >= start) && (addr < end))
+-			return 1;
+-	}
+-#endif
++	if (is_static_percpu_address(addr))
++		return 1;
+ 
+ 	/*
+ 	 * module var?
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 768419d..ae4d058 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -1304,6 +1304,32 @@ void free_percpu(void __percpu *ptr)
+ EXPORT_SYMBOL_GPL(free_percpu);
+ 
+ /**
++ * is_static_percpu_address - test whether address is from static percpu area
++ * @addr: address to test
++ *
++ * Test whether @addr belongs to static percpu area.  Module static
++ * percpu areas allocated via __alloc_reserved_percpu() is not
++ * considered.  Use is_module_address() for those.
++ *
++ * RETURNS:
++ * %true if @addr is from static percpu area, %false otherwise.
++ */
++bool is_static_percpu_address(unsigned long addr)
++{
++	const size_t static_size = __per_cpu_end - __per_cpu_start;
++	void __percpu *base = __addr_to_pcpu_ptr(pcpu_base_addr);
++	unsigned int cpu;
++
++	for_each_possible_cpu(cpu) {
++		void *start = per_cpu_ptr(base, cpu);
++
++		if ((void *)addr >= start && (void *)addr < start + static_size)
++			return true;
++        }
++	return false;
++}
++
++/**
+  * per_cpu_ptr_to_phys - convert translated percpu address to physical address
+  * @addr: the address to be converted to physical address
+  *
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__9_Mar_2010_12_52_45_+1100_Ay92DLu+zl5zo5f.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuVqe0ACgkQjjKRsyhoI8y6ogCggC5fH9B98EKDHvLEM5it76al
-ZrMAn2xyC2pw9bepvBAoWMLxD2tBgHei
-=tAvG
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Mar_2010_12_52_45_+1100_Ay92DLu+zl5zo5f.--
+-- 
+tejun
