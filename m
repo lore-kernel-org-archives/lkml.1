@@ -1,43 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490Ab0CIWbJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:31:09 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:51104 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752639Ab0CIWbG (ORCPT
+	id S1755170Ab0CIWg3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:36:29 -0500
+Received: from wdscspam2.wdc.com ([129.253.170.131]:22838 "EHLO
+	wdscspam2.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155Ab0CIWg0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:31:06 -0500
-Date: Tue, 9 Mar 2010 17:31:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: USBFS Memory allocation Bug
-In-Reply-To: <d9def9db1003091309p3aa84879lb586cb0406f62693@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.1003091729320.1693-100000@iolanthe.rowland.org>
+	Tue, 9 Mar 2010 17:36:26 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: ATA 4 KiB sector issues.
+Date: Tue, 9 Mar 2010 14:36:25 -0800
+Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD7A@wdscexbe01.sc.wdc.com>
+In-Reply-To: <yq1r5nubze0.fsf@sermon.lab.mkp.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ATA 4 KiB sector issues.
+Thread-Index: Acq+1VTje9lGIok9RuuKpD9LRuhS5QBA1VDA
+References: <4B94ACE8.4060400@zytor.com> (H. Peter Anvin's message of "Sun,07 Mar 2010 23:53:12 -0800") <yq1r5nubze0.fsf@sermon.lab.mkp.net>
+From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: "James Bottomley" <James.Bottomley@suse.de>, "Tejun Heo" <tj@kernel.org>,
+       <linux-ide@vger.kernel.org>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Mark Lord" <kernel@teksavvy.com>,
+       <tytso@mit.edu>, <hirofumi@mail.parknet.co.jp>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <irtiger@gmail.com>,
+       "Matthew Wilcox" <matthew@wil.cx>, <aschnell@suse.de>,
+       <knikanth@suse.de>, <jdelvare@suse.de>
+X-OriginalArrivalTime: 09 Mar 2010 22:36:26.0263 (UTC) FILETIME=[F4197270:01CABFD8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010, Markus Rechberger wrote:
+ 
+hpa> I would very much like a reference for a platform which has 
+hpa> firmware which can successfully boot from 4K-logical media.  It 
+hpa> would be very useful for bootloader testing.
 
-> Hi,
-> 
-> I just stumbled around following issue:
-> 
-> [275835.163502] Pid: 14298, comm: mediasrv Not tainted 2.6.33 #7
-> [275835.163505] Call Trace:
-> [275835.163514]  [<ffffffff810df7a6>] __alloc_pages_nodemask+0x5b6/0x700
-> [275835.163520]  [<ffffffff8110c667>] alloc_pages_current+0x87/0xd0
-> [275835.163525]  [<ffffffff810dcf79>] __get_free_pages+0x9/0x50
-> [275835.163529]  [<ffffffff81114f2b>] __kmalloc+0x13b/0x1f0
-> [275835.163535]  [<ffffffff813a18ef>] proc_do_submiturb+0x2ff/0x9d0
-> [275835.163539]  [<ffffffff813a26b9>] usbdev_do_ioctl+0x6f9/0x14a0
 
-The mediasrv program tried to allocate more memory than was available.  
-It's unfortunate but it's not a bug.
+I am told that the Mac UEFI platform will boot from 4K logical/physical
+drives.
 
-Alan Stern
-
+Now I have to scrounge one of the old drives to test it.
