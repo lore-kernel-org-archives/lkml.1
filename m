@@ -1,64 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413Ab0CIPJe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 10:09:34 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:50390 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108Ab0CIPJb (ORCPT
+	id S1753786Ab0CIPMG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 10:12:06 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:59710 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344Ab0CIPME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 10:09:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=HbyhDQ1xzvXjfEw6Aq1rqo32NaV/yHrQ0c7nNGdjXpApEG7958u/XHGIM6aYfkDe6G
-         1Dfopeat4PbUJQk0zYJCc5E8fEfTxJldJKr9NUhPllAJn3wMnN+Jzt1pcH1F1v5ceKT0
-         4rYoBS0F8Et5L90JrdwADe27MgKLw+v5gxHho=
-References: <aa4c40ff1003081107n78e9f052n2a754680e5491c68@mail.gmail.com> <aa4c40ff1003081313s7492513bk14a48c6097b90407@mail.gmail.com> <4B95B028.3050106@gmail.com> <aa4c40ff1003082115x3e9e1492je90e5afb826b3408@mail.gmail.com> <20100309141552.GD30538@centrinvest.ru>
-Message-Id: <8DFD46FA-A938-41D6-97EC-F6E5324C9FAA@gmail.com>
-From: James Lamanna <jlamanna@gmail.com>
-To: Andrey Panin <pazke@centrinvest.ru>
-In-Reply-To: <20100309141552.GD30538@centrinvest.ru>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7D11)
-Mime-Version: 1.0 (iPhone Mail 7D11)
-Subject: Re: SIIG DP CyberSerial 4S PCIe Support
-Date: Tue, 9 Mar 2010 07:09:21 -0800
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
+	Tue, 9 Mar 2010 10:12:04 -0500
+Date: Tue, 9 Mar 2010 09:10:52 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Tejun Heo <tj@kernel.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+In-Reply-To: <4B95AD17.2030106@kernel.org>
+Message-ID: <alpine.DEB.2.00.1003090910200.28897@router.home>
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain> <84144f021003080529w1b20c08dmf6871bd46381bc71@mail.gmail.com> <4B95AD17.2030106@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 9, 2010, at 6:15, "Andrey Panin" <pazke@centrinvest.ru> wrote:
+On Tue, 9 Mar 2010, Tejun Heo wrote:
 
-> On 067, 03 08, 2010 at 09:15:26PM -0800, James Lamanna wrote:
+> Yeap, that's buggy.
 >
->> That's probably the case.
->> It looks like 8250 doesn't know about this PCIe device at all.
->> The Oxford PCI ID is not in pci_ids.h nor is the SIIG subsystem ID.
->> I'll see if I can maybe work up a patch to support this device,  
->> since I've found
->> the datasheet for the Oxford 4 port UART controller, but I may need  
->> some help.
->> Or if anyone else (who has more experience with this) wants to  
->> formulate one,
->> it would be greatly appreciated.
+> Acked-by: Tejun Heo <tj@kernel.org>
 >
-> Looks like you card can use existing code for Oxford Semiconductor  
-> UARTs.
-> Can you test the attached patch for 2.6.33 ?
+> I suppose this would go through the mm tree?
 
-Hi Andrey,
-Coincidentally I found your patch for 2.6.28 that I was able to  
-backport to 2.6.24. The card seems to be working great!
-Is this patch in mainline now?
+As you said: Its a bug so it needs to be applied to upstream.
 
-Thanks.
-
--- James
