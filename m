@@ -1,55 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802Ab0CIQJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:09:48 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:36992 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964Ab0CIQJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:09:46 -0500
-Date: Tue, 9 Mar 2010 10:09:11 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
- pressure to relieve instead of congestion
-In-Reply-To: <4B966F93.9060207@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.00.1003091005310.28897@router.home>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1003090946180.28897@router.home> <4B966F93.9060207@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754541Ab0CIQNI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:13:08 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:60601 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719Ab0CIQNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 11:13:07 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Bernd Schmidt <bernds_cb1@t-online.de>
+Subject: [PATCH] NOMMU: allow private mappings of read-only devices
+Date: Tue,  9 Mar 2010 11:16:22 -0500
+Message-Id: <1268151382-28469-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.7.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010, Christian Ehrhardt wrote:
+From: Bernd Schmidt <bernds_cb1@t-online.de>
 
-> > What happens if memory becomes available in another zone? Lets say we are
-> > waiting on HIGHMEM and memory in ZONE_NORMAL becomes available?
->
-> Do you mean the same as Nick asked or another aspect of it?
-> citation:
-> "I mean the other way around. If that zone's watermarks are not met, then why
-> shouldn't it be woken up by other zones reaching their watermarks."
+Slightly rearrange the logic that determines capabilities and vm_flags.
+Disable BDI_CAP_MAP_DIRECT in all cases if the device can't support the
+protections.  Allow private readonly mappings of readonly backing devices.
 
-Just saw that exchange. Yes it is similar. Mel only thought about NUMA
-but the situation can also occur in !NUMA because multiple zones do not
-require NUMA.
+Signed-off-by: Bernd Schmidt <bernds_cb1@t-online.de>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ mm/nommu.c |   32 ++++++++++++++++++--------------
+ 1 files changed, 18 insertions(+), 14 deletions(-)
 
-If a process goes to sleep on an allocation that has a preferred zone of
-HIGHMEM then other processors may free up memory in ZONE_DMA and
-ZONE_NORMAL and therefore memory may become available but the process will
-continue to sleep.
-
-The wait structure needs to be placed in the pgdat structure to make it
-node specific.
-
-But then an overallocated node may stall processes. If that node is full
-of unreclaimable memory then the process may never wake up?
-
-
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 61a68d5..5767237 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -930,14 +930,6 @@ static int validate_mmap_request(struct file *file,
+ 			if (!(capabilities & BDI_CAP_MAP_DIRECT))
+ 				return -ENODEV;
+ 
+-			if (((prot & PROT_READ)  && !(capabilities & BDI_CAP_READ_MAP))  ||
+-			    ((prot & PROT_WRITE) && !(capabilities & BDI_CAP_WRITE_MAP)) ||
+-			    ((prot & PROT_EXEC)  && !(capabilities & BDI_CAP_EXEC_MAP))
+-			    ) {
+-				printk("MAP_SHARED not completely supported on !MMU\n");
+-				return -EINVAL;
+-			}
+-
+ 			/* we mustn't privatise shared mappings */
+ 			capabilities &= ~BDI_CAP_MAP_COPY;
+ 		}
+@@ -953,6 +945,20 @@ static int validate_mmap_request(struct file *file,
+ 				capabilities &= ~BDI_CAP_MAP_DIRECT;
+ 		}
+ 
++		if (capabilities & BDI_CAP_MAP_DIRECT) {
++			if (((prot & PROT_READ)  && !(capabilities & BDI_CAP_READ_MAP))  ||
++			    ((prot & PROT_WRITE) && !(capabilities & BDI_CAP_WRITE_MAP)) ||
++			    ((prot & PROT_EXEC)  && !(capabilities & BDI_CAP_EXEC_MAP))
++			    ) {
++				capabilities &= ~BDI_CAP_MAP_DIRECT;
++				if (flags & MAP_SHARED) {
++					printk(KERN_WARNING
++					       "MAP_SHARED not completely supported on !MMU\n");
++					return -EINVAL;
++				}
++			}
++		}
++
+ 		/* handle executable mappings and implied executable
+ 		 * mappings */
+ 		if (file->f_path.mnt->mnt_flags & MNT_NOEXEC) {
+@@ -1008,22 +1014,20 @@ static unsigned long determine_vm_flags(struct file *file,
+ 	unsigned long vm_flags;
+ 
+ 	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags);
+-	vm_flags |= VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
+ 	/* vm_flags |= mm->def_flags; */
+ 
+ 	if (!(capabilities & BDI_CAP_MAP_DIRECT)) {
+ 		/* attempt to share read-only copies of mapped file chunks */
++		vm_flags |= VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
+ 		if (file && !(prot & PROT_WRITE))
+ 			vm_flags |= VM_MAYSHARE;
+-	}
+-	else {
++	} else {
+ 		/* overlay a shareable mapping on the backing device or inode
+ 		 * if possible - used for chardevs, ramfs/tmpfs/shmfs and
+ 		 * romfs/cramfs */
++		vm_flags |= VM_MAYSHARE | (capabilities & BDI_CAP_VMFLAGS);
+ 		if (flags & MAP_SHARED)
+-			vm_flags |= VM_MAYSHARE | VM_SHARED;
+-		else if ((((vm_flags & capabilities) ^ vm_flags) & BDI_CAP_VMFLAGS) == 0)
+-			vm_flags |= VM_MAYSHARE;
++			vm_flags |= VM_SHARED;
+ 	}
+ 
+ 	/* refuse to let anyone share private mappings with this process if
+-- 
+1.7.0.2
 
