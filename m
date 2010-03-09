@@ -1,78 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365Ab0CIBHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 20:07:47 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49962 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756324Ab0CIBHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 20:07:44 -0500
-Message-ID: <4B959F92.6010701@cn.fujitsu.com>
-Date: Tue, 09 Mar 2010 09:08:34 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
-References: <4B94936B.8030409@cn.fujitsu.com> <1268060058.10871.1796.camel@gandalf.stny.rr.com>
-In-Reply-To: <1268060058.10871.1796.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1756392Ab0CIBH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 20:07:57 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34910 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756345Ab0CIBHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 20:07:55 -0500
+Date: Tue, 9 Mar 2010 09:52:19 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-Id: <20100309095219.2f756ae1.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100309092054.b18a4ff2.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1267995474-9117-1-git-send-email-arighi@develer.com>
+	<1267995474-9117-4-git-send-email-arighi@develer.com>
+	<20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
+	<20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
+	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
+	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309091845.d38b43ff.nishimura@mxp.nes.nec.co.jp>
+	<20100309092054.b18a4ff2.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Mon, 2010-03-08 at 14:04 +0800, Li Zefan wrote:
->> While running a ftrace test, a kernel warning showed up. The bug is not so
->> easy to reproduce, normally it takes 30 mins to 2 hours.
+On Tue, 9 Mar 2010 09:20:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 9 Mar 2010 09:18:45 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> What test are you running? Can you share it?
+> > On Mon, 8 Mar 2010 17:31:00 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > On Mon, 8 Mar 2010 17:07:11 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
+> > > Hmm...accepatable ? (sounds it's in error-range)
+> > > 
+> > > BTW, why local_irq_disable() ? 
+> > > local_irq_save()/restore() isn't better ?
+> > > 
+> > I don't have any strong reason. All of lock_page_cgroup() is *now* called w/o irq disabled,
+> > so I used just disable()/enable() instead of save()/restore().
+> 
+> My point is, this will be used under treelock soon.
+> 
+I agree.
 
-The test runs 10+ processes, reading/writing files in debugfs/tracing/
-simultaneously.
+I'll update the patch using save()/restore(), and repost later.
 
-I'll send it to you in a private mail.
 
->> After revering 3c05d7482777f15e71bb4cb1ba78dee2800dfec6, I ran the test
->> for 15 hours, and the bug seems disapeared.
-> 
-> So basically, you are reading both the trace and trace_pipe (or
-> trace_pipe_raw) at the same time?
-> 
-
-reading trace, yes. reading trace_pipe, no.
-
-Actualy we don't see how this commit relates to the bug.
-I'll run the test again to be sure on this.
-
-> -- Steve
-> 
->> ------------[ cut here ]------------
->> WARNING: at kernel/trace/ring_buffer.c:3420 ring_buffer_reset_cpu+0x5a/0x9c()
->> Hardware name: PRIMERGY                      
->> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat bridge stp llc deflate zlib_deflate ctr camellia cast5 rmd160 crypto_null ccm serpent blowfish twofish_x86_64 twofish_common ecb xcbc cbc sha256_generic sha512_generic des_generic cryptd aes_x86_64 aes_generic ah6 ah4 esp6 esp4 xfrm4_mode_beet xfrm4_tunnel tunnel4 xfrm4_mode_tunnel xfrm4_mode_transport xfrm6_mode_transport xfrm6_mode_beet ipcomp ipcomp6 xfrm_ipcomp xfrm6_tunnel tunnel6 af_key autofs4 sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_multipath uinput i5k_amb hwmon e1000e i5000_edac edac_core iTCO_wdt iTCO_vendor_support shpchp i2c_i801 i2c_core serio_raw pcspkr pata_acpi ata_generic mptsas mptscsih ata_piix mptbase scsi_transport_sas dm_mod [last unloaded: speedstep_lib]
->> Pid: 2108, comm: ftrace_current_ Tainted: G        W  2.6.33-tip+ #2
->> Call Trace:
->>  [<ffffffff8104ebd0>] warn_slowpath_common+0x7c/0x94
->>  [<ffffffff8104ebfc>] warn_slowpath_null+0x14/0x16
->>  [<ffffffff810a50f5>] ring_buffer_reset_cpu+0x5a/0x9c
->>  [<ffffffff810aa3f0>] tracing_reset_online_cpus+0x4a/0x79
->>  [<ffffffff810aa434>] tracer_init+0x15/0x20
->>  [<ffffffff810aa601>] tracing_set_tracer+0x1c2/0x1e7
->>  [<ffffffff810d9847>] ? might_fault+0x5c/0xac
->>  [<ffffffff810aa6b2>] tracing_set_trace_write+0x8c/0xbc
->>  [<ffffffff810a8e79>] ? trace_buffer_lock_reserve+0x21/0x56
->>  [<ffffffff810a95ce>] ? trace_current_buffer_lock_reserve+0x16/0x18
->>  [<ffffffff813ef135>] ? retint_swapgs+0x13/0x1b
->>  [<ffffffff81104618>] vfs_write+0xae/0x10b
->>  [<ffffffff81104735>] sys_write+0x4a/0x6e
->>  [<ffffffff81009da6>] tracesys+0xd0/0xd5
->> ---[ end trace f7002f0890d5b023 ]---
-> 
-> 
-> 
-> 
+Thanks,
+Daisuke Nishimura.
