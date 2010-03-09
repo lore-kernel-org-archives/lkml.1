@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755574Ab0CIXAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 18:00:54 -0500
-Received: from trinity.develer.com ([83.149.158.210]:52788 "EHLO
+	id S1755670Ab0CIXBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 18:01:01 -0500
+Received: from trinity.develer.com ([83.149.158.210]:52811 "EHLO
 	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328Ab0CIXAx (ORCPT
+	with ESMTP id S1755551Ab0CIXAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 18:00:53 -0500
+	Tue, 9 Mar 2010 18:00:55 -0500
 From: Andrea Righi <arighi@develer.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -18,91 +18,238 @@ Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
        "Kirill A. Shutemov" <kirill@shutemov.name>,
        Andrew Morton <akpm@linux-foundation.org>,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Date: Wed, 10 Mar 2010 00:00:31 +0100
-Message-Id: <1268175636-4673-1-git-send-email-arighi@develer.com>
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH -mmotm 1/5] memcg: disable irq at page cgroup lock
+Date: Wed, 10 Mar 2010 00:00:32 +0100
+Message-Id: <1268175636-4673-2-git-send-email-arighi@develer.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1268175636-4673-1-git-send-email-arighi@develer.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Control the maximum amount of dirty pages a cgroup can have at any given time.
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-page cache used by any cgroup. So, in case of multiple cgroup writers, they
-will not be able to consume more than their designated share of dirty pages and
-will be forced to perform write-out if they cross that limit.
+In current implementation, we don't have to disable irq at lock_page_cgroup()
+because the lock is never acquired in interrupt context.
+But we are going to call it in later patch in an interrupt context or with
+irq disabled, so this patch disables irq at lock_page_cgroup() and enables it
+at unlock_page_cgroup().
 
-The overall design is the following:
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/page_cgroup.h |   16 ++++++++++++++--
+ mm/memcontrol.c             |   43 +++++++++++++++++++++++++------------------
+ 2 files changed, 39 insertions(+), 20 deletions(-)
 
- - account dirty pages per cgroup
- - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
-   and memory.dirty_background_ratio / memory.dirty_background_bytes in
-   cgroupfs
- - start to write-out (background or actively) when the cgroup limits are
-   exceeded
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 30b0813..0d2f92c 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -83,16 +83,28 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+ 	return page_zonenum(pc->page);
+ }
+ 
+-static inline void lock_page_cgroup(struct page_cgroup *pc)
++static inline void __lock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_lock(PCG_LOCK, &pc->flags);
+ }
+ 
+-static inline void unlock_page_cgroup(struct page_cgroup *pc)
++static inline void __unlock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
++#define lock_page_cgroup(pc, flags)		\
++	do {					\
++		local_irq_save(flags);		\
++		__lock_page_cgroup(pc);		\
++	} while (0)
++
++#define unlock_page_cgroup(pc, flags)		\
++	do {					\
++		__unlock_page_cgroup(pc);	\
++		local_irq_restore(flags);	\
++	} while (0)
++
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct page_cgroup;
+ 
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 7fab84e..a9fd736 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1352,12 +1352,13 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc;
++	unsigned long flags;
+ 
+ 	pc = lookup_page_cgroup(page);
+ 	if (unlikely(!pc))
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	mem = pc->mem_cgroup;
+ 	if (!mem)
+ 		goto done;
+@@ -1371,7 +1372,7 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ 	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+ 
+ done:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ }
+ 
+ /*
+@@ -1705,11 +1706,12 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 	struct page_cgroup *pc;
+ 	unsigned short id;
+ 	swp_entry_t ent;
++	unsigned long flags;
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		if (mem && !css_tryget(&mem->css))
+@@ -1723,7 +1725,7 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 			mem = NULL;
+ 		rcu_read_unlock();
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return mem;
+ }
+ 
+@@ -1736,13 +1738,15 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 				     struct page_cgroup *pc,
+ 				     enum charge_type ctype)
+ {
++	unsigned long flags;
++
+ 	/* try_charge() can return NULL to *memcg, taking care of it. */
+ 	if (!mem)
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (unlikely(PageCgroupUsed(pc))) {
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 		mem_cgroup_cancel_charge(mem);
+ 		return;
+ 	}
+@@ -1772,7 +1776,7 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 
+ 	mem_cgroup_charge_statistics(mem, pc, true);
+ 
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * "charge_statistics" updated event counter. Then, check it.
+ 	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+@@ -1842,12 +1846,13 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 		struct mem_cgroup *from, struct mem_cgroup *to, bool uncharge)
+ {
+ 	int ret = -EINVAL;
+-	lock_page_cgroup(pc);
++	unsigned long flags;
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc) && pc->mem_cgroup == from) {
+ 		__mem_cgroup_move_account(pc, from, to, uncharge);
+ 		ret = 0;
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * check events
+ 	 */
+@@ -1974,17 +1979,17 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+ 	 */
+ 	if (!(gfp_mask & __GFP_WAIT)) {
+ 		struct page_cgroup *pc;
+-
++		unsigned long flags;
+ 
+ 		pc = lookup_page_cgroup(page);
+ 		if (!pc)
+ 			return 0;
+-		lock_page_cgroup(pc);
++		lock_page_cgroup(pc, flags);
+ 		if (PageCgroupUsed(pc)) {
+-			unlock_page_cgroup(pc);
++			unlock_page_cgroup(pc, flags);
+ 			return 0;
+ 		}
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 	}
+ 
+ 	if (unlikely(!mm && !mem))
+@@ -2166,6 +2171,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	struct mem_cgroup_per_zone *mz;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return NULL;
+@@ -2180,7 +2186,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	if (unlikely(!pc || !PageCgroupUsed(pc)))
+ 		return NULL;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 
+ 	mem = pc->mem_cgroup;
+ 
+@@ -2219,7 +2225,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	 */
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	memcg_check_events(mem, page);
+ 	/* at swapout, this memcg will be accessed to record to swap */
+@@ -2229,7 +2235,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	return mem;
+ 
+ unlock_out:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return NULL;
+ }
+ 
+@@ -2417,17 +2423,18 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	int ret = 0;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return 0;
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	if (mem) {
+ 		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
+-- 
+1.6.3.3
 
-This feature is supposed to be strictly connected to any underlying IO
-controller implementation, so we can stop increasing dirty pages in VM layer
-and enforce a write-out before any cgroup will consume the global amount of
-dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
-/proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
-
-Changelog (v5 -> v6)
-~~~~~~~~~~~~~~~~~~~~~~
- * always disable/enable IRQs at lock/unlock_page_cgroup(): this allows to drop
-   the previous complicated locking scheme in favor of a simpler locking, even
-   if this obviously adds some overhead (see results below)
- * drop FUSE and NILFS2 dirty pages accounting for now (this depends on
-   charging bounce pages per cgroup)
-
-Results
-~~~~~~~
-I ran some tests using a kernel build (2.6.33 x86_64_defconfig) on a
-Intel Core 2 @ 1.2GHz as testcase using different kernels:
- - mmotm "vanilla"
- - mmotm with cgroup-dirty-memory using the previous "complex" locking scheme
-   (my previous patchset + the fixes reported by Kame-san and Daisuke-san)
- - mmotm with cgroup-dirty-memory using the simple locking scheme
-   (lock_page_cgroup() with IRQs disabled)
-
-Following the results:
-<before>
- - mmotm "vanilla", root  cgroup:			11m51.983s
- - mmotm "vanilla", child cgroup:			11m56.596s
-
-<after>
- - mmotm, "complex" locking scheme, root  cgroup:	11m53.037s
- - mmotm, "complex" locking scheme, child cgroup:	11m57.896s
-
- - mmotm, lock_page_cgroup+irq_disabled, root  cgroup:	12m5.499s
- - mmotm, lock_page_cgroup+irq_disabled, child cgroup:	12m9.920s
-
-With the "complex" locking solution, the overhead introduced by the
-cgroup dirty memory accounting is minimal (0.14%), compared with the overhead
-introduced by the lock_page_cgroup+irq_disabled solution (1.90%).
-
-The performance overhead is not so huge in both solutions, but the impact on
-performance is even more reduced using a complicated solution...
-
-Maybe we can go ahead with the simplest implementation for now and start to
-think to an alternative implementation of the page_cgroup locking and
-charge/uncharge of pages.
-
-If someone is interested or want to repeat the tests (maybe on a bigger
-machine) I can post also the other version of the patchset. Just let me know.
-
--Andrea
-
- Documentation/cgroups/memory.txt |   36 +++
- fs/nfs/write.c                   |    4 +
- include/linux/memcontrol.h       |   87 +++++++-
- include/linux/page_cgroup.h      |   42 ++++-
- include/linux/writeback.h        |    2 -
- mm/filemap.c                     |    1 +
- mm/memcontrol.c                  |  475 +++++++++++++++++++++++++++++++++-----
- mm/page-writeback.c              |  215 +++++++++++-------
- mm/rmap.c                        |    4 +-
- mm/truncate.c                    |    1 +
- 10 files changed, 722 insertions(+), 145 deletions(-)
