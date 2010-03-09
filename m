@@ -1,96 +1,295 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359Ab0CIWKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:10:21 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:42595 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864Ab0CIWKT (ORCPT
+	id S1755450Ab0CIWLM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:11:12 -0500
+Received: from cc-mserv4.uoregon.edu ([128.223.142.129]:43324 "EHLO
+	smtp.uoregon.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753227Ab0CIWLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:10:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cIaLSE8CPuYaXb+aY5fOlNr3h8z2h3m4GuN6oyeBTj8T1oc6E66eGSYftTr9NCuKA7
-         1hhS1bPsAJZGmB6SyEEoiFhNtW8EY/2WOoW529xR7yQbbxJ0J8g5pouBt92XmakiRZsc
-         q0yEGq8/pe4E60pnxuqn7cgw1MmHYeakkFCXo=
-Subject: Re: how to tweak ARP timer on kernel 2.6.9
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Tom Ammon <tom.ammon@utah.edu>
-Cc: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-In-Reply-To: <4B96A24A.6060405@utah.edu>
-References: <4B96A24A.6060405@utah.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 23:10:14 +0100
-Message-ID: <1268172614.2872.122.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 9 Mar 2010 17:11:10 -0500
+X-Greylist: delayed 1476 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 17:11:10 EST
+From: Michael Beardsworth <mbeards2@uoregon.edu>
+To: mbeards2@uoregon.edu, benh@kernel.crashing.org, fthain@telegraphics.com.au,
+       grant.likely@secretlab.ca, geert@linux-m68k.org, monstr@monstr.eu
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] Macintosh: fix coding style issues in adb.c This is a patch to the adb.c file that cleans up many warnings found by the checkpatch.pl tool. Signed-off-by: Michael Beardsworth <mbeards2@uoregon.edu>
+Date: Tue,  9 Mar 2010 14:07:18 -0800
+Message-Id: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
+X-Mailer: git-send-email 1.6.5
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166
+ definitions=2010-03-09_13:2010-02-06,2010-03-09,2010-03-09 signatures=0
+X-Proofpoint-Spam-Reason: safe
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 09 mars 2010 à 12:32 -0700, Tom Ammon a écrit :
-> Hi,
-> 
-> I've been trying to figure out how to adjust the ARP timeout on kernel 
-> 2.6.9 and I found the following in /proc/sys/net/ipv4/neigh/ib0 (its an 
-> IB interface I am interested in changing) with the following values. 
-> This is on kernel 2.6.9-89ELsmp (RHEL4) :
-> 
+---
+ drivers/macintosh/adb.c |   73 +++++++++++++++++++++++------------------------
+ 1 files changed, 36 insertions(+), 37 deletions(-)
 
-> When I test this, along with per-flow ECMP (using the iproute2 utils), I 
-> see that the ARP cache is timing out about every 10 minutes (I observe 
-> this by load balancing an iperf flow between two different gateway 
-> machines and then graphing the interface traffic)
-> 
-
-10 minutes seems out of specs.
-
-> On a newer kernel, 2.6.18-164.11.1.el5 (RHEL5), I see mostly the same 
-> parms available, but a few new ones have been added. However, all of the 
-> parms that are the same name between the two kernels are the same values:
-> 
-
-> Yet when I observe the same traffic flow with this machine, the ARP 
-> cache times out about once per minute.
-> 
-
-This seems normal, old kernels were a bit lazy about arp.
-
-
-> Is there another set of parameters somewhere that govern how often the 
-> kernel times out the ARP cache? If so, where might I find that? Is there 
-> any kernel documentation that talks about changing ARP timers on the 
-> linux kernel?
-> 
-
-I would suggest :
-
-man 7 arp
-
-http://linux.die.net/man/7/arp
-
-
-
-base_reachable_time
-        Once a neighbour has been found, the entry is considered to be
-        valid for at least a random value between base_reachable_time/2
-        and 3*base_reachable_time/2. An entry's validity will be
-        extended if it receives positive feedback from higher level
-        protocols. Defaults to 30 seconds.
-
-gc_interval
-        How frequently the garbage collector for neighbour entries
-        should attempt to run. Defaults to 30 seconds.
-
-gc_stale_time
-        Determines how often to check for stale neighbour entries. When
-        a neighbour entry is considered stale it is resolved again
-        before sending data to it. Defaults to 60 seconds.
-        
-
-
-and "ip -s neigh"
-
+diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index 1c4ee6e..1f7a4f6 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -115,27 +115,27 @@ static DEFINE_RWLOCK(adb_handler_lock);
+ #if 0
+ static void printADBreply(struct adb_request *req)
+ {
+-        int i;
++		int i;
+ 
+-        printk("adb reply (%d)", req->reply_len);
+-        for(i = 0; i < req->reply_len; i++)
+-                printk(" %x", req->reply[i]);
+-        printk("\n");
++		printk("adb reply (%d)", req->reply_len);
++		for (i = 0; i < req->reply_len; i++)
++			printk(" %x", req->reply[i]);
++		printk("\n");
+ 
+ }
+ #endif
+ 
+ static int adb_scan_bus(void)
+ {
+-	int i, highFree=0, noMovement;
++	int i, highFree = 0, noMovement;
+ 	int devmask = 0;
+ 	struct adb_request req;
+-	
++
+ 	/* assumes adb_handler[] is all zeroes at this point */
+ 	for (i = 1; i < 16; i++) {
+ 		/* see if there is anything at address i */
+ 		adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+-                            (i << 4) | 0xf);
++				(i << 4) | 0xf);
+ 		if (req.reply_len > 1)
+ 			/* one or more devices at this address */
+ 			adb_handler[i].original_address = i;
+@@ -161,7 +161,7 @@ static int adb_scan_bus(void)
+ 			 * this only moves one device.
+ 			 */
+ 			adb_request(&req, NULL, ADBREQ_SYNC, 3,
+-				    (i<< 4) | 0xb, (highFree | 0x60), 0xfe);
++					(i << 4) | 0xb, (highFree | 0x60), 0xfe);
+ 			/*
+ 			 * See if anybody actually moved. This is suggested
+ 			 * by HW TechNote 01:
+@@ -170,7 +170,8 @@ static int adb_scan_bus(void)
+ 			 */
+ 			adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+ 				    (highFree << 4) | 0xf);
+-			if (req.reply_len <= 1) continue;
++			if (req.reply_len <= 1)
++				continue;
+ 			/*
+ 			 * Test whether there are any device(s) left
+ 			 * at address i.
+@@ -193,8 +194,7 @@ static int adb_scan_bus(void)
+ 					break;
+ 
+ 				noMovement = 0;
+-			}
+-			else {
++			} else {
+ 				/*
+ 				 * No devices left at address i; move the
+ 				 * one(s) we moved to `highFree' back to i.
+@@ -203,7 +203,7 @@ static int adb_scan_bus(void)
+ 					    (highFree << 4) | 0xb,
+ 					    (i | 0x60), 0xfe);
+ 			}
+-		}	
++		}
+ 	}
+ 
+ 	/* Now fill in the handler_id field of the adb_handler entries. */
+@@ -307,7 +307,7 @@ static int __init adb_init(void)
+ 	if (adb_inited)
+ 		return 0;
+ 	adb_inited = 1;
+-		
++
+ 	adb_controller = NULL;
+ 
+ 	i = 0;
+@@ -341,10 +341,10 @@ static int
+ do_adb_reset_bus(void)
+ {
+ 	int ret;
+-	
++
+ 	if (adb_controller == NULL)
+ 		return -ENXIO;
+-		
++
+ 	if (adb_controller->autopoll)
+ 		adb_controller->autopoll(0);
+ 
+@@ -381,14 +381,14 @@ do_adb_reset_bus(void)
+ 
+ 	blocking_notifier_call_chain(&adb_client_list,
+ 		ADB_MSG_POST_RESET, NULL);
+-	
++
+ 	return ret;
+ }
+ 
+ void
+ adb_poll(void)
+ {
+-	if ((adb_controller == NULL)||(adb_controller->poll == NULL))
++	if ((adb_controller == NULL) || (adb_controller->poll == NULL))
+ 		return;
+ 	adb_controller->poll();
+ }
+@@ -459,7 +459,7 @@ adb_register(int default_id, int handler_id, struct adb_ids *ids,
+ 	ids->nids = 0;
+ 	for (i = 1; i < 16; i++) {
+ 		if ((adb_handler[i].original_address == default_id) &&
+-		    (!handler_id || (handler_id == adb_handler[i].handler_id) || 
++		    (!handler_id || (handler_id == adb_handler[i].handler_id) ||
+ 		    try_handler_change(i, handler_id))) {
+ 			if (adb_handler[i].handler != 0) {
+ 				printk(KERN_ERR
+@@ -485,7 +485,7 @@ adb_unregister(int index)
+ 	mutex_lock(&adb_handler_mutex);
+ 	write_lock_irq(&adb_handler_lock);
+ 	if (adb_handler[index].handler) {
+-		while(adb_handler[index].busy) {
++		while (adb_handler[index].busy) {
+ 			write_unlock_irq(&adb_handler_lock);
+ 			yield();
+ 			write_lock_irq(&adb_handler_lock);
+@@ -504,7 +504,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 	int i, id;
+ 	static int dump_adb_input = 0;
+ 	unsigned long flags;
+-	
++
+ 	void (*handler)(unsigned char *, int, int);
+ 
+ 	/* We skip keystrokes and mouse moves when the sleep process
+@@ -512,7 +512,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 	 */
+ 	if (adb_got_sleep)
+ 		return;
+-		
++
+ 	id = buf[0] >> 4;
+ 	if (dump_adb_input) {
+ 		printk(KERN_INFO "adb packet: ");
+@@ -530,7 +530,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 		wmb();
+ 		adb_handler[id].busy = 0;
+ 	}
+-		
++
+ }
+ 
+ /* Try to change handler to new_id. Will return 1 if successful. */
+@@ -539,15 +539,15 @@ static int try_handler_change(int address, int new_id)
+ 	struct adb_request req;
+ 
+ 	if (adb_handler[address].handler_id == new_id)
+-	    return 1;
++		return 1;
+ 	adb_request(&req, NULL, ADBREQ_SYNC, 3,
+ 	    ADB_WRITEREG(address, 3), address | 0x20, new_id);
+ 	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+ 	    ADB_READREG(address, 3));
+ 	if (req.reply_len < 2)
+-	    return 0;
++		return 0;
+ 	if (req.reply[2] != new_id)
+-	    return 0;
++		return 0;
+ 	adb_handler[address].handler_id = req.reply[2];
+ 
+ 	return 1;
+@@ -586,7 +586,7 @@ struct adbdev_state {
+ 	spinlock_t	lock;
+ 	atomic_t	n_pending;
+ 	struct adb_request *completed;
+-  	wait_queue_head_t wait_queue;
++	wait_queue_head_t wait_queue;
+ 	int		inuse;
+ };
+ 
+@@ -624,8 +624,7 @@ do_adb_query(struct adb_request *req)
+ {
+ 	int	ret = -EINVAL;
+ 
+-	switch(req->data[1])
+-	{
++	switch (req->data[1]) {
+ 	case ADB_QUERY_GETDEVINFO:
+ 		if (req->nbytes < 3)
+ 			break;
+@@ -697,7 +696,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 	int ret = 0;
+ 	struct adbdev_state *state = file->private_data;
+ 	struct adb_request *req;
+-	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait,current);
++	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
+ 	unsigned long flags;
+ 
+ 	if (count < 2)
+@@ -720,7 +719,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 			ret = -EIO;
+ 		if (req != NULL || ret != 0)
+ 			break;
+-		
++
+ 		if (file->f_flags & O_NONBLOCK) {
+ 			ret = -EAGAIN;
+ 			break;
+@@ -737,7 +736,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 	current->state = TASK_RUNNING;
+ 	remove_wait_queue(&state->wait_queue, &wait);
+ 	spin_unlock_irqrestore(&state->lock, flags);
+-	
++
+ 	if (ret)
+ 		return ret;
+ 
+@@ -774,14 +773,14 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+ 	req->done = adb_write_done;
+ 	req->arg = (void *) state;
+ 	req->complete = 0;
+-	
++
+ 	ret = -EFAULT;
+ 	if (copy_from_user(req->data, buf, count))
+ 		goto out;
+ 
+ 	atomic_inc(&state->n_pending);
+ 
+-	/* If a probe is in progress or we are sleeping, wait for it to complete */
++	/* If a probe is in progress or we are sleeping, wait until complete */
+ 	down(&adb_probe_mutex);
+ 
+ 	/* Queries are special requests sent to the ADB driver itself */
+@@ -794,15 +793,15 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+ 	}
+ 	/* Special case for ADB_BUSRESET request, all others are sent to
+ 	   the controller */
+-	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
+-		&&(req->data[1] == ADB_BUSRESET)) {
++	else if ((req->data[0] == ADB_PACKET) && (count > 1)
++		&& (req->data[1] == ADB_BUSRESET)) {
+ 		ret = do_adb_reset_bus();
+ 		up(&adb_probe_mutex);
+ 		atomic_dec(&state->n_pending);
+ 		if (ret == 0)
+ 			ret = count;
+ 		goto out;
+-	} else {	
++	} else {
+ 		req->reply_expected = ((req->data[1] & 0xc) == 0xc);
+ 		if (adb_controller && adb_controller->send_request)
+ 			ret = adb_controller->send_request(req, 0);
+-- 
+1.6.5
 
