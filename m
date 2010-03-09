@@ -1,65 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106Ab0CIRYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:24:50 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:54657 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366Ab0CIRWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:22:25 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Sonic Zhang <sonic.zhang@analog.com>
-Subject: [PATCH 01/13] serial: bfin_sport_uart: work around anomaly 05000473 (make 32bit fifo read atomic)
-Date: Tue,  9 Mar 2010 12:25:28 -0500
-Message-Id: <1268155540-8241-2-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.7.0.2
-In-Reply-To: <1268155540-8241-1-git-send-email-vapier@gentoo.org>
-References: <1268155540-8241-1-git-send-email-vapier@gentoo.org>
+	id S1752941Ab0CIR2c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:28:32 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53072 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113Ab0CIR22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 12:28:28 -0500
+X-Authority-Analysis: v=1.0 c=1 a=drjUTJznMZEA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=o5mDadrZ7CDX2YIRyYYA:9 a=8-KR4Qr1445dAb82hEL1V2VGHloA:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+In-Reply-To: <4B95C1FC.9030307@cn.fujitsu.com>
+References: <4B94936B.8030409@cn.fujitsu.com>
+	 <4B949E43.2010906@cn.fujitsu.com>
+	 <1268060596.10871.1805.camel@gandalf.stny.rr.com>
+	 <1268060858.10871.1807.camel@gandalf.stny.rr.com>
+	 <4B95C1FC.9030307@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 09 Mar 2010 12:28:23 -0500
+Message-ID: <1268155703.10871.1872.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+On Tue, 2010-03-09 at 11:35 +0800, Lai Jiangshan wrote:
+> Steven Rostedt wrote:
+> > On Mon, 2010-03-08 at 10:03 -0500, Steven Rostedt wrote:
+> > 
+> >>> ringbuffer resizing and reseting will increase the ->record_disabled
+> >>> and then wait until a rcu_shced grace period passes.
+> >>>
+> >>> Contrarily, testing ->record_disabled should be at the same
+> >>> preempt disabled critical region as writing into ringbuffer, otherwise
+> >>> it will leave a window break ringbuffer resizing or reseting.
+> >> So the resizing and the resetting need a synchronize_sched() after the
+> >> disabling of the buffers, right?
+> > 
+> > Looking at the code, the synchronize_sched() is already done in
+> > ring_buffer_resize, and the caller (trace.c:tracing_reset() ) also
+> > disables the ring buffer and calls synchronize_sched().
+> > 
+> > With that, what other window is still opened (after this fix)?
+> > 
+> 
+> This window is still opened: (RCU vs IDLE vs Tracing)
+> 
+> synchronize_sched() does not protect preempt_disable()/enable() for
+> idle process. But tracing(function_graph, function) introduce more
+> preempt_disable()/enable() for idle process. It brings windows.
+> 
+> I bet that this bug is not come from this window.
+> (I added some strict code to RCU and did stress test,
+> bug was still occurred.)
 
-We cannot let a 32-bit RX FIFO read be interrupted otherwise a fake RX
-underflow error might be generated.
+With Li's test, I was able to trigger the ring_buffer warning about
+resetting while committing. I was still able to trigger it with your
+patch to move the ring buffer disable code. But I did not trigger it
+with both the ring buffer disable code _and_ your RCU fix.
 
-URL: http://blackfin.uclinux.org/gf/tracker/5145
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/serial/bfin_sport_uart.h |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
+But I was able to trigger the segfault that Li is seeing. That is most
+likely a separate issue. I'm currently writing special debug code to
+find out why that is happening.
 
-diff --git a/drivers/serial/bfin_sport_uart.h b/drivers/serial/bfin_sport_uart.h
-index abe0361..9791fcc 100644
---- a/drivers/serial/bfin_sport_uart.h
-+++ b/drivers/serial/bfin_sport_uart.h
-@@ -37,7 +37,21 @@
- #define SPORT_GET_TFSDIV(sport)		bfin_read16(((sport)->port.membase + OFFSET_TFSDIV))
- #define SPORT_GET_TX(sport)		bfin_read16(((sport)->port.membase + OFFSET_TX))
- #define SPORT_GET_RX(sport)		bfin_read16(((sport)->port.membase + OFFSET_RX))
--#define SPORT_GET_RX32(sport)		bfin_read32(((sport)->port.membase + OFFSET_RX))
-+/*
-+ * If another interrupt fires while doing a 32-bit read from RX FIFO,
-+ * a fake RX underflow error will be generated.  So disable interrupts
-+ * to prevent interruption while reading the FIFO.
-+ */
-+#define SPORT_GET_RX32(sport) \
-+({ \
-+	unsigned int __ret; \
-+	if (ANOMALY_05000473) \
-+		local_irq_disable(); \
-+	__ret = bfin_read32((sport)->port.membase + OFFSET_RX); \
-+	if (ANOMALY_05000473) \
-+		local_irq_enable(); \
-+	__ret; \
-+})
- #define SPORT_GET_RCR1(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR1))
- #define SPORT_GET_RCR2(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR2))
- #define SPORT_GET_RCLKDIV(sport)	bfin_read16(((sport)->port.membase + OFFSET_RCLKDIV))
--- 
-1.7.0.2
+Thanks!
+
+-- Steve
+
+
 
