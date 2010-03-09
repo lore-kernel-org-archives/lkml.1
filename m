@@ -1,84 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799Ab0CITEF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:04:05 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:36532 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755742Ab0CITD4 (ORCPT
+	id S1754946Ab0CIUEP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:04:15 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39184 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754862Ab0CIUEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:03:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=m4eTgVm/GiQtYLD+fGetU5dzfiwd8rKSjVfAtMFKdORii4nfEgni79JLgNUb7RLH93
-         +7KFz8eveuRr9h0BtfT90Kwz1HiQgXs9rdcAf0kxgPZfKUZH8dslJnLoZ0u1fBFX3RHz
-         YC3HO849befGfpHMFooVZyDD3KVvDRgRrJFVU=
-From: Chihau Chau <chihau@gmail.com>
-To: jmorris@namei.org
-Cc: dhowells@redhat.com, paulmck@linux.vnet.ibm.com, mingo@elte.hu,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chihau Chau <chihau@gmail.com>
-Subject: [PATCH] Security: key: keyring: fix code style issues
-Date: Tue,  9 Mar 2010 16:03:48 -0300
-Message-Id: <1268161428-32317-1-git-send-email-chihau@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Tue, 9 Mar 2010 15:04:11 -0500
+Message-ID: <4B96A9B2.8070806@cs.helsinki.fi>
+Date: Tue, 09 Mar 2010 22:04:02 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain> <84144f021003080529w1b20c08dmf6871bd46381bc71@mail.gmail.com> <4B95AD17.2030106@kernel.org> <alpine.DEB.2.00.1003090910200.28897@router.home>
+In-Reply-To: <alpine.DEB.2.00.1003090910200.28897@router.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chihau Chau <chihau@gmail.com>
+Christoph Lameter wrote:
+> On Tue, 9 Mar 2010, Tejun Heo wrote:
+> 
+>> Yeap, that's buggy.
+>>
+>> Acked-by: Tejun Heo <tj@kernel.org>
+>>
+>> I suppose this would go through the mm tree?
+> 
+> As you said: Its a bug so it needs to be applied to upstream.
 
-This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
-code style issues like to put a else sentence below close brace '}' and
-to replace a tab instead of some space characters.
+Sure but someone needs to pick up the patch and send it to Linus. Andrew?
 
-Signed-off-by: Chihau Chau <chihau@gmail.com>
----
- security/keys/keyring.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index e814d21..d8b5d5e 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -17,7 +17,7 @@
- #include <linux/seq_file.h>
- #include <linux/err.h>
- #include <keys/keyring-type.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- #include "internal.h"
- 
- /*
-@@ -172,8 +172,7 @@ static void keyring_describe(const struct key *keyring, struct seq_file *m)
- 
- 	if (keyring->description) {
- 		seq_puts(m, keyring->description);
--	}
--	else {
-+	} else {
- 		seq_puts(m, "[anon]");
- 	}
- 
-@@ -306,7 +305,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
- 	key_check(keyring);
- 
- 	/* top keyring must have search permission to begin the search */
--        err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
-+	err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
- 	if (err < 0) {
- 		key_ref = ERR_PTR(err);
- 		goto error;
-@@ -775,8 +774,7 @@ int __key_link(struct key *keyring, struct key *key)
- 		smp_wmb();
- 		klist->nkeys++;
- 		smp_wmb();
--	}
--	else {
-+	} else {
- 		/* grow the key list */
- 		max = 4;
- 		if (klist)
--- 
-1.5.6.3
-
+			Pekka
