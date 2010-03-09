@@ -1,48 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653Ab0CIW6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:58:54 -0500
-Received: from mail-ew0-f216.google.com ([209.85.219.216]:42647 "EHLO
-	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785Ab0CIW6u (ORCPT
+	id S1755334Ab0CIXAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 18:00:25 -0500
+Received: from mailhost.informatik.uni-hamburg.de ([134.100.9.70]:48035 "EHLO
+	mailhost.informatik.uni-hamburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753648Ab0CIXAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:58:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=BBOk6DbultDcHpCw/6i9oRzUHwtrrlvjPLo7CAX9b2JU/te1rw4NCZk3d/2dqNOrcB
-         /Nf/FYhQFoDejWMpozHMfR+mXmUpiZ9oPLeQJspPXOPArW6QiQt64Fiu56lhEr2yE+Ad
-         ed1A/zSCZERYYQx61+x9cevLmqOgi+ReKS3Cs=
+	Tue, 9 Mar 2010 18:00:24 -0500
+X-Greylist: delayed 666 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 18:00:23 EST
+Message-ID: <4B96D055.90201@metafoo.de>
+Date: Tue, 09 Mar 2010 23:48:53 +0100
+From: Lars-Peter Clausen <lars@metafoo.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Date: Tue, 9 Mar 2010 23:58:47 +0100
-Message-ID: <b637ec0b1003091458j67efc62cg2c975e9e286f4b0b@mail.gmail.com>
-Subject: Possible bug in eeepc-laptop.c - EeePC 900
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Corentin Chary <corentin.chary@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Valdis.Kletnieks@vt.edu, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] IRQ: Fix oneshot irq race between irq_finalize_oneshot
+ and handle_level_irq
+References: <1268092679-18070-1-git-send-email-lars@metafoo.de>            <alpine.LFD.2.00.1003090855250.22855@localhost.localdomain> <5309.1268153945@localhost> <alpine.LFD.2.00.1003091907500.22855@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003091907500.22855@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I have an EeePC 900 running 2.6.34-rc1.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-If I boot it on AC the cpu runs at full speed, 900MHz; if I boot it on
-battery it runs only at 630Mhz. Plugging / unplugging the AC does not
-change the cpu frequency. Only a reboot can change the situation.
+Thomas Gleixner wrote:
+> On Tue, 9 Mar 2010, Valdis.Kletnieks@vt.edu wrote:
+>> On Tue, 09 Mar 2010 08:58:11 +0100, Thomas Gleixner said:
+>>> On Tue, 9 Mar 2010, Lars-Peter Clausen wrote:
+>>>
+>>>> If the kernel has been compiled with preemtion support and
+handle_level_irq is
+>>>> called from process context for a oneshot irq there is a race between
+>>>> irq_finalize_oneshot and handle_level_irq which results in the irq
+not being
+>>>> unmasked after its handlers have been run.
+>>>>
+>>>> irq_finalize_oneshot is expected to unmask the irq after the
+threaded irq
+>>>> handler has been run. It only does so if IRQ_MASKED is set for the
+irqs status.
+>>>> IRQ_MASKED gets set in the lower part of handle_level_irq after
+handle_IRQ_event
+>>>> has been called.
+>>>> handle_IRQ_event will wakeup the oneshot irqs threaded handler and
+if the
+>>>> kernel has been build with preemption there is a chance that the
+threaded irq
+>>>> handler will finish before execution is returned to handle_level_irq.
+>>>> As a result irq_finalize_oneshot will not unmask the irq and
+handle_level_irq
+>>>> will set the IRQ_MASKED flag. Thus the irq will stay masked and stalls.
+>>>>
+>>>> In case of an race the call-graph would look like this:
+>>>>  handle_level_irq
+>>>>  |- mask_ack_irq
+>>>>  |- handle_IRQ_event
+>>>>     |- wake_up_process
+>>>>        |- irq_thread
+>>>>           |- action->thread_fn
+>>>>           |- irq_finalize_oneshot # Does not unmask the irq
+>>>> |- # Set IRQ_MASKED status flag
+>>> Errm, a thread _CANNOT_ preempt a hard interrupt handler.
+>> What stops the thread from concurrently running on another CPU and racing
+>> that way?  I'm an idiot, use small words. :)
+>
+> Right it's a valid SMP problem, but I got confused by the lengthy
+> explanation of a thread preempting an hard interrupt handler. :)
+Yes, sorry for bothering you with that. I actually had the symptoms
+described on a non SMP system. The irq in question was part of a
+longer irq chain and I though that it might be detached from the
+hardirq context somewhere along the chain.
+After your comment I reread some parts and it turned out that
+irq_enter()/irq_exit() was missing around the first level irq handler.
 
-I already tried to echo 0 or 1 to the
-/sys/devices/platform/eeepc/cpufv file; no effects, even if the file
-changes its value.
+- - Lars
+>
+> Will have a look after dinner.
+>
+> Thanks,
+>
+>     tglx
+>
 
-This is not a regression from 2.6.33: this behavior is also present in
-that version.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Does this ring any bells? This is really annoying, especially when
-trying to watch a movie on battery. Also 3D apps show a 30%
-performance drop, as expected.
+iEYEARECAAYFAkuW0FUACgkQBX4mSR26RiOiSgCfUJJM6i8rEoiifuY5LwoOaJnA
+kfAAnjHh5us4m8NgPEV2wYkyIPh7zzly
+=R/J/
+-----END PGP SIGNATURE-----
 
-Regards,
-Fabio
