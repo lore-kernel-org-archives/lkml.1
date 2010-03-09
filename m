@@ -1,47 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766Ab0CIT6L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:58:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43666 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751121Ab0CIT6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:58:07 -0500
-Date: Tue, 9 Mar 2010 11:57:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 01/11] lib: introduce common method to convert hex
- digits
-Message-Id: <20100309115743.48cc125b.akpm@linux-foundation.org>
-In-Reply-To: <5ec8ebd51003081703r76fd2ba7pa850f7568a580181@mail.gmail.com>
-References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
-	<d8c224af14aa936dcd692c70656559fe9726d997.1266861291.git.ext-andriy.shevchenko@nokia.com>
-	<5ec8ebd51003081703r76fd2ba7pa850f7568a580181@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754796Ab0CIUD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:03:57 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57067 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121Ab0CIUDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 15:03:54 -0500
+Date: Tue, 9 Mar 2010 12:03:19 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] sysfs: Fixup broken chown tracking
+Message-ID: <20100309200319.GA13609@suse.de>
+References: <20100309191127.GA30462@obsidianresearch.com>
+ <1268163372.29493.1965.camel@moss-terrapins.epoch.ncsc.mil>
+ <20100309194201.GA869@suse.de>
+ <1268163988.29493.1970.camel@moss-terrapins.epoch.ncsc.mil>
+ <20100309195303.GH29129@obsidianresearch.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100309195303.GH29129@obsidianresearch.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010 03:03:05 +0200
-Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
-
-> On Mon, Feb 22, 2010 at 8:09 PM, Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
-> > hex_to_bin() is a little method which converts hex digit to its actual value.
-> > There are plenty of places where such functionality is needed.
+On Tue, Mar 09, 2010 at 12:53:03PM -0700, Jason Gunthorpe wrote:
+> On Tue, Mar 09, 2010 at 02:46:28PM -0500, David P. Quigley wrote:
+> > On Tue, 2010-03-09 at 11:42 -0800, Greg KH wrote:
+> > > On Tue, Mar 09, 2010 at 02:36:12PM -0500, David P. Quigley wrote:
+> > > > It looks like your patch is already in the tree as commit
+> > > > 7c0ff870d1ed287504a61ed865f3d728c757436b. We saw this problem before and
+> > > > Eric fixed it up. I thought it was very odd that you posted this 5
+> > > > minutes ago and it was already upstream.
+> > > 
+> > > Yeah, this has already been resolved, did that patch not solve the issue
+> > > for you?
+> > 
+> > I don't see how it couldn't have. The patch he submitted which he says
+> > fixes the problem is the exact same patch that Eric submitted back in
+> > Feb. Its possible that he is using a version of 2.6.33-rc8 that is based
+> > off of a commit before the patch was merged since 2.6.33-rc8 was tagged
+> > on Feb 12th and your commit date in the repo is Feb 16th.
 > 
-> I found another more than 10 places (roughly there are > 20 of them
-> already) with such 'copy-paste' logic. Still waiting decision to
-> include first patch of this series... Any comments, suggestions?
+> Yes, that is correct, I was only looking up to 2.6.33-rc8, I didn't
+> think to check Linus's head branch, my mistake. It looks to me like
+> the changeset you pointed to was put in Linus's tree after that tag,
+> so it is fixed, just not in any tagged kernel.
 
-This patch series turned up two days before the 2.6.33 release, which
-is fairly exactly the time when non-bugfixes won't get looked at!  I
-stored it all away for consideration after we've finished the
-2.6.34-rc1 merge scramble.
+2.6.33 is tagged, as is 2.6.34-rc1, so it should be showing up on your
+end by now :)
 
+thanks,
+
+greg k-h
