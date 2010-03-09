@@ -1,61 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212Ab0CIDZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:25:17 -0500
-Received: from mail-pz0-f200.google.com ([209.85.222.200]:35851 "EHLO
-	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183Ab0CIDZM (ORCPT
+	id S932224Ab0CIDZd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:25:33 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45571 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932194Ab0CIDZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:25:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=ACFpeDJ6WDwqE3Kr/biVV7ArDsXNLH7Hw+vQfFND0+Os2JFmvIs/oN5VAMFRLU3S10
-         j6oWKGraGfoHSik+bUtmEaO5UuIYtDBXMTpIO0ZPRBd0Q22+xU47YXCjCaJxR+j/HPGH
-         zTXwN6cobp9WyDm9YRaHMeDaSFGkyGT+obhfs=
+	Mon, 8 Mar 2010 22:25:31 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Dan Carpenter <error27@gmail.com>, akpm@linux-foundation.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       James Morris <jmorris@namei.org>, Oleg Nesterov <oleg@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, "Helight.Xu" <helight.xu@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] proc: cleanup: remove unused assignments
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20100306111859.GM4958@bicker>
+References: <20100306111859.GM4958@bicker>
+Message-Id: <20100309122500.7CD8.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <cover.1267008049.git.lasaine@lvk.cs.msu.su>
-References: <cover.1267008049.git.lasaine@lvk.cs.msu.su>
-Date: Mon, 8 Mar 2010 19:25:07 -0800
-X-Google-Sender-Auth: fea9b19159c097f9
-Message-ID: <1f1b08da1003081925p61a810e4v96be56640287d61@mail.gmail.com>
-Subject: Re: [PATCHv2 0/6] pps: time synchronization over LPT
-From: john stultz <johnstul@us.ibm.com>
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
-       Rodolfo Giometti <giometti@enneenne.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Mar 2010 12:25:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 4:28 AM, Alexander Gordeev
-<lasaine@lvk.cs.msu.su> wrote:
-> This patchset is tested against the vanilla 2.6.32.9 kernel. But we are
-> actually using it on 2.6.31.12-rt20 rt-preempt kernel most of the time.
-> Also there is a version which should be applied on top of LinuxPPS out
-> of tree patches (i.e. all clients and low-level irq timestamps stuff).
-> Those who are interested in other versions of the patchset can find
-> them in my git repository:
-> http://lvk.cs.msu.su/~lasaine/timesync/linux-2.6-timesync.git
->
-> There is one problem however: hardpps() works bad when used on top
-> of 2.6.33-rc* with CONFIG_NO_HZ enabled. The reason for this is commit
-> a092ff0f90cae22b2ac8028ecd2c6f6c1a9e4601. Without it hardpps() is able
-> to sync to 1us precision in about 10 seconds. With it
+> I removed 3 unused assignments.  The first two get reset on the first
+> statement of their functions.  For "err" in root.c we don't return an 
+> error and we don't use the variable again.
+> 
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-Uh. Not sure I see right off why the logarithmic time accumulation
-would give you troubles. Its actually there to try to fix a couple of
-NTP issues that cropped up when the accumulation interval was pushed
-out to 2HZ with CONFIG_NO_HZ.
+Looks good.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Do you have any extra insight here as to whats going on with your
-code?   The only thing I could guess would be second_overflow() is
-happening closer to the actual overflow, but maybe less regularly? But
-again, I'm not sure how this would be drastically different then
-before with the 2HZ accumulation period.
+> 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index a731084..875d636 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2434,7 +2434,7 @@ static struct dentry *proc_base_instantiate(struct inode *dir,
+>  	const struct pid_entry *p = ptr;
+>  	struct inode *inode;
+>  	struct proc_inode *ei;
+> -	struct dentry *error = ERR_PTR(-EINVAL);
+> +	struct dentry *error;
+>  
+>  	/* Allocate the inode */
+>  	error = ERR_PTR(-ENOMEM);
+> @@ -2784,7 +2784,7 @@ out:
+>  
+>  struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
+>  {
+> -	struct dentry *result = ERR_PTR(-ENOENT);
+> +	struct dentry *result;
+>  	struct task_struct *task;
+>  	unsigned tgid;
+>  	struct pid_namespace *ns;
+> diff --git a/fs/proc/root.c b/fs/proc/root.c
+> index 757c069..4258384 100644
+> --- a/fs/proc/root.c
+> +++ b/fs/proc/root.c
+> @@ -110,7 +110,6 @@ void __init proc_root_init(void)
+>  	if (err)
+>  		return;
+>  	proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
+> -	err = PTR_ERR(proc_mnt);
+>  	if (IS_ERR(proc_mnt)) {
+>  		unregister_filesystem(&proc_fs_type);
+>  		return;
 
-thanks
--john
+
+
