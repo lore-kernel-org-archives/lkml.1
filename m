@@ -1,46 +1,182 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752747Ab0CINz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 08:55:26 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.183]:9362 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751306Ab0CINzX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 08:55:23 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApIBAIvhlUtLd/sX/2dsb2JhbAAHgwTDKZBigTKCXWoEgxc
-X-IronPort-AV: E=Sophos;i="4.49,608,1262581200"; 
-   d="scan'208";a="57791364"
-Message-ID: <4B965348.3050201@teksavvy.com>
-Date: Tue, 09 Mar 2010 08:55:20 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-GB; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+	id S1752645Ab0CIORc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 09:17:32 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:59478 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973Ab0CIORb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 09:17:31 -0500
+Date: Tue, 9 Mar 2010 14:17:13 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
+	pressure to relieve instead of congestion
+Message-ID: <20100309141713.GF4883@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <20100309133513.GL8653@laptop>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       tytso@mit.edu, "H. Peter Anvin" <hpa@zytor.com>,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org>
-In-Reply-To: <4B947393.2050002@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100309133513.GL8653@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/10 22:48, Tejun Heo wrote:
-..
-> Please note that hdparm is misreporting the alignment offset.  It
-> should be reporting 512 instead of 256 for offset-by-one drives.
-..
+On Wed, Mar 10, 2010 at 12:35:13AM +1100, Nick Piggin wrote:
+> On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
+> > Under heavy memory pressure, the page allocator may call congestion_wait()
+> > to wait for IO congestion to clear or a timeout. This is not as sensible
+> > a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
+> > even congested as the pressure could have been due to a large number of
+> > SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
+> > 
+> > At the point of congestion_wait(), the allocator is struggling to get the
+> > pages it needs and it should back off. This patch puts the allocator to sleep
+> > on a zone->pressure_wq for either a timeout or until a direct reclaimer or
+> > kswapd brings the zone over the low watermark, whichever happens first.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  include/linux/mmzone.h |    3 ++
+> >  mm/internal.h          |    4 +++
+> >  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
+> >  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
+> >  mm/vmscan.c            |    2 +
+> >  5 files changed, 101 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> > index 30fe668..72465c1 100644
+> > --- a/include/linux/mmzone.h
+> > +++ b/include/linux/mmzone.h
+> > @@ -398,6 +398,9 @@ struct zone {
+> >  	unsigned long		wait_table_hash_nr_entries;
+> >  	unsigned long		wait_table_bits;
+> >  
+> > +	/* queue for processes waiting for pressure to relieve */
+> > +	wait_queue_head_t	*pressure_wq;
+> 
+> Hmm, processes may be eligible to allocate from > 1 zone, but you
+> have them only waiting for one. I wonder if we shouldn't wait for
+> more zones?
+> 
 
-That issue was fixed quite a while ago.
-Upgrade your elderly copy of hdparm.
+It's waiting for the zone that is most desirable. If that zones watermarks
+are met, why would it wait on any other zone? If you mean that it would
+wait for any of the eligible zones to meet their watermark, it might have
+an impact on NUMA locality but it could be managed. It might make sense to
+wait on a node-based queue rather than a zone if this behaviour was desirable.
 
-:)
+> Congestion waiting uses a global waitqueue, which hasn't seemed to
+> cause a big scalability problem. Would it be better to have a global
+> waitqueue for this too?
+> 
+
+Considering that the congestion wait queue is for a relatively slow operation,
+it would be surprising if lock scalability was noticeable.  Potentially the
+pressure_wq involves no IO so scalability may be noticeable there.
+
+What would the advantages of a global waitqueue be? Obviously, a smaller
+memory footprint. A second potential advantage is that on wakeup, it
+could check the watermarks on multiple zones which might reduce
+latencies in some cases. Can you think of more compelling reasons?
+
+> 
+> > +void check_zone_pressure(struct zone *zone)
+> 
+> I don't really like the name pressure. We use that term for the reclaim
+> pressure wheras we're just checking watermarks here (actual pressure
+> could be anything).
+> 
+
+pressure_wq => watermark_wq
+check_zone_pressure => check_watermark_wq
+
+?
+
+> 
+> > +{
+> > +	/* If no process is waiting, nothing to do */
+> > +	if (!waitqueue_active(zone->pressure_wq))
+> > +		return;
+> > +
+> > +	/* Check if the high watermark is ok for order 0 */
+> > +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
+> > +		wake_up_interruptible(zone->pressure_wq);
+> > +}
+> 
+> If you were to do this under the zone lock (in your subsequent patch),
+> then it could avoid races. I would suggest doing it all as a single
+> patch and not doing the pressure checks in reclaim at all.
+> 
+
+That is reasonable. I've already dropped the checks in reclaim because as you
+say, if the free path check is cheap enough, it's also sufficient. Checking
+in the reclaim paths as well is redundant.
+
+I'll move the call to check_zone_pressure() within the zone lock to avoid
+races.
+
+> If you are missing anything, then that needs to be explained and fixed
+> rather than just adding extra checks.
+> 
+> > +
+> > +/**
+> > + * zonepressure_wait - Wait for pressure on a zone to ease off
+> > + * @zone: The zone that is expected to be under pressure
+> > + * @order: The order the caller is waiting on pages for
+> > + * @timeout: Wait until pressure is relieved or this timeout is reached
+> > + *
+> > + * Waits for up to @timeout jiffies for pressure on a zone to be relieved.
+> > + * It's considered to be relieved if any direct reclaimer or kswapd brings
+> > + * the zone above the high watermark
+> > + */
+> > +long zonepressure_wait(struct zone *zone, unsigned int order, long timeout)
+> > +{
+> > +	long ret;
+> > +	DEFINE_WAIT(wait);
+> > +
+> > +wait_again:
+> > +	prepare_to_wait(zone->pressure_wq, &wait, TASK_INTERRUPTIBLE);
+> 
+> I guess to do it without races you need to check watermark here.
+> And possibly some barriers if it is done without zone->lock.
+> 
+
+As watermark checks are already done without the zone->lock and without
+barriers, why are they needed here? Yes, there are small races. For
+example, it's possible to hit a window where pages were freed between
+watermarks were checked and we went to sleep here but that is similar to
+current behaviour.
+
+
+> > +
+> > +	/*
+> > +	 * The use of io_schedule_timeout() here means that it gets
+> > +	 * accounted for as IO waiting. This may or may not be the case
+> > +	 * but at least this way it gets picked up by vmstat
+> > +	 */
+> > +	ret = io_schedule_timeout(timeout);
+> > +	finish_wait(zone->pressure_wq, &wait);
+> > +
+> > +	/* If woken early, check watermarks before continuing */
+> > +	if (ret && !zone_watermark_ok(zone, order, low_wmark_pages(zone), 0, 0)) {
+> > +		timeout = ret;
+> > +		goto wait_again;
+> > +	}
+> 
+> And then I don't know if we'd really need the extra check here. Might as
+> well just let the allocator try again and avoid the code?
+> 
+
+I was considering multiple processes been woken up and racing with each
+other. I can drop this check though. The worst that happens is multiple
+processes wake and walk the full zonelist. Some will succeed and others
+will go back to sleep.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
