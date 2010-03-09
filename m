@@ -1,97 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814Ab0CIGVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:21:20 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:60734 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446Ab0CIGVQ convert rfc822-to-8bit (ORCPT
+	id S1751726Ab0CIGX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:23:57 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:53768 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526Ab0CIGXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:21:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=o/oAJuJc1CvQ7f2DOz73ZcVdYdciSPUO4+7tACPglbx5cuuggiWgwvEGnne0q0VpeO
-         ze7vTPgO9oxOdX5ia4JadaG50N4oXDZfHCr36mCa9gPa+8q+b/WWDNrp74dxwEEm1g9w
-         HEO03oworHS9WFfLf7giT59CtwnA4iXJ0PyRM=
-MIME-Version: 1.0
-In-Reply-To: <4B916169.5040303@oracle.com>
-References: <201003050232.o252WD4K011798@imap1.linux-foundation.org>
-	 <4B916169.5040303@oracle.com>
-Date: Tue, 9 Mar 2010 12:21:15 +0600
-Message-ID: <b9df5fa11003082221u4f8ad73mee4397f3cc0f9aa9@mail.gmail.com>
-Subject: Re: [PATCH -mmotm] acpi/sbs: fix build for ACPI_SYSFS_POWER=n
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+	Tue, 9 Mar 2010 01:23:54 -0500
+From: Eli Lindsey <eli@siliconsprawl.com>
+To: gregkh@suse.de, d@teklibre.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Eli Lindsey <eli@siliconsprawl.com>
+Subject: [PATCH 2/4] staging: frontier: fix extra spaces in alphatrack.c
+Date: Tue,  9 Mar 2010 00:15:31 -0600
+Message-Id: <1268115333-7971-2-git-send-email-eli@siliconsprawl.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1268115333-7971-1-git-send-email-eli@siliconsprawl.com>
+References: <1268115333-7971-1-git-send-email-eli@siliconsprawl.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+This is a patch to alphatrack.c that removes three cases of unnecessary
+whitespace before a quoted newline found by the checkpatch.pl tool
 
-On 3/6/10, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> When CONFIG_ACPI_SYSFS_POWER is not enabled:
->
-> drivers/acpi/sbs.c:640: error: implicit declaration of function
-> 'acpi_battery_get_alarm'
-> drivers/acpi/sbs.c:679: error: implicit declaration of function
-> 'acpi_battery_set_alarm'
->
-This problem is introduced by the patch
-(http://lkml.org/lkml/2010/3/1/29) named
-acpi-put-acpi_battery_get-set_alarm-into-config_acpi_sysfs_power.patch.
-If we use CONFIG_ACPI_SYSFS_POWER=y then we are warned by the
-following warning:
+Signed-off-by: Eli Lindsey <eli@siliconsprawl.com>
+---
+ drivers/staging/frontier/alphatrack.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-drivers/acpi/sbs.c:399: warning: ‘acpi_battery_get_alarm’ defined but not used
-drivers/acpi/sbs.c:406: warning: ‘acpi_battery_set_alarm’ defined but not used
+diff --git a/drivers/staging/frontier/alphatrack.c b/drivers/staging/frontier/alphatrack.c
+index a50a215..ce4d663 100644
+--- a/drivers/staging/frontier/alphatrack.c
++++ b/drivers/staging/frontier/alphatrack.c
+@@ -238,7 +238,7 @@ static void usb_alphatrack_interrupt_in_callback(struct urb *urb)
+ 	if (urb->actual_length != INPUT_CMD_SIZE) {
+ 		dev_warn(&dev->intf->dev,
+ 			 "Urb length was %d bytes!!"
+-			 "Do something intelligent \n", urb->actual_length);
++			 "Do something intelligent\n", urb->actual_length);
+ 	} else {
+ 		alphatrack_ocmd_info(&dev->intf->dev,
+ 				     &(*dev->ring_buffer)[dev->ring_tail].cmd,
+@@ -599,7 +599,7 @@ static ssize_t usb_alphatrack_write(struct file *file,
+ 	}
+ 
+ 	if (dev->interrupt_out_endpoint == NULL) {
+-		err("Endpoint should not be be null! \n");
++		err("Endpoint should not be be null!\n");
+ 		goto unlock_exit;
+ 	}
+ 
+@@ -771,7 +771,7 @@ static int usb_alphatrack_probe(struct usb_interface *intf,
+ 	    kmalloc(sizeof(struct alphatrack_ocmd) * true_size, GFP_KERNEL);
+ 
+ 	if (!dev->write_buffer) {
+-		dev_err(&intf->dev, "Couldn't allocate write_buffer \n");
++		dev_err(&intf->dev, "Couldn't allocate write_buffer\n");
+ 		goto error;
+ 	}
+ 
+-- 
+1.6.3.3
 
-So, I think it's better that we wrap CONFIG_ACPI_SYSFS_POWER with
-#ifdef and #else. Otherwise we have to face the above warning.
-
-Thanks,
-Rakib
-
->
-> so move those functions outside of the ifdef/endif block for that
-> config option.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/acpi/sbs.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> --- mmotm-2010-0304-1805.orig/drivers/acpi/sbs.c
-> +++ mmotm-2010-0304-1805/drivers/acpi/sbs.c
-> @@ -412,8 +412,6 @@ static int acpi_ac_get_present(struct ac
->  	return result;
->  }
->
-> -#ifdef CONFIG_ACPI_SYSFS_POWER
-> -
->  static int acpi_battery_get_alarm(struct acpi_battery *battery)
->  {
->  	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
-> @@ -450,6 +448,8 @@ static int acpi_battery_set_alarm(struct
->  	return ret;
->  }
->
-> +#ifdef CONFIG_ACPI_SYSFS_POWER
-> +
->  static ssize_t acpi_battery_alarm_show(struct device *dev,
->  					struct device_attribute *attr,
->  					char *buf)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
