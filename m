@@ -1,83 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756631Ab0CIDIy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:08:54 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44984 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883Ab0CIDIw (ORCPT
+	id S1756644Ab0CIDLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:11:41 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:34671 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756626Ab0CIDLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:08:52 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andre Goddard Rosa <andre.goddard@gmail.com>
-Subject: Re: [PATCH] coredump: plug a memory leak situation on dump_seek()
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
-References: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
-Message-Id: <20100309120706.7CD2.A69D9226@jp.fujitsu.com>
+	Mon, 8 Mar 2010 22:11:36 -0500
+To: Tejun Heo <tj@kernel.org>
+Cc: Karel Zak <kzak@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, Jim Meyering <jim@meyering.net>
+Subject: Re: ATA 4 KiB sector issues.
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
+	<20100308195847.GC18077@nb.net.home> <4B95B39C.70402@kernel.org>
+Date: Mon, 08 Mar 2010 22:09:05 -0500
+In-Reply-To: <4B95B39C.70402@kernel.org> (Tejun Heo's message of "Tue, 09 Mar
+	2010 11:34:04 +0900")
+Message-ID: <yq1mxyi8a3y.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Mar 2010 12:08:46 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B95BC1C.0004:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> After having started writing the coredump, if filesystem reports an error
-> anytime while writing part of the core file, we would leak a memory page
-> when bailing out.
-> 
-> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
-> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>>>> "Tejun" == Tejun Heo <tj@kernel.org> writes:
 
-Looks good.
-Thanks, Andre!
+>>> Huh, what?  My homedir is on a 4KiB LBS/PBS drive and has been for
+>>> ~2 years.
 
-  - kosaki
+Tejun> By default, they aren't aligned properly, are they?
 
-> ---
->  include/linux/coredump.h |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/coredump.h b/include/linux/coredump.h
-> index b3c91d7..8ba66a9 100644
-> --- a/include/linux/coredump.h
-> +++ b/include/linux/coredump.h
-> @@ -16,6 +16,8 @@ static inline int dump_write(struct file *file, const void *addr, int nr)
->  
->  static inline int dump_seek(struct file *file, loff_t off)
->  {
-> +	int ret = 1;
-> +
->  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
->  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
->  			return 0;
-> @@ -29,13 +31,15 @@ static inline int dump_seek(struct file *file, loff_t off)
->  
->  			if (n > PAGE_SIZE)
->  				n = PAGE_SIZE;
-> -			if (!dump_write(file, buf, n))
-> -				return 0;
-> +			if (!dump_write(file, buf, n)) {
-> +				ret = 0;
-> +				break;
-> +			}
->  			off -= n;
->  		}
->  		free_page((unsigned long)buf);
->  	}
-> -	return 1;
-> +	return ret;
->  }
->  
->  #endif /* _LINUX_COREDUMP_H */
-> -- 
-> 1.7.0.1.164.gbe2f
-> 
+Single partition.  I did the alignment manually.
 
 
+Tejun> libata is broken for logical 4KiB ATA devices tho.  I'll fix it
+Tejun> up.
 
+Matthew implemented support for this a while back...
+
+
+Tejun> I'm just a bit worried that it might generate a lot of frustrated
+Tejun> bug reports.  Well, maybe we should just advise users to install
+Tejun> windows first and then install Linux.
+
+Unfortunately there is no simple solution given that we can't go back in
+time and fix legacy DOS/XP behavior.
+
+The 1-alignment jumper (that some drives have) fixes things for the
+first partition but will mess up our alignment for subsequent ones
+unless the firmware actually reports the shift.  So no matter what we do
+the user will have to have a bare minimum of knowledge about 512-byte
+LBS/4 KB PBS drives.  That sucks.  But even Windows users are presented
+with extra documentation and alignment utilities during the transition.
+
+Having a 1 MB alignment by default and hoping that devices that lie will
+be 0-aligned is the best we can do, I think.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
