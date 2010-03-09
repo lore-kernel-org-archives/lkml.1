@@ -1,57 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165Ab0CIQ2K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:28:10 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:57314 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752581Ab0CIQ2I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:28:08 -0500
-Date: Tue, 9 Mar 2010 17:28:04 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.34-rc1
-Message-ID: <20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
-References: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
+	id S1755062Ab0CIQbI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:31:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51604 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754830Ab0CIQbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 11:31:06 -0500
+Date: Tue, 9 Mar 2010 17:31:04 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
+	<richard.rojfors@pelagicore.com>,
+       Ben Dooks <ben-linux@fluff.org>
+Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: CONFIG_I2C_XILINX doesn't complie
+Message-ID: <alpine.LNX.2.00.1003091727461.17799@pobox.suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It's out there now. I still have a few trees I already got pull requests 
-> for, and that I want to look over a bit more (ceph, gdb tree etc), and 
-> it's possible that I've just overlooked some other pull request.
-  It seems you haven't pulled my UDF tree (requested on Thursday -
-http://lkml.indiana.edu/hypermail/linux/kernel/1003.0/02186.html).
-  I've rebased the tree on top of 2.6.34-rc1 so could you please pull
-now?
-  The full pull request for your convenience:
+Hi,
 
-  could you please pull from
+current Linus' tree (57d54889cd00) doesn't compile when CONFIG_I2C_XILINX 
+is enabled:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+drivers/i2c/busses/i2c-xiic.c:39:28: error: linux/i2c-xiic.h: No such file or directory
+drivers/i2c/busses/i2c-xiic.c: In function ‘xiic_i2c_probe’:
+drivers/i2c/busses/i2c-xiic.c:750: error: dereferencing pointer to incomplete type
+drivers/i2c/busses/i2c-xiic.c:751: error: dereferencing pointer to incomplete type
 
-  to get:
+Seems like the following commit
 
-Akinobu Mita (1):
-      udf: use ext2_find_next_bit
+	commit e1d5b6598cdc33257fe68302ae9db81d2f7bb883
+	Author: Richard Röjfors <richard.rojfors@pelagicore.com>
+	Date:   Thu Feb 11 10:42:00 2010 +0100
 
-Jan Kara (2):
-      udf: Fix unalloc space handling in udf_update_inode
-      udf: Do not read inode before writing it
+	    i2c: Add support for Xilinx XPS IIC Bus Interface
 
-The diffstat is
+forgot to add some header files.
 
- fs/udf/balloc.c |   49 +------------------------------------------------
- fs/udf/inode.c  |   34 +++++++++++++++++-----------------
- 2 files changed, 18 insertions(+), 65 deletions(-)
-
-								Honza
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Jiri Kosina
+SUSE Labs, Novell Inc.
