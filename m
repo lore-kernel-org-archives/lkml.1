@@ -1,43 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293Ab0CIEJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 23:09:20 -0500
-Received: from smtpgw1.ufba.br ([192.188.11.65]:56153 "EHLO smtpgw.ufba.br"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932243Ab0CIEJR convert rfc822-to-8bit (ORCPT
+	id S932295Ab0CIEQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 23:16:52 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:44692 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932262Ab0CIEQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 23:09:17 -0500
-X-Greylist: delayed 8172 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 23:09:17 EST
-Message-ID: <20100308225027.1y5cpevmy9pkos8w@webmail.ufba.br>
-Date: Mon, 08 Mar 2010 22:50:27 -0300
-From: onlinegooglepromo <g.benfield101@gmail.com>
-To: undisclosed-recipients:;
-Subject: Attn:Success Alert'''
+	Mon, 8 Mar 2010 23:16:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=h/kgUTOPAk4+9u9Im7fOTUiCkCOY8gFu7Ml31/wMzDdGiuHONbXsdaGbs39+VhfNuZ
+         e8ApLW/9lKVD1Dk88peXGhusmU9ZgyqxKGUjtIuSY3xHOyK+uEpVVs7r4qL68YgmaACM
+         A3/xMMl1LlT9wGHx7J0wH4lAIJLDBNod2L9EA=
+Message-ID: <4B95CBAA.50103@lwfinger.net>
+Date: Mon, 08 Mar 2010 22:16:42 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
-X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166
- definitions=2010-03-09_01:2010-02-06,2010-03-08,2010-03-08 signatures=0
+To: John Church <j.church@ymail.com>
+CC: gregkh@suse.de, bzolnier@gmail.com, bernhard@schiffner-limbach.de,
+       davem@davemloft.net, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: rtl8187se: fix coding style issues in r8180_core.c
+References: <1268099027-29438-1-git-send-email-j.church@ymail.com>
+In-Reply-To: <1268099027-29438-1-git-send-email-j.church@ymail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your e-mail has emerged as a winner of (£500,000.00 GBP Pounds) in our  
-on-going Google Promotion.Send Winning details Computer Generated  
-Profile Numbers(CGPN):7-22-71-00-66-12, Ticket number: 00869575733664,  
-Serial numbers:/BTD/8070447706/06, Lucky numbers:  
-12-12-23-35-40-41(12).send details to.Mr Graham  
-Benfield,Email:g.benfield101@gmail.com
-Sincerely,
-Mrs.Susan William.
+On 03/08/2010 07:43 PM, John Church wrote:
+> ---
+>  drivers/staging/rtl8187se/r8180_core.c |   98 ++++++++++++++++----------------
+>  1 files changed, 49 insertions(+), 49 deletions(-)
+> 
 
+Your efforts are appreciated; however, fixing coding style issues are just like
+rearranging the deck chairs on the Titanic.
 
+A mainline version of this driver, which is patterned after the rtl8180/8185
+driver and using mac80211, is very nearly running. It is receiving data and able
+to associate. It falls on its face when sending long packets, but I hope to
+solve that difficulty soon.
 
-----------------------------------------------------------------
-Universidade Federal da Bahia - http://www.portal.ufba.br
+I will keep you in mind as a possible tester when the new driver is working.
+
+Larry
 
