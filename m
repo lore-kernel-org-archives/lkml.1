@@ -1,137 +1,232 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194Ab0CIRjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:39:23 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:62558 "EHLO
+	id S1753660Ab0CIRm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:42:58 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:40483 "EHLO
 	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578Ab0CIRjV convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751791Ab0CIRmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:39:21 -0500
+	Tue, 9 Mar 2010 12:42:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DgJoZ3YWn/0voJS4XIG9ubn/PnEDCd4hZCFDCv/NOvCxxaUQeX/MDL5PoSBocEU9xa
-         1f62VyNQRTqUNDPS5C3uHU4nvDtPBK+h4e99MflhI3D3x4Q98MrIAcbCn8SIR63NakFp
-         hsFQhXmmDQNMx+nvRX0/vejVlRV3TxGTp809o=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=o6YDq6VSbgYw3t4vARgEcBpUySBnyUz0/n1juWhubc+O+7Y+WH2euVaCXP+n5H09HC
+         8zXhDTMpDwvdFybC8R4GBUh/1FJbrusBiuqqS2DtOmvx05KsCpuTup2etkpNJ3ahSsoY
+         qb6+zp/W93L/mv14833E63hJLD/Z+fGAfxYjs=
+Message-ID: <4B968834.3040609@gmail.com>
+Date: Tue, 09 Mar 2010 18:41:08 +0100
+From: Marco Stornelli <marco.stornelli@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; it; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B9683CF.5040402@intcomgrp.com>
-References: <elUoX-6na-35@gated-at.bofh.it> <4B967AEE.2060905@intcomgrp.com>
-	 <f5ca57691003090901r399b1e78yb66c8ef4fe15440b@mail.gmail.com>
-	 <4B9683CF.5040402@intcomgrp.com>
-Date: Tue, 9 Mar 2010 14:39:19 -0300
-Message-ID: <f5ca57691003090939u71bf7171nc8069b0a62c562be@mail.gmail.com>
-Subject: Re: [PATCH] Security: key: keyring: fix some code style issues
-From: Chihau Chau <chihau@gmail.com>
-To: James Kosin <jkosin@intcomgrp.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Linux Embedded <linux-embedded@vger.kernel.org>
+Subject: [PATCH v2] char drivers: Ram oops/panic logger
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James
+Ramoops, like mtdoops, can log oops/panic information but in RAM. It can
+be used with persistent RAM for systems without flash support. In
+addition, for this systems, with this driver, it's no more needed
+add to the kernel the mtd subsystem with advantage in footprint.
 
-2010/3/9 James Kosin <jkosin@intcomgrp.com>:
-> Chau,
->
-> I was talking about removing the braces.  The code you pointed to still had
-> the style issue of this:
->     }
->     else {
->
-> Where you changed the one below to be:
->     } else {
->
-This is done in the last patch
+Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+---
 
-> I'm okay with making a change like this.  Only don't remove the {} braces.
-Yes in the last patch I don't have remove the braces {}
+diff -uprN linux-2.6.33-orig/drivers/char/Kconfig linux-2.6.33/drivers/char/Kconfig
+--- linux-2.6.33-orig/drivers/char/Kconfig	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/char/Kconfig	2010-02-28 10:47:29.000000000 +0100
+@@ -1105,5 +1105,12 @@ config DEVPORT
+ 
+ source "drivers/s390/char/Kconfig"
+ 
++config RAMOOPS
++	tristate "Log panic/oops to a RAM buffer"
++	default n
++	help
++	  This enables panic and oops messages to be logged to a circular
++	  buffer in RAM where it can be read back at some later point.
++
+ endmenu
+ 
+diff -uprN linux-2.6.33-orig/drivers/char/Makefile linux-2.6.33/drivers/char/Makefile
+--- linux-2.6.33-orig/drivers/char/Makefile	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/char/Makefile	2010-02-28 10:49:17.000000000 +0100
+@@ -107,6 +107,7 @@ obj-$(CONFIG_HANGCHECK_TIMER)	+= hangche
+ obj-$(CONFIG_TCG_TPM)		+= tpm/
+ 
+ obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
++obj-$(CONFIG_RAMOOPS)		+= ramoops.o
+ 
+ obj-$(CONFIG_JS_RTC)		+= js-rtc.o
+ js-rtc-y = rtc.o
+diff -uprN linux-2.6.33-orig/drivers/char/ramoops.c linux-2.6.33/drivers/char/ramoops.c
+--- linux-2.6.33-orig/drivers/char/ramoops.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33/drivers/char/ramoops.c	2010-03-07 10:41:10.000000000 +0100
+@@ -0,0 +1,162 @@
++/*
++ * RAM Oops/Panic logger
++ *
++ * Copyright (C) 2009 Marco Stornelli <marco.stornelli@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/kmsg_dump.h>
++#include <linux/time.h>
++#include <linux/io.h>
++#include <linux/ioport.h>
++
++#define RAMOOPS_KERNMSG_HDR "===="
++#define RAMOOPS_HEADER_SIZE   (5 + sizeof(struct timeval))
++
++#define RECORD_SIZE 4096
++
++static ulong mem_address;
++module_param(mem_address, ulong, 0600);
++MODULE_PARM_DESC(mem_address,
++		"start of reserved RAM used to store oops/panic logs");
++
++static ulong mem_size;
++module_param(mem_size, ulong, 0600);
++MODULE_PARM_DESC(mem_size,
++		"size of reserved RAM used to store oops/panic logs");
++
++static int dump_oops = 1;
++module_param(dump_oops, int, 0600);
++MODULE_PARM_DESC(dump_oops,
++		"set to 1 to dump oopses, 0 to only dump panics (default 1)");
++
++static struct ramoops_context {
++	struct kmsg_dumper dump;
++	void *virt_addr;
++	phys_addr_t phys_addr;
++	unsigned long size;
++	int count;
++	int max_count;
++} oops_cxt;
++
++static void ramoops_do_dump(struct kmsg_dumper *dumper,
++		enum kmsg_dump_reason reason, const char *s1, unsigned long l1,
++		const char *s2, unsigned long l2)
++{
++	struct ramoops_context *cxt = container_of(dumper,
++			struct ramoops_context, dump);
++	unsigned long s1_start, s2_start;
++	unsigned long l1_cpy, l2_cpy;
++	int res;
++	char *buf;
++	struct timeval timestamp;
++
++	/* Only dump oopses if dump_oops is set */
++	if (reason == KMSG_DUMP_OOPS && !dump_oops)
++		return;
++
++	buf = (char *)(cxt->virt_addr + (cxt->count * RECORD_SIZE));
++	memset(buf, '\0', RECORD_SIZE);
++	res = sprintf(buf, "%s", RAMOOPS_KERNMSG_HDR);
++	buf += res;
++	do_gettimeofday(&timestamp);
++	res = sprintf(buf, "%lu.%lu\n", (long)timestamp.tv_sec, (long)timestamp.tv_usec);
++	buf += res;
++
++	l2_cpy = min(l2, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE));
++	l1_cpy = min(l1, (unsigned long)(RECORD_SIZE - RAMOOPS_HEADER_SIZE) - l2_cpy);
++
++	s2_start = l2 - l2_cpy;
++	s1_start = l1 - l1_cpy;
++
++	memcpy(buf, s1 + s1_start, l1_cpy);
++	memcpy(buf + l1_cpy, s2 + s2_start, l2_cpy);
++
++	cxt->count = (cxt->count + 1) % cxt->max_count;
++}
++
++static int __init ramoops_init(void)
++{
++	struct ramoops_context *cxt = &oops_cxt;
++	int err = -EINVAL;
++
++	if (!mem_size) {
++		printk(KERN_ERR "Invalid size specification");
++		goto fail3;
++	}
++
++	rounddown_pow_of_two(mem_size);
++
++	if (mem_size < RECORD_SIZE) {
++		printk(KERN_ERR "size too small");
++		goto fail3;
++	}
++
++	cxt->max_count = mem_size / RECORD_SIZE;
++	cxt->count = 0;
++	cxt->size = mem_size;
++	cxt->phys_addr = mem_address;
++
++	if (!request_mem_region(cxt->phys_addr, cxt->size, "ramoops")) {
++		printk(KERN_ERR "ramoops: request mem region failed");
++		err = -EINVAL;
++		goto fail3;
++	}
++
++	cxt->virt_addr = ioremap(cxt->phys_addr,  cxt->size);
++	if (!cxt->virt_addr) {
++		printk(KERN_ERR "ramoops: ioremap failed");
++		goto fail2;
++	}
++
++	cxt->dump.dump = ramoops_do_dump;
++	err = kmsg_dump_register(&cxt->dump);
++	if (err) {
++		printk(KERN_ERR "ramoops: registering kmsg dumper failed");
++		goto fail1;
++	}
++
++	return 0;
++
++fail1:
++	iounmap(cxt->virt_addr);
++fail2:
++	release_mem_region(cxt->phys_addr, cxt->size);
++fail3:
++	return err;
++}
++
++static void __exit ramoops_exit(void)
++{
++	struct ramoops_context *cxt = &oops_cxt;
++
++	if (kmsg_dump_unregister(&cxt->dump) < 0)
++		printk(KERN_WARNING "ramoops: could not unregister kmsg_dumper\n");
++
++	iounmap(cxt->virt_addr);
++	release_mem_region(cxt->phys_addr, cxt->size);
++}
++
++
++module_init(ramoops_init);
++module_exit(ramoops_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Marco Stornelli <marco.stornelli@gmail.com>");
++MODULE_DESCRIPTION("RAM Oops/Panic logger/driver");
 
-Now, It's everything OK? I will appreciate your councils.
-
-Regards.
-
->
-> James
->
-> On 3/9/2010 12:01 PM, Chihau Chau wrote:
->
-> You said me that it may introduce a serious BUG later so I have undone
-> this change.
->
-> Regards.
->
-> 2010/3/9 James Kosin <jkosin@intcomgrp.com>:
->
->
-> On 3/8/2010 6:20 PM, Chihau Chau wrote:
->
->
-> From: Chihau Chau <chihau@gmail.com>
->
-> This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
-> code style issues like to put a else sentence below close brace '}' and
-> to replace a tab instead of some space characters.
->
-> Signed-off-by: Chihau Chau <chihau@gmail.com>
-> ---
->  security/keys/keyring.c |    7 +++----
->  1 files changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-> index e814d21..840be66 100644
-> --- a/security/keys/keyring.c
-> +++ b/security/keys/keyring.c
-> @@ -17,7 +17,7 @@
->  #include <linux/seq_file.h>
->  #include <linux/err.h>
->  #include <keys/keyring-type.h>
-> -#include <asm/uaccess.h>
-> +#include <linux/uaccess.h>
->  #include "internal.h"
->
->  /*
-> @@ -306,7 +306,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
->       key_check(keyring);
->
->       /* top keyring must have search permission to begin the search */
-> -        err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
-> +     err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
->       if (err < 0) {
->               key_ref = ERR_PTR(err);
->               goto error;
-> @@ -775,8 +775,7 @@ int __key_link(struct key *keyring, struct key *key)
->               smp_wmb();
->               klist->nkeys++;
->               smp_wmb();
-> -     }
-> -     else {
-> +     } else {
->               /* grow the key list */
->               max = 4;
->               if (klist)
->
->
-> Chau,
->
-> What happened to the other part of the patch to fix the "} else {" above
-> where you had tried to remove the {} ?
->
-> James
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
->
->
-
-
-
--- 
-Chihau Chau
