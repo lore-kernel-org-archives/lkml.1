@@ -1,172 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756288Ab0CIAvO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 19:51:14 -0500
-Received: from LION.seas.upenn.edu ([158.130.12.194]:49224 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223Ab0CIAvM (ORCPT
+	id S1756299Ab0CIAvu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 19:51:50 -0500
+Received: from mail-iw0-f176.google.com ([209.85.223.176]:57474 "EHLO
+	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756071Ab0CIAvs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 19:51:12 -0500
-Message-ID: <4B959B69.80705@seas.upenn.edu>
-Date: Mon, 08 Mar 2010 19:50:49 -0500
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
+	Mon, 8 Mar 2010 19:51:48 -0500
+X-Greylist: delayed 350 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 19:51:48 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=nJWDv+J1Gaki3PHV7jpap07sdwioUddyXmU7DewZe/xalgIFouTSDB/qw+/kxYmZeY
+         22KKyPz0cG1+vI5nM6h4V7XqDWZ3Ei3l+8dkp0kIXUuIKcFfADyGuz8gzm3SV531cbcr
+         +m5J2HHyg/EyzOZUmNkJbshNQC70EcapWkUW4=
 MIME-Version: 1.0
-To: mickib1@gmail.com
-CC: jkosina@suse.cz, chatty@enac.fr, peterhuewe@gmx.de, micki@n-trig.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rafi@seas.upenn.edu
-Subject: Re: [PATCH 1/7] HID: N-trig MTM Driver fix and cleanup patch 1
-References: <1268082827-2680-1-git-send-email-micki@n-trig.com>
-In-Reply-To: <1268082827-2680-1-git-send-email-micki@n-trig.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100306002414.GJ28657@tango.0pointer.de>
+References: <20100202120457.GA19605@omega> <20100304140822.GA458@redhat.com> 
+	<20100304221434.17567187@magilla.sf.frob.com> <ac3eb2511003051051r50468752o607a8a0309d5ce2e@mail.gmail.com> 
+	<20100305191816.5EC8ACC@magilla.sf.frob.com> <20100306002414.GJ28657@tango.0pointer.de>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Mon, 8 Mar 2010 16:45:38 -0800
+X-Google-Sender-Auth: 844209019d1968b6
+Message-ID: <2c0942db1003081645y4063ed29va6763151f53a282a@mail.gmail.com>
+Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers for 
+	child processes
+To: Lennart Poettering <mzxreary@0pointer.de>
+Cc: Roland McGrath <roland@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       James Morris <jmorris@namei.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Kyle McMartin <kyle@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08/2010 04:13 PM, mickib1@gmail.com wrote:
-> From: micki<micki@micki-laptop.(none)>
+On Fri, Mar 5, 2010 at 4:24 PM, Lennart Poettering <mzxreary@0pointer.de> wrote:
+> On Fri, 05.03.10 11:18, Roland McGrath (roland@redhat.com) wrote:
 >
-> Add Change Log and defines of MTM firmware.
-> Add debug Paramater change Driver name in hid_driver structure
+>>
+>> > Oh, no. Actually getting the SIGCHILD is the needed feature here. A
+>> > process who sets the ANCHOR flag is surely expected to handle these
+>> > signals. It's all about a user "init-like" process" that can do
+>> > similar things for a logged-in user what /sbin/init can to for the
+>> > system. So, it's all about 1.), and 3.) is a nice side-effect, but not
+>> > the motivation to do this.
+>>
+>> Please explain this more explicitly.  What the actual init does with
+>> miscellaneous reparented processes is just reap them and ignore their
+>> status.  What do you intend an "anchor" process to do other than that?
 >
-> N-trig is changing the way people interact with computers by providing a dual-mode pen and true multi-touch input device, specifically designed for today's advanced computing world.
-> N-trig DuoSense® solution provides a real Hands-on computing® experience, and sets the stage for OEMs and ISVs to introduce innovative computer products and applications for an intuitive, Hands-on® experience directly onscreen.
-> DuoSense digitizers are easily integrated into existing technologies, support all LCDs, keep devices slim and light, and can be implemented in a broad range of products, ranging from small notebooks to large LCDs.
-> N-trig has offices in Israel, the US, Taiwan and Japan.
+> It could use the grandchildren's SIGCHLDs for various task management
+> issues: i.e. watching double-forking daemons, catch SIGSEGVS so that you
+> can crosslink that service state to systems like abrt. Or even just that
+> you can implement a safe restarting logic: i.e. so that we can easily
+> wait that a process and its children are fully dead before we restart
+> the service.
 
-Is that just in your .sig?
+The kernel already offers system-wide process exit notification via
+taskstats (a netlink interface), though unfortunately I believe it's
+optional. It's pretty easy to use (as these things go, anyway -- I was
+able to hack up an arbitrary process exit watcher in about a half hour
+based on Documentation/accounting/getdelays.c).
 
-> Signed-off-by: Micki Balanga<micki@n-trig.com>
-> ---
->   drivers/hid/hid-ntrig.c |   94 ++++++++++++++++++++++++++++++++++++++++++++--
->   1 files changed, 89 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/hid/hid-ntrig.c b/drivers/hid/hid-ntrig.c
-> index 3234c72..e99342d 100644
-> --- a/drivers/hid/hid-ntrig.c
-> +++ b/drivers/hid/hid-ntrig.c
-> @@ -3,7 +3,18 @@
->    *
->    *  Copyright (c) 2008 Rafi Rubin
->    *  Copyright (c) 2009 Stephane Chatty
-> + *  Copyright (c) 2010 N-TRIG
->    *
-> + *	1.0 - Rafi Rubin ( Version From 2010-02-13 02:13:05)
-> + *		This cleans up the identification of multitouch
-> + *		groups and enables the end of group sync.
-> + *		Taps are now explicitly handled to adjust for the changes in the
-> + *		event stream in multitouch mode.
-> + *		Added triple and quad tap for the benefit of
-> + *		tools that recognize different tap types but
-> + *		do not have full multi touch support.
-> + *	1.1 - N-trig - Add Change Log and defines of MTM firmware.
-> + *		Add debug Paramater change Driver name in hid_driver structure
->    */
-
-I don't know that the change log needs to be in the code file itself. 
-The point was more that your commit messages should give us an idea 
-about what your changing.  Jiri, what's your take on that?
-
-> +/*
-> + * Pen Event Field Declaration
-> + */
-> +#define	EVENT_PEN_TIP		0x03
-> +#define	EVENT_PEN_RIGHT		0x05
-> +#define	EVENT_TOUCH_PEN		0x07
-> +#define EVENT_PEN_IN_RANGE	0x01
-
-You still haven't actually established why its necessary to fuss with 
-pen events if we split the pen off to a separate input device.
-
-> +/*
-> + * MTM 4 last bytes of report descriptor
-> + */
-> +#define REPORT_GENERIC1		0x01
-> +#define REPORT_MT		0x02
-> +#define REPORT_PALM		0x03
-> +#define REPORT_GENERIC2		0x04
-
-When its not too inconvenient, it would be better to put defines in the 
-patches where you actually use them.  I know these are actually useful, 
-but if we stop here they aren't actually used.
-
-
-> +#define NTRIG_USB_DEVICE_ID	0x0001
-Already defined in hid-ids.h
-
-
-
-> +
-> +/*
-> + * MTM fields
-> + */
-> +#define PEN_REPORT_SIZE		0x48
-
-The report seems to specifically identify itself.  Why not use that 
-clear identification instead of something less clear that may change in 
-the future (even if there are no plans at the moment).  If nothing else 
-this relieves a little pressure on your hardware/firmware designers.
-
- From the rdesc of my screen in the debug fs:
-INPUT(1)[INPUT]
-     Field(0)
-       Physical(Digitizers.Stylus)
-
-Paraphrasing ntrig_probe from 2.6.33:
-
-   list_for_each_entry(hidinput, &hdev->inputs, list)
-	switch (hidinput->report->field[0]->application)
-	case  HID_DG_PEN:
-		input->name = "N-Trig Pen";
-		break;
-	case HID_DG_TOUCHSCREEN:
-
-Note that in this one case I do use this to identify the report, and 
-thus need to pick a field which you could argue is a potential hazard, 
-but you haven't made that point.  So please tell us what's wrong with 
-this before you toss it out for something different.
-
-> +#define MAX_FINGERS_SUPPORT	0x06
-
-Again, is it really a good idea to keep this quantity fixed?  Especially 
-in light of the press release that suggests your company is considering 
-devices that support more fingers.
-
-> +#define END_OF_REPORT		0x64
-
-I should comment where you put the code that uses this, but you put them 
-in separate patches.
-
-I don't see why you tie up a group of contacts by emitting TRACKING_ID 
-0x64.  The group should already by wrapped up with an input_sync, which 
-you have.  Therefore this extra event doesn't actually provide any 
-additional information.  Furthermore, sending a bogus tracking id may 
-upset other user space tools.
-
-> +/*
-> + * Dummy Finger Declaration
-> + */
-> +#define X_CORD_VAL		0x00
-> +#define Y_CORD_VAL		0x00
-> +#define DX_CORD_VAL		0xFA
-> +#define DY_CORD_VAL		0x96
-> +#define GENERIC_BYTE_VAL	0x0D
-
-The naming of these constants seems a little messy.  Perhaps something 
-more like "DUMMY_X, DUMMY_DX"....
-
-> +#define MTM_FRAME_INDEX		0xff000001
-> +#define MTM_PROPROETARY		0xff000002
-
-Thank you, we should have named these constants earlier.
-
-> +#define MODULE_NAME "hid_ntrig"
-> -	.name = "ntrig",
-
-I left off the "hid_" prefix based on what I saw in the other hid 
-drivers.  Jiri, is there a standard to follow or do you have an opinion 
-about this?
-
-Rafi
+Would this existing mechanism cover what you need?
