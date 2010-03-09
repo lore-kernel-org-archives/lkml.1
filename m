@@ -1,90 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265Ab0CIDy1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:54:27 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57551 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932084Ab0CIDyX (ORCPT
+	id S932272Ab0CID7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:59:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46640 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932243Ab0CID7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:54:23 -0500
-X-Authority-Analysis: v=1.0 c=1 a=drjUTJznMZEA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=l-3ljm5jsgfLu-SywfYA:9 a=UzwnKz7mnkYZpleVHqVrDEejLuQA:4 a=PUjeQqilurYA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-In-Reply-To: <4B95C1FC.9030307@cn.fujitsu.com>
-References: <4B94936B.8030409@cn.fujitsu.com>
-	 <4B949E43.2010906@cn.fujitsu.com>
-	 <1268060596.10871.1805.camel@gandalf.stny.rr.com>
-	 <1268060858.10871.1807.camel@gandalf.stny.rr.com>
-	 <4B95C1FC.9030307@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 08 Mar 2010 22:54:20 -0500
-Message-ID: <1268106860.10871.1867.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Mar 2010 22:59:36 -0500
+Date: Mon, 8 Mar 2010 19:58:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: Upstream first policy
+In-Reply-To: <4B95BFF6.5060503@schaufler-ca.com>
+Message-ID: <alpine.LFD.2.00.1003081955010.3669@localhost.localdomain>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org> <20100308094647.GA14268@elte.hu> <20100308173008.7ae389ab@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain> <4B9585BD.6070904@redhat.com>
+ <alpine.LFD.2.00.1003081523280.3669@localhost.localdomain> <4B958D7F.1030900@redhat.com> <alpine.LFD.2.00.1003081555480.3669@localhost.localdomain> <4B95BFF6.5060503@schaufler-ca.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 11:35 +0800, Lai Jiangshan wrote:
-> Steven Rostedt wrote:
-> > On Mon, 2010-03-08 at 10:03 -0500, Steven Rostedt wrote:
-> > 
-> >>> ringbuffer resizing and reseting will increase the ->record_disabled
-> >>> and then wait until a rcu_shced grace period passes.
-> >>>
-> >>> Contrarily, testing ->record_disabled should be at the same
-> >>> preempt disabled critical region as writing into ringbuffer, otherwise
-> >>> it will leave a window break ringbuffer resizing or reseting.
-> >> So the resizing and the resetting need a synchronize_sched() after the
-> >> disabling of the buffers, right?
-> > 
-> > Looking at the code, the synchronize_sched() is already done in
-> > ring_buffer_resize, and the caller (trace.c:tracing_reset() ) also
-> > disables the ring buffer and calls synchronize_sched().
-> > 
-> > With that, what other window is still opened (after this fix)?
-> > 
+
+
+On Mon, 8 Mar 2010, Casey Schaufler wrote:
 > 
-> This window is still opened: (RCU vs IDLE vs Tracing)
-> 
-> synchronize_sched() does not protect preempt_disable()/enable() for
-> idle process. But tracing(function_graph, function) introduce more
-> preempt_disable()/enable() for idle process. It brings windows.
+> Those of you who say we ought to come up with a single framework
+> that we can use to Do The Right Thing haven't been reading the code.
+> We have such a framework in the LSM.
 
-It most definitely should. If it does not, then we have major problems.
->From the comment above synchronize_sched(void):
+.. and people are also interested in using (and expanding) the 'notify' 
+layer, probably because it is obviously designed for efficiently talking 
+at a user-level program about the relevant accesses. Whether that is 
+because they are just crazy ("malware detection") or whether it is an 
+indication that the LSM layer and current security models are just not 
+convenient enough, I dunno.
 
-/**
- * synchronize_sched - wait until an rcu-sched grace period has elapsed.
- *
- * Control will return to the caller some time after a full rcu-sched
- * grace period has elapsed, in other words after all currently executing
- * rcu-sched read-side critical sections have completed.   These read-side
- * critical sections are delimited by rcu_read_lock_sched() and
- * rcu_read_unlock_sched(), and may be nested.  Note that preempt_disable(),
- * local_irq_disable(), and so on may be used in place of
- * rcu_read_lock_sched().
+And whether all that has anything to do with "Do The Rigth Thing" is 
+obviously very much unclear, but the interest is clearly there.
 
-I do not see how idle can be ignored here.
-
-> 
-> I bet that this bug is not come from this window.
-> (I added some strict code to RCU and did stress test,
-> bug was still occurred.)
-> 
-
-What exactly were you doing when this happened? Was this from Li's test?
-
--- Steve
-
-
+			Linus
