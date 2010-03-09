@@ -1,93 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932268Ab0CIDuv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:50:51 -0500
-Received: from mail.windriver.com ([147.11.1.11]:46620 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932229Ab0CIDum (ORCPT
+	id S932265Ab0CIDy1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:54:27 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57551 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932084Ab0CIDyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:50:42 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] tty_port,usb-console: Fix usb serial console open/close regression
-Date: Mon,  8 Mar 2010 21:50:11 -0600
-Message-Id: <1268106612-6854-1-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-X-OriginalArrivalTime: 09 Mar 2010 03:50:23.0375 (UTC) FILETIME=[A57AE1F0:01CABF3B]
+	Mon, 8 Mar 2010 22:54:23 -0500
+X-Authority-Analysis: v=1.0 c=1 a=drjUTJznMZEA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=l-3ljm5jsgfLu-SywfYA:9 a=UzwnKz7mnkYZpleVHqVrDEejLuQA:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+In-Reply-To: <4B95C1FC.9030307@cn.fujitsu.com>
+References: <4B94936B.8030409@cn.fujitsu.com>
+	 <4B949E43.2010906@cn.fujitsu.com>
+	 <1268060596.10871.1805.camel@gandalf.stny.rr.com>
+	 <1268060858.10871.1807.camel@gandalf.stny.rr.com>
+	 <4B95C1FC.9030307@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 08 Mar 2010 22:54:20 -0500
+Message-ID: <1268106860.10871.1867.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit e1108a63e10d344284011cccc06328b2cd3e5da3 ("usb_serial: Use the
-shutdown() operation") breaks the ability to use a usb console
-starting in 2.6.33.  This was observed when using
-console=ttyUSB0,115200 as a boot argument with an FTDI device.  The
-error is:
+On Tue, 2010-03-09 at 11:35 +0800, Lai Jiangshan wrote:
+> Steven Rostedt wrote:
+> > On Mon, 2010-03-08 at 10:03 -0500, Steven Rostedt wrote:
+> > 
+> >>> ringbuffer resizing and reseting will increase the ->record_disabled
+> >>> and then wait until a rcu_shced grace period passes.
+> >>>
+> >>> Contrarily, testing ->record_disabled should be at the same
+> >>> preempt disabled critical region as writing into ringbuffer, otherwise
+> >>> it will leave a window break ringbuffer resizing or reseting.
+> >> So the resizing and the resetting need a synchronize_sched() after the
+> >> disabling of the buffers, right?
+> > 
+> > Looking at the code, the synchronize_sched() is already done in
+> > ring_buffer_resize, and the caller (trace.c:tracing_reset() ) also
+> > disables the ring buffer and calls synchronize_sched().
+> > 
+> > With that, what other window is still opened (after this fix)?
+> > 
+> 
+> This window is still opened: (RCU vs IDLE vs Tracing)
+> 
+> synchronize_sched() does not protect preempt_disable()/enable() for
+> idle process. But tracing(function_graph, function) introduce more
+> preempt_disable()/enable() for idle process. It brings windows.
 
-ftdi_sio ttyUSB0: ftdi_submit_read_urb - failed submitting read urb, error -22
+It most definitely should. If it does not, then we have major problems.
+>From the comment above synchronize_sched(void):
 
-The handling of the ASYNCB_INITIALIZED changed in 2.6.32 such that in
-tty_port_shutdown() it always clears the flag if it is set.  The fix
-is to add a variable to the tty_port struct to indicate when the tty
-port is a console.
+/**
+ * synchronize_sched - wait until an rcu-sched grace period has elapsed.
+ *
+ * Control will return to the caller some time after a full rcu-sched
+ * grace period has elapsed, in other words after all currently executing
+ * rcu-sched read-side critical sections have completed.   These read-side
+ * critical sections are delimited by rcu_read_lock_sched() and
+ * rcu_read_unlock_sched(), and may be nested.  Note that preempt_disable(),
+ * local_irq_disable(), and so on may be used in place of
+ * rcu_read_lock_sched().
 
-CC: Greg Kroah-Hartman <gregkh@suse.de>
-CC: Alan Cox <alan@linux.intel.com>
-CC: Alan Stern <stern@rowland.harvard.edu>
-CC: Oliver Neukum <oliver@neukum.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-usb@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- drivers/char/tty_port.c      |    2 +-
- drivers/usb/serial/console.c |    1 +
- include/linux/tty.h          |    1 +
- 3 files changed, 3 insertions(+), 1 deletions(-)
+I do not see how idle can be ignored here.
 
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-index be492dd..a3bd1d0 100644
---- a/drivers/char/tty_port.c
-+++ b/drivers/char/tty_port.c
-@@ -119,7 +119,7 @@ EXPORT_SYMBOL(tty_port_tty_set);
- static void tty_port_shutdown(struct tty_port *port)
- {
- 	mutex_lock(&port->mutex);
--	if (port->ops->shutdown &&
-+	if (port->ops->shutdown && !port->console &&
- 		test_and_clear_bit(ASYNCB_INITIALIZED, &port->flags))
- 			port->ops->shutdown(port);
- 	mutex_unlock(&port->mutex);
-diff --git a/drivers/usb/serial/console.c b/drivers/usb/serial/console.c
-index b22ac32..f347da2 100644
---- a/drivers/usb/serial/console.c
-+++ b/drivers/usb/serial/console.c
-@@ -181,6 +181,7 @@ static int usb_console_setup(struct console *co, char *options)
- 	/* The console is special in terms of closing the device so
- 	 * indicate this port is now acting as a system console. */
- 	port->console = 1;
-+	port->port.console = 1;
- 
- 	mutex_unlock(&serial->disc_mutex);
- 	return retval;
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index d96e588..a42d7a6 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -223,6 +223,7 @@ struct tty_port {
- 	wait_queue_head_t	close_wait;	/* Close waiters */
- 	wait_queue_head_t	delta_msr_wait;	/* Modem status change */
- 	unsigned long		flags;		/* TTY flags ASY_*/
-+	unsigned char		console:1;	/* port is a console */
- 	struct mutex		mutex;		/* Locking */
- 	struct mutex		buf_mutex;	/* Buffer alloc lock */
- 	unsigned char		*xmit_buf;	/* Optional buffer */
--- 
-1.5.4.3
+> 
+> I bet that this bug is not come from this window.
+> (I added some strict code to RCU and did stress test,
+> bug was still occurred.)
+> 
+
+What exactly were you doing when this happened? Was this from Li's test?
+
+-- Steve
+
 
