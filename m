@@ -1,52 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162Ab0CICzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:55:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34930 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072Ab0CICzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 21:55:40 -0500
-Message-ID: <4B95B843.6030900@kernel.org>
-Date: Tue, 09 Mar 2010 11:53:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1756631Ab0CIDIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:08:54 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44984 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883Ab0CIDIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 22:08:52 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andre Goddard Rosa <andre.goddard@gmail.com>
+Subject: Re: [PATCH] coredump: plug a memory leak situation on dump_seek()
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
+References: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
+Message-Id: <20100309120706.7CD2.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@redhat.com>
-CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
-       Jim Meyering <jim@meyering.net>
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net> <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
-In-Reply-To: <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 02:53:57 +0000 (UTC)
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Mar 2010 12:08:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 03/09/2010 04:34 AM, Mike Snitzer wrote:
-> I've been keeping track of all the pieces in play, have coordinated
-> with kzak and jim, and have a summary that offers some amount of macro
-> detail (at the end I touch on parted and fdisk):
+> After having started writing the coredump, if filesystem reports an error
+> anytime while writing part of the core file, we would leak a memory page
+> when bailing out.
 > 
-> http://people.redhat.com/msnitzer/docs/io-limits.txt
+> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Ah... this is great.  I'll link the doc and shamelessly steal parts of
-it if that's okay with you.
+Looks good.
+Thanks, Andre!
 
-Thanks.
+  - kosaki
 
--- 
-tejun
+> ---
+>  include/linux/coredump.h |   10 +++++++---
+>  1 files changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/coredump.h b/include/linux/coredump.h
+> index b3c91d7..8ba66a9 100644
+> --- a/include/linux/coredump.h
+> +++ b/include/linux/coredump.h
+> @@ -16,6 +16,8 @@ static inline int dump_write(struct file *file, const void *addr, int nr)
+>  
+>  static inline int dump_seek(struct file *file, loff_t off)
+>  {
+> +	int ret = 1;
+> +
+>  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
+>  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
+>  			return 0;
+> @@ -29,13 +31,15 @@ static inline int dump_seek(struct file *file, loff_t off)
+>  
+>  			if (n > PAGE_SIZE)
+>  				n = PAGE_SIZE;
+> -			if (!dump_write(file, buf, n))
+> -				return 0;
+> +			if (!dump_write(file, buf, n)) {
+> +				ret = 0;
+> +				break;
+> +			}
+>  			off -= n;
+>  		}
+>  		free_page((unsigned long)buf);
+>  	}
+> -	return 1;
+> +	return ret;
+>  }
+>  
+>  #endif /* _LINUX_COREDUMP_H */
+> -- 
+> 1.7.0.1.164.gbe2f
+> 
+
+
+
