@@ -1,40 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444Ab0CITmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:42:32 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51071 "EHLO mx1.suse.de"
+	id S1752661Ab0CITfJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:35:09 -0500
+Received: from quartz.orcorp.ca ([139.142.54.143]:55259 "EHLO quartz.orcorp.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753753Ab0CITm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:42:29 -0500
-Date: Tue, 9 Mar 2010 11:42:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] sysfs: Fixup broken chown tracking
-Message-ID: <20100309194201.GA869@suse.de>
-References: <20100309191127.GA30462@obsidianresearch.com>
- <1268163372.29493.1965.camel@moss-terrapins.epoch.ncsc.mil>
+	id S1751774Ab0CITfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:35:02 -0500
+Date: Tue, 9 Mar 2010 12:35:00 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] PPC32: Fixup pmd_page to work when ARCH_PFN_OFFSET is
+	non-zero
+Message-ID: <20100309193500.GE30462@obsidianresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1268163372.29493.1965.camel@moss-terrapins.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 02:36:12PM -0500, David P. Quigley wrote:
-> It looks like your patch is already in the tree as commit
-> 7c0ff870d1ed287504a61ed865f3d728c757436b. We saw this problem before and
-> Eric fixed it up. I thought it was very odd that you posted this 5
-> minutes ago and it was already upstream.
+Instead of referencing mem_map directly, use pfn_to_page. Otherwise
+the kernel crashes when trying to start userspace if ARCH_PFN_OFFSET is
+non-zero and CONFIG_BOOKE is not defined
 
-Yeah, this has already been resolved, did that patch not solve the issue
-for you?
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc32.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-thanks,
+For reference, on powerpc 32 with CONFIG_FLATMEM:
 
-greg k-h
+#define pfn_to_page __pfn_to_page
+#define __pfn_to_page(pfn)      (mem_map + ((pfn) - ARCH_PFN_OFFSET))
+
+So the below patch has no effect if ARCH_PFN_OFFEST is 0.
+
+diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+index 55646ad..a7db96f 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc32.h
++++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+@@ -287,7 +287,7 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ #define pmd_page_vaddr(pmd)	\
+ 	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+ #define pmd_page(pmd)		\
+-	(mem_map + (pmd_val(pmd) >> PAGE_SHIFT))
++	pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT)
+ #else
+ #define pmd_page_vaddr(pmd)	\
+ 	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
+-- 
+1.5.4.2
+
