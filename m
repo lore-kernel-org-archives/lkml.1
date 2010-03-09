@@ -1,102 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747Ab0CILZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:25:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56318 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070Ab0CILZx convert rfc822-to-8bit (ORCPT
+	id S1754764Ab0CIL2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:28:40 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:36042
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754070Ab0CIL2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:25:53 -0500
-Subject: Re: [PATCH] percpu,lockdep: implement and use
- is_static_percpu_address()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4B9610E5.4080805@kernel.org>
-References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop>
-	 <4B95AA4C.2030303@kernel.org> <4298.1268116039@localhost>
-	 <4B95EE4C.3020606@kernel.org>  <4B9610E5.4080805@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Tue, 09 Mar 2010 12:25:42 +0100
-Message-ID: <1268133942.4162.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 9 Mar 2010 06:28:38 -0500
+X-SpamScore: -28
+X-BigFish: VPS-28(zz1432R98dN936eM4015L62a3Lzz1202hzzz32i6bh2a8h43h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KZ0III-02-1ZI-02
+X-M-MSG: 
+Date: Tue, 9 Mar 2010 12:27:52 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [GIT PULL] oprofile: updates for v2.6.34
+Message-ID: <20100309112752.GG3650@erda.amd.com>
+References: <20100302164405.GJ13205@erda.amd.com>
+ <20100304105005.GA21977@elte.hu>
+ <20100304174422.GQ13205@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20100304174422.GQ13205@erda.amd.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 09 Mar 2010 11:27:53.0128 (UTC) FILETIME=[8ECECA80:01CABF7B]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 18:12 +0900, Tejun Heo wrote:
-> lockdep has custom code to check whether a pointer belongs to static
-> percpu area which is somewhat broken.  Implement proper
-> is_static_percpu_address() in percpu and replace the custom code.
+On 04.03.10 18:44:22, Robert Richter wrote:
+> On 04.03.10 11:50:05, Ingo Molnar wrote:
+> > 
+> > * Robert Richter <robert.richter@amd.com> wrote:
+> > 
+> > > Ingo,
+> > > 
+> > > it's only one patch, please pull from:
+> > > 
+> > >  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
+> > > 
+> > > (It seems the git mirror is not yet sync'ed.)
+> > 
+> > Still cannot pull - forgot to push out?
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> ---
-> This wasn't the cause this time but I'll queue the fix in percpu tree
-> anyway.
+> No, it is already out, at least it is available now:
 > 
-> Thanks.
-> 
->  include/linux/percpu.h |    7 +++++++
->  kernel/lockdep.c       |   15 ++-------------
->  mm/percpu.c            |   26 ++++++++++++++++++++++++++
->  3 files changed, 35 insertions(+), 13 deletions(-)
-> 
-> diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-> index a93e5bf..1eca064 100644
-> --- a/include/linux/percpu.h
-> +++ b/include/linux/percpu.h
-> @@ -137,6 +137,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
->  extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align);
->  extern void __percpu *__alloc_percpu(size_t size, size_t align);
->  extern void free_percpu(void __percpu *__pdata);
-> +extern bool is_static_percpu_address(unsigned long addr);
->  extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
->  
->  #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-> @@ -163,6 +164,12 @@ static inline void free_percpu(void __percpu *p)
->  	kfree(p);
->  }
->  
-> +/* can't distinguish from other static vars, always false */
-> +static inline bool is_static_percpu_address(unsigned long addr)
-> +{
-> +	return false;
-> +}
+>  http://git.kernel.org/?p=linux/kernel/git/rric/oprofile.git;a=shortlog;h=refs/heads/urgent
 
-At this point it might make sense to simply fail to compile if lockdep
-is enabled as well.
+Ingo,
 
-I'm not sure if there's many SMP archs that don't have this and do have
-lockdep, but simply failing this test isn't really an option.
+can you try to send that one patch in urgent upstream for .34? It is
+already in the queue for 1 week.
 
->  static inline phys_addr_t per_cpu_ptr_to_phys(void *addr)
->  {
->  	return __pa(addr);
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+Could you also pull the oprofile core tree with the reservation code
+to tip/oprofile? I also want to merge this to perf/core after pending
+perf patches esp. pebs are applied to tip. When do you think perf/core
+can be updated?
 
-> diff --git a/mm/percpu.c b/mm/percpu.c
-> index 768419d..ae4d058 100644
-> --- a/mm/percpu.c
-> +++ b/mm/percpu.c
-> @@ -1304,6 +1304,32 @@ void free_percpu(void __percpu *ptr)
->  EXPORT_SYMBOL_GPL(free_percpu);
->  
->  /**
-> + * is_static_percpu_address - test whether address is from static percpu area
-> + * @addr: address to test
-> + *
-> + * Test whether @addr belongs to static percpu area.  Module static
-> + * percpu areas allocated via __alloc_reserved_percpu() is not
-> + * considered.  Use is_module_address() for those.
-> + *
-> + * RETURNS:
-> + * %true if @addr is from static percpu area, %false otherwise.
-> + */
+Thanks,
 
-So is_module_address() will only return true for static per-cpu module
-storage, right?
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
