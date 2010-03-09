@@ -1,55 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932226Ab0CIDfE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:35:04 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63702 "EHLO song.cn.fujitsu.com"
+	id S932231Ab0CIDhc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:37:32 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49466 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932196Ab0CIDfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:35:01 -0500
-Message-ID: <4B95C1FC.9030307@cn.fujitsu.com>
-Date: Tue, 09 Mar 2010 11:35:24 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S932196Ab0CIDha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 22:37:30 -0500
+Message-ID: <4B95C2AF.7010508@cn.fujitsu.com>
+Date: Tue, 09 Mar 2010 11:38:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
 To: rostedt@goodmis.org
-CC: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] WARNING: at kernel/trace/ring_buffer.c:3420
-References: <4B94936B.8030409@cn.fujitsu.com>	 <4B949E43.2010906@cn.fujitsu.com>	 <1268060596.10871.1805.camel@gandalf.stny.rr.com> <1268060858.10871.1807.camel@gandalf.stny.rr.com>
-In-Reply-To: <1268060858.10871.1807.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       =?ISO-8859-15?Q?Am=E9rico_?= =?ISO-8859-15?Q?Wang?= 
+	<xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>	 <1267710847.10871.102.camel@gandalf.stny.rr.com>	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>	 <20100305171614.GC5244@nowhere>  <4B94A816.4090608@cn.fujitsu.com>	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>	 <4B95AE4E.6060700@cn.fujitsu.com> <1268101394.10871.1861.camel@gandalf.stny.rr.com>
+In-Reply-To: <1268101394.10871.1861.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Steven Rostedt wrote:
-> On Mon, 2010-03-08 at 10:03 -0500, Steven Rostedt wrote:
+> On Tue, 2010-03-09 at 10:11 +0800, Li Zefan wrote:
+>> Steven Rostedt wrote:
+>>> On Mon, 2010-03-08 at 15:32 +0800, Li Zefan wrote:
 > 
->>> ringbuffer resizing and reseting will increase the ->record_disabled
->>> and then wait until a rcu_shced grace period passes.
+>>> This sounds like the compiler may have screwed up again. Can you compile
+>>> with this patch and see if it catches anything?
 >>>
->>> Contrarily, testing ->record_disabled should be at the same
->>> preempt disabled critical region as writing into ringbuffer, otherwise
->>> it will leave a window break ringbuffer resizing or reseting.
->> So the resizing and the resetting need a synchronize_sched() after the
->> disabling of the buffers, right?
+>> But I was using a x86_64 machine, and this patch won't do anything on
+>> x86_64?
 > 
-> Looking at the code, the synchronize_sched() is already done in
-> ring_buffer_resize, and the caller (trace.c:tracing_reset() ) also
-> disables the ring buffer and calls synchronize_sched().
-> 
-> With that, what other window is still opened (after this fix)?
+> I wonder if this issue has crept to x86_64. What kind of dump do you
+> get? And if this segfault is in the kernel, could you see (using gdb on
+> a vmlinux) if any of the stack frame setups look peculiar?
 > 
 
-This window is still opened: (RCU vs IDLE vs Tracing)
+The segfault is from userspace. This is a segfault I just got:
 
-synchronize_sched() does not protect preempt_disable()/enable() for
-idle process. But tracing(function_graph, function) introduce more
-preempt_disable()/enable() for idle process. It brings windows.
-
-I bet that this bug is not come from this window.
-(I added some strict code to RCU and did stress test,
-bug was still occurred.)
-
+ftrace_stack_ma[14989]: segfault at fe2e ip 00000000004474c0 sp 00007fffb97e38c0 error 4 in bash[400000+d1000]
