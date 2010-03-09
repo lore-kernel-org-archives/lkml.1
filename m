@@ -1,37 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765Ab0CIV0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 16:26:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61202 "EHLO mx1.redhat.com"
+	id S1754731Ab0CIVoH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 16:44:07 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:62244 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0CIV0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 16:26:12 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1268089894-28691-1-git-send-email-chihau@gmail.com>
-References: <1268089894-28691-1-git-send-email-chihau@gmail.com>
-To: Chihau Chau <chihau@gmail.com>
-Cc: dhowells@redhat.com, jmorris@namei.org, paulmck@linux.vnet.ibm.com,
-       mingo@elte.hu, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Security: key: keyring: fix some code style issues
-Date: Tue, 09 Mar 2010 21:25:49 +0000
-Message-ID: <6837.1268169949@redhat.com>
+	id S1752234Ab0CIVoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 16:44:03 -0500
+To: eric.dumazet@gmail.com, davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, shemminger@vyatta.com
+Subject: Re: [2.6.34-rc1] CPU stalls when closing TCP sockets.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <201003090319.o293J6WF026448@www262.sakura.ne.jp>
+	<1268116647.2819.64.camel@edumazet-laptop>
+	<201003090654.o296sCnh065487@www262.sakura.ne.jp>
+	<1268150156.3113.12.camel@edumazet-laptop>
+In-Reply-To: <1268150156.3113.12.camel@edumazet-laptop>
+Message-Id: <201003100644.CGG18721.JOHOFOMQVFSFtL@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Wed, 10 Mar 2010 06:44:00 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chihau Chau <chihau@gmail.com> wrote:
+Hello.
 
-> From: Chihau Chau <chihau@gmail.com>
+Eric Dumazet wrote:
+> Le mardi 09 mars 2010 a 15:54 +0900, Tetsuo Handa a ecrit :
+> > Eric Dumazet wrote:
+> > > Nothing comes to my mind, I'll try to reproduce this here.
+> > 
+> > When stopped at (8), Ctrl-C doesn't work.
+> > 
+> > > Is 2.6.33 OK ?
+> > 
+> > Yes. 2.6.33 and earlier are OK.
 > 
-> This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
-> code style issues like to put a else sentence below close brace '}' and
-> to replace a tab instead of some space characters.
+> OK thanks !
 > 
-> Signed-off-by: Chihau Chau <chihau@gmail.com>
+> I believe commit d218d11133d888f9745802146a50255a4781d37a
+> (tcp: Generalized TTL Security Mechanism) might be the bug origin.
 
-Acked-by: David Howells <dhowells@redhat.com>
+Yes. "git bisect" reported that
+d218d11133d888f9745802146a50255a4781d37a is first bad commit.
+Your patch (although I needed to change like below in order to
+apply on linux-2.6.34-rc1) fixes the CPU stalls.
+
+Thank you.
+
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index c3588b4..3f8d08f 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1651,13 +1651,13 @@ int tcp_v4_rcv(struct sk_buff *skb)
+ 	if (!sk)
+ 		goto no_tcp_socket;
+ 
+-	if (iph->ttl < inet_sk(sk)->min_ttl)
+-		goto discard_and_relse;
+-
+ process:
+ 	if (sk->sk_state == TCP_TIME_WAIT)
+ 		goto do_time_wait;
+ 
++	if (iph->ttl < inet_sk(sk)->min_ttl)
++		goto discard_and_relse;
++
+ 	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
+ 		goto discard_and_relse;
+ 	nf_reset(skb);
