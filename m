@@ -1,61 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984Ab0CIJsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 04:48:11 -0500
-Received: from smtp.citrix.com ([66.165.176.89]:60560 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753853Ab0CIJsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 04:48:08 -0500
-X-IronPort-AV: E=Sophos;i="4.49,607,1262581200"; 
-   d="scan'208";a="7490399"
-Subject: Re: [Xen-devel] [PATCH 7/7] xen: Enable event channel of PV
- extension of HVM
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Sheng Yang <sheng@linux.intel.com>,
-       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
-       Konrad Rzeszutek Wilk <kliw@darnok.org>
-In-Reply-To: <4B95F224.3060205@goop.org>
-References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com>
-	 <1268032732-8025-8-git-send-email-sheng@linux.intel.com>
-	 <alpine.DEB.2.00.1003081701160.16237@kaball-desktop>
-	 <201003090953.16985.sheng@linux.intel.com>  <4B95F224.3060205@goop.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Tue, 9 Mar 2010 09:48:05 +0000
-Message-ID: <1268128085.11737.59761.camel@zakaz.uk.xensource.com>
+	id S1754000Ab0CIJxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 04:53:12 -0500
+Received: from mail-pz0-f200.google.com ([209.85.222.200]:34986 "EHLO
+	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753853Ab0CIJxK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 04:53:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:x-operating-system:user-agent;
+        b=k1tZU7wo6VXoL+q/VyysKRpnsQ+/ShuZ8bTRShgDDmCEbsrywYgfkms5xUmHoWsZh3
+         +hOFjWcxPmKTIeNvt/vpK6m0kvo6DoHIThbXUBcJVMnICepPZsmfNJqhg0GPXP63FOpm
+         sbVkEt7vbRFpmtTlBIhHkb0LDmuMiy2m2kUhs=
+Date: Tue, 9 Mar 2010 17:52:55 +0800
+From: Li Hong <lihong.hi@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] slip: Remove the unused code and add some cleanups in
+ slip.c
+Message-ID: <20100309095255.GA10793@xhl>
+Mail-Followup-To: "David S. Miller" <davem@davemloft.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux xhl 2.6.31-14-generic
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 07:00 +0000, Jeremy Fitzhardinge wrote:
-> On 03/08/2010 05:53 PM, Sheng Yang wrote:
-> > On Tuesday 09 March 2010 01:10:56 Stefano Stabellini wrote:
-> >    
-> >> I think that mapping interrupts into VIRQs is a bad idea: you should map
-> >> interrupts into pirqs instead, the code exists already on the kernel
-> >> side so we don't need to do any (ugly) change ther.
-> >>      
-> > The code existed in the pv_ops dom0 side, but not in the upstream Linux. The
-> > latter is our target. We want this work to be accepted by upstream Linux soon.
+In sl_alloc(), after the for block:
 
->    2. It has significant overlaps with the current xen.git development
->       which is also targeted for upstream.  There's no point in creating
->       an unnecessary duplicate mechanism when the infrastructure will be
->       in place anyway.
+	for (i = 0; i < slip_maxdev; i++) {
+		dev = slip_devs[i];
+		if (dev == NULL)
+			break;
+	}
 
-There's also nothing stopping us from upstreaming portions of the "dom0"
-patchset ahead of full dom0 support if it is useful for some domU
-feature.
+The result is either i >= slip_maxdev or dev != NULL. So the following check
+on dev is needless.
 
-Ian.
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
+---
+ drivers/net/slip.c |   24 +++++++-----------------
+ 1 files changed, 7 insertions(+), 17 deletions(-)
 
+diff --git a/drivers/net/slip.c b/drivers/net/slip.c
+index ba5bbc5..adf89c0 100644
+--- a/drivers/net/slip.c
++++ b/drivers/net/slip.c
+@@ -737,24 +737,15 @@ static struct slip *sl_alloc(dev_t line)
+ 	if (i >= slip_maxdev)
+ 		return NULL;
+ 
+-	if (dev) {
+-		sl = netdev_priv(dev);
+-		if (test_bit(SLF_INUSE, &sl->flags)) {
+-			unregister_netdevice(dev);
+-			dev = NULL;
+-			slip_devs[i] = NULL;
+-		}
+-	}
++	char name[IFNAMSIZ];
++	sprintf(name, "sl%d", i);
+ 
+-	if (!dev) {
+-		char name[IFNAMSIZ];
+-		sprintf(name, "sl%d", i);
++	dev = alloc_netdev(sizeof(*sl), name, sl_setup);
++	if (!dev)
++		return NULL;
+ 
+-		dev = alloc_netdev(sizeof(*sl), name, sl_setup);
+-		if (!dev)
+-			return NULL;
+-		dev->base_addr  = i;
+-	}
++	dev->base_addr  = i;
++	slip_devs[i] = dev;
+ 
+ 	sl = netdev_priv(dev);
+ 
+@@ -772,7 +763,6 @@ static struct slip *sl_alloc(dev_t line)
+ 	sl->outfill_timer.data = (unsigned long)sl;
+ 	sl->outfill_timer.function = sl_outfill;
+ #endif
+-	slip_devs[i] = dev;
+ 	return sl;
+ }
+ 
+-- 
+1.6.3.3
 
