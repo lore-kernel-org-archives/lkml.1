@@ -1,78 +1,208 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489Ab0CISac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:30:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54962 "EHLO mx2.suse.de"
+	id S1754818Ab0CIUBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:01:39 -0500
+Received: from quartz.orcorp.ca ([139.142.54.143]:41808 "EHLO quartz.orcorp.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194Ab0CISaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:30:30 -0500
-Date: Tue, 9 Mar 2010 19:30:28 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sysfs: use sysfs_bin_attr_init in firmware class driver
-Message-ID: <alpine.LNX.2.00.1003091856430.17799@pobox.suse.cz>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1754194Ab0CIUBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 15:01:35 -0500
+Date: Tue, 9 Mar 2010 13:01:35 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: tpmdd-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] TPM: Provide a tpm_tis OF driver
+Message-ID: <20100309200135.GF30462@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Annotate dynamic sysfs attribute in fw_setup_device(). This gets
-rid of the following lockdep warning:
+This provides an open firwmare driver binding for tpm_tis. OF
+is useful on arches where PNP is not used.
 
-bnx2 0000:08:00.0: firmware: requesting bnx2/bnx2-mips-06-5.0.0.j6.fw
-BUG: key ffff880008293470 not in .data!
-------------[ cut here ]------------
-WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x562/0x620()
-Modules linked in: bnx2(+) sg tpm_bios floppy rtc_lib usb_storage i2c_piix4 joydev button container shpchp i2c_core sr_mod cdrom pci_hotplug usbhid hid ohci_hcd ehci_hcd sd_mod usbcore edd ext3 mbcache jbd fan ata_generic sata_svw pata_serverworks libata scsi_mod thermal processor
-Pid: 1915, comm: work_for_cpu Not tainted 2.6.34-rc1-default #81
-Call Trace:
- [<ffffffff8107c1d2>] ? lockdep_init_map+0x562/0x620
- [<ffffffff81049fd8>] warn_slowpath_common+0x78/0xd0
- [<ffffffff8104a03f>] warn_slowpath_null+0xf/0x20
- [<ffffffff8107c1d2>] lockdep_init_map+0x562/0x620
- [<ffffffff8117a236>] ? sysfs_new_dirent+0x76/0x120
- [<ffffffff8126edb2>] ? put_device+0x12/0x20
- [<ffffffff811797cc>] sysfs_add_file_mode+0x6c/0xd0
- [<ffffffff8117983c>] sysfs_add_file+0xc/0x10
- [<ffffffff8117bf61>] sysfs_create_bin_file+0x21/0x30
- [<ffffffff81279c61>] _request_firmware+0x2f1/0x650
- [<ffffffff8127a04e>] request_firmware+0xe/0x10
- [<ffffffffa01ec19e>] bnx2_init_one+0x8f5/0x177e [bnx2]
- [<ffffffff81389eab>] ? _raw_spin_unlock_irq+0x2b/0x40
- [<ffffffff81040ed9>] ? finish_task_switch+0x69/0x100
- [<ffffffff81040e70>] ? finish_task_switch+0x0/0x100
- [<ffffffff81064b40>] ? do_work_for_cpu+0x0/0x30
- [<ffffffff811e6302>] local_pci_probe+0x12/0x20
- [<ffffffff81064b53>] do_work_for_cpu+0x13/0x30
- [<ffffffff81064b40>] ? do_work_for_cpu+0x0/0x30
- [<ffffffff81068c56>] kthread+0x96/0xa0
- [<ffffffff81003e64>] kernel_thread_helper+0x4/0x10
- [<ffffffff8138a350>] ? restore_args+0x0/0x30
- [<ffffffff81068bc0>] ? kthread+0x0/0xa0
- [<ffffffff81003e60>] ? kernel_thread_helper+0x0/0x10
----[ end trace a2ecee9c9602d195 ]---
+Allow the tpm_tis driver to be selected if PNP or OF are compiled in.
 
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Tested on a PPC405 with a winbond LPC TPM.
 
---- 
- drivers/base/firmware_class.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+---
+ drivers/char/tpm/Kconfig   |    2 +-
+ drivers/char/tpm/tpm_tis.c |   75 +++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 69 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index d0dc26a..fc7565c 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -442,6 +442,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
- 	fw_priv = dev_get_drvdata(f_dev);
+I had previously sent a patch to make the platform device more useful,
+but this one is better for PPC...
+
+Thanks
+
+diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+index f5fc64f..e4ab74f 100644
+--- a/drivers/char/tpm/Kconfig
++++ b/drivers/char/tpm/Kconfig
+@@ -24,7 +24,7 @@ if TCG_TPM
  
- 	fw_priv->fw = fw;
-+	sysfs_bin_attr_init(&fw_priv->attr_data);
- 	retval = sysfs_create_bin_file(&f_dev->kobj, &fw_priv->attr_data);
- 	if (retval) {
- 		dev_err(device, "%s: sysfs_create_bin_file failed\n", __func__);
+ config TCG_TIS
+ 	tristate "TPM Interface Specification 1.2 Interface"
+-	depends on PNP
++	depends on PNP || OF
+ 	---help---
+ 	  If you have a TPM security chip that is compliant with the
+ 	  TCG TIS 1.2 TPM specification say Yes and it will be accessible
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index 2405f17..37e45f1 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -24,6 +24,7 @@
+ #include <linux/pnp.h>
+ #include <linux/interrupt.h>
+ #include <linux/wait.h>
++#include <linux/of_platform.h>
+ #include "tpm.h"
+ 
+ #define TPM_HEADER_SIZE 10
+@@ -439,7 +440,7 @@ module_param(interrupts, bool, 0444);
+ MODULE_PARM_DESC(interrupts, "Enable interrupts");
+ 
+ static int tpm_tis_init(struct device *dev, resource_size_t start,
+-			resource_size_t len, unsigned int irq)
++			resource_size_t len, int irq)
+ {
+ 	u32 vendor, intfcaps, intmask;
+ 	int rc, i;
+@@ -515,9 +516,11 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+ 	iowrite32(intmask,
+ 		  chip->vendor.iobase +
+ 		  TPM_INT_ENABLE(chip->vendor.locality));
+-	if (interrupts)
++	if (!interrupts)
++		irq = -1;
++	if (irq != -1)
+ 		chip->vendor.irq = irq;
+-	if (interrupts && !chip->vendor.irq) {
++	if (irq == 0) {
+ 		chip->vendor.irq =
+ 		    ioread8(chip->vendor.iobase +
+ 			    TPM_INT_VECTOR(chip->vendor.locality));
+@@ -598,11 +601,12 @@ out_err:
+ 	return rc;
+ }
+ 
++#ifdef CONFIG_PNP
+ static int __devinit tpm_tis_pnp_init(struct pnp_dev *pnp_dev,
+ 				      const struct pnp_device_id *pnp_id)
+ {
+ 	resource_size_t start, len;
+-	unsigned int irq = 0;
++	int irq = 0;
+ 
+ 	start = pnp_mem_start(pnp_dev, 0);
+ 	len = pnp_mem_len(pnp_dev, 0);
+@@ -610,7 +614,7 @@ static int __devinit tpm_tis_pnp_init(struct pnp_dev *pnp_dev,
+ 	if (pnp_irq_valid(pnp_dev, 0))
+ 		irq = pnp_irq(pnp_dev, 0);
+ 	else
+-		interrupts = 0;
++		irq = -1;
+ 
+ 	return tpm_tis_init(&pnp_dev->dev, start, len, irq);
+ }
+@@ -662,6 +666,7 @@ static struct pnp_driver tis_pnp_driver = {
+ module_param_string(hid, tpm_pnp_tbl[TIS_HID_USR_IDX].id,
+ 		    sizeof(tpm_pnp_tbl[TIS_HID_USR_IDX].id), 0444);
+ MODULE_PARM_DESC(hid, "Set additional specific HID for this driver to probe");
++#endif
+ 
+ static int tpm_tis_suspend(struct platform_device *dev, pm_message_t msg)
+ {
+@@ -683,6 +688,45 @@ static struct platform_driver tis_drv = {
+ 
+ static struct platform_device *pdev;
+ 
++#ifdef CONFIG_OF
++static int __devinit tis_of_init_one(struct of_device *ofdev,
++				     const struct of_device_id *match)
++{
++	struct resource res;
++	int ret;
++	int irq;
++
++	ret = of_address_to_resource(ofdev->node, 0, &res);
++	if (ret)
++		return ret;
++
++	irq = irq_of_parse_and_map(ofdev->node, 0);
++	if (irq == NO_IRQ)
++		irq = -1;
++	return tpm_tis_init(&ofdev->dev, res.start, res.end - res.start + 1, irq);
++}
++
++static int __devexit tis_of_remove_one(struct of_device *odev)
++{
++	struct tpm_chip *chip = dev_get_drvdata(&odev->dev);
++	tpm_dev_vendor_release(chip);
++	kfree(chip);
++	return 0;
++}
++
++static struct of_device_id tis_of_platform_match[] = {
++	{.compatible = "tcg,tpm_tis"},
++	{},
++};
++static struct of_platform_driver tis_of_driver = {
++	.name = "tpm_tis",
++	.match_table = tis_of_platform_match,
++	.probe = tis_of_init_one,
++	.remove = __devexit_p(tis_of_remove_one)
++};
++
++#endif
++
+ static int force;
+ module_param(force, bool, 0444);
+ MODULE_PARM_DESC(force, "Force device probe rather than using ACPI entry");
+@@ -703,7 +747,17 @@ static int __init init_tis(void)
+ 		return rc;
+ 	}
+ 
+-	return pnp_register_driver(&tis_pnp_driver);
++#ifdef CONFIG_OF
++	rc = of_register_platform_driver(&tis_of_driver);
++	if (rc)
++		return rc;
++#endif
++#ifdef CONFIG_PNP
++	rc = pnp_register_driver(&tis_pnp_driver);
++	if (rc)
++		return rc;
++#endif
++	return 0;
+ }
+ 
+ static void __exit cleanup_tis(void)
+@@ -728,11 +782,18 @@ static void __exit cleanup_tis(void)
+ 	}
+ 	spin_unlock(&tis_lock);
+ 
++#ifdef CONFIG_OF
++	of_unregister_platform_driver(&tis_of_driver);
++#endif
++
+ 	if (force) {
+ 		platform_device_unregister(pdev);
+ 		platform_driver_unregister(&tis_drv);
+-	} else
++	} else {
++#ifdef CONFIG_PNP
+ 		pnp_unregister_driver(&tis_pnp_driver);
++#endif
++	}
+ }
+ 
+ module_init(init_tis);
+-- 
+1.5.4.2
+
