@@ -1,46 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231Ab0CIDhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:37:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49466 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932196Ab0CIDha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:37:30 -0500
-Message-ID: <4B95C2AF.7010508@cn.fujitsu.com>
-Date: Tue, 09 Mar 2010 11:38:23 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       =?ISO-8859-15?Q?Am=E9rico_?= =?ISO-8859-15?Q?Wang?= 
-	<xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>	 <1267710847.10871.102.camel@gandalf.stny.rr.com>	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>	 <20100305171614.GC5244@nowhere>  <4B94A816.4090608@cn.fujitsu.com>	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>	 <4B95AE4E.6060700@cn.fujitsu.com> <1268101394.10871.1861.camel@gandalf.stny.rr.com>
-In-Reply-To: <1268101394.10871.1861.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S932240Ab0CIDnm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:43:42 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:49250 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932205Ab0CIDnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 22:43:40 -0500
+Date: Tue, 9 Mar 2010 13:47:50 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <201003090347.o293loxq004279@goober.internal.moreton.com.au>
+CC: <gerg@uclinux.org>, <linux-kernel@vger.kernel.org>,
+       <linux-m68k@vger.kernel.org>
+Subject: [git pull] m68knommu arch updates
+To: <torvalds@linux-foundation.org>
+X-Mailer: mail (GNU Mailutils 2.0)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Tue, 2010-03-09 at 10:11 +0800, Li Zefan wrote:
->> Steven Rostedt wrote:
->>> On Mon, 2010-03-08 at 15:32 +0800, Li Zefan wrote:
-> 
->>> This sounds like the compiler may have screwed up again. Can you compile
->>> with this patch and see if it catches anything?
->>>
->> But I was using a x86_64 machine, and this patch won't do anything on
->> x86_64?
-> 
-> I wonder if this issue has crept to x86_64. What kind of dump do you
-> get? And if this segfault is in the kernel, could you see (using gdb on
-> a vmlinux) if any of the stack frame setups look peculiar?
-> 
+Hi Linus,
 
-The segfault is from userspace. This is a segfault I just got:
+Please pull to get m68knommu updates. The usual few fixes, and also
+changes to support NPTL, and hardware support for the ColdFire QSPI
+interface.
 
-ftrace_stack_ma[14989]: segfault at fe2e ip 00000000004474c0 sp 00007fffb97e38c0 error 4 in bash[400000+d1000]
+Thanks
+Greg
+
+
+
+
+The following changes since commit 6ebdc661b608671e9ca572af8bb42d58108cc008:
+  Linus Torvalds (1):
+        Merge branch 'next-devicetree' of git://git.secretlab.ca/git/linux-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+
+Greg Ungerer (1):
+      m68knommu: remove a duplicate vector setting line for 68360
+
+Jun Sun (1):
+      uclinux: error message when FLAT reloc symbol is invalid, v2
+
+Maxim Kuvyrkov (2):
+      m68knommu: NPTL support for m68knommu
+      Fix m68k-uclinux's rt_sigreturn trampoline
+
+Philip Nye (1):
+      m68knommu: correct the CC flags for Coldfire M5272 targets
+
+Steven King (1):
+      m68knommu: Coldfire QSPI platform support
+
+ arch/m68k/include/asm/m520xsim.h       |    1 +
+ arch/m68k/include/asm/m523xsim.h       |    5 +
+ arch/m68k/include/asm/m5249sim.h       |    2 +
+ arch/m68k/include/asm/m527xsim.h       |    7 ++
+ arch/m68k/include/asm/m528xsim.h       |   67 +------------
+ arch/m68k/include/asm/m532xsim.h       |    1 +
+ arch/m68k/include/asm/mcfqspi.h        |   64 +++++++++++
+ arch/m68k/include/asm/thread_info_no.h |    1 +
+ arch/m68knommu/Makefile                |    2 +-
+ arch/m68knommu/kernel/entry.S          |    2 +-
+ arch/m68knommu/kernel/process.c        |    4 +
+ arch/m68knommu/kernel/ptrace.c         |    5 +
+ arch/m68knommu/kernel/sys_m68k.c       |   36 ++++++
+ arch/m68knommu/kernel/syscalltable.S   |    4 +
+ arch/m68knommu/platform/520x/config.c  |  149 ++++++++++++++++++++++++++
+ arch/m68knommu/platform/523x/config.c  |  170 +++++++++++++++++++++++++++++
+ arch/m68knommu/platform/5249/config.c  |  167 +++++++++++++++++++++++++++++
+ arch/m68knommu/platform/527x/config.c  |  182 ++++++++++++++++++++++++++++++++
+ arch/m68knommu/platform/528x/config.c  |  137 ++++++++++++++++++++++++
+ arch/m68knommu/platform/532x/config.c  |  124 ++++++++++++++++++++++
+ arch/m68knommu/platform/68360/ints.c   |    1 -
+ fs/binfmt_flat.c                       |    2 +-
+ 22 files changed, 1063 insertions(+), 70 deletions(-)
+ create mode 100644 arch/m68k/include/asm/mcfqspi.h
