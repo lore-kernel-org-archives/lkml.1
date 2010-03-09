@@ -1,57 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734Ab0CIN3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 08:29:20 -0500
-Received: from mail-qy0-f204.google.com ([209.85.221.204]:52962 "EHLO
-	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833Ab0CIN3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 08:29:15 -0500
-X-Greylist: delayed 362 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 08:29:15 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=CpsQ1uSgJriA45LrXrLsFcATw6aUSoW617eTelTeDgpaQ/TPGtkKCKvJ5ThyPFUR1U
-         R/tO7CgT8EJnnamxxGUh0/VAdkFEfig6bjkVHCb5mgtASknKJCwNt+HDvKEsYyVZSL+C
-         QWTpuxYLlYOxusNQ5VfbNQ6XcSOHiefxfhxhs=
-Message-ID: <4B964BBD.3070707@gmail.com>
-Date: Tue, 09 Mar 2010 08:23:09 -0500
-From: jim owens <owens6336@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752830Ab0CINfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 08:35:25 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39647 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751306Ab0CINfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 08:35:21 -0500
+Date: Wed, 10 Mar 2010 00:35:13 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
+ pressure to relieve instead of congestion
+Message-ID: <20100309133513.GL8653@laptop>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+ <1268048904-19397-2-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-To: Greg Freemyer <greg.freemyer@gmail.com>
-CC: David Newall <davidn@davidnewall.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Akira Fujita <a-fujita@rs.jp.nec.com>
-Subject: Re: defrag deployment status (was Re: [PATCH] ext4: allow defrag
- 	(EXT4_IOC_MOVE_EXT) in 32bit compat mode)
-References: <201003072132.10579.borntraeger@de.ibm.com>	 <4B94367E.9080506@garzik.org>	 <201003080853.42978.borntraeger@de.ibm.com>	 <4B9518DA.8010201@davidnewall.com> <4B952437.8020607@gmail.com> <87f94c371003080831n4d310e10i2b9badf4290f1ede@mail.gmail.com> <4B952FB5.2060600@gmail.com>
-In-Reply-To: <4B952FB5.2060600@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268048904-19397-2-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After thinking about it overnight, I realized I think in terms
-of 1 drive is 1 filesystem.  That is a fatal trap for defragment.
- 
-> When I only worried about a few OEM drives, I used to read the zone
-> geometry from the drive to see where each speed transition was as the
-> density decreased.  But that is just not worth the effort in linux
-> filesystems IMO, it is enough to pack low.
+On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
+> Under heavy memory pressure, the page allocator may call congestion_wait()
+> to wait for IO congestion to clear or a timeout. This is not as sensible
+> a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
+> even congested as the pressure could have been due to a large number of
+> SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
+> 
+> At the point of congestion_wait(), the allocator is struggling to get the
+> pages it needs and it should back off. This patch puts the allocator to sleep
+> on a zone->pressure_wq for either a timeout or until a direct reclaimer or
+> kswapd brings the zone over the low watermark, whichever happens first.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  include/linux/mmzone.h |    3 ++
+>  mm/internal.h          |    4 +++
+>  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
+>  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
+>  mm/vmscan.c            |    2 +
+>  5 files changed, 101 insertions(+), 5 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 30fe668..72465c1 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -398,6 +398,9 @@ struct zone {
+>  	unsigned long		wait_table_hash_nr_entries;
+>  	unsigned long		wait_table_bits;
+>  
+> +	/* queue for processes waiting for pressure to relieve */
+> +	wait_queue_head_t	*pressure_wq;
 
-So I retract that we don't care about zone geometry, we need to
-care deeply, but not in the sense of how moving short distances
-on a drive affects the performance.  What we need to ensure is
-that the placer algorithm does not span across partitions as in:
+Hmm, processes may be eligible to allocate from > 1 zone, but you
+have them only waiting for one. I wonder if we shouldn't wait for
+more zones?
 
-["/" 100GB created] [300GB other] [100G LVM added to "/"]
+Congestion waiting uses a global waitqueue, which hasn't seemed to
+cause a big scalability problem. Would it be better to have a global
+waitqueue for this too?
 
-so the filesystem thinks it is 200GB contiguous and the
-defragmenter thinks address 90GB is closer to address 110 GB
-than 90GB is to 50GB.
 
-jim
+> +void check_zone_pressure(struct zone *zone)
+
+I don't really like the name pressure. We use that term for the reclaim
+pressure wheras we're just checking watermarks here (actual pressure
+could be anything).
+
+
+> +{
+> +	/* If no process is waiting, nothing to do */
+> +	if (!waitqueue_active(zone->pressure_wq))
+> +		return;
+> +
+> +	/* Check if the high watermark is ok for order 0 */
+> +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
+> +		wake_up_interruptible(zone->pressure_wq);
+> +}
+
+If you were to do this under the zone lock (in your subsequent patch),
+then it could avoid races. I would suggest doing it all as a single
+patch and not doing the pressure checks in reclaim at all.
+
+If you are missing anything, then that needs to be explained and fixed
+rather than just adding extra checks.
+
+> +
+> +/**
+> + * zonepressure_wait - Wait for pressure on a zone to ease off
+> + * @zone: The zone that is expected to be under pressure
+> + * @order: The order the caller is waiting on pages for
+> + * @timeout: Wait until pressure is relieved or this timeout is reached
+> + *
+> + * Waits for up to @timeout jiffies for pressure on a zone to be relieved.
+> + * It's considered to be relieved if any direct reclaimer or kswapd brings
+> + * the zone above the high watermark
+> + */
+> +long zonepressure_wait(struct zone *zone, unsigned int order, long timeout)
+> +{
+> +	long ret;
+> +	DEFINE_WAIT(wait);
+> +
+> +wait_again:
+> +	prepare_to_wait(zone->pressure_wq, &wait, TASK_INTERRUPTIBLE);
+
+I guess to do it without races you need to check watermark here.
+And possibly some barriers if it is done without zone->lock.
+
+> +
+> +	/*
+> +	 * The use of io_schedule_timeout() here means that it gets
+> +	 * accounted for as IO waiting. This may or may not be the case
+> +	 * but at least this way it gets picked up by vmstat
+> +	 */
+> +	ret = io_schedule_timeout(timeout);
+> +	finish_wait(zone->pressure_wq, &wait);
+> +
+> +	/* If woken early, check watermarks before continuing */
+> +	if (ret && !zone_watermark_ok(zone, order, low_wmark_pages(zone), 0, 0)) {
+> +		timeout = ret;
+> +		goto wait_again;
+> +	}
+
+And then I don't know if we'd really need the extra check here. Might as
+well just let the allocator try again and avoid the code?
+
