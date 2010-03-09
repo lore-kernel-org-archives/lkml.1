@@ -1,128 +1,212 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743Ab0CITD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:03:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53199 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194Ab0CITDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:03:53 -0500
-Date: Tue, 9 Mar 2010 14:03:40 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Nauman Rafique <nauman@google.com>, jens.axboe@oracle.com,
-       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface
-	"weight_device" for IO-Controller
-Message-ID: <20100309190340.GD8663@redhat.com>
-References: <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com> <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com> <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B95A9C6.9060504@cn.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1754728Ab0CITth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:49:37 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:60878 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376Ab0CITtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:49:33 -0500
+Message-id: <4B96A633.2080207@acm.org>
+Date: Tue, 09 Mar 2010 13:49:07 -0600
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-version: 1.0
+To: Jean Delvare <jdelvare@suse.de>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Wilck <martin.wilck@ts.fujitsu.com>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>,
+       Gary Smith <gasmith@redhat.com>
+Subject: Re: [PATCH 1/4] IPMI: Add parameter to limit CPU usage in kipmid
+References: <20100303161438.GA17623@minyard.local>
+ <201003091305.58136.jdelvare@suse.de>
+In-reply-to: <201003091305.58136.jdelvare@suse.de>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 09:52:06AM +0800, Gui Jianfeng wrote:
+Jean Delvare wrote:
+> Hi Corey, Linus,
+>
+> On Wednesday 03 March 2010 05:14:38 pm Corey Minyard wrote:
+>   
+>> From: Martin Wilck <martin.wilck@ts.fujitsu.com>
+>>
+>> In some cases kipmid can use a lot of CPU.  This adds a way to tune
+>> the CPU used by kipmid to help in those cases.  By setting
+>> kipmid_max_busy_us to a value between 100 and 500, it is possible to
+>> bring down kipmid CPU load to practically 0 without loosing too much
+>> ipmi throughput performance.  Not setting the value, or setting the
+>> value to zero, operation is unaffected.
+>>
+>> Signed-off-by: Martin Wilck <martin.wilck@ts.fujitsu.com>
+>> Cc: Jean Delvare <jdelvare@suse.de>
+>> Signed-off-by: Corey Minyard <cminyard@mvista.com>
+>> ---
+>> This patch has been discussed quite a bit, and I believe all issues with it
+>> have been resolved.  It's not great, but nobody has a better way to handle
+>> the problem.
+>>     
+>
+> I still can't see this patch in Linus' tree as of 2.6.34-rc1. It has been 
+> waiting for sooo long already, can we finally get it in? Linus, will you apply 
+> it? Or should it go through Andrew?
+>   
+It's already in Andrew's patches.  It would be good if this could go in 
+for 2.6.34, I think it has been through enough review and such.
 
-[..]
-> >>>> +static int blkio_policy_parse_and_set(char *buf,
-> >>>> +                                   struct blkio_policy_node *newpn)
-> >>>> +{
-> >>>> +     char *s[4], *p, *major_s = NULL, *minor_s = NULL;
-> >>>> +     int ret;
-> >>>> +     unsigned long major, minor, temp;
-> >>>> +     int i = 0;
-> >>>> +     dev_t dev;
-> >>>> +
-> >>>> +     memset(s, 0, sizeof(s));
-> >>>> +
-> >>>> +     while ((p = strsep(&buf, " ")) != NULL) {
-> >>>> +             if (!*p)
-> >>>> +                     continue;
-> >>>> +
-> >>>> +             s[i++] = p;
-> >>>> +
-> >>>> +             /* Prevent from inputing too many things */
-> >>>> +             if (i == 3)
-> >>>> +                     break;
-> >>>> +     }
-> >>>> +
-> >>>> +     if (i != 2)
-> >>>> +             return -EINVAL;
-> >>>> +
-> >>>> +     p = strsep(&s[0], ":");
-> >>>> +     if (p != NULL)
-> >>>> +             major_s = p;
-> >>>> +     else
-> >>>> +             return -EINVAL;
-> >>>> +
-> >>>> +     minor_s = s[0];
-> >>>> +     if (!minor_s)
-> >>>> +             return -EINVAL;
-> >>>> +
-> >>>> +     ret = strict_strtoul(major_s, 10, &major);
-> >>>> +     if (ret)
-> >>>> +             return -EINVAL;
-> >>>> +
-> >>>> +     ret = strict_strtoul(minor_s, 10, &minor);
-> >>>> +     if (ret)
-> >>>> +             return -EINVAL;
-> >>>> +
-> >>>> +     dev = MKDEV(major, minor);
-> >> I am not quite sure if exposing a mojor,minor number is the best
-> >> interface that can be exposed to user space. How about actual disk
-> >> names like sda, sdb, .. etc? The only problem I see there is that it
-> >> seems tricky to get to these disk names from within the block layer.
-> >> "struct request_queue" has a pointer to backing_dev which has a device
-> >> from which we can get major,minor. But in order to get to disk name,
-> >> we would have to call get_gendisk which can hold a semaphore. Is this
-> >> the reason for us going with major,minor as a user interface to
-> >> specify a disk? I bet there are good reasons for us not keeping a
-> >> pointer to "struct gendisk" from "struct request_queue". If we could
-> >> keep that pointer, our user interface could be very easily modified to
-> >> be the disk name like sda, sdb, etc.
-> > 
-> > That's a good question. Why not use device names instead of device
-> > numbers? From user's perspective, device names will be more intutive
-> > to use.
-> > 
-> > At the same time, will it look odd to handle devices with their names as WWID.
-> > 
-> > /dev/mapper/3600508b400105df70000e000026f0000
-> > 
-> > Though I see that there is an alternate way to address the same device
-> > like /dev/dm-2 etc.
-> > 
-> > So from user's perspective I think it will be more intutive to handle
-> > disk names instead of numbers.
-> > 
-> > Gui, did you forsee issues in implementing disk names?
-> 
-> Hi Vivek,
-> 
-> >From the implementation of view, we need a device number as a key in blkio_policy_node, 
-> if using device name as user interface, i can't figure out a way to retirve the 
-> corresponding device number by means of device name (like sda, not "/dev/sda"). 
+-corey
 
-Hi Gui,
+> Thanks.
+>
+>   
+>> Index: linux-2.6.32/drivers/char/ipmi/ipmi_si_intf.c
+>> ===================================================================
+>> --- linux-2.6.32.orig/drivers/char/ipmi/ipmi_si_intf.c
+>> +++ linux-2.6.32/drivers/char/ipmi/ipmi_si_intf.c
+>> @@ -294,6 +294,9 @@ struct smi_info {
+>>  static int force_kipmid[SI_MAX_PARMS];
+>>  static int num_force_kipmid;
+>>
+>> +static unsigned int kipmid_max_busy_us[SI_MAX_PARMS];
+>> +static int num_max_busy_us;
+>> +
+>>  static int unload_when_empty = 1;
+>>
+>>  static int try_smi_init(struct smi_info *smi);
+>> @@ -924,23 +927,77 @@ static void set_run_to_completion(void *
+>>  	}
+>>  }
+>>
+>> +/*
+>> + * Use -1 in the nsec value of the busy waiting timespec to tell that
+>> + * we are spinning in kipmid looking for something and not delaying
+>> + * between checks
+>> + */
+>> +static inline void ipmi_si_set_not_busy(struct timespec *ts)
+>> +{
+>> +	ts->tv_nsec = -1;
+>> +}
+>> +static inline int ipmi_si_is_busy(struct timespec *ts)
+>> +{
+>> +	return ts->tv_nsec != -1;
+>> +}
+>> +
+>> +static int ipmi_thread_busy_wait(enum si_sm_result smi_result,
+>> +				 const struct smi_info *smi_info,
+>> +				 struct timespec *busy_until)
+>> +{
+>> +	unsigned int max_busy_us = 0;
+>> +
+>> +	if (smi_info->intf_num < num_max_busy_us)
+>> +		max_busy_us = kipmid_max_busy_us[smi_info->intf_num];
+>> +	if (max_busy_us == 0 || smi_result != SI_SM_CALL_WITH_DELAY)
+>> +		ipmi_si_set_not_busy(busy_until);
+>> +	else if (!ipmi_si_is_busy(busy_until)) {
+>> +		getnstimeofday(busy_until);
+>> +		timespec_add_ns(busy_until, max_busy_us*NSEC_PER_USEC);
+>> +	} else {
+>> +		struct timespec now;
+>> +		getnstimeofday(&now);
+>> +		if (unlikely(timespec_compare(&now, busy_until) > 0)) {
+>> +			ipmi_si_set_not_busy(busy_until);
+>> +			return 0;
+>> +		}
+>> +	}
+>> +	return 1;
+>> +}
+>> +
+>> +
+>> +/*
+>> + * A busy-waiting loop for speeding up IPMI operation.
+>> + *
+>> + * Lousy hardware makes this hard.  This is only enabled for systems
+>> + * that are not BT and do not have interrupts.  It starts spinning
+>> + * when an operation is complete or until max_busy tells it to stop
+>> + * (if that is enabled).  See the paragraph on kimid_max_busy_us in
+>> + * Documentation/IPMI.txt for details.
+>> + */
+>>  static int ipmi_thread(void *data)
+>>  {
+>>  	struct smi_info *smi_info = data;
+>>  	unsigned long flags;
+>>  	enum si_sm_result smi_result;
+>> +	struct timespec busy_until;
+>>
+>> +	ipmi_si_set_not_busy(&busy_until);
+>>  	set_user_nice(current, 19);
+>>  	while (!kthread_should_stop()) {
+>> +		int busy_wait;
+>> +
+>>  		spin_lock_irqsave(&(smi_info->si_lock), flags);
+>>  		smi_result = smi_event_handler(smi_info, 0);
+>>  		spin_unlock_irqrestore(&(smi_info->si_lock), flags);
+>> +		busy_wait = ipmi_thread_busy_wait(smi_result, smi_info,
+>> +						  &busy_until);
+>>  		if (smi_result == SI_SM_CALL_WITHOUT_DELAY)
+>>  			; /* do nothing */
+>> -		else if (smi_result == SI_SM_CALL_WITH_DELAY)
+>> +		else if (smi_result == SI_SM_CALL_WITH_DELAY && busy_wait)
+>>  			schedule();
+>>  		else
+>> -			schedule_timeout_interruptible(1);
+>> +			schedule_timeout_interruptible(0);
+>>  	}
+>>  	return 0;
+>>  }
+>> @@ -1211,6 +1268,11 @@ module_param(unload_when_empty, int, 0);
+>>  MODULE_PARM_DESC(unload_when_empty, "Unload the module if no interfaces
+>>  are" " specified or found, default is 1.  Setting to 0"
+>>  		 " is useful for hot add of devices using hotmod.");
+>> +module_param_array(kipmid_max_busy_us, uint, &num_max_busy_us, 0644);
+>> +MODULE_PARM_DESC(kipmid_max_busy_us,
+>> +		 "Max time (in microseconds) to busy-wait for IPMI data before"
+>> +		 " sleeping. 0 (default) means to wait forever. Set to 100-500"
+>> +		 " if kipmid is using up a lot of CPU time.");
+>>
+>>
+>>  static void std_irq_cleanup(struct smi_info *info)
+>> Index: linux-2.6.32/Documentation/IPMI.txt
+>> ===================================================================
+>> --- linux-2.6.32.orig/Documentation/IPMI.txt
+>> +++ linux-2.6.32/Documentation/IPMI.txt
+>> @@ -365,6 +365,7 @@ You can change this at module load time
+>>         regshifts=<shift1>,<shift2>,...
+>>         slave_addrs=<addr1>,<addr2>,...
+>>         force_kipmid=<enable1>,<enable2>,...
+>> +       kipmid_max_busy_us=<ustime1>,<ustime2>,...
+>>         unload_when_empty=[0|1]
+>>
+>>  Each of these except si_trydefaults is a list, the first item for the
+>> @@ -433,6 +434,7 @@ kernel command line as:
+>>         ipmi_si.regshifts=<shift1>,<shift2>,...
+>>         ipmi_si.slave_addrs=<addr1>,<addr2>,...
+>>         ipmi_si.force_kipmid=<enable1>,<enable2>,...
+>> +       ipmi_si.kipmid_max_busy_us=<ustime1>,<ustime2>,...
+>>
+>>  It works the same as the module parameters of the same names.
+>>
+>> @@ -450,6 +452,16 @@ force this thread on or off.  If you for
+>>  interrupts, the driver will run VERY slowly.  Don't blame me,
+>>  these interfaces suck.
+>>
+>> +Unfortunately, this thread can use a lot of CPU depending on the
+>> +interface's performance.  This can waste a lot of CPU and cause
+>> +various issues with detecting idle CPU and using extra power.  To
+>> +avoid this, the kipmid_max_busy_us sets the maximum amount of time, in
+>> +microseconds, that kipmid will spin before sleeping for a tick.  This
+>> +value sets a balance between performance and CPU waste and needs to be
+>> +tuned to your needs.  Maybe, someday, auto-tuning will be added, but
+>> +that's not a simple thing and even the auto-tuning would need to be
+>> +tuned to the user's desired performance.
+>> +
+>>  The driver supports a hot add and remove of interfaces.  This way,
+>>  interfaces can be added or removed after the kernel is up and running.
+>>  This is done using /sys/modules/ipmi_si/parameters/hotmod, which is a
+>>     
+>
+>   
 
-How about using full device path names (/dev/sda)? "blockdev" utility also
-expects full device pathnames. Same seems to be the case with device mapper
-targets.
-
-"device" cgroup controller probably is using major and minor numbers because
-it needs to control creation of device file (mknod).
-
-May be we can use lookup_bdev() to get block_device pointer and then
-get_gendisk() to check if it is a partition.
-
-I am not very sure but device name/path interface might turn out to be
-more intutive.
-
-Jens, do you have any thoughts on this?
-
-Thanks
-Vivek
