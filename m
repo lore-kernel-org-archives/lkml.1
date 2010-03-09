@@ -1,61 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035Ab0CIHaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 02:30:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55717 "EHLO mx3.mail.elte.hu"
+	id S1751953Ab0CIHjC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 02:39:02 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37765 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728Ab0CIHaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 02:30:06 -0500
-Date: Tue, 9 Mar 2010 08:29:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-Message-ID: <20100309072938.GA6137@elte.hu>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
- <20100308094647.GA14268@elte.hu>
- <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
- <20100308190857.400bde09@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
- <20100308192744.5f40a5ee@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.00.1003081132370.3989@localhost.localdomain>
+	id S1751027Ab0CIHjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 02:39:00 -0500
+Message-ID: <4B95FB06.6070906@kernel.org>
+Date: Tue, 09 Mar 2010 16:38:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003081132370.3989@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: =?UTF-8?B?QW5kcsOpIEdvZGRhcmQgUm9zYQ==?= <andre.goddard@gmail.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Serge Hallyn <serue@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs/file: move NULL checks to where they make sense
+ and can occur
+References: <2fcd155e7b67ba2d41de0a5a0751b3091bf849d8.1267785770.git.andre.goddard@gmail.com>
+In-Reply-To: <2fcd155e7b67ba2d41de0a5a0751b3091bf849d8.1267785770.git.andre.goddard@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 07:38:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Mon, 8 Mar 2010, Alan Cox wrote:
-> > 
-> > man restorecond
+On 03/05/2010 07:46 PM, André Goddard Rosa wrote:
+> ... avoiding checking for NULL 2 times in a row when we already have a page.
 > 
-> I know. I also sometimes sit through minutes of "let's relabel the system, 
-> because you've booted a kernel without selinux support".
+> It decreases code size:
+> text    data     bss     dec     hex filename
+> 4246      48    4136    8430    20ee fs/sysfs/file-BEFORE.o
+> 4214      48    4136    8398    20ce fs/sysfs/file-AFTER.o
+> 
+> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-I've had selinux relabeling wait times of an hour or two too, on a 
-sufficiently large filesystem.
+Nacked-by: Tejun Heo <tj@kernel.org>
 
-I think this hurts security far more than anything else, because it causes 
-people to actually _turn off the whole thing_ - so we will have less and less 
-security in the end.
+For this level of micro optimization to be meaningful, the code path
+should be *really* *really* hot, which none of sysfs code pats are.
+Whatever is easier to the eyes wins.
 
-( To use the obligatory fire door analogy: we should prefer a one inch thick 
-  fire door that opens and closes fully automated to a five inches thick fire 
-  door that people keep always-open with a chair. )
+Thanks.
 
-	Ingo
+-- 
+tejun
