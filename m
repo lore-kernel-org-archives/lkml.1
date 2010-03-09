@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402Ab0CIH5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 02:57:53 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:37647 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593Ab0CIH5u (ORCPT
+	id S1753461Ab0CIH6I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 02:58:08 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:55263 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424Ab0CIH6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 02:57:50 -0500
+	Tue, 9 Mar 2010 02:58:05 -0500
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Alexander Beregalov <a.beregalov@gmail.com>, Greg KH <gregkh@suse.de>,
        linux-acpi@vger.kernel.org,
@@ -16,16 +16,16 @@ References: <a4423d671003081547v5c955d58t248db945c06d2a7f@mail.gmail.com>
 	<86802c441003081612r2f44efd6n9664b4b7c98a636a@mail.gmail.com>
 	<m1d3zel4b4.fsf@fess.ebiederm.org> <4B95F37E.6060309@kernel.org>
 From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 08 Mar 2010 23:57:46 -0800
 In-Reply-To: <4B95F37E.6060309@kernel.org> (Yinghai Lu's message of "Mon\, 08 Mar 2010 23\:06\:38 -0800")
-Message-ID: <m16356nczp.fsf@fess.ebiederm.org>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Date: Mon, 08 Mar 2010 23:57:58 -0800
+Message-ID: <m14okqnczd.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
