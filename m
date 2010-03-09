@@ -1,68 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932321Ab0CIE5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 23:57:53 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:43655 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756606Ab0CIE5u (ORCPT
+	id S1750902Ab0CIFGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 00:06:20 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:57030 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715Ab0CIFGQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 23:57:50 -0500
-To: "Daniel Taylor" <Daniel.Taylor@wdc.com>
-Cc: "Tejun Heo" <tj@kernel.org>, "Karel Zak" <kzak@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       <linux-ide@vger.kernel.org>, "lkml" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Mark Lord" <kernel@teksavvy.com>,
-       <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       <hirofumi@mail.parknet.co.jp>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <irtiger@gmail.com>,
-       "Matthew Wilcox" <matthew@wil.cx>, <aschnell@suse.de>,
-       <knikanth@suse.de>, <jdelvare@suse.de>,
-       "Jim Meyering" <jim@meyering.net>
-Subject: Re: ATA 4 KiB sector issues.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
-	<20100308195847.GC18077@nb.net.home> <4B95B39C.70402@kernel.org>
-	<3E0C3AE547FA504DA5E89EA5A24AC85803E2BD78@wdscexbe01.sc.wdc.com>
-Date: Mon, 08 Mar 2010 23:54:59 -0500
-In-Reply-To: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD78@wdscexbe01.sc.wdc.com>
-	(Daniel Taylor's message of "Mon, 8 Mar 2010 19:38:53 -0800")
-Message-ID: <yq1zl2i6qn0.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Tue, 9 Mar 2010 00:06:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=C8YgKZN+PtOAQxJqgGGpQZTDWEMSr2sAWyQVmyx56k5PitYePR/B1CeQb7JdF6TQN5
+         42uCP/evJ6O1h8IO3qGhGnpmKG+pvpKhEdOYY3VwtS6wk3GhOByvOOEULhQz5tuf42DD
+         ZmsA33CHJLq7BB1yT3bp5NiTKXoeWxrcjN+6Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B95D504.0118:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <1268103085.10871.1862.camel@gandalf.stny.rr.com>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
+	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
+	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	 <2375c9f91003071831x4104dd8dp82967c0409391bd5@mail.gmail.com>
+	 <2375c9f91003081840w5419d847q8ffd8b6ce46d86fb@mail.gmail.com>
+	 <1268103085.10871.1862.camel@gandalf.stny.rr.com>
+Date: Tue, 9 Mar 2010 13:06:13 +0800
+Message-ID: <2375c9f91003082106k6de11672y1b832223aa7ccd60@mail.gmail.com>
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: rostedt@goodmis.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "DLT" == Daniel Taylor <Daniel.Taylor@wdc.com> writes:
+On Tue, Mar 9, 2010 at 10:51 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Tue, 2010-03-09 at 10:40 +0800, Américo Wang wrote:
+>
+>> > I will try this now.
+>> >
+>>
+>> Unfortunately, this doesn't help.
+>>
+>> What is worse, I got another soft lockup, although I already turned LOCKDEP off.
+>
+> Hmm, this really sounds like somethings badly broken.
+>
+> What version of GCC are you using?
 
-DLT> Simple reality is that XP is "forever".  Drives >2TiB, which may be
-DLT> USB-attached, used with XP will be MBR-partitioned and use
-DLT> 4096-byte sectors.  We need to be able to read/write those disks on
-DLT> Linux systems.
-
-Shouldn't be a problem as long as the DOS partition table vs. 4 KiB
-sectors thing is fixed.
-
-
-DLT> One last comment: I just tried to partition and format a >2TiB
-DLT> drive on fully updated Ubuntu 9.10 with GParted.  I selected not to
-DLT> cylinder align, use GPT and ext3, and to put 1 MiB preceeding and
-DLT> following.  libparted failed with "unable to satisfy all
-DLT> constraints of the partition".  Using "parted", I created the
-DLT> partition, and then GParted was able to apply the ext3 file system.
-
-I don't think ubuntu has adopted any of the relevant updates yet.
-
-I believe the Fedora 13 Alpha is due to be released this week.  That
-would be the best test platform because several of the people who have
-been actively engaged in the 4 KiB sector enablement process are Fedora
-developers.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+# gcc -v
+Using built-in specs.
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
+--infodir=/usr/share/info --enable-shared --enable-threads=posix
+--enable-checking=release --with-system-zlib --enable-__cxa_atexit
+--disable-libunwind-exceptions --enable-libgcj-multifile
+--enable-languages=c,c++,objc,obj-c++,java,fortran,ada
+--enable-java-awt=gtk --disable-dssi --enable-plugin
+--with-java-home=/usr/lib/jvm/java-1.4.2-gcj-1.4.2.0/jre
+--with-cpu=generic --host=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)
