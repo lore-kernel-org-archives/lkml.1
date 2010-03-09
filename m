@@ -1,219 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719Ab0CITRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:17:48 -0500
-Received: from quartz.orcorp.ca ([139.142.54.143]:55624 "EHLO quartz.orcorp.ca"
+	id S1756095Ab0CITXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:23:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10927 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227Ab0CITRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:17:43 -0500
-Date: Tue, 9 Mar 2010 12:17:42 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] NET: Support clause 45 MDIO commands at the MDIO bus level
-Message-ID: <20100309191742.GB30462@obsidianresearch.com>
-MIME-Version: 1.0
+	id S1751445Ab0CITXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:23:02 -0500
+Date: Tue, 9 Mar 2010 14:22:38 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jblunck@suse.de, viro@zeniv.linux.org.uk, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] union-mount: Drive the union cache via dcache
+Message-ID: <20100309192237.GA10605@shell>
+References: <1267567889-4637-1-git-send-email-vaurora@redhat.com> <1267567889-4637-2-git-send-email-vaurora@redhat.com> <1267567889-4637-3-git-send-email-vaurora@redhat.com> <E1NmsUF-0003u0-19@pomaz-ex.szeredi.hu> <20100303214952.GD19689@shell> <E1NnE05-00069x-VI@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
+In-Reply-To: <E1NnE05-00069x-VI@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IEEE 802.3ae clause 45 specifies a somewhat modified MDIO protocol
-for use by 10GIGE phys. The main change is a 21 bit address split into
-a 5 bit device ID and a 16 bit register offset. The definition is designed
-so that normal and extended devices can run on the same MDIO bus.
+On Thu, Mar 04, 2010 at 05:34:13PM +0100, Miklos Szeredi wrote:
+> On Wed, 3 Mar 2010, Valerie Aurora wrote:
+> > On Wed, Mar 03, 2010 at 06:35:55PM +0100, Miklos Szeredi wrote:
+> > > On Tue,  2 Mar 2010, Valerie Aurora wrote:
+> > > > +/*
+> > > > + * This must be called after __d_drop_unions() without holding any locks.
+> > > > + * Note: The dentry might still be reachable via a lookup but at that time it
+> > > > + * already a negative dentry. Otherwise it would be unhashed. The union_mount
+> > > > + * structure itself is still reachable through mnt->mnt_unions (which we
+> > > > + * protect against with union_lock).
+> > > > + *
+> > > > + * We were worried about a recursive dput() call through:
+> > > > + *
+> > > > + * dput()->d_kill()->shrink_d_unions()->union_put()->dput()
+> > > > + *
+> > > > + * But this path can only be reached if the dentry is unhashed when we
+> > > > + * enter the first dput(), and it can only be unhashed if it was
+> > > > + * rmdir()'d, and d_delete() calls shrink_d_unions() for us.
+> > > > + */
+> > > > +void shrink_d_unions(struct dentry *dentry)
+> > > > +{
+> > > > +	struct union_mount *this, *next;
+> > > > +
+> > > > +repeat:
+> > > > +	spin_lock(&union_lock);
+> > > > +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+> > > > +		BUG_ON(!hlist_unhashed(&this->u_hash));
+> > > > +		BUG_ON(!hlist_unhashed(&this->u_rhash));
+> > > > +		list_del(&this->u_unions);
+> > > > +		this->u_next.dentry->d_unionized--;
+> > > > +		spin_unlock(&union_lock);
+> > > > +		union_put(this);
+> > > > +		goto repeat;
+> > > 
+> > > This loop is weird.  That list_for_each_entry_safe is just used to
+> > > initialize "this", since it unconditionally restarts from the
+> > > beginning.
+> > 
+> > This loop is definitely weird, but the alternative is so simple
+> > (replace the goto with a spin_lock()) that I suspect Jan had a reason
+> > to write it this way.  Jan, do you recall?
+> 
+> Something like the following is equivalent but more readable:
+> 
+> 	struct list_head *head = &dentry->d_unions;
+> 
+> 	spin_lock(&union_lock);
+> 	while (!list_empty(head) {
+> 		this = list_entry(head->next, struct union_mount, u_unions);
+> 		...
+> 		spin_unlock(&union_lock);
+> 		union_put(this);
+> 		spin_lock(&union_lock);
+> 	}
+> 	spin_unlock(&union_lock);
 
-Extend mdio-bitbang to do the new protocol. At the MDIO bus level the
-protocol is requested by or'ing MII_ADDR_C45 into the register offset.
+Okay, I will rewrite it along those lines.  Thanks,
 
-Make phy_read/phy_write/etc pass a full 32 bit register offset.
-
-This does not attempt to make the phy layer support C45 style PHYs, just
-to provide the MDIO bus support.
-
-Tested against a Broadcom 10GE phy with ID 0x206034, and several
-Broadcom 10/100/1000 Phys in normal mode.
-
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
----
- drivers/net/phy/mdio-bitbang.c |   60 ++++++++++++++++++++++++++++++++++------
- drivers/net/phy/mdio_bus.c     |    4 +-
- include/linux/phy.h            |   12 +++++--
- 3 files changed, 61 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/net/phy/mdio-bitbang.c b/drivers/net/phy/mdio-bitbang.c
-index 2576055..0ff0661 100644
---- a/drivers/net/phy/mdio-bitbang.c
-+++ b/drivers/net/phy/mdio-bitbang.c
-@@ -23,8 +23,13 @@
- #include <linux/types.h>
- #include <linux/delay.h>
- 
--#define MDIO_READ 1
--#define MDIO_WRITE 0
-+#define MDIO_READ 2
-+#define MDIO_WRITE 1
-+
-+#define MDIO_C45 (1<<15)
-+#define MDIO_C45_ADDR (MDIO_C45 | 0)
-+#define MDIO_C45_READ (MDIO_C45 | 3)
-+#define MDIO_C45_WRITE (MDIO_C45 | 1)
- 
- #define MDIO_SETUP_TIME 10
- #define MDIO_HOLD_TIME 10
-@@ -90,7 +95,7 @@ static u16 mdiobb_get_num(struct mdiobb_ctrl *ctrl, int bits)
- /* Utility to send the preamble, address, and
-  * register (common to read and write).
-  */
--static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int read, u8 phy, u8 reg)
-+static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int op, u8 phy, u8 reg)
- {
- 	const struct mdiobb_ops *ops = ctrl->ops;
- 	int i;
-@@ -109,23 +114,56 @@ static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int read, u8 phy, u8 reg)
- 	for (i = 0; i < 32; i++)
- 		mdiobb_send_bit(ctrl, 1);
- 
--	/* send the start bit (01) and the read opcode (10) or write (10) */
-+	/* send the start bit (01) and the read opcode (10) or write (10).
-+	   Clause 45 operation uses 00 for the start and 11, 10 for
-+	   read/write */
- 	mdiobb_send_bit(ctrl, 0);
--	mdiobb_send_bit(ctrl, 1);
--	mdiobb_send_bit(ctrl, read);
--	mdiobb_send_bit(ctrl, !read);
-+	if (op & MDIO_C45)
-+		mdiobb_send_bit(ctrl, 0);
-+	else
-+		mdiobb_send_bit(ctrl, 1);
-+	mdiobb_send_bit(ctrl, (op >> 1) & 1);
-+	mdiobb_send_bit(ctrl, (op >> 0) & 1);
- 
- 	mdiobb_send_num(ctrl, phy, 5);
- 	mdiobb_send_num(ctrl, reg, 5);
- }
- 
-+/* In clause 45 mode all commands are prefixed by MDIO_ADDR to specify the
-+   lower 16 bits of the 21 bit address. This transfer is done identically to a
-+   MDIO_WRITE except for a different code. To enable clause 45 mode or
-+   MII_ADDR_C45 into the address. Theoretically clause 45 and normal devices
-+   can exist on the same bus. Normal devices should ignore the MDIO_ADDR
-+   phase. */
-+static int mdiobb_cmd_addr(struct mdiobb_ctrl *ctrl, int phy, u32 addr)
-+{
-+	unsigned int dev_addr = (addr >> 16) & 0x1F;
-+	unsigned int reg = addr & 0xFFFF;
-+	mdiobb_cmd(ctrl, MDIO_C45_ADDR, phy, dev_addr);
-+
-+	/* send the turnaround (10) */
-+	mdiobb_send_bit(ctrl, 1);
-+	mdiobb_send_bit(ctrl, 0);
-+
-+	mdiobb_send_num(ctrl, reg, 16);
-+
-+	ctrl->ops->set_mdio_dir(ctrl, 0);
-+	mdiobb_get_bit(ctrl);
-+
-+	return dev_addr;
-+}
- 
- static int mdiobb_read(struct mii_bus *bus, int phy, int reg)
- {
- 	struct mdiobb_ctrl *ctrl = bus->priv;
- 	int ret, i;
- 
--	mdiobb_cmd(ctrl, MDIO_READ, phy, reg);
-+	if (reg & MII_ADDR_C45) {
-+		reg = mdiobb_cmd_addr(ctrl, phy, reg);
-+		mdiobb_cmd(ctrl, MDIO_C45_READ, phy, reg);
-+	} else
-+		mdiobb_cmd(ctrl, MDIO_READ, phy, reg);
-+
- 	ctrl->ops->set_mdio_dir(ctrl, 0);
- 
- 	/* check the turnaround bit: the PHY should be driving it to zero */
-@@ -148,7 +186,11 @@ static int mdiobb_write(struct mii_bus *bus, int phy, int reg, u16 val)
- {
- 	struct mdiobb_ctrl *ctrl = bus->priv;
- 
--	mdiobb_cmd(ctrl, MDIO_WRITE, phy, reg);
-+	if (reg & MII_ADDR_C45) {
-+		reg = mdiobb_cmd_addr(ctrl, phy, reg);
-+		mdiobb_cmd(ctrl, MDIO_C45_WRITE, phy, reg);
-+	} else
-+		mdiobb_cmd(ctrl, MDIO_WRITE, phy, reg);
- 
- 	/* send the turnaround (10) */
- 	mdiobb_send_bit(ctrl, 1);
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index e17b702..6a6b819 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -208,7 +208,7 @@ EXPORT_SYMBOL(mdiobus_scan);
-  * because the bus read/write functions may wait for an interrupt
-  * to conclude the operation.
-  */
--int mdiobus_read(struct mii_bus *bus, int addr, u16 regnum)
-+int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
- {
- 	int retval;
- 
-@@ -233,7 +233,7 @@ EXPORT_SYMBOL(mdiobus_read);
-  * because the bus read/write functions may wait for an interrupt
-  * to conclude the operation.
-  */
--int mdiobus_write(struct mii_bus *bus, int addr, u16 regnum, u16 val)
-+int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
- {
- 	int err;
- 
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 6a7eb40..5069739 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -81,6 +81,10 @@ typedef enum {
-  */
- #define MII_BUS_ID_SIZE	(20 - 3)
- 
-+/* Or MII_ADDR_C45 into regnum for read/write on mii_bus to enable the 21 bit
-+   IEEE 802.3ae clause 45 addressing mode used by 10GIGE phy chips. */
-+#define MII_ADDR_C45 (1<<30)
-+
- /*
-  * The Bus class for PHYs.  Devices which provide access to
-  * PHYs should register using this structure
-@@ -127,8 +131,8 @@ int mdiobus_register(struct mii_bus *bus);
- void mdiobus_unregister(struct mii_bus *bus);
- void mdiobus_free(struct mii_bus *bus);
- struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
--int mdiobus_read(struct mii_bus *bus, int addr, u16 regnum);
--int mdiobus_write(struct mii_bus *bus, int addr, u16 regnum, u16 val);
-+int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum);
-+int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
- 
- 
- #define PHY_INTERRUPT_DISABLED	0x0
-@@ -422,7 +426,7 @@ struct phy_fixup {
-  * because the bus read/write functions may wait for an interrupt
-  * to conclude the operation.
-  */
--static inline int phy_read(struct phy_device *phydev, u16 regnum)
-+static inline int phy_read(struct phy_device *phydev, u32 regnum)
- {
- 	return mdiobus_read(phydev->bus, phydev->addr, regnum);
- }
-@@ -437,7 +441,7 @@ static inline int phy_read(struct phy_device *phydev, u16 regnum)
-  * because the bus read/write functions may wait for an interrupt
-  * to conclude the operation.
-  */
--static inline int phy_write(struct phy_device *phydev, u16 regnum, u16 val)
-+static inline int phy_write(struct phy_device *phydev, u32 regnum, u16 val)
- {
- 	return mdiobus_write(phydev->bus, phydev->addr, regnum, val);
- }
--- 
-1.5.4.2
-
+-VAL
