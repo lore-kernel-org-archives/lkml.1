@@ -1,30 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384Ab0CIBc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 20:32:28 -0500
-Received: from LION.seas.upenn.edu ([158.130.12.194]:50300 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756197Ab0CIBc0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 20:32:26 -0500
-Message-ID: <4B95A521.3070208@seas.upenn.edu>
-Date: Mon, 08 Mar 2010 20:32:17 -0500
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: mickib1@gmail.com
-CC: jkosina@suse.cz, chatty@enac.fr, peterhuewe@gmx.de, micki@n-trig.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] HID: N-trig MTM Driver fix And cleanup patch 7
-References: <micki@n-trig.com> <1268083024-3029-1-git-send-email-micki@n-trig.com>
-In-Reply-To: <1268083024-3029-1-git-send-email-micki@n-trig.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1756475Ab0CIBdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 20:33:15 -0500
+Received: from sh.osrg.net ([192.16.179.4]:57354 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756242Ab0CIBdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 20:33:12 -0500
+Date: Tue, 9 Mar 2010 10:32:01 +0900
+To: bp@amd64.org
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       fujita.tomonori@lab.ntt.co.jp, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86, k8 nb: Enable k8_northbridges unconditionally on
+ AMD
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100308170637.GA26565@aftab>
+References: <20100308170637.GA26565@aftab>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100309103124T.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 09 Mar 2010 10:32:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without addressing issues in response to the other 6 patches, there's 
-not much to discuss.
+On Mon, 8 Mar 2010 18:06:37 +0100
+Borislav Petkov <bp@amd64.org> wrote:
 
-Rafi
+> From: Borislav Petkov <borislav.petkov@amd.com>
+> Date: Mon, 8 Mar 2010 14:27:01 +0100
+> Subject: [PATCH] x86, k8 nb: Enable k8_northbridges unconditionally on AMD
+> 
+> de957628ce7c84764ff41331111036b3ae5bad0f changed setting of the
+> x86_init.iommu.iommu_init function ptr only when GART IOMMU is found.
+> 
+> One side effect of it is that num_k8_northbridges
+> is not initialized anymore if not explicitly
+> called. This resulted in uninitialized pointers in
+> <arch/x86/kernel/cpu/intel_cacheinfo.c:amd_calc_l3_indices()>,
+> for example, which uses the num_k8_northbridges thing through
+> node_to_k8_nb_misc().
+> 
+> Fix that through an initcall that runs right after the PCI subsystem and
+> does all the scanning. Then, remove initialization in gart_iommu_init()
+> which is a rootfs_initcall and we're running before that.
+> 
+> What is more, since num_k8_northbridges is being used in other places
+> beside GART IOMMU, include it whenever we add AMD CPU support.
+> 
+> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> Tested-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/Kconfig              |    2 +-
+>  arch/x86/kernel/k8.c          |   14 ++++++++++++++
+>  arch/x86/kernel/pci-gart_64.c |    2 +-
+>  3 files changed, 16 insertions(+), 2 deletions(-)
+
+Thanks a lot!
+
+Looks correct to me.
