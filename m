@@ -1,47 +1,219 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118Ab0CIUGk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 15:06:40 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:65435 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494Ab0CIUGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 15:06:37 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH 2/3] input: use input_mutex instead of BKL when opening input device
-Date: Tue, 9 Mar 2010 21:06:35 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, John Kacur <jkacur@gmail.com>
-References: <1268162386-2745-1-git-send-email-cascardo@holoscopio.com> <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
-In-Reply-To: <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
+	id S1755719Ab0CITRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:17:48 -0500
+Received: from quartz.orcorp.ca ([139.142.54.143]:55624 "EHLO quartz.orcorp.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753227Ab0CITRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:17:43 -0500
+Date: Tue, 9 Mar 2010 12:17:42 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] NET: Support clause 45 MDIO commands at the MDIO bus level
+Message-ID: <20100309191742.GB30462@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003092106.35740.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19+7PicW5mwUac1KLj+o3iwkVkhpkPmT6jxFVt
- cdDUmyoV8iZ2kjv1ebX1BtEroSGd4cbzBKX4X4RU5s0Ur0mtVK
- hXNPlabB+qtypnfxqYUFg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 March 2010, Thadeu Lima de Souza Cascardo wrote:
-> There are three types of input character devices: mousedev, joydev and
-> evdev. They all use the same major device and, then, their opening is
-> multiplexed in input_open_file.
-> 
-> After the BKL pushdown, this multiplexing is protected by the BKL. But
-> there's already a mutex used for adding and removing to the table
-> indexed by input_open_file.
-> 
-> So, we use this mutex instead of the BKL. Since it will call the
-> handlers' open function under the mutex, I've checked that the current
-> functions do not call input_{un,}register_{handler,device}, which are
-> the only other functions to take the mutex.
-> 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+IEEE 802.3ae clause 45 specifies a somewhat modified MDIO protocol
+for use by 10GIGE phys. The main change is a 21 bit address split into
+a 5 bit device ID and a 16 bit register offset. The definition is designed
+so that normal and extended devices can run on the same MDIO bus.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Extend mdio-bitbang to do the new protocol. At the MDIO bus level the
+protocol is requested by or'ing MII_ADDR_C45 into the register offset.
+
+Make phy_read/phy_write/etc pass a full 32 bit register offset.
+
+This does not attempt to make the phy layer support C45 style PHYs, just
+to provide the MDIO bus support.
+
+Tested against a Broadcom 10GE phy with ID 0x206034, and several
+Broadcom 10/100/1000 Phys in normal mode.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+---
+ drivers/net/phy/mdio-bitbang.c |   60 ++++++++++++++++++++++++++++++++++------
+ drivers/net/phy/mdio_bus.c     |    4 +-
+ include/linux/phy.h            |   12 +++++--
+ 3 files changed, 61 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/phy/mdio-bitbang.c b/drivers/net/phy/mdio-bitbang.c
+index 2576055..0ff0661 100644
+--- a/drivers/net/phy/mdio-bitbang.c
++++ b/drivers/net/phy/mdio-bitbang.c
+@@ -23,8 +23,13 @@
+ #include <linux/types.h>
+ #include <linux/delay.h>
+ 
+-#define MDIO_READ 1
+-#define MDIO_WRITE 0
++#define MDIO_READ 2
++#define MDIO_WRITE 1
++
++#define MDIO_C45 (1<<15)
++#define MDIO_C45_ADDR (MDIO_C45 | 0)
++#define MDIO_C45_READ (MDIO_C45 | 3)
++#define MDIO_C45_WRITE (MDIO_C45 | 1)
+ 
+ #define MDIO_SETUP_TIME 10
+ #define MDIO_HOLD_TIME 10
+@@ -90,7 +95,7 @@ static u16 mdiobb_get_num(struct mdiobb_ctrl *ctrl, int bits)
+ /* Utility to send the preamble, address, and
+  * register (common to read and write).
+  */
+-static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int read, u8 phy, u8 reg)
++static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int op, u8 phy, u8 reg)
+ {
+ 	const struct mdiobb_ops *ops = ctrl->ops;
+ 	int i;
+@@ -109,23 +114,56 @@ static void mdiobb_cmd(struct mdiobb_ctrl *ctrl, int read, u8 phy, u8 reg)
+ 	for (i = 0; i < 32; i++)
+ 		mdiobb_send_bit(ctrl, 1);
+ 
+-	/* send the start bit (01) and the read opcode (10) or write (10) */
++	/* send the start bit (01) and the read opcode (10) or write (10).
++	   Clause 45 operation uses 00 for the start and 11, 10 for
++	   read/write */
+ 	mdiobb_send_bit(ctrl, 0);
+-	mdiobb_send_bit(ctrl, 1);
+-	mdiobb_send_bit(ctrl, read);
+-	mdiobb_send_bit(ctrl, !read);
++	if (op & MDIO_C45)
++		mdiobb_send_bit(ctrl, 0);
++	else
++		mdiobb_send_bit(ctrl, 1);
++	mdiobb_send_bit(ctrl, (op >> 1) & 1);
++	mdiobb_send_bit(ctrl, (op >> 0) & 1);
+ 
+ 	mdiobb_send_num(ctrl, phy, 5);
+ 	mdiobb_send_num(ctrl, reg, 5);
+ }
+ 
++/* In clause 45 mode all commands are prefixed by MDIO_ADDR to specify the
++   lower 16 bits of the 21 bit address. This transfer is done identically to a
++   MDIO_WRITE except for a different code. To enable clause 45 mode or
++   MII_ADDR_C45 into the address. Theoretically clause 45 and normal devices
++   can exist on the same bus. Normal devices should ignore the MDIO_ADDR
++   phase. */
++static int mdiobb_cmd_addr(struct mdiobb_ctrl *ctrl, int phy, u32 addr)
++{
++	unsigned int dev_addr = (addr >> 16) & 0x1F;
++	unsigned int reg = addr & 0xFFFF;
++	mdiobb_cmd(ctrl, MDIO_C45_ADDR, phy, dev_addr);
++
++	/* send the turnaround (10) */
++	mdiobb_send_bit(ctrl, 1);
++	mdiobb_send_bit(ctrl, 0);
++
++	mdiobb_send_num(ctrl, reg, 16);
++
++	ctrl->ops->set_mdio_dir(ctrl, 0);
++	mdiobb_get_bit(ctrl);
++
++	return dev_addr;
++}
+ 
+ static int mdiobb_read(struct mii_bus *bus, int phy, int reg)
+ {
+ 	struct mdiobb_ctrl *ctrl = bus->priv;
+ 	int ret, i;
+ 
+-	mdiobb_cmd(ctrl, MDIO_READ, phy, reg);
++	if (reg & MII_ADDR_C45) {
++		reg = mdiobb_cmd_addr(ctrl, phy, reg);
++		mdiobb_cmd(ctrl, MDIO_C45_READ, phy, reg);
++	} else
++		mdiobb_cmd(ctrl, MDIO_READ, phy, reg);
++
+ 	ctrl->ops->set_mdio_dir(ctrl, 0);
+ 
+ 	/* check the turnaround bit: the PHY should be driving it to zero */
+@@ -148,7 +186,11 @@ static int mdiobb_write(struct mii_bus *bus, int phy, int reg, u16 val)
+ {
+ 	struct mdiobb_ctrl *ctrl = bus->priv;
+ 
+-	mdiobb_cmd(ctrl, MDIO_WRITE, phy, reg);
++	if (reg & MII_ADDR_C45) {
++		reg = mdiobb_cmd_addr(ctrl, phy, reg);
++		mdiobb_cmd(ctrl, MDIO_C45_WRITE, phy, reg);
++	} else
++		mdiobb_cmd(ctrl, MDIO_WRITE, phy, reg);
+ 
+ 	/* send the turnaround (10) */
+ 	mdiobb_send_bit(ctrl, 1);
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index e17b702..6a6b819 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -208,7 +208,7 @@ EXPORT_SYMBOL(mdiobus_scan);
+  * because the bus read/write functions may wait for an interrupt
+  * to conclude the operation.
+  */
+-int mdiobus_read(struct mii_bus *bus, int addr, u16 regnum)
++int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
+ {
+ 	int retval;
+ 
+@@ -233,7 +233,7 @@ EXPORT_SYMBOL(mdiobus_read);
+  * because the bus read/write functions may wait for an interrupt
+  * to conclude the operation.
+  */
+-int mdiobus_write(struct mii_bus *bus, int addr, u16 regnum, u16 val)
++int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
+ {
+ 	int err;
+ 
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index 6a7eb40..5069739 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -81,6 +81,10 @@ typedef enum {
+  */
+ #define MII_BUS_ID_SIZE	(20 - 3)
+ 
++/* Or MII_ADDR_C45 into regnum for read/write on mii_bus to enable the 21 bit
++   IEEE 802.3ae clause 45 addressing mode used by 10GIGE phy chips. */
++#define MII_ADDR_C45 (1<<30)
++
+ /*
+  * The Bus class for PHYs.  Devices which provide access to
+  * PHYs should register using this structure
+@@ -127,8 +131,8 @@ int mdiobus_register(struct mii_bus *bus);
+ void mdiobus_unregister(struct mii_bus *bus);
+ void mdiobus_free(struct mii_bus *bus);
+ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
+-int mdiobus_read(struct mii_bus *bus, int addr, u16 regnum);
+-int mdiobus_write(struct mii_bus *bus, int addr, u16 regnum, u16 val);
++int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum);
++int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
+ 
+ 
+ #define PHY_INTERRUPT_DISABLED	0x0
+@@ -422,7 +426,7 @@ struct phy_fixup {
+  * because the bus read/write functions may wait for an interrupt
+  * to conclude the operation.
+  */
+-static inline int phy_read(struct phy_device *phydev, u16 regnum)
++static inline int phy_read(struct phy_device *phydev, u32 regnum)
+ {
+ 	return mdiobus_read(phydev->bus, phydev->addr, regnum);
+ }
+@@ -437,7 +441,7 @@ static inline int phy_read(struct phy_device *phydev, u16 regnum)
+  * because the bus read/write functions may wait for an interrupt
+  * to conclude the operation.
+  */
+-static inline int phy_write(struct phy_device *phydev, u16 regnum, u16 val)
++static inline int phy_write(struct phy_device *phydev, u32 regnum, u16 val)
+ {
+ 	return mdiobus_write(phydev->bus, phydev->addr, regnum, val);
+ }
+-- 
+1.5.4.2
+
