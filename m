@@ -1,21 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521Ab0CIVOW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 16:14:22 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55274 "EHLO mgw1.diku.dk"
+	id S1754997Ab0CIVOn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 16:14:43 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55302 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752963Ab0CIVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 16:14:17 -0500
-Date: Tue, 9 Mar 2010 22:14:11 +0100 (CET)
+	id S1752085Ab0CIVOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 16:14:39 -0500
+Date: Tue, 9 Mar 2010 22:14:34 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Ramkrishna Vepa <ram.vepa@neterion.com>,
-       Rastapur Santosh <santosh.rastapur@neterion.com>,
-       Sivakumar Subramani <sivakumar.subramani@neterion.com>,
-       Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
-       Anil Murthy <anil.murthy@neterion.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] drivers/net: drop redundant memset
-Message-ID: <Pine.LNX.4.64.1003092213500.4974@ask.diku.dk>
+To: jack_wang@usish.com, lindar_liu@usish.com,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] drivers/scsi: drop redundant memset
+Message-ID: <Pine.LNX.4.64.1003092214110.4974@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,22 +40,17 @@ expression e1,e2,e3,e4;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/s2io.c                  |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ drivers/scsi/pm8001/pm8001_hwi.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index df70657..2eb7f8a 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -5819,10 +5819,8 @@ static void s2io_vpd_read(struct s2io_nic *nic)
+diff -u -p a/drivers/scsi/pm8001/pm8001_hwi.c b/drivers/scsi/pm8001/pm8001_hwi.c
+--- a/drivers/scsi/pm8001/pm8001_hwi.c
++++ b/drivers/scsi/pm8001/pm8001_hwi.c
+@@ -4389,7 +4389,6 @@ pm8001_chip_fw_flash_update_req(struct p
+ 				return -ENOMEM;
  		}
  	}
- 
--	if ((!fail) && (vpd_data[1] < VPD_STRING_LEN)) {
--		memset(nic->product_name, 0, vpd_data[1]);
-+	if ((!fail) && (vpd_data[1] < VPD_STRING_LEN))
- 		memcpy(nic->product_name, &vpd_data[3], vpd_data[1]);
--	}
- 	kfree(vpd_data);
- 	swstats->mem_freed += 256;
- }
+-	memset(buffer, 0, fw_control->len);
+ 	memcpy(buffer, fw_control->buffer, fw_control->len);
+ 	flash_update_info.sgl.addr = cpu_to_le64(phys_addr);
+ 	flash_update_info.sgl.im_len.len = cpu_to_le32(fw_control->len);
