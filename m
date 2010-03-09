@@ -1,89 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577Ab0CIIoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 03:44:08 -0500
-Received: from mail-yx0-f191.google.com ([209.85.210.191]:44555 "EHLO
-	mail-yx0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752581Ab0CIIoD (ORCPT
+	id S1753550Ab0CIIqg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 03:46:36 -0500
+Received: from mail-iw0-f176.google.com ([209.85.223.176]:50999 "EHLO
+	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430Ab0CIIqe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 03:44:03 -0500
+	Tue, 9 Mar 2010 03:46:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Ljo+qzj0of9JEOjhr/m5w3f6ux2xnMbyw/URC7FBoKsY0eAakIoIoLf9Jr0GjUQpNi
-         ynlkQUG+xOdJTzLuxsdSpe8tVzchBXJGWQxLXzM2tc7/nL5eXarad0m5xMGw5KpvGPF3
-         usvRbZ+M1QWs9nwLAYqEztpdnr1ZTkMjPMi48=
-Date: Tue, 9 Mar 2010 00:43:57 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: mickib1@gmail.com
-Cc: jkosina@suse.cz, rafi@seas.upenn.edu, chatty@enac.fr, peterhuewe@gmx.de,
-       micki@n-trig.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] HID: N-trig MTM Driver fix and cleanup patch 1
-Message-ID: <20100309084357.GI17288@core.coreip.homeip.net>
-References: <1268082827-2680-1-git-send-email-micki@n-trig.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hM5AaWlehKeU6+sNh7AKJayRSZUi7cUPYTg5/V1TxeoHW9b9xToYU9mX9Y3Bokuq4g
+         68du0iVsc5zvwXwCNbEunsgDB6lScLXjAb+6BsftSYFVpVBcLDzbWtq1iFvAC7M8WFpR
+         ZEeLVhQeYlcPtNVh8s/+W0CY14qISDVbizWaw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1268082827-2680-1-git-send-email-micki@n-trig.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20100309072938.GA6137@elte.hu>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
+	 <20100308094647.GA14268@elte.hu>
+	 <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+	 <20100308190857.400bde09@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
+	 <20100308192744.5f40a5ee@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.1003081132370.3989@localhost.localdomain>
+	 <20100309072938.GA6137@elte.hu>
+Date: Tue, 9 Mar 2010 18:46:33 +1000
+Message-ID: <21d7e9971003090046n7da34978n36b1745184f412a@mail.gmail.com>
+Subject: Re: Upstream first policy
+From: Dave Airlie <airlied@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 11:13:41PM +0200, mickib1@gmail.com wrote:
-> From: micki <micki@micki-laptop.(none)>
-> 
-> Add Change Log and defines of MTM firmware.
-> Add debug Paramater change Driver name in hid_driver structure
-> 
+On Tue, Mar 9, 2010 at 5:29 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>> On Mon, 8 Mar 2010, Alan Cox wrote:
+>> >
+>> > man restorecond
+>>
+>> I know. I also sometimes sit through minutes of "let's relabel the system,
+>> because you've booted a kernel without selinux support".
+>
+> I've had selinux relabeling wait times of an hour or two too, on a
+> sufficiently large filesystem.
+>
+> I think this hurts security far more than anything else, because it causes
+> people to actually _turn off the whole thing_ - so we will have less and less
+> security in the end.
+>
+> ( To use the obligatory fire door analogy: we should prefer a one inch thick
+>  fire door that opens and closes fully automated to a five inches thick fire
+>  door that people keep always-open with a chair. )
 
----------------------------------------
+selinux relabels are the new fsck.
 
-> N-trig is changing the way people interact with computers by providing a dual-mode pen and true multi-touch input device, specifically designed for today's advanced computing world.
-> N-trig DuoSense® solution provides a real Hands-on computing® experience, and sets the stage for OEMs and ISVs to introduce innovative computer products and applications for an intuitive, Hands-on® experience directly onscreen.
-> DuoSense digitizers are easily integrated into existing technologies, support all LCDs, keep devices slim and light, and can be implemented in a broad range of products, ranging from small notebooks to large LCDs.
-> N-trig has offices in Israel, the US, Taiwan and Japan.
-> 
+maybe we need selinux3 or chunk-selinux.
 
-----------------------------------------
-
-The above certainly does not belong to kernel changelog.
-
-> Signed-off-by: Micki Balanga <micki@n-trig.com>
-> ---
->  drivers/hid/hid-ntrig.c |   94 ++++++++++++++++++++++++++++++++++++++++++++--
->  1 files changed, 89 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/hid/hid-ntrig.c b/drivers/hid/hid-ntrig.c
-> index 3234c72..e99342d 100644
-> --- a/drivers/hid/hid-ntrig.c
-> +++ b/drivers/hid/hid-ntrig.c
-> @@ -3,7 +3,18 @@
->   *
->   *  Copyright (c) 2008 Rafi Rubin
->   *  Copyright (c) 2009 Stephane Chatty
-> + *  Copyright (c) 2010 N-TRIG
->   *
-> + *	1.0 - Rafi Rubin ( Version From 2010-02-13 02:13:05)
-> + *		This cleans up the identification of multitouch
-> + *		groups and enables the end of group sync.
-> + *		Taps are now explicitly handled to adjust for the changes in the
-> + *		event stream in multitouch mode.
-> + *		Added triple and quad tap for the benefit of
-> + *		tools that recognize different tap types but
-> + *		do not have full multi touch support.
-> + *	1.1 - N-trig - Add Change Log and defines of MTM firmware.
-> + *		Add debug Paramater change Driver name in hid_driver structure
-
-No need to keep changelog in the file, we have scm for a reason.
-
-Also, all patches split in a wied fashion, being not really useable on
-their own. For exapmple thi spatch adds ntrig_dbg but no users for this
-facility.
-
--- 
-Dmitry
+Dave.
