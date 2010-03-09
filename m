@@ -1,81 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194Ab0CIUSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 15:18:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:59542 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751494Ab0CIUSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 15:18:45 -0500
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX19ZDuJ4qxxZRqpSWEu0VkdK7B/doXxFCZeEuMWbib
-	Ak6pXVfK7NuUrb
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: [PATCH] serial/sh_sci: Fix build failure for non-sh architectures
-Date: Tue, 9 Mar 2010 21:18:25 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.27-05415-g69a8594; KDE/4.3.5; x86_64; ; )
-Cc: Magnus Damm <damm@igel.co.jp>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	id S1755232Ab0CIUVK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:21:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37512 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751494Ab0CIUVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 15:21:08 -0500
+Date: Tue, 9 Mar 2010 12:19:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+Message-Id: <20100309121953.4413db85.akpm@linux-foundation.org>
+In-Reply-To: <4B96A9B2.8070806@cs.helsinki.fi>
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+	<84144f021003080529w1b20c08dmf6871bd46381bc71@mail.gmail.com>
+	<4B95AD17.2030106@kernel.org>
+	<alpine.DEB.2.00.1003090910200.28897@router.home>
+	<4B96A9B2.8070806@cs.helsinki.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003092118.26274.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+On Tue, 09 Mar 2010 22:04:02 +0200
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-This patch fixes a build failure for various arm based defconfigs
-[1][2][3] and maybe other architectures/configs.
+> Christoph Lameter wrote:
+> > On Tue, 9 Mar 2010, Tejun Heo wrote:
+> > 
+> >> Yeap, that's buggy.
+> >>
+> >> Acked-by: Tejun Heo <tj@kernel.org>
+> >>
+> >> I suppose this would go through the mm tree?
+> > 
+> > As you said: Its a bug so it needs to be applied to upstream.
+> 
+> Sure but someone needs to pick up the patch and send it to Linus. Andrew?
+> 
 
-The build failure was introduced by the sh specific patch [4]
-"serial: sh-sci: Add DMA support"
-by Guennadi Liakhovetski
-
-Patch against linux-next of 20100309
-
-References:
-[1] http://kisskb.ellerman.id.au/kisskb/buildresult/2248992/
-[2] http://kisskb.ellerman.id.au/kisskb/buildresult/2248996/
-[3] http://kisskb.ellerman.id.au/kisskb/buildresult/2248998/
-[4] http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=73a19e4c0301908ce6346715fd08a74308451f5a
-
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
- include/linux/serial_sci.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/serial_sci.h b/include/linux/serial_sci.h
-index 1b177d2..193d4bf 100644
---- a/include/linux/serial_sci.h
-+++ b/include/linux/serial_sci.h
-@@ -2,7 +2,9 @@
- #define __LINUX_SERIAL_SCI_H
- 
- #include <linux/serial_core.h>
-+#ifdef CONFIG_SERIAL_SH_SCI_DMA
- #include <asm/dmaengine.h>
-+#endif
- 
- /*
-  * Generic header for SuperH SCI(F) (used by sh/sh64/h8300 and related parts)
-@@ -30,8 +32,10 @@ struct plat_sci_port {
- 	upf_t		flags;			/* UPF_* flags */
- 	char		*clk;			/* clock string */
- 	struct device	*dma_dev;
-+#ifdef CONFIG_SERIAL_SH_SCI_DMA
- 	enum sh_dmae_slave_chan_id dma_slave_tx;
- 	enum sh_dmae_slave_chan_id dma_slave_rx;
-+#endif
- };
- 
- #endif /* __LINUX_SERIAL_SCI_H */
--- 
-1.6.4.4
-
+yup, I found the patch.
