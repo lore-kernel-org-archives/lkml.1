@@ -1,73 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269Ab0CIIZO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 03:25:14 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:60538 "EHLO poutre.nerim.net"
+	id S1753272Ab0CIIeP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 03:34:15 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:50444 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752490Ab0CIIZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 03:25:11 -0500
-Date: Tue, 9 Mar 2010 09:25:08 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: [PATCH] i2c: update for semaphore to mutex conversion of
- devices
-Message-ID: <20100309092508.02b7b2e8@hyperion.delvare>
-In-Reply-To: <20100309102828.18351564.sfr@canb.auug.org.au>
-References: <20100309102828.18351564.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752490Ab0CIIeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 03:34:12 -0500
+Date: Tue, 9 Mar 2010 09:34:10 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 1/3] lockdep: Move lock events under lockdep recursion
+	protection
+Message-ID: <20100309083410.GD5768@kernel.dk>
+References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com> <1267599302-2886-2-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267599302-2886-2-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010 10:28:28 +1100, Stephen Rothwell wrote:
-> I have been carrying this patch in linux-next for some time and now
-> mainline needs it.
+On Wed, Mar 03 2010, Frederic Weisbecker wrote:
+> There are rcu locked read side areas in the path where we submit
+> a trace event. And these rcu_read_(un)lock() trigger lock events,
+> which create recursive events.
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/i2c/i2c-smbus.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
+> One pair in do_perf_sw_event:
 > 
-> diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-> index 333527c..52aa775 100644
-> --- a/drivers/i2c/i2c-smbus.c
-> +++ b/drivers/i2c/i2c-smbus.c
-> @@ -27,6 +27,7 @@
->  #include <linux/workqueue.h>
->  #include <linux/i2c.h>
->  #include <linux/i2c-smbus.h>
-> +#include <linux/mutex.h>
->  
->  struct i2c_smbus_alert {
->  	unsigned int		alert_edge_triggered:1;
-> @@ -55,7 +56,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
->  	 * Drivers should either disable alerts, or provide at least
->  	 * a minimal handler.  Lock so client->driver won't change.
->  	 */
-> -	down(&dev->sem);
-> +	device_lock(dev);
->  	if (client->driver) {
->  		if (client->driver->alert)
->  			client->driver->alert(client, data->flag);
-> @@ -63,7 +64,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
->  			dev_warn(&client->dev, "no driver alert()!\n");
->  	} else
->  		dev_dbg(&client->dev, "alert with no driver\n");
-> -	up(&dev->sem);
-> +	device_unlock(dev);
->  
->  	/* Stop iterating after we find the device */
->  	return -EBUSY;
+> __lock_acquire
+>       |
+>       |--96.11%-- lock_acquire
+>       |          |
+>       |          |--27.21%-- do_perf_sw_event
+>       |          |          perf_tp_event
+>       |          |          |
+>       |          |          |--49.62%-- ftrace_profile_lock_release
+>       |          |          |          lock_release
+>       |          |          |          |
+>       |          |          |          |--33.85%-- _raw_spin_unlock
+> 
+> Another pair in perf_output_begin/end:
+> 
+> __lock_acquire
+>       |--23.40%-- perf_output_begin
+>       |          |          __perf_event_overflow
+>       |          |          perf_swevent_overflow
+>       |          |          perf_swevent_add
+>       |          |          perf_swevent_ctx_event
+>       |          |          do_perf_sw_event
+>       |          |          perf_tp_event
+>       |          |          |
+>       |          |          |--55.37%-- ftrace_profile_lock_acquire
+>       |          |          |          lock_acquire
+>       |          |          |          |
+>       |          |          |          |--37.31%-- _raw_spin_lock
+> 
+> The problem is not that much the trace recursion itself, as we have a
+> recursion protection already (though it's always wasteful to recurse).
+> But the trace events are outside the lockdep recursion protection, then
+> each lockdep event triggers a lock trace, which will trigger two
+> other lockdep events. Here the recursive lock trace event won't
+> be taken because of the trace recursion, so the recursion stops there
+> but lockdep will still analyse these new events:
+> 
+> To sum up, for each lockdep events we have:
+> 
+> 	lock_*()
+> 	     |
+>              trace lock_acquire
+>                   |
+>                   ----- rcu_read_lock()
+>                   |          |
+>                   |          lock_acquire()
+>                   |          |
+>                   |          trace_lock_acquire() (stopped)
+>                   |          |
+> 		  |          lockdep analyze
+>                   |
+>                   ----- rcu_read_unlock()
+>                              |
+>                              lock_release
+>                              |
+>                              trace_lock_release() (stopped)
+>                              |
+>                              lockdep analyze
+> 
+> And you can repeat the above two times as we have two rcu read side
+> sections when we submit an event.
+> 
+> This is fixed in this patch by moving the lock trace event under
+> the lockdep recursion protection.
 
-Thanks for the reminder Stephen. I was only waiting for device_lock()
-to become usable in mainline. Now that it happened, I will take the
-patch above in my i2c tree, and send it to Linus in my next batch.
+I went to try this on 2.6.34-rc1 to see how much it would improve things
+here. With 2.6.34-rc1, a
+
+$ time sudo perf lock record ls /dev/shm
+
+essentially hangs the box, it ends up crashing hard (not just live
+locked like before). With the patch in place, it does eventually finish:
+
+real    0m21.301s
+user    0m0.030s
+sys     0m21.040s
+
+The directory is empty.
 
 -- 
-Jean Delvare
+Jens Axboe
+
