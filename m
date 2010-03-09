@@ -1,87 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519Ab0CIWs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:48:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62155 "EHLO mx1.redhat.com"
+	id S1754822Ab0CIWu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:50:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43981 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446Ab0CIWsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:48:24 -0500
-Date: Tue, 9 Mar 2010 22:45:01 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Howells <dhowells@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 2/3] call_usermodehelper: simplify/fix UMH_NO_WAIT case
-Message-ID: <20100309214501.GA32625@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751446Ab0CIWuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 17:50:25 -0500
+Date: Wed, 10 Mar 2010 09:50:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: fetch of edac-amd tree failed
+Message-Id: <20100310095013.2766db19.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Mar_2010_09_50_13_+1100_VAhAOw4HmQjRoJm8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__call_usermodehelper(UMH_NO_WAIT) has 2 problems:
+--Signature=_Wed__10_Mar_2010_09_50_13_+1100_VAhAOw4HmQjRoJm8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	- if kernel_thread() fails, call_usermodehelper_freeinfo()
-	  is not called.
+Hi Borislav,
 
-	- for unknown reason UMH_NO_WAIT has UMH_WAIT_PROC logic,
-	  we spawn yet another thread which waits until the user
-	  mode application exits.
+The linux-next fetch of the edac-amd tree has been failing like this for
+a few days:
 
-Change the UMH_NO_WAIT code to use ____call_usermodehelper() instead of
-wait_for_helper(), and do call_usermodehelper_freeinfo() unconditionally.
-We can rely on CLONE_VFORK, do_fork(CLONE_VFORK) until the child exits
-or execs.
+fatal: Couldn't find remote ref refs/heads/for-next
 
-With or without this patch UMH_NO_WAIT does not report the error if
-kernel_thread() fails, this is correct since the caller doesn't wait
-for result.
+I am still using the version from next-20100212 (which has been merged
+into Linus' tree).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+--Signature=_Wed__10_Mar_2010_09_50_13_+1100_VAhAOw4HmQjRoJm8
+Content-Type: application/pgp-signature
 
- kernel/kmod.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
---- mm/kernel/kmod.c~2_UMH_NO_WAIT	2010-03-09 21:31:09.000000000 +0100
-+++ mm/kernel/kmod.c	2010-03-09 21:56:36.000000000 +0100
-@@ -224,10 +224,7 @@ static int wait_for_helper(void *data)
- 			sub_info->retval = ret;
- 	}
- 
--	if (sub_info->wait == UMH_NO_WAIT)
--		call_usermodehelper_freeinfo(sub_info);
--	else
--		complete(sub_info->complete);
-+	complete(sub_info->complete);
- 	return 0;
- }
- 
-@@ -236,13 +233,13 @@ static void __call_usermodehelper(struct
- {
- 	struct subprocess_info *sub_info =
- 		container_of(work, struct subprocess_info, work);
--	pid_t pid;
- 	enum umh_wait wait = sub_info->wait;
-+	pid_t pid;
- 
- 	/* CLONE_VFORK: wait until the usermode helper has execve'd
- 	 * successfully We need the data structures to stay around
- 	 * until that is done.  */
--	if (wait == UMH_WAIT_PROC || wait == UMH_NO_WAIT)
-+	if (wait == UMH_WAIT_PROC)
- 		pid = kernel_thread(wait_for_helper, sub_info,
- 				    CLONE_FS | CLONE_FILES | SIGCHLD);
- 	else
-@@ -251,6 +248,7 @@ static void __call_usermodehelper(struct
- 
- 	switch (wait) {
- 	case UMH_NO_WAIT:
-+		call_usermodehelper_freeinfo(sub_info);
- 		break;
- 
- 	case UMH_WAIT_PROC:
+iEYEARECAAYFAkuW0KUACgkQjjKRsyhoI8y0awCeM3+typ8IWLiYRje7QoCL/RnM
+mVYAoJIlhRWjQ7OlxBrUxCp3fl3BRA68
+=F3wH
+-----END PGP SIGNATURE-----
 
+--Signature=_Wed__10_Mar_2010_09_50_13_+1100_VAhAOw4HmQjRoJm8--
