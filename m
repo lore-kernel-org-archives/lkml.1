@@ -1,62 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241Ab0CIKLi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 05:11:38 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33714 "EHLO mx1.suse.de"
+	id S1754289Ab0CIKMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 05:12:47 -0500
+Received: from relay.ppgk.com.pl ([80.53.243.36]:31953 "EHLO relay.ppgk.com.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892Ab0CIKLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 05:11:36 -0500
-Date: Tue, 9 Mar 2010 11:11:34 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Rafi Rubin <rafi@seas.upenn.edu>
-Cc: mickib1@gmail.com, chatty@enac.fr, peterhuewe@gmx.de, micki@n-trig.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] HID: N-trig MTM Driver fix and cleanup patch 1
-In-Reply-To: <4B959B69.80705@seas.upenn.edu>
-Message-ID: <alpine.LNX.2.00.1003091107460.17799@pobox.suse.cz>
-References: <1268082827-2680-1-git-send-email-micki@n-trig.com> <4B959B69.80705@seas.upenn.edu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1753853Ab0CIKMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 05:12:43 -0500
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 05:12:42 EST
+X-PPGK-Scanned: amavisd-new 2.6.4 (20090625) at ppgk.com.pl
+Message-ID: <4B961D8F.3010500@ziu.info>
+Date: Tue, 09 Mar 2010 11:06:07 +0100
+From: Michal Soltys <soltys@ziu.info>
+Organization: Luftbrandzlung
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+CC: Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <alpine.DEB.1.10.1003090733330.9819@uplift.swm.pp.se>
+In-Reply-To: <alpine.DEB.1.10.1003090733330.9819@uplift.swm.pp.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010, Rafi Rubin wrote:
-
-> > + *	1.0 - Rafi Rubin ( Version From 2010-02-13 02:13:05)
-> > + *		This cleans up the identification of multitouch
-> > + *		groups and enables the end of group sync.
-> > + *		Taps are now explicitly handled to adjust for the changes in
-> > the
-> > + *		event stream in multitouch mode.
-> > + *		Added triple and quad tap for the benefit of
-> > + *		tools that recognize different tap types but
-> > + *		do not have full multi touch support.
-> > + *	1.1 - N-trig - Add Change Log and defines of MTM firmware.
-> > + *		Add debug Paramater change Driver name in hid_driver structure
-> >    */
+Mikael Abrahamsson wrote:
+> On Mon, 8 Mar 2010, Tejun Heo wrote:
 > 
-> I don't know that the change log needs to be in the code file itself. The
-> point was more that your commit messages should give us an idea about what
-> your changing.  Jiri, what's your take on that?
-
-Fully agreed. I am all for removing any Changelog entries from the .c 
-source files altogether. We have excellent SCM to handle this all for us.
-
-> Thank you, we should have named these constants earlier.
+>>  http://ata.wiki.kernel.org/index.php/ATA_4_KiB_sector_issues
 > 
-> > +#define MODULE_NAME "hid_ntrig"
-> > -	.name = "ntrig",
+> Excellent summary.
 > 
-> I left off the "hid_" prefix based on what I saw in the other hid drivers.
-> Jiri, is there a standard to follow or do you have an opinion about this?
+>> C-2. Windows XP depends on the traditional partition layout.
+> 
+> Is this really true? WD ships their EARS drives with an alignment tool 
+> that as far as I can understand, moves the partition so
+> it's aligned to 4KiB:
+> 
 
-The convention used by all the other drivers hanging on HID bus are 
-without the 'hid' prefix, so we should obey that also for ntrig, yes.
+XP SP2 (or later) can boot from any place, including logical partitions 
+(tested that recently). Most important thing is "hidden sectors" (recent 
+chain.c32 can set that automatically through ntldr and/or sethidden 
+options). No idea about pre-SP2 ; Win 2000 will not boot from "misaligned" 
+(with reference to cylinder boundary) partition.
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
