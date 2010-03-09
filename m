@@ -1,51 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827Ab0CIOvU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 09:51:20 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:38825 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786Ab0CIOvS convert rfc822-to-8bit (ORCPT
+	id S1753467Ab0CIO7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 09:59:08 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:33562 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267Ab0CIO7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 09:51:18 -0500
+	Tue, 9 Mar 2010 09:59:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=CTv/xm2crbIP8SrbCQ+8d9YJQEq/ZK80cNR19uQS+b9t0BEI8TIrab9ZOhCAFxHMj9
-         eHeEuVdMUYH4oWiMBWgE4BiZp5fDp9iGej2z1rx9+VQ1nR4CKiOksaHQjv/JnidwrJ+t
-         bbmigByyT9YX7RURDcEynS2RBO7FI2iuCz3g8=
+         :cc:content-type;
+        b=tjJVyyOnHm9IuEZFjB9VqnBEg9lSefdodTQPU7AsFcTy/RhtVy32p39uAR8ilEFyMe
+         OtXboHVqP2P3OX4sjnJyulyNF6aNwVxY1DYT7+1ykTFa4T2K4LofJlA6FdcRHgcVCo7P
+         QlvbbBuPy665yjWSqNpzN7rNpNHPMmeg8yME4=
 MIME-Version: 1.0
-In-Reply-To: <20100301080342.GH765@core.coreip.homeip.net>
-References: <20100301080342.GH765@core.coreip.homeip.net>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 9 Mar 2010 09:44:08 -0500
-Message-ID: <8bd0f97a1003090644p19fb7dacqe1f2fb3adee3fa7a@mail.gmail.com>
-Subject: Re: [git pull] Input updates for 2.6.34-rc0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
+In-Reply-To: <21d7e9971003090046n7da34978n36b1745184f412a@mail.gmail.com>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org> 
+	<20100308094647.GA14268@elte.hu> <20100308173008.7ae389ab@lxorguk.ukuu.org.uk> 
+	<alpine.LFD.2.00.1003080948060.3989@localhost.localdomain> 
+	<20100308190857.400bde09@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003081115280.3989@localhost.localdomain> 
+	<20100308192744.5f40a5ee@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003081132370.3989@localhost.localdomain> 
+	<20100309072938.GA6137@elte.hu> <21d7e9971003090046n7da34978n36b1745184f412a@mail.gmail.com>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Tue, 9 Mar 2010 06:58:44 -0800
+Message-ID: <a36005b51003090658y4b57ad19u3c0fddc2f6d3745f@mail.gmail.com>
+Subject: Re: Upstream first policy
+To: Dave Airlie <airlied@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 03:03, Dmitry Torokhov wrote:
-> Hi Linus,
+On Tue, Mar 9, 2010 at 00:46, Dave Airlie <airlied@gmail.com> wrote:
+> selinux relabels are the new fsck.
 >
-> Please pull from:
->
->        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> or
->        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
->
-> to receive first round of updates for the input subsystem.
+> maybe we need selinux3 or chunk-selinux.
 
-i'm trying to figure out what the problem is with the ADXL34x and
-AD714x drivers you seem to have accepted (at least, you didnt say
-there was anything left for us to do).  i would have expected them to
-be in 2.6.33/2.6.34 already, but it seems they arent moving now.  so
-what's up ?
--mike
+Once the fanotify stuff is in (or however it'll be called) the new
+relabel process could temporarily install itself to intercept all
+filesystem operations and fix up files on demand while going along
+it's normal operation in the background.  No reason to stall the
+system completely.
+
+If this is the biggest complaint then you should be supportive of the approach.
