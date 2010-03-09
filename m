@@ -1,43 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755420Ab0CISH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:07:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64647 "EHLO mx1.redhat.com"
+	id S1755428Ab0CISKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:10:44 -0500
+Received: from www.tglx.de ([62.245.132.106]:45825 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754899Ab0CISH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:07:57 -0500
-Date: Tue, 9 Mar 2010 19:06:15 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Q: select_fallback_rq() && cpuset_lock()
-Message-ID: <20100309180615.GA11681@redhat.com>
+	id S1754899Ab0CISKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 13:10:41 -0500
+Date: Tue, 9 Mar 2010 19:10:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Valdis.Kletnieks@vt.edu
+cc: Lars-Peter Clausen <lars@metafoo.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] IRQ: Fix oneshot irq race between irq_finalize_oneshot
+ and handle_level_irq
+In-Reply-To: <5309.1268153945@localhost>
+Message-ID: <alpine.LFD.2.00.1003091907500.22855@localhost.localdomain>
+References: <1268092679-18070-1-git-send-email-lars@metafoo.de>            <alpine.LFD.2.00.1003090855250.22855@localhost.localdomain> <5309.1268153945@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, 9 Mar 2010, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 09 Mar 2010 08:58:11 +0100, Thomas Gleixner said:
+> > On Tue, 9 Mar 2010, Lars-Peter Clausen wrote:
+> > 
+> > > If the kernel has been compiled with preemtion support and handle_level_irq is
+> > > called from process context for a oneshot irq there is a race between
+> > > irq_finalize_oneshot and handle_level_irq which results in the irq not being
+> > > unmasked after its handlers have been run.
+> > > 
+> > > irq_finalize_oneshot is expected to unmask the irq after the threaded irq
+> > > handler has been run. It only does so if IRQ_MASKED is set for the irqs status.
+> > > IRQ_MASKED gets set in the lower part of handle_level_irq after handle_IRQ_event
+> > > has been called.
+> > > handle_IRQ_event will wakeup the oneshot irqs threaded handler and if the
+> > > kernel has been build with preemption there is a chance that the threaded irq
+> > > handler will finish before execution is returned to handle_level_irq.
+> > > As a result irq_finalize_oneshot will not unmask the irq and handle_level_irq
+> > > will set the IRQ_MASKED flag. Thus the irq will stay masked and stalls.
+> > > 
+> > > In case of an race the call-graph would look like this:
+> > >  handle_level_irq
+> > >  |- mask_ack_irq
+> > >  |- handle_IRQ_event
+> > >     |- wake_up_process
+> > >        |- irq_thread
+> > >           |- action->thread_fn
+> > >           |- irq_finalize_oneshot # Does not unmask the irq
+> > > |- # Set IRQ_MASKED status flag
+> > 
+> > Errm, a thread _CANNOT_ preempt a hard interrupt handler.
+> 
+> What stops the thread from concurrently running on another CPU and racing
+> that way?  I'm an idiot, use small words. :)
 
-I tried to remove the deadlockable cpuset_lock() many times, but my
-attempts were ignored by cpuset maintainers ;)
+Right it's a valid SMP problem, but I got confused by the lengthy
+explanation of a thread preempting an hard interrupt handler. :)
 
-In particular, see http://marc.info/?l=linux-kernel&m=125261083613103
+Will have a look after dinner.
 
-But now I have another question. Since 5da9a0fb673a0ea0a093862f95f6b89b3390c31e
-cpuset_cpus_allowed_locked() is called without callback_mutex held by
-try_to_wake_up().
+Thanks,
 
-And, without callback_mutex held, isn't it possible to race with, say,
-update_cpumask() which changes cpuset->cpus_allowed? Yes, update_tasks_cpumask()
-should fixup task->cpus_allowed later. But isn't it possible (at least
-in theory) that try_to_wake_up() gets, say, all-zeroes in task->cpus_allowed
-after select_fallback_rq()->cpuset_cpus_allowed_locked() if we race with
-update_cpumask()->cpumask_copy() ?
-
-Oleg.
+	tglx
 
