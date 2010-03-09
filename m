@@ -1,66 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145Ab0CIPvI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 10:51:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36674 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754966Ab0CIPuu (ORCPT
+	id S1753521Ab0CIP4H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 10:56:07 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:51519 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753Ab0CIP4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 10:50:50 -0500
-Subject: Re: [PATCH] x86: Add optimized popcnt variants
-From: Peter Zijlstra <peterz@infradead.org>
-To: Borislav Petkov <bp@amd64.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-In-Reply-To: <20100309153628.GA2371@aftab>
-References: <20100223155852.GF30382@aftab> <4B84118C.90203@zytor.com>
-	 <20100223175457.GA2401@aftab> <4B841BC3.1000908@zytor.com>
-	 <20100223190614.GB2401@aftab> <4B875BBD.4060104@zytor.com>
-	 <20100226074714.GA15310@aftab> <4B88097E.7010608@zytor.com>
-	 <20100227082807.GA21706@aftab> <4B8979DA.9000201@zytor.com>
-	 <20100309153628.GA2371@aftab>
+	Tue, 9 Mar 2010 10:56:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hddSZlWJFKbsRvNWyaxKA9qEufvK6vAjD5npbigaEZrxt1KyLJ6A+lTa1asp8zDdYf
+         YLGZzeiFHBAx9GEN71DyWQbF8HsgySJzu1wZ4Iy5pS8NAyPK6oTzh4ETXeVqrcKc2eRu
+         ebwTlmrEK1gL1oOnBpOv4fYP9eICv02OnpsH8=
+Subject: Re: [2.6.34-rc1] CPU stalls when closing TCP sockets.
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, Stephen Hemminger <shemminger@vyatta.com>
+In-Reply-To: <201003090654.o296sCnh065487@www262.sakura.ne.jp>
+References: <201003090319.o293J6WF026448@www262.sakura.ne.jp>
+	 <1268116647.2819.64.camel@edumazet-laptop>
+	 <201003090654.o296sCnh065487@www262.sakura.ne.jp>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 16:50:40 +0100
-Message-ID: <1268149840.5037.3.camel@laptop>
+Date: Tue, 09 Mar 2010 16:55:56 +0100
+Message-ID: <1268150156.3113.12.camel@edumazet-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 16:36 +0100, Borislav Petkov wrote:
-> > On 02/27/2010 12:28 AM, Borislav Petkov wrote:
-> > > Yeah, let's give it another round of testing and queue it for .35 -
-> > > AFAIR Ingo runs also a wide testing effort so it spending another cycle
-> > > in -tip and being hammered on by us could give us a bit more certainty.
-> > > 
-> > 
-> > Yes, if we can get into -tip then we'll get more test coverage, so I'll
-> > queue it up for .35 as soon as the merge window closes.  Please remind
-> > me if I forget.
+Le mardi 09 mars 2010 à 15:54 +0900, Tetsuo Handa a écrit :
+> Eric Dumazet wrote:
+> > Nothing comes to my mind, I'll try to reproduce this here.
 > 
-> Hi Peter,
+> When stopped at (8), Ctrl-C doesn't work.
 > 
-> I see that you've added the HWEIGHT-capitalized interfaces for
-> compile-time constants with fce877e3. Which means, the bits in
-> <include/asm-generic/bitops/const_hweight.h> from your original patch at
-> http://lkml.org/lkml/2010/2/4/119 need changing (or have changed already
-> but I've missed them).
+> > Is 2.6.33 OK ?
 > 
-> IOW, where can I get the current version of that last patch so that I can
-> base my __arch_hweightXX stuff ontop of it for testing?
+> Yes. 2.6.33 and earlier are OK.
 
-Should all be fine as it is, that patch
-( http://lkml.org/lkml/2010/2/4/119 ) is against a kernel with fce877e3
-in, I've just checked and it still applies to tip/master as of this
-writing (although it grew a single 2 line offset for 1 hunk).
+OK thanks !
 
+I believe commit d218d11133d888f9745802146a50255a4781d37a
+(tcp: Generalized TTL Security Mechanism) might be the bug origin.
+
+I am testing following patch, based on latest net-2.6 tree (including
+the LINUX_MIB_TCPMINTTLDROP bit)
+
+[PATCH] tcp: Fix tcp_v4_rcv()
+
+Commit d218d111 (tcp: Generalized TTL Security Mechanism) added a bug
+for TIMEWAIT sockets. We should not test min_ttl for TW sockets.
+
+Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index 8d51d39..70df409 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1651,15 +1651,15 @@ int tcp_v4_rcv(struct sk_buff *skb)
+ 	if (!sk)
+ 		goto no_tcp_socket;
+ 
++process:
++	if (sk->sk_state == TCP_TIME_WAIT)
++		goto do_time_wait;
++
+ 	if (unlikely(iph->ttl < inet_sk(sk)->min_ttl)) {
+ 		NET_INC_STATS_BH(net, LINUX_MIB_TCPMINTTLDROP);
+ 		goto discard_and_relse;
+ 	}
+ 
+-process:
+-	if (sk->sk_state == TCP_TIME_WAIT)
+-		goto do_time_wait;
+-
+ 	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
+ 		goto discard_and_relse;
+ 	nf_reset(skb);
 
 
