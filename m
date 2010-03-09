@@ -1,58 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120Ab0CICgg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:36:36 -0500
-Received: from kroah.org ([198.145.64.141]:46166 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756495Ab0CICgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 21:36:32 -0500
-Date: Mon, 8 Mar 2010 18:27:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c: update for semaphore to mutex conversion of
- devices
-Message-ID: <20100309022709.GA25756@kroah.com>
-References: <20100309102828.18351564.sfr@canb.auug.org.au>
- <20100308235953.GA7808@kroah.com>
- <20100309125037.5a218f22.sfr@canb.auug.org.au>
+	id S932124Ab0CICkI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 21:40:08 -0500
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:49665 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932076Ab0CICkF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 21:40:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VrWWurMrD2Iiww0CXYygWz4/qya6RAHiPvVVm60bOntGxTQt6kYQomzvqgVS6OMLnK
+         /y1YwvCpdZdi5up4zakJGGVz2KIhkevyDXaV0oW2k+81TYch19CSMsjEvS56Jhn2C1LQ
+         5TCUVrXzh1Fgohcj+2iqI6q3jyUMxrWu+tNnA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100309125037.5a218f22.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <2375c9f91003071831x4104dd8dp82967c0409391bd5@mail.gmail.com>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
+	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
+	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	 <2375c9f91003071831x4104dd8dp82967c0409391bd5@mail.gmail.com>
+Date: Tue, 9 Mar 2010 10:40:04 +0800
+Message-ID: <2375c9f91003081840w5419d847q8ffd8b6ce46d86fb@mail.gmail.com>
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: rostedt@goodmis.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 12:50:37PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> On Mon, 8 Mar 2010 15:59:53 -0800 Greg KH <greg@kroah.com> wrote:
-> >
-> > On Tue, Mar 09, 2010 at 10:28:28AM +1100, Stephen Rothwell wrote:
-> > > I have been carrying this patch in linux-next for some time and now
-> > > mainline needs it.
-> > 
-> > Well, it's not required, but it is nice to have.  I didn't merge the
-> > "convert the driver core semaphore to a mutex" patch as it was causing
-> > too many false-positive lockdep warnings.
-> 
-> Ah, I missed that, sorry.
-> 
-> Strangely, I was assuming that what was in linux-next would get merged :-)
+On Mon, Mar 8, 2010 at 10:31 AM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Fri, Mar 5, 2010 at 11:06 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>>
+>> Now some things you can do to help performance. One is not to trace
+>> functions that are known to have a high hit rate. You can do this with
+>> the set_ftrace_notrace file, or add "ftrace_notrace=func1,func2,func3"
+>> to the command line where func1,func2,func3 are the functions you do not
+>> want to trace. This just adds these by default to the set_ftrace_notrace
+>> and can be removed at runtime.
+>>
+>>
+>> The functions I commonly write to are:
+>>
+>> echo '*spin_lock*' '*spin_unlock*' '*spin_try*' '*rcu_read*' > set_ftace_notrace
+>>
+>> since these functions are hit quite intensively, by not tracing them it
+>> helps a bit with performance.
+>
+> I will try this now.
+>
 
-That is normally the case, but when patches are found to have problems,
-due to the testing that happens with linux-next, they can then be not
-sent to Linus, right?
+Unfortunately, this doesn't help.
 
-That's what happened here, we need more infrastructure to be able to
-accept them.  I see it as a validation that our development model is
-working properly that this happened :)
+What is worse, I got another soft lockup, although I already turned LOCKDEP off.
 
-thanks,
 
-greg k-h
+Thanks.
