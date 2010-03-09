@@ -1,43 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158Ab0CIQF2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:05:28 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:53820 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018Ab0CIQF0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:05:26 -0500
-Subject: Re: opendir() on a file???
-From: Jon Masters <jonathan@jonmasters.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a36005b51003090659m641b1297g32f3327b83917452@mail.gmail.com>
-References: <1268126817.10479.643.camel@localhost>
-	 <a36005b51003090659m641b1297g32f3327b83917452@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 09 Mar 2010 11:05:20 -0500
-Message-ID: <1268150720.10479.674.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	id S1753685Ab0CIQIK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:08:10 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:50869 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753Ab0CIQIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 11:08:05 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH v2] NOMMU: implement vmap/vunmap with kmalloc
+Date: Tue,  9 Mar 2010 11:11:21 -0500
+Message-Id: <1268151081-28307-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.7.0.2
+In-Reply-To: <1261413866-30634-1-git-send-email-vapier@gentoo.org>
+References: <1261413866-30634-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 06:59 -0800, Ulrich Drepper wrote:
-> On Tue, Mar 9, 2010 at 01:26, Jon Masters <jonathan@jonmasters.org> wrote:
-> > Now I might be missing something, and I know I'm behind on LKML[0], but
-> > the following isn't supposed to work in my book:
-> 
-> Al introduced and fixed the problem, from what I've seen.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+v2
+	- fix up changelog
 
-Thanks. It's fixed in today's rawhide.
+ mm/nommu.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-Jon.
-
+diff --git a/mm/nommu.c b/mm/nommu.c
+index b9b5cce..61a68d5 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -360,14 +360,26 @@ EXPORT_SYMBOL(vmalloc_32_user);
+ 
+ void *vmap(struct page **pages, unsigned int count, unsigned long flags, pgprot_t prot)
+ {
+-	BUG();
+-	return NULL;
++	unsigned int i;
++	void *new_map, *page_data;
++
++	new_map = kmalloc(count << PAGE_SHIFT, GFP_KERNEL);
++	if (!new_map)
++		return NULL;
++
++	for (i = 0; i < count; ++i) {
++		page_data = kmap(pages[i]);
++		memcpy(new_map + (i << PAGE_SHIFT), page_data, PAGE_SIZE);
++		kunmap(page_data);
++	}
++
++	return new_map;
+ }
+ EXPORT_SYMBOL(vmap);
+ 
+ void vunmap(const void *addr)
+ {
+-	BUG();
++	kfree(addr);
+ }
+ EXPORT_SYMBOL(vunmap);
+ 
+-- 
+1.7.0.2
 
