@@ -1,60 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902Ab0CILjG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:39:06 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:42171 "EHLO isrv.corpit.ru"
+	id S1754843Ab0CILnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:43:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38783 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592Ab0CILi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:38:59 -0500
-Message-ID: <4B963351.50707@msgid.tls.msk.ru>
-Date: Tue, 09 Mar 2010 14:38:57 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	id S1754354Ab0CILn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 06:43:28 -0500
+Message-ID: <4B963441.40000@kernel.org>
+Date: Tue, 09 Mar 2010 20:42:57 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Dave Chinner <david@fromorbit.com>
-CC: Karel Zak <kzak@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, Jim Meyering <jim@meyering.net>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net> <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com> <4B95F071.3070400@msgid.tls.msk.ru> <20100309100153.GD18077@nb.net.home> <4B961FE1.5040105@msgid.tls.msk.ru> <20100309111523.GL28189@discord.disaster>
-In-Reply-To: <20100309111523.GL28189@discord.disaster>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=804465C5
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] percpu,lockdep: implement and use is_static_percpu_address()
+References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop>	 <4B95AA4C.2030303@kernel.org> <4298.1268116039@localhost>	 <4B95EE4C.3020606@kernel.org>  <4B9610E5.4080805@kernel.org> <1268133942.4162.2.camel@twins>
+In-Reply-To: <1268133942.4162.2.camel@twins>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 11:43:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
-> On Tue, Mar 09, 2010 at 01:16:01PM +0300, Michael Tokarev wrote:
->> Karel Zak wrote:
->>> I did almost all my tests with scsi_debug or MD RAID0 on scsi_debug.
->>> It works as expected.
->> Actually, for raid0, the alignment is questionable.  Should it be a
->> multiple of chunk size or whole stripe size?  I'm not sure, both ways
->> has bad and good sides..  But if it is the latter, the same issues
->> pops up again: do a 3-disk raid0 and you'll have to align to 3*2^N.
+Hello, Peter.
+
+On 03/09/2010 08:25 PM, Peter Zijlstra wrote:
+>> +/* can't distinguish from other static vars, always false */
+>> +static inline bool is_static_percpu_address(unsigned long addr)
+>> +{
+>> +	return false;
+>> +}
 > 
-> Yes, alignment is still needed, especially for filesystems that can
-> do stripe unit aligned allocation like XFS. If you don't align the
-> filesystem properly, all the data IO will be mis-aligned to the
-> underlying disks and stripe unit sized IO will hit multiple disks
-> rather than just one....
+> At this point it might make sense to simply fail to compile if lockdep
+> is enabled as well.
+> 
+> I'm not sure if there's many SMP archs that don't have this and do have
+> lockdep, but simply failing this test isn't really an option.
 
-I understand alignment is needed, the question is if the alignment
-should be to chunk size or full-stripe size.  In neither case it
-will be bad for underlying disks.
+That might be better.  Returning %false isn't that bad tho.  There
+really is no distinction between percpu and !percpu variable on UP and
+static variable address match will catch both.
 
-/mjt
+>>  /**
+>> + * is_static_percpu_address - test whether address is from static percpu area
+>> + * @addr: address to test
+>> + *
+>> + * Test whether @addr belongs to static percpu area.  Module static
+>> + * percpu areas allocated via __alloc_reserved_percpu() is not
+>> + * considered.  Use is_module_address() for those.
+>> + *
+>> + * RETURNS:
+>> + * %true if @addr is from static percpu area, %false otherwise.
+>> + */
+> 
+> So is_module_address() will only return true for static per-cpu module
+> storage, right?
+
+Right, got confused there.  I'll update is_static_percpu_address() to
+test for reserved regions too.
+
+Thanks for the review.
+
+-- 
+tejun
