@@ -1,71 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284Ab0CIEIM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 23:08:12 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:59915 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932243Ab0CIEIK (ORCPT
+	id S932293Ab0CIEJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 23:09:20 -0500
+Received: from smtpgw1.ufba.br ([192.188.11.65]:56153 "EHLO smtpgw.ufba.br"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932243Ab0CIEJR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 23:08:10 -0500
-Date: Tue, 9 Mar 2010 15:08:07 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Joe Perches <joe@perches.com>
-Cc: Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       lvs-devel <lvs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] net/netfilter/ipvs/ip_vs_ftp.c: Remove use of NIPQUAD
-Message-ID: <20100309040805.GA23772@verge.net.au>
-References: <1268094699.1617.5.camel@Joe-Laptop.home>
+	Mon, 8 Mar 2010 23:09:17 -0500
+X-Greylist: delayed 8172 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Mar 2010 23:09:17 EST
+Message-ID: <20100308225027.1y5cpevmy9pkos8w@webmail.ufba.br>
+Date: Mon, 08 Mar 2010 22:50:27 -0300
+From: onlinegooglepromo <g.benfield101@gmail.com>
+To: undisclosed-recipients:;
+Subject: Attn:Success Alert'''
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-In-Reply-To: <1268094699.1617.5.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166
+ definitions=2010-03-09_01:2010-02-06,2010-03-08,2010-03-08 signatures=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 04:31:39PM -0800, Joe Perches wrote:
-> NIPQUAD has very few uses left.
-> 
-> Remove this use and make the code have the identical form of the only
-> other use of "%u,%u,%u,%u,%u,%u" in net/ipv4/netfilter/nf_nat_ftp.c
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-Acked-by: Simon Horman <horms@verge.net.au>
+Your e-mail has emerged as a winner of (£500,000.00 GBP Pounds) in our  
+on-going Google Promotion.Send Winning details Computer Generated  
+Profile Numbers(CGPN):7-22-71-00-66-12, Ticket number: 00869575733664,  
+Serial numbers:/BTD/8070447706/06, Lucky numbers:  
+12-12-23-35-40-41(12).send details to.Mr Graham  
+Benfield,Email:g.benfield101@gmail.com
+Sincerely,
+Mrs.Susan William.
 
-> ---
->  net/netfilter/ipvs/ip_vs_ftp.c |   10 ++++++++--
->  1 files changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/netfilter/ipvs/ip_vs_ftp.c
-> b/net/netfilter/ipvs/ip_vs_ftp.c
-> index 73f38ea..9f63283 100644
-> --- a/net/netfilter/ipvs/ip_vs_ftp.c
-> +++ b/net/netfilter/ipvs/ip_vs_ftp.c
-> @@ -208,8 +208,14 @@ static int ip_vs_ftp_out(struct ip_vs_app *app,
-> struct ip_vs_conn *cp,
->  		 */
->  		from.ip = n_cp->vaddr.ip;
->  		port = n_cp->vport;
-> -		sprintf(buf, "%u,%u,%u,%u,%u,%u", NIPQUAD(from.ip),
-> -			(ntohs(port)>>8)&255, ntohs(port)&255);
-> +		snprintf(buf, sizeof(buf), "%u,%u,%u,%u,%u,%u",
-> +			 ((unsigned char *)&from.ip)[0],
-> +			 ((unsigned char *)&from.ip)[1],
-> +			 ((unsigned char *)&from.ip)[2],
-> +			 ((unsigned char *)&from.ip)[3],
-> +			 ntohs(port) >> 8,
-> +			 ntohs(port) & 0xFF);
-> +
->  		buf_len = strlen(buf);
->  
->  		/*
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe lvs-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+----------------------------------------------------------------
+Universidade Federal da Bahia - http://www.portal.ufba.br
+
