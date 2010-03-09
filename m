@@ -1,134 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838Ab0CIH0K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 02:26:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55876 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751781Ab0CIH0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 02:26:09 -0500
-Message-ID: <4B95F802.9020308@cn.fujitsu.com>
-Date: Tue, 09 Mar 2010 15:25:54 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+	id S1752971Ab0CIH1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 02:27:40 -0500
+Received: from smtp3-g21.free.fr ([212.27.42.3]:33723 "EHLO smtp3-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781Ab0CIH1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 02:27:35 -0500
+From: Jim Meyering <jim@meyering.net>
+To: Karel Zak <kzak@redhat.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>,
+       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+In-Reply-To: <20100308195847.GC18077@nb.net.home> (Karel Zak's message of
+	"Mon, 8 Mar 2010 20:58:47 +0100")
+References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
+	<20100308195847.GC18077@nb.net.home>
+Date: Tue, 09 Mar 2010 08:27:24 +0100
+Message-ID: <878wa20xb7.fsf@meyering.net>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Lee Schermerhorn <lee.schermerhorn@hp.com>, Nick Piggin <npiggin@suse.de>,
-       Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH V2 4/4] cpuset,mm: update task's mems_allowed lazily
-References: <4B94CD2D.8070401@cn.fujitsu.com> <alpine.DEB.2.00.1003081330370.18502@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1003081330370.18502@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2010-3-9 5:46, David Rientjes wrote:
-[snip]
->> Considering the change of task->mems_allowed is not frequent, so in this patch,
->> I use two variables as a tag to indicate whether task->mems_allowed need be
->> update or not. And before setting the tag, cpuset caches the new mask of every
->> task at its task_struct.
->>
-> 
-> So what exactly is the benefit of 58568d2 from last June that caused this 
-> issue to begin with?  It seems like this entire patchset is a revert of 
-> that commit.  So why shouldn't we just revert that one commit and then add 
-> the locking and updating necessary for configs where
-> MAX_NUMNODES > BITS_PER_LONG on top?
+Karel Zak wrote:
+> On Mon, Mar 08, 2010 at 10:18:27AM -0500, Martin K. Petersen wrote:
+...
+>> It'd be great if you guys could share what you have been doing to the
+>> tooling.
+>
+>  small summary:
+>
+>  - libblkid provides unified API to topology information, it supports:
+>     - ioctls (kernel >= 2.6.32)
+>     - sysfs (kernel >= 2.6.31)
+>     - stripe chunk size and stripe width for DM, MD. LVM and evms on
+>       old kernels
+>  - libparted and fdisk are linked against libblkid
+>
+>  - fdisk supports 4KiB logical sector size (util-linux-ng >= 2.15
+>  - fdisk supports 4KiB physical sector size (util-linux-ng >= 2.17)
+>  - fdisk uses 1MiB alignment (or more if optimal I/O size is bigger)
+>    and alignment_offset for all partitions in non-DOS mode
+>    (util-linux-ng >= 2.17.1)
+>
+>  - parted supports 4KiB physical sector size
+>  - parted uses 1MiB alignment for disks with unknown topology, disks
+>    with topology information are aligned to optimal (or minimum) I/O
+>    size (parted >= 2.1)
+>
+>  - EFI GPT code in the kernel has been updated to works properly with
+>    4KiB sectors (kernel >= 2.6.33)
+>
+>  - mkfs.{ext,xfs,gfs2,ocfs2} have been update to work properly with
+>    topology information, mkfs.{ext,xfs} are linked against libblkid
+>    for compatibility with old kernel (for stripe chunk size / width)
+>
+>  - Fedora-13/RHEL6 installer uses libparted with 4KiB support
+>
+>  - alignment_offset & 4KiB support is planned for LUKS (cryptsetup)
 
-I worried about the consistency of task->mempolicy with task->mems_allowed for
-configs where MAX_NUMNODES <= BITS_PER_LONG. 
+Thanks for the summary, Karel.
+In case anyone wants more high-level detail on the parted front,
+here's its NEWS file:
 
-The problem that I worried is fowllowing:
-When the kernel allocator allocates pages for tasks, it will access task->mempolicy
-first and get the allowed node, then check whether that node is allowed by
-task->mems_allowed.
+    http://git.debian.org/?p=parted/parted.git;a=blob;f=NEWS
 
-But, Without this patch, ->mempolicy and ->mems_allowed is not updated at the same
-time. the kernel allocator may access the inconsistent information of ->mempolicy
-and ->mems_allowed, sush as the allocator gets the allowed node from old mempolicy,
-but checks whether that node is allowed by new mems_allowed which does't intersect
-old mempolicy.
+Currently, I'm not planning much for Parted, other than clean-up.
+For example, I want to remove all of the FS-related code (it's
+horribly bit-rotted) from the package, with the exception of
+HFS/HFS+ and FAT resizing capabilities, since AFAIK, Parted
+has the only free implementations.  If any of you know of other
+implementations or work in progress, please let me know.
 
-So I made this patchset.
 
->> +/**
->> + * cpuset_update_task_mems_allowed - update task memory placement
->> + *
->> + * If the current task's mems_allowed_for_update and mempolicy_for_update are
->> + * changed by cpuset behind our backs, update current->mems_allowed,
->> + * mems_generation and task NUMA mempolicy to the new value.
->> + *
->> + * Call WITHOUT mems_lock held.
->> + * 
->> + * This routine is needed to update the pre-task mems_allowed and mempolicy
->> + * within the tasks context, when it is trying to allocate memory.
->> + */
->> +static __always_inline void cpuset_update_task_mems_allowed(void)
->> +{
->> +	struct task_struct *tsk = current;
->> +	unsigned long flags;
->> +
->> +	if (unlikely(tsk->mems_generation != tsk->mems_generation_for_update)) {
->> +		task_mems_lock_irqsave(tsk, flags);
->> +		tsk->mems_allowed = tsk->mems_allowed_for_update;
->> +		tsk->mems_generation = tsk->mems_generation_for_update;
->> +		task_mems_unlock_irqrestore(tsk, flags);
-> 
-> By this synchronization, you're guaranteeing that no other kernel code 
-> ever reads tsk->mems_allowed when tsk != current?  Otherwise, you're 
-> simply protecting the store to tsk->mems_allowed here and not serializing 
-> on the loads that can return empty nodemasks.
+Related information, prompted by my recent encounter with a
+tool that refused to let me use a GPT partition table.
 
-I guarantee that no other kernel code changes tsk->mems_allowed when tsk != current.
-so every task can  be safe to read tsk->mems_allowed without lock.
+Partition table formats: prefer GUID/GPT:
 
-I will use mems_lock to protect it when other task reads. 
+  Having spent more than my share of time looking at partition table
+  formats recently, I am now strongly biased against DOS partition
+  tables, and for GUID/GPT ones.  In addition to allowing for >2GiB
+  partition offsets and lengths, GPT tables provide for better
+  protection in case of corruption (checksums, backup table at end
+  of disk) and don't have the anachronistic distinction of primary
+  and extended/logical partitions (all partitions are "primary").
+  You can even give each partition a name.  The only reason to use a
+  DOS partition table on a new installation is if you're stuck with
+  a requirement of using an OS like XP on bare metal.
 
->> +	/* Protection of ->mems_allowed_for_update */
->> +	spinlock_t mems_lock;
->> +	/*
->> +	 * This variable(mems_allowed_for_update) are just used for caching
->> +	 * memory placement information.
->> +	 *
->> +	 * ->mems_allowed are used by the kernel allocator.
->> +	 */
->> +	nodemask_t mems_allowed_for_update;	/* Protected by mems_lock */
-> 
-> Another nodemask_t in struct task_struct for this?  And for all configs, 
-> including those that can do atomic updates to mems_allowed?
-
-Yes, for all configs.
-
-> 
->> +
->> +	/*
->> +	 * Increment this integer everytime ->mems_allowed_for_update is
->> +	 * changed by cpuset. Task can compare this number with mems_generation,
->> +	 * and if they are not the same, mems_allowed_for_update is changed and
->> +	 * ->mems_allowed must be updated. In this way, tasks can avoid having
->> +	 * to lock and reload mems_allowed_for_update unless it is changed.
->> +	 */
->> +	int mems_generation_for_update;
->> +	/*
->> +	 * After updating mems_allowed, set mems_generation to
->> +	 * mems_generation_for_update.
->> +	 */
->> +	int mems_generation;
-> 
-> I don't see why you need two mems_generation numbers, one should belong in 
-> the task's cpuset.  Then you can compare tsk->mems_generation to 
-> task_cs(tsk)->mems_generation at cpuset_update_task_memory_state() if you 
-> set tsk->mems_generation = task_cs(tsk)->mems_generation on 
-> cpuset_attach() or update_nodemask().
-
-In this way, we must use rcu_read_lock() to protect task's cs, and the performance
-will slowdown though rcu read lock's spending is very small.
-
-Thanks!
-Miao
-
+Please consider encouraging the use of GPT partition tables...
+or at least do not *dis*courage their use.
