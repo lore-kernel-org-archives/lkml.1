@@ -1,77 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907Ab0CILt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:49:28 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:35931 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460Ab0CILtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:49:24 -0500
-Message-ID: <4B9635BE.6090001@petalogix.com>
-Date: Tue, 09 Mar 2010 12:49:18 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	id S1754954Ab0CILvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:51:37 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46302 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754784Ab0CILvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 06:51:33 -0500
+Date: Tue, 9 Mar 2010 12:50:18 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Mike Snitzer <snitzer@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, Jim Meyering <jim@meyering.net>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: ATA 4 KiB sector issues.
+Message-ID: <20100309115017.GF18077@nb.net.home>
+References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net> <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com> <4B95F071.3070400@msgid.tls.msk.ru> <20100309100153.GD18077@nb.net.home> <4B961FE1.5040105@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       David Howells <dhowells@redhat.com>, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [BUGFIX][PATCH] fix sync_mm_rss in nommu (Was Re: sync_mm_rss()
- issues
-References: <30859.1268056796@redhat.com> <20100309095830.7d4a744d.kamezawa.hiroyu@jp.fujitsu.com> <8bd0f97a1003081833s2e8527d7pd1e0b427ae76020@mail.gmail.com>
-In-Reply-To: <8bd0f97a1003081833s2e8527d7pd1e0b427ae76020@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B961FE1.5040105@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Mon, Mar 8, 2010 at 19:58, KAMEZAWA Hiroyuki wrote:
->> David-san, could you check this ?
->> ==
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> Fix breakage in NOMMU build
->>
->> commit 34e55232e59f7b19050267a05ff1226e5cd122a5 added sync_mm_rss()
->> for syncing loosely accounted rss counters. It's for CONFIG_MMU but
->> sync_mm_rss is called even in NOMMU enviroment (kerne/exit.c, fs/exec.c).
->> Above commit doesn't handle it well.
->>
->> This patch changes
->>  SPLIT_RSS_COUNTING depends on SPLIT_PTLOCKS && CONFIG_MMU
->>
->> And for avoid unnecessary function calls, sync_mm_rss changed to be inlined
->> noop function in header file.
+On Tue, Mar 09, 2010 at 01:16:01PM +0300, Michael Tokarev wrote:
+> Karel Zak wrote:
+> >  # mdadm --create /dev/md8 --level=5 --raid-devices=4 /dev/sdb{1,2,3,4}
 > 
-> fixes Blackfin systems ...
+> That's 3-disk stripe size with default 64Kb chunk size, which makes
+> 3x64=320KiB - the number to which everything should be aligned.
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> >  # fdisk -lcu /dev/md8
+> > 
+> >  Disk /dev/md8: 1572 MB, 1572667392 bytes
+> >  2 heads, 4 sectors/track, 383952 cylinders, total 3071616 sectors
+> >  Units = sectors of 1 * 512 = 512 bytes
+> >  Sector size (logical/physical): 512 bytes / 4096 bytes
+> >  I/O size (minimum/optimal): 65536 bytes / 65536 bytes
+> 
+> And here we go: fdisk does not see the right number: nothing
+> is dividable by 3.
+> 
+> []
+> >  # cat /sys/block/md8/md8p{1,2}/alignment_offset
+> >  0
+> >  0
+> 
+> And that's where the issue is.  md does not {sup,re}port all
+> this stuff yet.
+> 
+> This is what I'm talking about.
 
+Note that I have 2.6.31.12-174.2.22.fc12.x86_64 kernel on my laptop.
+It would be better for serious tests to use 2.6.33.
 
-fixes Microblaze noMMU systems too.
-
-Signed-off-by: Michal Simek <monstr@monstr.eu>
-
-You can check Microblaze noMMU system via my site
-http://www.monstr.eu/wiki/doku.php?id=log:log
-
-Will be good to add your patches to linux-next before Linus tree.
-
-Michal
-
-
-> -mike
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+    Karel
+ 
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+ Karel Zak  <kzak@redhat.com>
