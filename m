@@ -1,52 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347Ab0CIR7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:59:22 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:52137 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755259Ab0CIR7U (ORCPT
+	id S1753362Ab0CISAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:00:30 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50539 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754271Ab0CISA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:59:20 -0500
-X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 12:59:19 EST
+	Tue, 9 Mar 2010 13:00:27 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B968CA2.4040000@s5r6.in-berlin.de>
+Date: Tue, 09 Mar 2010 19:00:02 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-In-Reply-To: <20100309175229.c231f088.kristoffer.ericson@gmail.com>
-References: <1268148843-13135-1-git-send-email-mroberto@cpti.cetuc.puc-rio.br> 
-	<20100309175229.c231f088.kristoffer.ericson@gmail.com>
-From: Marcelo Jimenez <mroberto@cpti.cetuc.puc-rio.br>
-Date: Tue, 9 Mar 2010 14:37:09 -0300
-Message-ID: <cecb6d8f1003090937t4ec3fe1cw293be3735caa2648@mail.gmail.com>
-Subject: Re: [PATCH] ARM: mach-sa1100: Put nanoEngine support back in the 
-	kernel.
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: linux@arm.linux.org.uk, mad_soft@inbox.ru, rpjday@crashcourse.ca,
-       jaswinderrajput@gmail.com, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: [PATCH] ar9170: fix for driver-core ABI change
+References: <20100309104221.aedc5e7e.sfr@canb.auug.org.au> <20100309125245.c25e5ca4.sfr@canb.auug.org.au>
+In-Reply-To: <20100309125245.c25e5ca4.sfr@canb.auug.org.au>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kristoffer,
+Stephen Rothwell wrote:
+> Greg tells me that the semaphore to mutex change didn't go into Linus'
+> tree.  However, this patch can still be applied as the device_lock/unlock
+> primitives did go in.  I guess that the include of mutex.h is not needed.
 
-On Tue, Mar 9, 2010 at 13:52, Kristoffer Ericson
-<kristoffer.ericson@gmail.com> wrote:
->
-> Without testing it on the actual hardware it applies and looks good, compilation also goes smoothly without any issues.
-> It looks quite alright to me. What are you planning to do with the fixup function?
-
-Sorry, this function was the first things I wrote, but the kernel 2.6
-infrastructure made it totally unnecessary and it should have been
-removed. I will do it and send another patch.
-
-> Im just missing the licensing text in the nano...c file for future reference,
-
-Ok, I will add it too.
-
-> after that feel free to add:
-> Acked-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
->
-> Best wishes
-> Kristoffer
-
-Regards,
-Marcelo.
+An #include <linux/device.h> seems to be in order though.  It is pulled
+in via linux/usb.h and this is surely not bound to change anytime soon,
+but still.
+-- 
+Stefan Richter
+-=====-==-=- --== -=--=
+http://arcgraph.de/sr/
