@@ -1,56 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289Ab0CIKMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 05:12:47 -0500
-Received: from relay.ppgk.com.pl ([80.53.243.36]:31953 "EHLO relay.ppgk.com.pl"
+	id S1754375Ab0CIKPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 05:15:46 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33811 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753853Ab0CIKMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 05:12:43 -0500
-X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 05:12:42 EST
-X-PPGK-Scanned: amavisd-new 2.6.4 (20090625) at ppgk.com.pl
-Message-ID: <4B961D8F.3010500@ziu.info>
-Date: Tue, 09 Mar 2010 11:06:07 +0100
-From: Michal Soltys <soltys@ziu.info>
-Organization: Luftbrandzlung
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1754190Ab0CIKPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 05:15:43 -0500
+Date: Tue, 9 Mar 2010 11:15:42 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rafi Rubin <rafi@seas.upenn.edu>
+Cc: mickib1@gmail.com, chatty@enac.fr, peterhuewe@gmx.de, micki@n-trig.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] HID: N-trig MTM Driver fix And cleanup patch 6
+In-Reply-To: <4B95A24D.2090903@seas.upenn.edu>
+Message-ID: <alpine.LNX.2.00.1003091114430.17799@pobox.suse.cz>
+References: <1268082827-2680-1-git-send-email-micki@n-trig.com> <1268082827-2680-2-git-send-email-micki@n-trig.com> <1268082827-2680-3-git-send-email-micki@n-trig.com> <1268082827-2680-4-git-send-email-micki@n-trig.com> <1268082827-2680-5-git-send-email-micki@n-trig.com>
+ <1268082827-2680-6-git-send-email-micki@n-trig.com> <4B95A24D.2090903@seas.upenn.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Mikael Abrahamsson <swmike@swm.pp.se>
-CC: Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <alpine.DEB.1.10.1003090733330.9819@uplift.swm.pp.se>
-In-Reply-To: <alpine.DEB.1.10.1003090733330.9819@uplift.swm.pp.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Abrahamsson wrote:
-> On Mon, 8 Mar 2010, Tejun Heo wrote:
-> 
->>  http://ata.wiki.kernel.org/index.php/ATA_4_KiB_sector_issues
-> 
-> Excellent summary.
-> 
->> C-2. Windows XP depends on the traditional partition layout.
-> 
-> Is this really true? WD ships their EARS drives with an alignment tool 
-> that as far as I can understand, moves the partition so
-> it's aligned to 4KiB:
-> 
+On Mon, 8 Mar 2010, Rafi Rubin wrote:
 
-XP SP2 (or later) can boot from any place, including logical partitions 
-(tested that recently). Most important thing is "hidden sectors" (recent 
-chain.c32 can set that automatically through ntldr and/or sethidden 
-options). No idea about pre-SP2 ; Win 2000 will not boot from "misaligned" 
-(with reference to cylinder boundary) partition.
+> >   static int __init ntrig_init(void)
+> >   {
+> > +	info("N-trig Driver Version 1.6\n");
+> 
+> Perhaps you mean:
+> MODULE_VERSION("1.06");
 
+I'd rather remove all the MODULE_VERSION stuff altogether. git is much 
+better tracking revisions, once the driver gets merged.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
