@@ -1,87 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861Ab0CITGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:06:18 -0500
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:39666 "EHLO
-	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755823Ab0CITGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:06:14 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B969CA9.5040103@cam.ac.uk>
-Date: Tue, 09 Mar 2010 19:08:25 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+	id S1754752Ab0CITuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:50:21 -0500
+Received: from kroah.org ([198.145.64.141]:44194 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752376Ab0CITuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:50:19 -0500
+Date: Tue, 9 Mar 2010 11:50:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: The gregkh patch scripts
+Message-ID: <20100309195009.GA18030@kroah.com>
+References: <20100307181649.GD3718@kroah.com>
+ <Pine.LNX.4.44L0.1003071546000.8502-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: [git pull] Input updates for 2.6.34-rc0
-References: <20100301080342.GH765@core.coreip.homeip.net> <8bd0f97a1003090644p19fb7dacqe1f2fb3adee3fa7a@mail.gmail.com> 	<20100309175107.GB23378@core.coreip.homeip.net> <8bd0f97a1003090958i741f4ffm3528450e89089e9@mail.gmail.com> 	<4B9690F8.1080804@cam.ac.uk> <8bd0f97a1003091021u717fb87jf3e32c7258ee4011@mail.gmail.com>
-In-Reply-To: <8bd0f97a1003091021u717fb87jf3e32c7258ee4011@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003071546000.8502-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/10 18:21, Mike Frysinger wrote:
-> On Tue, Mar 9, 2010 at 13:18, Jonathan Cameron wrote:
->> On 03/09/10 17:58, Mike Frysinger wrote:
->>> On Tue, Mar 9, 2010 at 12:51, Dmitry Torokhov wrote:
->>>> On Tue, Mar 09, 2010 at 09:44:08AM -0500, Mike Frysinger wrote:
->>>>> On Mon, Mar 1, 2010 at 03:03, Dmitry Torokhov wrote:
->>>>>> Hi Linus,
->>>>>>
->>>>>> Please pull from:
->>>>>>
->>>>>>        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
->>>>>> or
->>>>>>        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
->>>>>>
->>>>>> to receive first round of updates for the input subsystem.
->>>>>
->>>>> i'm trying to figure out what the problem is with the ADXL34x and
->>>>> AD714x drivers you seem to have accepted (at least, you didnt say
->>>>> there was anything left for us to do).  i would have expected them to
->>>>> be in 2.6.33/2.6.34 already, but it seems they arent moving now.  so
->>>>> what's up ?
->>>>
->>>> I am still spooked by the fact that this is an accelerometer and does
->>>> not have to be an input device but maybe used for different purposes as
->>>> well.
->>>
->>> the AD714x is not an accelerometer, it's a capacitance touch sensor
->>>
->>> i understand the ADXL34x is a bit wonky, but what else would you
->>> propose ?  or just leave the driver in limbo forever until people
->>> forget about it ?
->>
->> Perhaps whilst this remains in debate it might merge under misc, or
->> even staging temporarily.  That would avoid setting a precedent for
->> putting them in input.  I personally agree with Dmitry's wish to
->> avoid feature drift in input, but then we don't have anything else ready
->> for the big time.  Under staging the entire TODO list would be along
->> lines of awaiting a suitable framework...  This is effectively what
->> is going to happen to the various Ambient Light sensor drivers for
->> pretty much the same reason (see responses to our recent pull request).
->>
->> We certainly want to be careful not to loose good drivers like this
->> and also to make them available to those who wish to use them.
+On Sun, Mar 07, 2010 at 03:54:25PM -0500, Alan Stern wrote:
+> On Sun, 7 Mar 2010, Greg KH wrote:
 > 
-> i dont have any problems with where exactly the driver gets merged, or
-> if we have a goal we're working towards (in terms of a "better"
-> place).  but drivers sitting in perpetual limbo sucks.
-> -mike
+> > Yes, I can switch back to going off of the -rcN-gitM markings that I was
+> > using in the past.  If I do that does it make it easier for you?
+> > 
+> > And yes, you are right, this is a constant rebase, and that's wrong on
+> > my part.
 > 
-In that case, I suggest asking Greg KH to pull it into staging for now
-with suitable explanation (and perhaps an ack for putting it there from
-Dmitry?)
+> That's exactly the problem.  I don't mind rebasing for each -rcN; in
+> fact many of the early -rc kernels often contain important bug fixes so
+> I'm glad to have them.  But rebasing more often than that becomes
+> increasingly inconvenient.
 
-Jonathan
+Ok, I've moved back to the original way I was handling this, it should
+all be back to normal now.
+
+thanks,
+
+greg k-h
