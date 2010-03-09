@@ -1,92 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604Ab0CIXpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 18:45:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:33397 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753892Ab0CIXpZ (ORCPT
+	id S1755069Ab0CIXqg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 18:46:36 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:62655 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753625Ab0CIXqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 18:45:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=yGCISPiK/tHeYPWBAvepkMfDUmRiwhpeCL0UfloPtVfpyZY/oIvspVDI4+H6TEOCuD
-         svL7/lxZugy5Lyy7JBj8iRdVX0WrcxnEpDXX0hlHbbTEev7cojg7+EdR81mt/A7uYlgX
-         etMantksqvEZ5lUZLEDei6+SUv7Nd/OfofzAg=
-Date: Wed, 10 Mar 2010 00:45:20 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 1/3] lockdep: Move lock events under lockdep recursion
-	protection
-Message-ID: <20100309234518.GE5058@nowhere>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com> <1267599302-2886-2-git-send-regression-fweisbec@gmail.com> <20100309083410.GD5768@kernel.dk>
+	Tue, 9 Mar 2010 18:46:34 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: ATA 4 KiB sector issues.
+Date: Wed, 10 Mar 2010 00:46:24 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.33-00022-gabde0f8; KDE/4.4.0; x86_64; ; )
+Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+References: <4B947393.2050002@kernel.org>
+In-Reply-To: <4B947393.2050002@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100309083410.GD5768@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003100046.24695.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+aAao4Mwv0kwmVhZImaG7II4xPjryWlZWr0U3
+ 2p1bRPbNSj56/nIHFZpi9uI/TTpjs7fK0hKr1zAYTt16xOuwfm
+ EpmpNEsao+0iH2ICMENfA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 09:34:10AM +0100, Jens Axboe wrote:
-> I went to try this on 2.6.34-rc1 to see how much it would improve things
-> here. With 2.6.34-rc1, a
+On Monday 08 March 2010 04:48:35 Tejun Heo wrote:
+> Unfortunately, while Windows can assume that newer releases won't
+> share the hard drive with older releases including Windows XP, Linux
+> distros can't do that.  There will be many installations where a
+> modern Linux distros share a hard drive with older releases of
+> Windows.  At this point, I can't see a silver bullet solution.
 > 
-> $ time sudo perf lock record ls /dev/shm
-> 
-> essentially hangs the box, it ends up crashing hard (not just live
-> locked like before). With the patch in place, it does eventually finish:
-> 
-> real    0m21.301s
-> user    0m0.030s
-> sys     0m21.040s
-> 
-> The directory is empty.
+> Partitioners maybe should only align partitions which will be used by
+> Linux and default to the traditional layout for others while allowing
+> explicit override.  I think Windows XP wouldn't have problem with
+> differently aligned partitions as long as it doesn't actually use them
+> but haven't tested it.
 
+Any idea if XP can cope with partition tables that use a 32-sector, 128-head
+geometry rather than the default 63-sector, 255-head one? That seems to
+be what some flash memory cards are using and it would make any cylinder
+aligned partition also 4096-byte aligned, at the cost of moving the
+1024-cylinder boundary from 7.88 GiB to 2 GiB.
 
-Hehe :-)
+Do we know of anything that requires 63s/255h?
 
-That said you are probably missing a part of the puzzle.
-This patch avoids the scary recursions we had. But there
-is another separate patch that fixes the buffers multiplexing
-dependency we had. Buffering is now done per cpu.
-
-You need this patch:
-
-	commit b67577dfb45580c498bfdb1bc76c00c3b2ad6310
-	Author: Frederic Weisbecker <fweisbec@gmail.com>
-	Date:   Wed Feb 3 09:09:33 2010 +0100
-
-	perf lock: Drop the buffers multiplexing dependency
-
-But this is not in -rc1, you need to checkout tip/perf/core
-
-Well, the best would be you actually pull this on top of -rc1:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	perf/core
-
-so that you get the buffers multiplexing dependency that is in -tip,
-and you also get the recursions fixes, not yet in -tip (but should make
-it soon).
-
-I bet you still won't have magic results after that, but still it should
-be better.
-
-We still have further projects in mind to improve the scalability,
-like the events injection thing (that avoids the string copy)
-
-Again, you are my eyes on this, I'm still blind with my poor dual
-laptop or my atom testbox.
-
-Thanks for your testing.
-
+	Arnd
