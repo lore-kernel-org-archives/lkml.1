@@ -1,44 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100Ab0CICOX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:14:23 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:36386 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756570Ab0CICOV (ORCPT
+	id S1756579Ab0CICTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 21:19:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50561 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756516Ab0CICTG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 21:14:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=PRgteHpXmi8oWTlJccpuxqxSvEI9j1mGtg9GVK3XR4wmhY82GwtIgP/1YZpYGeDfrZ
-         H0cS+/Jg+RsJsH8KYvhzIREIAXbWIDMZ55tnDwKuDWoaJbuoEheuoM/Xs9E7YhtYYdzz
-         DCvLTXYhNRKeQWN/eOiyZGMdkQJDeDLVESUdQ=
+	Mon, 8 Mar 2010 21:19:06 -0500
+Date: Mon, 8 Mar 2010 18:18:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: Upstream first policy
+In-Reply-To: <20100309020517.GT30031@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.2.00.1003081811330.3669@localhost.localdomain>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org> <20100308094647.GA14268@elte.hu> <20100308173008.7ae389ab@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain> <4B9585BD.6070904@redhat.com>
+ <alpine.LFD.2.00.1003081523280.3669@localhost.localdomain> <20100309001554.GP30031@ZenIV.linux.org.uk> <20100309004829.GQ30031@ZenIV.linux.org.uk> <alpine.LFD.2.00.1003081742380.3669@localhost.localdomain> <20100309020517.GT30031@ZenIV.linux.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
-References: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 8 Mar 2010 21:14:00 -0500
-Message-ID: <8bd0f97a1003081814k70c7c3c2pbb8f67d9d3da696c@mail.gmail.com>
-Subject: Re: Linux 2.6.34-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 8, 2010 at 15:33, Linus Torvalds wrote:
-> It's out there now. I still have a few trees I already got pull requests
-> for, and that I want to look over a bit more (ceph, gdb tree etc), and
-> it's possible that I've just overlooked some other pull request.
->
-> So if you feel like you sent me a pull request bit might have been
-> over-looked, please point that out to me, but in general the merge window
-> is over. And as promised, if you left your pull request to the last day of
-> a two-week window, you're now going to have to wait for the 2.6.35 window.
 
-i was traveling the last few weeks doing training and got back this
-weekend.  was finishing up the Blackfin tree now, but i guess i missed
-the window huh ...
--mike
+
+On Tue, 9 Mar 2010, Al Viro wrote:
+> 
+> Doesn't have to be a binding over /etc/passwd, BTW.  /etc as a mountpoint will
+> serve just as well.
+
+I agree. But I think more people are aware of a regular directory mount 
+than about the ability to just mount a single file. So from a sneakyness 
+standpoint, I like the "oh, btw, I just took over just the one file I care 
+about" rather than trying to hide the whole directory.
+
+Doesn't matter conceptually, though.
+
+		Linus
