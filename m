@@ -1,107 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752626Ab0CIGqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:46:15 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:45781 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567Ab0CIGqN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:46:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K1cXSyvCikFFFDY0tq1hii7Ei07g6p/Nb+MlwNhKKBfCs6rsyivPjAPJzRt30jq8NH
-         wY1h0ImBFdEWmy2JXanjTmWfC7z0kceCBIagsH248ND8w78Boal/KxRM/trfo7OARwQt
-         mxX935jCPgdF5ak50nJZbKnjzmzHsGGDWCDHw=
+	id S1752460Ab0CIGxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:53:42 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:56879 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732Ab0CIGxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 01:53:39 -0500
+Message-ID: <4B95F071.3070400@msgid.tls.msk.ru>
+Date: Tue, 09 Mar 2010 09:53:37 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <1267592861-26911-8-git-send-email-viresh.kumar@st.com>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-2-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-3-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-4-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-5-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-6-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-7-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-8-git-send-email-viresh.kumar@st.com>
-Date: Tue, 9 Mar 2010 07:46:10 +0100
-Message-ID: <63386a3d1003082246g2752ccf4ob52d5bb01dfb264c@mail.gmail.com>
-Subject: Re: [PATCH 07/11] ST SPEAr: Added source files for SPEAr3xx machine 
-	family
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Viresh KUMAR <viresh.kumar@st.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
+To: Mike Snitzer <snitzer@redhat.com>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
+       Jim Meyering <jim@meyering.net>, Neil Brown <neilb@suse.de>
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net> <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
+In-Reply-To: <170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=804465C5
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Viresh,
-some smallish comments...
+Mike Snitzer wrote:
+[]
+> I've been keeping track of all the pieces in play, have coordinated
+> with kzak and jim, and have a summary that offers some amount of macro
+> detail (at the end I touch on parted and fdisk):
+> 
+> http://people.redhat.com/msnitzer/docs/io-limits.txt
 
-2010/3/3 Viresh KUMAR <viresh.kumar@st.com>:
+What I don't see in this thread and in this document is - any mention
+of linux md layer.  I think it is the first candidate to test the whole
+thing, the easiest and most important one.  I mean the alignment and
+"recommended I/O size" and all this similar stuff.
 
-> (skip some stuff that looks OK...)
-> diff --git a/arch/arm/mach-spear3xx/spear3xx.c b/arch/arm/mach-spear3xx/spear3xx.c
-> new file mode 100644
-> index 0000000..f529d74
-> --- /dev/null
-> +++ b/arch/arm/mach-spear3xx/spear3xx.c
-> @@ -0,0 +1,118 @@
-> +/*
-> + * arch/arm/mach-spear3xx/spear3xx.c
-> + *
-> + * SPEAr3XX machines common source file
-> + *
-> + * Copyright (C) 2009 ST Microelectronics
-> + * Viresh Kumar<viresh.kumar@st.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2. This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + */
-> +
-> +#include <linux/types.h>
-> +#include <linux/ptrace.h>
-> +#include <linux/io.h>
-> +#include <asm/hardware/vic.h>
-> +#include <asm/irq.h>
-> +#include <asm/mach/arch.h>
-> +#include <mach/irqs.h>
-> +#include <mach/generic.h>
-> +#include <mach/spear.h>
-> +#include <plat/gpt.h>
-> +
-> +/* Add spear3xx machines common devices here */
-> +/* uart device registeration */
-> +struct amba_device uart_device = {
-> +       .dev = {
-> +               .init_name = "uart",
-> +               },
-> +       .res = {
-> +               .start = SPEAR3XX_ICM1_UART_BASE,
-> +               .end = SPEAR3XX_ICM1_UART_BASE + SPEAR3XX_ICM1_UART_SIZE - 1,
-> +               .flags = IORESOURCE_MEM,
-> +               },
-> +       .irq = {IRQ_UART, NO_IRQ},
-> +       .periphid = 0x00041011,
-> +};
+Think of a raid5 array - with all the mentioned good stuff in place
+fdisk should figure out to align partitions on the array stripe
+boundary, and should do that automatically.  And this should be
+most easy to debug/test, since the whole thing is controllable
+by kernel.
 
-You're hardcoding the PrimeCell ID to the ARM version, but I suspect
-you have an ST derivate with some additional features. If you look in
-the PL011 driver in drivers/serial/amba-pl011.c you will probably recognize
-the modified PrimeCell IDs for vendor 0x80 (VENDOR_ST) and I think
-you might rather need to patch this file with your new periphid and
-possibly even implement some new extensions (if there are any).
+But apparently it does not implement anything of this sort.
+Adding Neilb to the Cc list.......
 
-What value is actually in the ID registers of your cell? (Just
-check in some debugger or simply printk() it...)
+Thanks!
 
-Apart from this the patch looks OK to me.
-
-Yours,
-Linus Walleij
+/mjt
