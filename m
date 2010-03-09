@@ -1,57 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872Ab0CIUXm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 15:23:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42369 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754383Ab0CIUXj (ORCPT
+	id S1755825Ab0CIUaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:30:11 -0500
+Received: from proxy.quengel.org ([213.146.113.159]:46086 "EHLO
+	gerlin1.hsp-law.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751826Ab0CIUaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 15:23:39 -0500
-Date: Tue, 9 Mar 2010 12:22:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
-Message-Id: <20100309122253.3f3d4a53.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
-References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Mar 2010 15:30:09 -0500
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Sound MSI fallout on a Asus mobo NVIDIA MCP55
+References: <87hboq32lr.fsf@gerlin1.hsp-law.de> <s5hfx49s8rq.wl%tiwai@suse.de>
+From: Ralf Gerbig <rge@quengel.org>
+Date: Tue, 09 Mar 2010 21:30:07 +0100
+In-Reply-To: <s5hfx49s8rq.wl%tiwai@suse.de> (Takashi Iwai's message of "Tue\, 09 Mar 2010 18\:30\:01 +0100")
+Message-ID: <87ocixi6gg.fsf@gerlin1.hsp-law.de>
+User-Agent: Gnus/5.101 (Gnus v5.10.10) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Mar 2010 10:21:04 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Moins,
 
-> __zone_pcp_update() iterates over NR_CPUS instead of limiting the
-> access to the possible cpus. This might result in access to
-> uninitialized areas as the per cpu allocator only populates the per
-> cpu memory for possible cpus.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  mm/page_alloc.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -3224,7 +3224,7 @@ static int __zone_pcp_update(void *data)
->  	int cpu;
->  	unsigned long batch = zone_batchsize(zone), flags;
->  
-> -	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-> +	for_each_possible_cpu(cpu) {
->  		struct per_cpu_pageset *pset;
->  		struct per_cpu_pages *pcp;
->  
+* Takashi Iwai writes:
 
-I'm having trouble working out whether we want to backport this into
-2.6.33.x or earlier.  Help?
+> Applied now.
+> But, at the next time, please submit a patch that can be applied directly.
+> See Documentation/SubmittingPatches for details.
 
+>> --- a/sound/pci/hda/hda_intel.c
+>> +++ b/sound/pci/hda/hda_intel.c
+>> @@ -2351,6 +2351,7 @@
+>> static struct snd_pci_quirk msi_black_list[] __devinitdata = {
+>> SND_PCI_QUIRK(0x1043, 0x81f2, "ASUS", 0), /* Athlon64 X2 + nvidia */
+>> SND_PCI_QUIRK(0x1043, 0x81f6, "ASUS", 0), /* nvidia */
+>> +	SND_PCI_QUIRK(0x1043, 0x822d, "ASUS", 0), /* Athlon64 X2 + nvidia MCP55*/
+>> {}
+>> };
+>> 
+>> if you need it: Signed-off-by: Ralf Gerbig <rge@quengel.org>
+>> 
+>> Ralf
+>> 
+
+oops, sorry but I'm not a developer. I did apply this to my tree and
+it worked - what went wrong?
+
+thanks,
+
+Ralf
