@@ -1,99 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283Ab0CIRBl (ORCPT <rfc822;w@1wt.eu>);
+	id S1755433Ab0CIRBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:01:44 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:59060 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755338Ab0CIRBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Mar 2010 12:01:41 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:45677 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018Ab0CIRBi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:01:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LsUbYn8na6lWPTMtEXk5LkKqUzwJcsl6xrbfnapL1sCpeD5LmPPXFIIKOtmucwVjmS
-         dmZZGkvdRJ5LjtuuVNi74Y4C6SASitPOKWU4eQ75YivRXa2uyZwhFtjWmjYd3wMH7rwQ
-         sBstG9LiwIUNCfVwNqaCPow5tVtEqL683XUJk=
+Date: Tue, 9 Mar 2010 17:01:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
+	pressure to relieve instead of congestion
+Message-ID: <20100309170123.GG4883@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1003090946180.28897@router.home> <4B966F93.9060207@linux.vnet.ibm.com> <alpine.DEB.2.00.1003091005310.28897@router.home>
 MIME-Version: 1.0
-In-Reply-To: <4B967AEE.2060905@intcomgrp.com>
-References: <elUoX-6na-35@gated-at.bofh.it> <4B967AEE.2060905@intcomgrp.com>
-Date: Tue, 9 Mar 2010 14:01:36 -0300
-Message-ID: <f5ca57691003090901r399b1e78yb66c8ef4fe15440b@mail.gmail.com>
-Subject: Re: [PATCH] Security: key: keyring: fix some code style issues
-From: Chihau Chau <chihau@gmail.com>
-To: James Kosin <jkosin@intcomgrp.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1003091005310.28897@router.home>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You said me that it may introduce a serious BUG later so I have undone
-this change.
+On Tue, Mar 09, 2010 at 10:09:11AM -0600, Christoph Lameter wrote:
+> On Tue, 9 Mar 2010, Christian Ehrhardt wrote:
+> 
+> > > What happens if memory becomes available in another zone? Lets say we are
+> > > waiting on HIGHMEM and memory in ZONE_NORMAL becomes available?
+> >
+> > Do you mean the same as Nick asked or another aspect of it?
+> > citation:
+> > "I mean the other way around. If that zone's watermarks are not met, then why
+> > shouldn't it be woken up by other zones reaching their watermarks."
+> 
+> Just saw that exchange. Yes it is similar. Mel only thought about NUMA
+> but the situation can also occur in !NUMA because multiple zones do not
+> require NUMA.
+> 
 
-Regards.
+True, although rare. Elsewhere I suggested that the wait could be on a
+per-node basis instead of per-zone. My main concern there would be
+adding a new hot cache line in the page free path or an unfortunate mix
+of zone and node logic. I'm not fully convinced it's worth it but will
+check it out.
 
-2010/3/9 James Kosin <jkosin@intcomgrp.com>:
-> On 3/8/2010 6:20 PM, Chihau Chau wrote:
->> From: Chihau Chau <chihau@gmail.com>
->>
->> This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
->> code style issues like to put a else sentence below close brace '}' and
->> to replace a tab instead of some space characters.
->>
->> Signed-off-by: Chihau Chau <chihau@gmail.com>
->> ---
->>  security/keys/keyring.c |    7 +++----
->>  1 files changed, 3 insertions(+), 4 deletions(-)
->>
->> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
->> index e814d21..840be66 100644
->> --- a/security/keys/keyring.c
->> +++ b/security/keys/keyring.c
->> @@ -17,7 +17,7 @@
->>  #include <linux/seq_file.h>
->>  #include <linux/err.h>
->>  #include <keys/keyring-type.h>
->> -#include <asm/uaccess.h>
->> +#include <linux/uaccess.h>
->>  #include "internal.h"
->>
->>  /*
->> @@ -306,7 +306,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
->>       key_check(keyring);
->>
->>       /* top keyring must have search permission to begin the search */
->> -        err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
->> +     err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
->>       if (err < 0) {
->>               key_ref = ERR_PTR(err);
->>               goto error;
->> @@ -775,8 +775,7 @@ int __key_link(struct key *keyring, struct key *key)
->>               smp_wmb();
->>               klist->nkeys++;
->>               smp_wmb();
->> -     }
->> -     else {
->> +     } else {
->>               /* grow the key list */
->>               max = 4;
->>               if (klist)
->
-> Chau,
->
-> What happened to the other part of the patch to fix the "} else {" above
-> where you had tried to remove the {} ?
->
-> James
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> If a process goes to sleep on an allocation that has a preferred zone of
+> HIGHMEM then other processors may free up memory in ZONE_DMA and
+> ZONE_NORMAL and therefore memory may become available but the process will
+> continue to sleep.
+> 
 
+Until it's timeout at least. It's still better than the current
+situation of sleeping on congestion.
 
+The ideal would be waiting on a per-node basis. I'm just not liking having
+to look up the node structure when freeing a patch of pages and making a
+cache line in there unnecessarily hot.
+
+> The wait structure needs to be placed in the pgdat structure to make it
+> node specific.
+> 
+> But then an overallocated node may stall processes. If that node is full
+> of unreclaimable memory then the process may never wake up?
+> 
+
+Processes wake after a timeout.
 
 -- 
-Chihau Chau
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
