@@ -1,57 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621Ab0CISwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:52:43 -0500
-Received: from warsl404pip6.highway.telekom.at ([195.3.96.89]:53682 "EHLO
-	email.aon.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755557Ab0CISwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:52:41 -0500
-From: Melchior FRANZ <melchior.franz@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [BUG?] hid-core.c: hid->name = dev->manufacturer + dev->product ... why not + dev->serial?
-Date: Tue, 9 Mar 2010 19:52:40 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33; KDE/4.3.5; x86_64; ; )
-Cc: linux-input@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-iio@vger.kernel.org
-References: <201003071655.06644@rk-nord.at> <201003091342.20273@rk-nord.at> <20100309184127.GE19814@core.coreip.homeip.net>
-In-Reply-To: <20100309184127.GE19814@core.coreip.homeip.net>
-X-Fingerprint: 9FFB C079 5B78 4F27 099C C6C6 7399 02D1 919B D903
-X-PGP: http://members.aon.at/mfranz/melchior.franz
+	id S1751923Ab0CITc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:32:29 -0500
+Received: from ipo3.cc.utah.edu ([155.97.131.71]:16617 "EHLO ipo3.cc.utah.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750972Ab0CITc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:32:27 -0500
+X-SBRS: None
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmUWAMMwlkubYbWV/2dsb2JhbACTP4d3c7AYAQmFMYhZAoJnghAEgxcc
+X-IronPort-AV: E=Sophos;i="4.49,610,1262588400"; 
+   d="scan'208";a="110408395"
+Message-ID: <4B96A24A.6060405@utah.edu>
+Date: Tue, 09 Mar 2010 12:32:26 -0700
+From: Tom Ammon <tom.ammon@utah.edu>
+Organization: University of Utah CHPC
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Lightning/1.0b1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: how to tweak ARP timer on kernel 2.6.9
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003091952.40853@rk-nord.at>
+X-OriginalArrivalTime: 09 Mar 2010 19:32:27.0019 (UTC) FILETIME=[40327DB0:01CABFBF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov -- Tuesday 09 March 2010:
-> Have you considered the fact that maybe you not using the right interface?
+Hi,
 
-No. Because I'm not talking about *writing* an application, but about
-*using* applications written by others. The producer of my two BU0836A
-knows that the devices are different, I know that they are different,
-the kernel knows that they are different, but the applications don't
-know that, because the kernel doesn't tell them (via JSIOCGNAME).
+I've been trying to figure out how to adjust the ARP timeout on kernel 
+2.6.9 and I found the following in /proc/sys/net/ipv4/neigh/ib0 (its an 
+IB interface I am interested in changing) with the following values. 
+This is on kernel 2.6.9-89ELsmp (RHEL4) :
 
+[root@up255 ib0]# cat anycast_delay
+99
+[root@up255 ib0]# cat app_solicit
+0
+[root@up255 ib0]# cat base_reachable_time
+30
+[root@up255 ib0]# cat delay_first_probe_time
+5
+[root@up255 ib0]# cat gc_stale_time
+60
+[root@up255 ib0]# cat locktime
+99
+[root@up255 ib0]# cat mcast_solicit
+3
+[root@up255 ib0]# cat proxy_delay
+79
+[root@up255 ib0]# cat proxy_qlen
+64
+[root@up255 ib0]# cat retrans_time
+99
+[root@up255 ib0]# cat ucast_solicit
+3
+[root@up255 ib0]# cat unres_qlen
+3
 
+When I test this, along with per-flow ECMP (using the iproute2 utils), I 
+see that the ARP cache is timing out about every 10 minutes (I observe 
+this by load balancing an iperf flow between two different gateway 
+machines and then graphing the interface traffic)
 
-> You need to work with guys at linux-iio@vger.kernel.org (which stands
-> for Industrial I/O which is exactly what you are working with).
+On a newer kernel, 2.6.18-164.11.1.el5 (RHEL5), I see mostly the same 
+parms available, but a few new ones have been added. However, all of the 
+parms that are the same name between the two kernels are the same values:
 
-Hmm, then I wonder why the joystick names are different on Windows and
-Linux already.  :-}
- 
-  unpatched Linux:  "Leo Bodnar BU0836A Interface"
-  (Vista?) Windows: "BU0836A Interface" (not even the manufacturer ... pff)
+[root@gateway2 ib0]# cat anycast_delay
+99
+[root@gateway2 ib0]# cat app_solicit
+0
+[root@gateway2 ib0]# cat base_reachable_time
+30
+[root@gateway2 ib0]# cat base_reachable_time_ms
+30000
+[root@gateway2 ib0]# cat delay_first_probe_time
+5
+[root@gateway2 ib0]# cat gc_stale_time
+60
+[root@gateway2 ib0]# cat locktime
+99
+[root@gateway2 ib0]# cat mcast_solicit
+3
+[root@gateway2 ib0]# cat proxy_delay
+79
+[root@gateway2 ib0]# cat proxy_qlen
+64
+[root@gateway2 ib0]# cat retrans_time
+99
+[root@gateway2 ib0]# cat retrans_time_ms
+1000
+[root@gateway2 ib0]# cat ucast_solicit
+3
+[root@gateway2 ib0]# cat unres_qlen
+3
 
-Oh, well. Forget it. I'll just distribute the patch, then. I didn't have
-much hope, anyway.
+Yet when I observe the same traffic flow with this machine, the ARP 
+cache times out about once per minute.
 
-m.
+Is there another set of parameters somewhere that govern how often the 
+kernel times out the ARP cache? If so, where might I find that? Is there 
+any kernel documentation that talks about changing ARP timers on the 
+linux kernel?
+
+Tom Ammon
+
+-- 
+--------------------------------------------------------------------
+Tom Ammon
+Network Engineer
+Office: 801.587.0976
+Mobile: 801.674.9273
+
+Center for High Performance Computing
+University of Utah
+http://www.chpc.utah.edu
+
