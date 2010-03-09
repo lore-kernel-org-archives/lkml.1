@@ -1,108 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685Ab0CIS6f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:58:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39115 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755650Ab0CIS63 (ORCPT
+	id S1755532Ab0CIScl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:32:41 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:22300 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107Ab0CIScj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:58:29 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf report: Print the map table just after samples for which no map was found
-Date: Tue,  9 Mar 2010 15:58:17 -0300
-Message-Id: <1268161097-17761-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Tue, 9 Mar 2010 13:32:39 -0500
+X-IMAP-Sender: achiang
+Date: Tue, 9 Mar 2010 11:32:27 -0700
+X-OfflineIMAP-x2122322631-6c646c-494e424f582e4f7574626f78: 1268159558-0998911378209-v6.2.0
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: sarah.a.sharp@linux.intel.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] small xhci cleanups
+Message-ID: <20100309183227.GD15974@grease.lan>
+References: <20100309174815.29339.96173.stgit@bob.kio> <20100309181413.GB31027@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100309181413.GB31027@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+* Greg KH <greg@kroah.com>:
+> On Tue, Mar 09, 2010 at 10:52:43AM -0700, Alex Chiang wrote:
+> 
+> >       USB: xhci: move all debug code under CONFIG_XHCI_HCD_DEBUGGING
+> 
+> Does this conflict with Sarah's other debugging patch she just sent out?
 
-If -vv is used just the map table will be printed, -vvv will print the symbol
-table too, with it we can see that we have a bug where some samples are not
-being resolved to a map when we get them in the perf.data stream, but after we
-have it all processed, we can find the right map, some reordering probably is
-happening.
+I'm assuming you're talking about this patch:
 
-Upcoming patches will provide ways to ask for most PERF_SAMPLE_ conditional
-samples to be taken for !PERF_RECORD_SAMPLE events too, then we'll be able to
-ask for PERF_SAMPLE_TIME and PERF_SAMPLE_CPU to help diagnose this.
+	http://thread.gmane.org/gmane.linux.usb.general/28681
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/hist.c   |    5 +++++
- tools/perf/util/thread.c |    6 +++---
- tools/perf/util/thread.h |    3 +++
- 3 files changed, 11 insertions(+), 3 deletions(-)
+Yes, we'll definitely have conflicts. If you agree that we should
+move the debug code under the Kconfig option, then the best
+course of action would be for Sarah to rebase her work on top of
+my patches (since they're intrusive).
 
-diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
-index 73ebb6f..bdcfd61 100644
---- a/tools/perf/util/hist.c
-+++ b/tools/perf/util/hist.c
-@@ -655,6 +655,11 @@ print_entries:
- 		}
- 		ret += hist_entry__fprintf(h, pair, show_displacement,
- 					   displacement, fp, session_total);
-+		if (h->map == NULL && verbose > 1) {
-+			__map_groups__fprintf_maps(&h->thread->mg,
-+						   MAP__FUNCTION, fp);
-+			fprintf(fp, "%.10s end\n", graph_dotted_line);
-+		}
- 	}
- 
- 	free(rem_sq_bracket);
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index 9024fa1..fa96831 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -79,8 +79,8 @@ int thread__comm_len(struct thread *self)
- 	return self->comm_len;
- }
- 
--static size_t __map_groups__fprintf_maps(struct map_groups *self,
--					 enum map_type type, FILE *fp)
-+size_t __map_groups__fprintf_maps(struct map_groups *self,
-+				  enum map_type type, FILE *fp)
- {
- 	size_t printed = fprintf(fp, "%s:\n", map_type__name[type]);
- 	struct rb_node *nd;
-@@ -89,7 +89,7 @@ static size_t __map_groups__fprintf_maps(struct map_groups *self,
- 		struct map *pos = rb_entry(nd, struct map, rb_node);
- 		printed += fprintf(fp, "Map:");
- 		printed += map__fprintf(pos, fp);
--		if (verbose > 1) {
-+		if (verbose > 2) {
- 			printed += dso__fprintf(pos->dso, type, fp);
- 			printed += fprintf(fp, "--\n");
- 		}
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 0a28f39..dcf7030 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -10,6 +10,9 @@ struct map_groups {
- 	struct list_head	removed_maps[MAP__NR_TYPES];
- };
- 
-+size_t __map_groups__fprintf_maps(struct map_groups *self,
-+				  enum map_type type, FILE *fp);
-+
- struct thread {
- 	struct rb_node		rb_node;
- 	struct map_groups	mg;
--- 
-1.5.5.1
+/ac
 
