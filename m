@@ -1,127 +1,223 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842Ab0CIRcs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:32:48 -0500
-Received: from LION.seas.upenn.edu ([158.130.12.194]:44152 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113Ab0CIRcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:32:45 -0500
-Message-ID: <4B968628.7060409@seas.upenn.edu>
-Date: Tue, 09 Mar 2010 12:32:24 -0500
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
+	id S1754691Ab0CIRf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:35:56 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44181 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018Ab0CIRfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 12:35:53 -0500
+Date: Tue, 9 Mar 2010 17:35:36 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
+	pressure to relieve instead of congestion
+Message-ID: <20100309173535.GI4883@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <20100309133513.GL8653@laptop> <20100309141713.GF4883@csn.ul.ie> <20100309150332.GP8653@laptop>
 MIME-Version: 1.0
-To: Micki Balanga <micki@n-trig.com>
-CC: jkosina@suse.cz, chatty@enac.fr, peterhuewe@gmx.de,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com
-Subject: Re: [PATCH 7/7] HID: N-trig MTM Driver fix And cleanup patch 7
-References: <micki@n-trig.com> <1268083024-3029-1-git-send-email-micki@n-trig.com> <4B95A521.3070208@seas.upenn.edu> <48A28051AC6D7A48B64F28272458190301AF42@Exchange-IL.n-trig.com>
-In-Reply-To: <48A28051AC6D7A48B64F28272458190301AF42@Exchange-IL.n-trig.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100309150332.GP8653@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 11:40 AM, Micki Balanga wrote:
->
-> Hi All
-> In this mail I will try to answer all your questions. First I will
-> explain to you N-trig Solution:
-> N-trig solution contains:
-> 1. Hid kernel driver
-> 2. User space application  N-trig propriety IP. An application which
-> analyzes the data received from the driver
-> (Pen and touch) into real events.
+On Wed, Mar 10, 2010 at 02:03:32AM +1100, Nick Piggin wrote:
+> On Tue, Mar 09, 2010 at 02:17:13PM +0000, Mel Gorman wrote:
+> > On Wed, Mar 10, 2010 at 12:35:13AM +1100, Nick Piggin wrote:
+> > > On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
+> > > > Under heavy memory pressure, the page allocator may call congestion_wait()
+> > > > to wait for IO congestion to clear or a timeout. This is not as sensible
+> > > > a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
+> > > > even congested as the pressure could have been due to a large number of
+> > > > SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
+> > > > 
+> > > > At the point of congestion_wait(), the allocator is struggling to get the
+> > > > pages it needs and it should back off. This patch puts the allocator to sleep
+> > > > on a zone->pressure_wq for either a timeout or until a direct reclaimer or
+> > > > kswapd brings the zone over the low watermark, whichever happens first.
+> > > > 
+> > > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > > > ---
+> > > >  include/linux/mmzone.h |    3 ++
+> > > >  mm/internal.h          |    4 +++
+> > > >  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
+> > > >  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
+> > > >  mm/vmscan.c            |    2 +
+> > > >  5 files changed, 101 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> > > > index 30fe668..72465c1 100644
+> > > > --- a/include/linux/mmzone.h
+> > > > +++ b/include/linux/mmzone.h
+> > > > @@ -398,6 +398,9 @@ struct zone {
+> > > >  	unsigned long		wait_table_hash_nr_entries;
+> > > >  	unsigned long		wait_table_bits;
+> > > >  
+> > > > +	/* queue for processes waiting for pressure to relieve */
+> > > > +	wait_queue_head_t	*pressure_wq;
+> > > 
+> > > Hmm, processes may be eligible to allocate from > 1 zone, but you
+> > > have them only waiting for one. I wonder if we shouldn't wait for
+> > > more zones?
+> > > 
+> > 
+> > It's waiting for the zone that is most desirable. If that zones watermarks
+> > are met, why would it wait on any other zone?
+> 
+> I mean the other way around. If that zone's watermarks are not met, then
+> why shouldn't it be woken up by other zones reaching their watermarks.
+> 
 
-Already are real events.  Just a little messy/noisy.
+Doing it requires moving to a per-node structure or a global queue. I'd rather
+not add hot lines to the node structure (and the associated lookup cost in
+the free path) if I can help it. A global queue would work on smaller machines
+but I'd be worried about thundering herd problems on larger machines. I know
+congestion_wait is already a global queue but IO is a relatively slow event.
+Potentially the wakeups from this queue are a lot faster.
 
-> 3. X11 Driver  communicate with N-trig user space application.
-> N-trig will release to the open source updates (bugs, and features) for
-> the driver and an installation package (RPM, DEB)
-> for user space applications. I will release an update version of the
-> driver, once we agree about all the changes.
+Should I just move to a global queue as a starting point and see what
+problems are caused later?
 
-Why hold back on the userspace and x11 driver source?  I'm not 
-suggesting a press release or a major publication.  But perhaps showing 
-off your other applications might explain some of your proposed changes 
-and offer us an opportunity to help you refactor your kernel<->user 
-space assumptions to bring them in line with other devices.
+> > If you mean that it would
+> > wait for any of the eligible zones to meet their watermark, it might have
+> > an impact on NUMA locality but it could be managed. It might make sense to
+> > wait on a node-based queue rather than a zone if this behaviour was desirable.
+> > 
+> > > Congestion waiting uses a global waitqueue, which hasn't seemed to
+> > > cause a big scalability problem. Would it be better to have a global
+> > > waitqueue for this too?
+> > > 
+> > 
+> > Considering that the congestion wait queue is for a relatively slow operation,
+> > it would be surprising if lock scalability was noticeable.  Potentially the
+> > pressure_wq involves no IO so scalability may be noticeable there.
+> > 
+> > What would the advantages of a global waitqueue be? Obviously, a smaller
+> > memory footprint. A second potential advantage is that on wakeup, it
+> > could check the watermarks on multiple zones which might reduce
+> > latencies in some cases. Can you think of more compelling reasons?
+> 
+> Your 2nd advantage is what I mean above.
+> 
+> 
+> > > 
+> > > > +void check_zone_pressure(struct zone *zone)
+> > > 
+> > > I don't really like the name pressure. We use that term for the reclaim
+> > > pressure wheras we're just checking watermarks here (actual pressure
+> > > could be anything).
+> > > 
+> > 
+> > pressure_wq => watermark_wq
+> > check_zone_pressure => check_watermark_wq
+> > 
+> > ?
+> 
+> Thanks.
+> 
+> > 
+> > > 
+> > > > +{
+> > > > +	/* If no process is waiting, nothing to do */
+> > > > +	if (!waitqueue_active(zone->pressure_wq))
+> > > > +		return;
+> > > > +
+> > > > +	/* Check if the high watermark is ok for order 0 */
+> > > > +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
+> > > > +		wake_up_interruptible(zone->pressure_wq);
+> > > > +}
+> > > 
+> > > If you were to do this under the zone lock (in your subsequent patch),
+> > > then it could avoid races. I would suggest doing it all as a single
+> > > patch and not doing the pressure checks in reclaim at all.
+> > > 
+> > 
+> > That is reasonable. I've already dropped the checks in reclaim because as you
+> > say, if the free path check is cheap enough, it's also sufficient. Checking
+> > in the reclaim paths as well is redundant.
+> > 
+> > I'll move the call to check_zone_pressure() within the zone lock to avoid
+> > races.
+> > 
+> > > If you are missing anything, then that needs to be explained and fixed
+> > > rather than just adding extra checks.
+> > > 
+> > > > +
+> > > > +/**
+> > > > + * zonepressure_wait - Wait for pressure on a zone to ease off
+> > > > + * @zone: The zone that is expected to be under pressure
+> > > > + * @order: The order the caller is waiting on pages for
+> > > > + * @timeout: Wait until pressure is relieved or this timeout is reached
+> > > > + *
+> > > > + * Waits for up to @timeout jiffies for pressure on a zone to be relieved.
+> > > > + * It's considered to be relieved if any direct reclaimer or kswapd brings
+> > > > + * the zone above the high watermark
+> > > > + */
+> > > > +long zonepressure_wait(struct zone *zone, unsigned int order, long timeout)
+> > > > +{
+> > > > +	long ret;
+> > > > +	DEFINE_WAIT(wait);
+> > > > +
+> > > > +wait_again:
+> > > > +	prepare_to_wait(zone->pressure_wq, &wait, TASK_INTERRUPTIBLE);
+> > > 
+> > > I guess to do it without races you need to check watermark here.
+> > > And possibly some barriers if it is done without zone->lock.
+> > > 
+> > 
+> > As watermark checks are already done without the zone->lock and without
+> > barriers, why are they needed here? Yes, there are small races. For
+> > example, it's possible to hit a window where pages were freed between
+> > watermarks were checked and we went to sleep here but that is similar to
+> > current behaviour.
+> 
+> Well with the check in free_pages_bulk then doing another check here
+> before the wait should be able to close all lost-wakeup races. I agree
+> it is pretty fuzzy heuristics anyway, so these races don't *really*
+> matter a lot. But it seems easy to close the races, so I don't see
+> why not.
+> 
 
-Please remember, people already have these things working in the field. 
-  They are already using pen, touch and even multi-touch.  You can not 
-offer initial support, its too late for that.  And you have not been 
-making much of a case for why your support is an improvement.  Please 
-enlighten us.
+I agree that the window is unnecessarily large. I'll tighten it.,
 
-> 1. I'd rather remove all the MODULE_VERSION: Answer: will be done in the
-> next patch release,
-> also with the change log update.
->
-> 2. MODULE_NAME "hid_ntrig - Answer will change it back to ntrig, as
-> it was in the first patch submitted.
->
-> 3. N-trig application (Propriety IP) analyze (math algorithms) the
-> information received from the driver
-> into real touch event. Events like fake fingers, frame index , generic
-> byte, palm
-Is frame index any more than a checksum?
+> 
+> > > > +
+> > > > +	/*
+> > > > +	 * The use of io_schedule_timeout() here means that it gets
+> > > > +	 * accounted for as IO waiting. This may or may not be the case
+> > > > +	 * but at least this way it gets picked up by vmstat
+> > > > +	 */
+> > > > +	ret = io_schedule_timeout(timeout);
+> > > > +	finish_wait(zone->pressure_wq, &wait);
+> > > > +
+> > > > +	/* If woken early, check watermarks before continuing */
+> > > > +	if (ret && !zone_watermark_ok(zone, order, low_wmark_pages(zone), 0, 0)) {
+> > > > +		timeout = ret;
+> > > > +		goto wait_again;
+> > > > +	}
+> > > 
+> > > And then I don't know if we'd really need the extra check here. Might as
+> > > well just let the allocator try again and avoid the code?
+> > > 
+> > 
+> > I was considering multiple processes been woken up and racing with each
+> > other. I can drop this check though. The worst that happens is multiple
+> > processes wake and walk the full zonelist. Some will succeed and others
+> > will go back to sleep.
+> 
+> Yep. And it doesn't really solve that race either becuase the zone
+> might subsequently go below the watermark.
+> 
 
-Still haven't explained what you mean by "fake fingers".  Its not clear 
-what they have to do with the user space.  And its really unclear why 
-you bother with extra computation and an extra field in the kernel 
-driver.  The only place in the kernel code you actually be replaced with 
-"real_fingers == 0", or "real_fingers == 1".
+True. In theory, the same sort of races currently apply with
+congestion_wait() but that's just an excuse. There is a strong
+possibility we could behave better with respect to watermarks.
 
-> used by the application in parsing the events received from the driver
-> (firmware)
-> into real fingers, pen events.
-
-What purpose do the Proprietary IP algorithms serve?  I suspect you will 
-find a lot of resistance to adopting closed portions of your drivers 
-unless they actually serve a novel purpose that isn't readily available 
-with obvious or pre-existing algorithms.  Finger tracking, noise/ghost 
-elimination and suppression and many other analytic operations you could 
-perform to clean up the behavior are already well known.  What else to 
-do you plan to offer?
-
-> 4. Our driver support N-trig old firmware but we will supply a Firmware
-> upgrade (MTM)
-> version in order to user to enjoy the full multi-touch experience.
-
-Glad to hear it.
-
-> 5. Later we will be evolved with the X11 development.
-> 6. You still haven't actually established why its necessary to fuss
-> with pen events if we split the pen off to a separate input device - We
-> need to separate Pen from Finger to allow our user space application to
-> analyze Pen and Touch events
-
-I'm confused, you do want to split pen and touch?  Cause you took out 
-the line of code that does that.  Do you perchance have the multiple 
-input quirk set in hid-quirks.c?  I was thinking of moving it there at 
-some point soon.  The patch you sent in did not split the two streams to 
-separate input devices when I tried it.
-
-> 7. case HID_DG_CONTACTID - At develop stage we used USB analyzer and
-> gizmod tool and we didn't see any problem using case HID_DG_CONTACTID.
-
-Please clarify.  I have not seen any protocol issues with it, just that 
-the values are incorrect.  Is this just the result of a single buggy 
-firmware?  On my screen, contact 0 is the lowest finger, and changes 
-when I move my fingers up and down (y+/y-) along the screen.  (If you 
-send firmware version code, I'll send the version of firmware I'm using, 
-its from the 2.172 bundle).
-
-> 8. Even if you want to argue that you need to pull the multi-input
-> quirk, that doesn't justify pulling the names. Perhaps you may wish to
-> truncate the name to "N-Trig" or something. But give them some name.
-> Those names simplify driver correlation in user space. In kernel 2.6.31
-> - I got kernel panic, will put it in the next release.
-
-Yes, that's my bad, there should be a guard before the switch:
-list_for_each_entry(hidinput, &hdev->inputs, list) {
-       input = hidinput->input;
-+ if(hidinput->report->maxfield > 0)
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
