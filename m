@@ -1,42 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043Ab0CIQEm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:04:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60539 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754541Ab0CIQEl (ORCPT
+	id S1755158Ab0CIQF2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:05:28 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:53820 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018Ab0CIQF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:04:41 -0500
-Subject: Re: [PATCH] i2c: update for semaphore to mutex conversion of
- devices
-From: Peter Zijlstra <peterz@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>, tglx <tglx@linutronix.de>
-In-Reply-To: <20100308235953.GA7808@kroah.com>
-References: <20100309102828.18351564.sfr@canb.auug.org.au>
-	 <20100308235953.GA7808@kroah.com>
+	Tue, 9 Mar 2010 11:05:26 -0500
+Subject: Re: opendir() on a file???
+From: Jon Masters <jonathan@jonmasters.org>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a36005b51003090659m641b1297g32f3327b83917452@mail.gmail.com>
+References: <1268126817.10479.643.camel@localhost>
+	 <a36005b51003090659m641b1297g32f3327b83917452@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 17:04:37 +0100
-Message-ID: <1268150677.5037.8.camel@laptop>
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Tue, 09 Mar 2010 11:05:20 -0500
+Message-ID: <1268150720.10479.674.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-03-08 at 15:59 -0800, Greg KH wrote:
+On Tue, 2010-03-09 at 06:59 -0800, Ulrich Drepper wrote:
+> On Tue, Mar 9, 2010 at 01:26, Jon Masters <jonathan@jonmasters.org> wrote:
+> > Now I might be missing something, and I know I'm behind on LKML[0], but
+> > the following isn't supposed to work in my book:
 > 
-> Hopefully the lockdep core will be tweaked to handle the locking tree
-> that the device core requires and then when that happens, I will merge
-> the patch that will require this fix in order to keep the build from
-> breaking.
-> 
-?! Thomas send you patch shutting lockdep up for device mutex, look for
-<alpine.LFD.2.00.1002181116410.2811@localhost.localdomain> in your
-inbox.
+> Al introduced and fixed the problem, from what I've seen.
+
+Thanks. It's fixed in today's rawhide.
+
+Jon.
+
 
