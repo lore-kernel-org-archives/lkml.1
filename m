@@ -1,49 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751352Ab0CIRMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:12:37 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:58846 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078Ab0CIRMf (ORCPT
+	id S1751437Ab0CIRN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:13:59 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:16487 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999Ab0CIRNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:12:35 -0500
-Date: Tue, 9 Mar 2010 11:11:55 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
- pressure to relieve instead of congestion
-In-Reply-To: <20100309170123.GG4883@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.1003091109040.28897@router.home>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1003090946180.28897@router.home> <4B966F93.9060207@linux.vnet.ibm.com> <alpine.DEB.2.00.1003091005310.28897@router.home>
- <20100309170123.GG4883@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Mar 2010 12:13:54 -0500
+Date: Tue, 9 Mar 2010 09:13:13 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.34-rc1
+Message-Id: <20100309091313.c568ef5a.randy.dunlap@oracle.com>
+In-Reply-To: <20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
+References: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
+	<20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B9681C6.019B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010, Mel Gorman wrote:
+On Tue, 9 Mar 2010 17:28:04 +0100 Jan Kara wrote:
 
-> Until it's timeout at least. It's still better than the current
-> situation of sleeping on congestion.
+> > It's out there now. I still have a few trees I already got pull requests 
+> > for, and that I want to look over a bit more (ceph, gdb tree etc), and 
+> > it's possible that I've just overlooked some other pull request.
+>   It seems you haven't pulled my UDF tree (requested on Thursday -
+> http://lkml.indiana.edu/hypermail/linux/kernel/1003.0/02186.html).
+>   I've rebased the tree on top of 2.6.34-rc1 so could you please pull
+> now?
+>   The full pull request for your convenience:
+> 
+>   could you please pull from
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+> 
+>   to get:
+> 
+> Akinobu Mita (1):
+>       udf: use ext2_find_next_bit
+> 
+> Jan Kara (2):
+>       udf: Fix unalloc space handling in udf_update_inode
+>       udf: Do not read inode before writing it
+> 
+> The diffstat is
+> 
+>  fs/udf/balloc.c |   49 +------------------------------------------------
+>  fs/udf/inode.c  |   34 +++++++++++++++++-----------------
+>  2 files changed, 18 insertions(+), 65 deletions(-)
 
-Congestion may clear if memory becomes available in other zones.
 
-> The ideal would be waiting on a per-node basis. I'm just not liking having
-> to look up the node structure when freeing a patch of pages and making a
-> cache line in there unnecessarily hot.
+I have no objections, fwiw, but please change the $subject line...
 
-The node structure (pgdat) contains the zone structures. If you know the
-type of zone then you can calculate the pgdat address.
-
-> > But then an overallocated node may stall processes. If that node is full
-> > of unreclaimable memory then the process may never wake up?
-> Processes wake after a timeout.
-
-Ok that limits it but still we may be waiting for no reason.
-
+---
+~Randy
