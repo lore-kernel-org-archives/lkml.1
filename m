@@ -1,84 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102Ab0CITkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:40:07 -0500
-Received: from lo.gmane.org ([80.91.229.12]:58960 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722Ab0CITkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:40:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1755886Ab0CITOX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:14:23 -0500
+Received: from server109.appriver.com ([72.32.253.84]:1375 "EHLO
+	server109.appriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755809Ab0CITOV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:14:21 -0500
+X-Policy: GLOBAL - intcomgrp.com
+X-Primary: jkosin@intcomgrp.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: JKosin@intcomgrp.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 216.54.13.100
+X-Note-Reverse-DNS: mail.intcomgrp.com
+X-Note-WHTLIST: JKosin@intcomgrp.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: G179 G180 G181 G182 G186 G187 G198 G285 
+X-Note: Encrypt Rule Hits: 
+X-Note: Mail Class: ALLOWEDSENDER
+X-Note: Headers Injected
+Message-ID: <4B969E8E.4070002@intcomgrp.com>
+Date: Tue, 09 Mar 2010 14:16:30 -0500
+From: James Kosin <jkosin@intcomgrp.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-From: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
-Subject: Re: [patch] arch/powerpc/platforms/pseries/ras.c - cleanup
-Date: Tue, 9 Mar 2010 07:14:50 +0100
-Message-ID: <hn4p0r$gv7$1@dough.gmane.org>
-References: <hn3osd$4in$1@dough.gmane.org> <Pine.LNX.4.64.1003082235030.5727@ask.diku.dk>
-X-Complaints-To: usenet@dough.gmane.org
-X-Gmane-NNTP-Posting-Host: aorleans-157-1-66-63.w90-20.abo.wanadoo.fr
-X-MSMail-Priority: Normal
-X-Newsreader: Microsoft Outlook Express 6.00.2800.1983
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1983
-X-Antivirus: avast! (VPS 100308-1, 08/03/2010), Outbound message
-X-Antivirus-Status: Clean
-Cc: kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Security: key: keyring: fix code style issues
+References: <emcYy-av-15@gated-at.bofh.it>
+In-Reply-To: <emcYy-av-15@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Mar 2010 19:16:30.0148 (UTC) FILETIME=[05DB9040:01CABFBD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I personaly think that yes, because the smaller, the better.
+On 3/9/2010 2:10 PM, Chihau Chau wrote:
+> From: Chihau Chau <chihau@gmail.com>
+> 
+> This fixes to include <linux/uaccess.h> instead <asm/uaccess.h> and some
+> code style issues like to put a else sentence below close brace '}' and
+> to replace a tab instead of some space characters.
+> 
+> Signed-off-by: Chihau Chau <chihau@gmail.com>
 
-Could you write one of your semantic match and send the patches ?
+Reviewed-by: James Kosin <jkosin@intcomgrp.com>
 
-CJ
-
-"Julia Lawall" <julia@diku.dk> a écrit dans le message de
-news:Pine.LNX.4.64.1003082235030.5727@ask.diku.dk...
-> On Mon, 8 Mar 2010, Christophe Jaillet wrote:
->
-> > From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-> >
-> > Hi, here is a patch against arch/powerpc/platforms/pseries/ras.c.
-> >
-> > No need to memset (.., 0, ...) a buffer that is complety filled by a
-memcpy
-> > the line after.
->
-> I find 14 occurrences of this in linux-next.  Could it be useful for
-> something?
->
-> julia
->
->
-> >
-> >
-> > Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-> >
-> > ---
-> >
-> > diff --git a/arch/powerpc/platforms/pseries/ras.c
-> > b/arch/powerpc/platforms/pseries/ras.c
-> > index 2b548af..7a401ed 100644
-> > --- a/arch/powerpc/platforms/pseries/ras.c
-> > +++ b/arch/powerpc/platforms/pseries/ras.c
-> > @@ -276,7 +276,6 @@ static struct rtas_error_log
-*fwnmi_get_errinfo(struct
-> > pt_regs *regs)
-> >       (errdata >= rtas.base && errdata < rtas.base + rtas.size - 16)) {
-> >    savep = __va(errdata);
-> >    regs->gpr[3] = savep[0]; /* restore original r3 */
-> > -  memset(mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
-> >    memcpy(mce_data_buf, (char *)(savep + 1), RTAS_ERROR_LOG_MAX);
-> >    errhdr = (struct rtas_error_log *)mce_data_buf;
-> >   } else {
-> >
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe
-kernel-janitors" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-
-
+> ---
+>  security/keys/keyring.c |   10 ++++------
+>  1 files changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+> index e814d21..d8b5d5e 100644
+> --- a/security/keys/keyring.c
+> +++ b/security/keys/keyring.c
+> @@ -17,7 +17,7 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/err.h>
+>  #include <keys/keyring-type.h>
+> -#include <asm/uaccess.h>
+> +#include <linux/uaccess.h>
+>  #include "internal.h"
+>  
+>  /*
+> @@ -172,8 +172,7 @@ static void keyring_describe(const struct key *keyring, struct seq_file *m)
+>  
+>  	if (keyring->description) {
+>  		seq_puts(m, keyring->description);
+> -	}
+> -	else {
+> +	} else {
+>  		seq_puts(m, "[anon]");
+>  	}
+>  
+> @@ -306,7 +305,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
+>  	key_check(keyring);
+>  
+>  	/* top keyring must have search permission to begin the search */
+> -        err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
+> +	err = key_task_permission(keyring_ref, cred, KEY_SEARCH);
+>  	if (err < 0) {
+>  		key_ref = ERR_PTR(err);
+>  		goto error;
+> @@ -775,8 +774,7 @@ int __key_link(struct key *keyring, struct key *key)
+>  		smp_wmb();
+>  		klist->nkeys++;
+>  		smp_wmb();
+> -	}
+> -	else {
+> +	} else {
+>  		/* grow the key list */
+>  		max = 4;
+>  		if (klist)
 
