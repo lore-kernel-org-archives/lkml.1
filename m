@@ -1,118 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468Ab0CITni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:43:38 -0500
-Received: from mamba.crocodile.org ([216.218.215.112]:47214 "EHLO
-	periplum.crocodile.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752512Ab0CITnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:43:35 -0500
-Subject: Re: [PATCH 1/1] integer overflow issue in 'appletouch' driver
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: multipart/signed; boundary=Apple-Mail-108--53685561; protocol="application/pkcs7-signature"; micalg=sha1
-From: Vadim Zaliva <lord@crocodile.org>
-In-Reply-To: <1268034117.3819.1.camel@jlt3.sipsolutions.net>
-Date: Tue, 9 Mar 2010 11:43:25 -0800
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Message-Id: <36779F26-DB1B-46ED-8635-01B03E559B55@crocodile.org>
-References: <E64899AA-23A5-49D7-8C91-B94A095290E0@crocodile.org> <1268034117.3819.1.camel@jlt3.sipsolutions.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-X-Mailer: Apple Mail (2.1077)
+	id S1754280Ab0CITka (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:40:30 -0500
+Received: from xenotime.net ([72.52.64.118]:35655 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750972Ab0CITk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:40:28 -0500
+Message-ID: <4B96A426.1080307@xenotime.net>
+Date: Tue, 09 Mar 2010 11:40:22 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: aseemsethi@yahoo.com
+CC: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: comedi:fix missing KERN_facility level in ni_labpc.c
+References: <201003100004.36422.aseemsethi@yahoo.com>
+In-Reply-To: <201003100004.36422.aseemsethi@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---Apple-Mail-108--53685561
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=us-ascii
-
-On Mar 7, 2010, at 23:41 , Johannes Berg wrote:
-
-> Hmm, you're probably right, and I cannot test with my powerbook as I'm
-> about to leave on travel and it's at my parents.
-
-Any other maintainers I should forward it to? Looks like straightforward =
-small bug.
-
-Sincerely,
-Vadim Zaliva
-
---
-"Hated by fools, and fools to hate, be this my motto and my fate"
-(Jonathan Swift)
-
-
-
-
+On 03/09/10 10:34, aseem sethi wrote:
+> From: aseemsethi <aseemsethi@yahoo.com>
+>  This is a patch to fix the "missing KERN_facility level" error found when running the checkpatch.pl script
+>  Signed-off-by: Aseem Sethi <aseemsethi@yahoo.com>
+> 
+> ---
+>  drivers/staging/comedi/drivers/ni_labpc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/staging/comedi/drivers/ni_labpc.c b/drivers/staging/comedi/drivers/ni_labpc.c
+> index 3c88caa..63853c2 100644
+> --- a/drivers/staging/comedi/drivers/ni_labpc.c
+> +++ b/drivers/staging/comedi/drivers/ni_labpc.c
+> @@ -535,7 +535,7 @@ int labpc_common_attach(struct comedi_device *dev, unsigned long iobase,
+>         printk("\n");
+>  
+>         if (iobase == 0) {
+> -               printk("io base address is zero!\n");
+> +               printk(KERN_ERR "io base address is zero!\n");
+>                 return -EINVAL;
+>         }
+>         /*  request io regions for isa boards */
 
 
+Hi,
 
---Apple-Mail-108--53685561
-Content-Disposition: attachment;
-	filename=smime.p7s
-Content-Type: application/pkcs7-signature;
-	name=smime.p7s
-Content-Transfer-Encoding: base64
+How does someone know that this message comes from this driver and
+not from some other driver or core part of the kernel?
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIJJzCCAvUw
-ggJeoAMCAQICECB7OlRjd+hd7z4JgjHvadQwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
-JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
-ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA5MDMyMjAxMzM1MloXDTEwMDMyMjAxMzM1
-MlowWzEPMA0GA1UEBBMGWmFsaXZhMQ4wDAYDVQQqEwVWYWRpbTEVMBMGA1UEAxMMVmFkaW0gWmFs
-aXZhMSEwHwYJKoZIhvcNAQkBFhJsb3JkQGNyb2NvZGlsZS5vcmcwggEiMA0GCSqGSIb3DQEBAQUA
-A4IBDwAwggEKAoIBAQCXfiI9AGgXlpbIeEBxrej5GhvuVcHfhErck7P580iCcs3Vvm5RZ3s0kTKG
-IW2e0yptAHHA359Ii4cZkk3WD4em+rglh2m7s1fSaL8ydEIImLYgvOun5CecwDJQNqky5xMDUGeo
-ckR4tJIjwjfvIwa0ghU3kRUrKOYX8kES+p6ayEvG3r8sz9WRP49XsDCjdd5kSqXbGMwP+3ZSQqhL
-x9q0sTT3UJyofi3LJktbz8cJZvwfn0T1f0HKBCx2uRlrY4vy76XggzMOHnsVtsMl7NtLg35wRVjE
-JGiM7+xUogbW3zcVr/51BuD/1mpgcRFrOQ76uMHAWQMoOYnmA+OsGUqlAgMBAAGjLzAtMB0GA1Ud
-EQQWMBSBEmxvcmRAY3JvY29kaWxlLm9yZzAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBBQUAA4GB
-AIc7GqDI2x/4wz47B2Rnf6WkKsymelMdjARm8PNbScUpuxwrERdJYWDr2nt5l8pWA8wqF+rhTlL6
-5W4KEqxuOVHbLwBVcj7cz757LyZ7z5B+PmF98fYFe2f5K5j5C1tzK/GjgLoA3RpbRFxonC7kDT5L
-W2oLU2Cw2NPjYgnZGneEMIIGKjCCBRKgAwIBAgIQAgirQsxAkWAE0T8watDxWTANBgkqhkiG9w0B
-AQUFADCBrjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAlVUMRcwFQYDVQQHEw5TYWx0IExha2UgQ2l0
-eTEeMBwGA1UEChMVVGhlIFVTRVJUUlVTVCBOZXR3b3JrMSEwHwYDVQQLExhodHRwOi8vd3d3LnVz
-ZXJ0cnVzdC5jb20xNjA0BgNVBAMTLVVUTi1VU0VSRmlyc3QtQ2xpZW50IEF1dGhlbnRpY2F0aW9u
-IGFuZCBFbWFpbDAeFw0xMDAxMjkwMDAwMDBaFw0xMTAxMjkyMzU5NTlaMIHaMTUwMwYDVQQLEyxD
-b21vZG8gVHJ1c3QgTmV0d29yayAtIFBFUlNPTkEgTk9UIFZBTElEQVRFRDFGMEQGA1UECxM9VGVy
-bXMgYW5kIENvbmRpdGlvbnMgb2YgdXNlOiBodHRwOi8vd3d3LmNvbW9kby5uZXQvcmVwb3NpdG9y
-eTEfMB0GA1UECxMWKGMpMjAwMyBDb21vZG8gTGltaXRlZDEVMBMGA1UEAxMMVmFkaW0gWmFsaXZh
-MSEwHwYJKoZIhvcNAQkBFhJsb3JkQGNyb2NvZGlsZS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IB
-DwAwggEKAoIBAQDrTYIpuA0jBtZI1rxaPLm7SpwinDADnS0MXYUsyo3W9+1+W9VM1JYE0rDBF0Fa
-JfWcIVSxkBB01Rwi08Drav84yShtd9supINDWMMlGtv6a18Dfe9IpyT58/laWS76CW0YAuLARBQM
-sXNhCzhiyJadtjxP4azfSTuH6nRp7Rou+kc7n/k4nAlGf5kNdz3VpdAmc+t3tJdXAoiaBzdU78EA
-j4sy+SUWxJiE0rBjPmHTKHLhvkeUMUt+L9rE0Sp0EyhZCGcruhF+jUGyTUF+A+o4IoXcnQQW05ii
-r01dX4FoVhDylSKKvj0mMsaGTXsSWjA/R8kngAK89oLzgJQb8R5tAgMBAAGjggIUMIICEDAfBgNV
-HSMEGDAWgBSJgmd9xJ0mcABLtFBIfN49rgRufTAdBgNVHQ4EFgQUM0p5uwPrs7TKgNJ+Vxt4xGvg
-gq4wDgYDVR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwIAYDVR0lBBkwFwYIKwYBBQUHAwQGCysG
-AQQBsjEBAwUCMBEGCWCGSAGG+EIBAQQEAwIFIDBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEBATAr
-MCkGCCsGAQUFBwIBFh1odHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzCBpQYDVR0fBIGdMIGa
-MEygSqBIhkZodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9VVE4tVVNFUkZpcnN0LUNsaWVudEF1dGhl
-bnRpY2F0aW9uYW5kRW1haWwuY3JsMEqgSKBGhkRodHRwOi8vY3JsLmNvbW9kby5uZXQvVVROLVVT
-RVJGaXJzdC1DbGllbnRBdXRoZW50aWNhdGlvbmFuZEVtYWlsLmNybDBsBggrBgEFBQcBAQRgMF4w
-NgYIKwYBBQUHMAKGKmh0dHA6Ly9jcnQuY29tb2RvY2EuY29tL1VUTkFBQUNsaWVudENBLmNydDAk
-BggrBgEFBQcwAYYYaHR0cDovL29jc3AuY29tb2RvY2EuY29tMB0GA1UdEQQWMBSBEmxvcmRAY3Jv
-Y29kaWxlLm9yZzANBgkqhkiG9w0BAQUFAAOCAQEAiMrZhtw5SxpodA9FZkYX0e6MIqZtlFILiQqc
-vT8gmG7I5u8PJRihOAk+GWy14fKlaGskJHgYhU0zXaYwVdJey9TB/WCGxrWwPWe+/O5vkUyaj0c8
-uaZ69JYGyuOln1fHRpeSaX9dAyKCqaJYUM6NIZ9gB1pkU54SpE2e5bj5WoNlihg8LXKFk1lWQajC
-3m9yeRIi0z3gHJzCOB07tjkcvs+Sz4muFPzDwY9CfmoUTpeL4SPb8i9j9VQ4RxkNRmSFlrbHpEvE
-58rJdcTjHft61CfpffqbLMEdHtWL/TTo+ETauVTChLqPaSc2p1Wnqha9ph+dVQGZy3ST4jrwrqaI
-PDGCA14wggNaAgEBMIHDMIGuMQswCQYDVQQGEwJVUzELMAkGA1UECBMCVVQxFzAVBgNVBAcTDlNh
-bHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxITAfBgNVBAsTGGh0
-dHA6Ly93d3cudXNlcnRydXN0LmNvbTE2MDQGA1UEAxMtVVROLVVTRVJGaXJzdC1DbGllbnQgQXV0
-aGVudGljYXRpb24gYW5kIEVtYWlsAhACCKtCzECRYATRPzBq0PFZMAkGBSsOAwIaBQCgggFvMBgG
-CSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEwMDMwOTE5NDMyN1owIwYJ
-KoZIhvcNAQkEMRYEFO2cVtQ4+S9kvERpviH/V9NAO//oMIGFBgkrBgEEAYI3EAQxeDB2MGIxCzAJ
-BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
-EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQIHs6VGN36F3vPgmCMe9p1DCB
-hwYLKoZIhvcNAQkQAgsxeKB2MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3Vs
-dGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWlu
-ZyBDQQIQIHs6VGN36F3vPgmCMe9p1DANBgkqhkiG9w0BAQEFAASCAQCB1Ai5C806wPWnqN67h+Di
-+zZ1//ksp/RmjQ24W+h8N6iJAHPmXw53lF6gUPfD7+D22mHYNrhfH6MUE7APGN7C+FX+KTTYRddU
-TKhnvPVMQ8tUFFPZUAzVG2BPCgaclwpslqUDINTbsM0dEIU1Y1gPBhCCfCsyIYHUF6wYyEY8S/bo
-0rHBtTwevXGO1GtJuDDgIY9JPfN7ecuJ85LZFaar8my5fhn/zhuBf6BbD8XUP/5FA36aE8TTDCjT
-Rl59s8XK34Y7gGA7/8j/KJIvXMd7ZEEkpf8lTMDnBHtHZsaHWAgDjQI90sQE65lsDKBzSkeIYGND
-9Zjc0q5GnO/zjGo5AAAAAAAA
 
---Apple-Mail-108--53685561--
+I'd be much more interested in someone fixing comedi build errors (that have
+been around forever -- I reported these long ago) when CONFIG_PCI=n and
+CONFIG_COMEDI=m, CONFIG_COMEDI_PCMCIA=m, CONFIG_PCCARD=y, CONFIG_PCMCIA=y,
+but CONFIG_CARDBUS=n:
+
+ERROR: "ni_tio_rinsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "ni_tio_winsn" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "ni_tio_insn_config" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "ni_tio_init_counter" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "ni_gpct_device_construct" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "ni_gpct_device_destroy" [drivers/staging/comedi/drivers/ni_mio_cs.ko] undefined!
+ERROR: "labpc_1200_is_unipolar" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+ERROR: "labpc_1200_ai_gain_bits" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+ERROR: "range_labpc_1200_ai" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+ERROR: "labpc_common_detach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+ERROR: "labpc_common_attach" [drivers/staging/comedi/drivers/ni_labpc_cs.ko] undefined!
+ERROR: "das08_cs_boards" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+ERROR: "das08_common_detach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+ERROR: "das08_common_attach" [drivers/staging/comedi/drivers/das08_cs.ko] undefined!
+
+I.e., the "pcmcia" drivers are probably cardbus drivers (or at least some of them are),
+but there is no differentiation between PCMCIA and CARDBUS.
+
+
+-- 
+~Randy
