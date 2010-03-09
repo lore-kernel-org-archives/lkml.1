@@ -1,86 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485Ab0CIWMK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:12:10 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:60910 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753227Ab0CIWMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:12:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=rX1ehXpHL3XVfOFSxvGZYNsBDm38Y3gcvnpSMj4QlFyVk6kYBtwPPUojHicemSt2RT
-         wm5Rq4ASRUhJTwMiRfVs2yg9FakKLrT1bmjtk7n7GuIEH4bre+L5w/PTVQmxhrL04SLm
-         6EDaXq2VZBHJz6VXBhhD0DIh8OJjGH5JUR/JM=
-Message-ID: <4B96C7B2.3080008@garzik.org>
-Date: Tue, 09 Mar 2010 17:12:02 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [git patches] libata updates for 2.6.34
-References: <20100301202330.GA14977@havoc.gtf.org> <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755515Ab0CIWMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:12:32 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:19180 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753227Ab0CIWM3 (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Tue, 9 Mar 2010 17:12:29 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       joerg.roedel@amd.com, chrisw@sous-sol.org, alex.williamson@hp.com,
+       dwmw2@infradead.org
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 3/4] swiotlb: Make printk's use same prefix and include dev_err when possible.
+Date: Tue,  9 Mar 2010 16:54:21 -0500
+Message-Id: <1268171662-12701-4-git-send-email-konrad.wilk@oracle.com>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1268171662-12701-3-git-send-email-konrad.wilk@oracle.com>
+References: <1268171662-12701-1-git-send-email-konrad.wilk@oracle.com>
+ <1268171662-12701-2-git-send-email-konrad.wilk@oracle.com>
+ <1268171662-12701-3-git-send-email-konrad.wilk@oracle.com>
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B96C78E.01E1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 04:17 PM, Linus Torvalds wrote:
->
-> Jeff,
->   this is a new machine, so I don't know when it started, but it was
-> running a couple of Fedora 2.6.31/32 kernels for a while with no trouble.
-> So I _think_ it's recent.
->
-> I'd guess it's due to commit 27943620cb ("libata: implement spurious irq
-> handling for SFF and apply it to piix"), in fact.
->
-> With current -git I got a 30 second pause, and it was accompanied with
-> this kernel log:
->
-> 	Mar  9 12:51:05 i5 kernel: [    7.040194] ata4: clearing spurious IRQ
-> 	Mar  9 12:51:05 i5 kernel: [   37.978933] ata4: lost interrupt (Status 0x50)
-> 	Mar  9 12:51:05 i5 kernel: [   37.978948] ata4.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0 frozen
-> 	Mar  9 12:51:05 i5 kernel: [   37.978951] ata4.01: failed command: READ DMA
-> 	Mar  9 12:51:05 i5 kernel: [   37.978954] ata4.01: cmd c8/00:08:ef:44:47/00:00:00:00:00/f0 tag 0 dma 4096 in
-> 	Mar  9 12:51:05 i5 kernel: [   37.978955]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> 	Mar  9 12:51:05 i5 kernel: [   37.978957] ata4.01: status: { DRDY }
-> 	Mar  9 12:51:05 i5 kernel: [   37.978963] ata4.00: hard resetting link
-> 	Mar  9 12:51:05 i5 kernel: [   38.306451] ata4.01: hard resetting link
-> 	Mar  9 12:51:05 i5 kernel: [   38.785773] ata4.00: SATA link down (SStatus 0 SControl 300)
-> 	Mar  9 12:51:05 i5 kernel: [   38.785787] ata4.01: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> 	Mar  9 12:51:05 i5 kernel: [   38.809900] ata4.01: configured for UDMA/133
-> 	Mar  9 12:51:05 i5 kernel: [   38.809903] ata4.01: device reported invalid CHS sector 0
-> 	Mar  9 12:51:05 i5 kernel: [   38.809907] ata4: EH complete
+Various printk's had the prefix 'DMA' in them, but not all of them.
+This makes all of the printk's have the 'DMA' in them and for error
+cases use the 'dev_err' macro.
 
-Coincedentally, it looks like someone else just reported the same 
-problem, with 2.6.34-rc1.
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+---
+ lib/swiotlb.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-It definitely sounds like a race.  READ DMA is a DMA command as the name 
-implies, so that eliminates the possibility of polling-related paths in 
-ata_sff_interrupt (libata-sff.c).
-
-I'll flip some of my machines to the icky slow boring piix mode, rather 
-than sexy AHCI mode :) to see if I can reproduce.  I have had a feeling 
-that we needed a more sophisticated IRQ handling setup, this may be what 
-was needed.  Lost interrupt recovery should occur faster than 30 seconds 
-in any case, and should not require a hard reset if the hardware 
-functions just fine outside of the lost-interrupt / race that just occurred.
-
-If it helps, this wiki pages explains the error output a bit more: 
-http://ata.wiki.kernel.org/index.php/Libata_error_messages
-
-though in this case, it is clearly a timeout, so looking at the input 
-and output taskfile register blocks will not be as informative as in 
-other error situations.
-
-	Jeff
-
-
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 737ceb7..655883b 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -134,9 +134,9 @@ void swiotlb_print_info(void)
+ 	pstart = virt_to_phys(io_tlb_start);
+ 	pend = virt_to_phys(io_tlb_end);
+ 
+-	printk(KERN_INFO "Placing %luMB software IO TLB between %p - %p\n",
++	printk(KERN_INFO "DMA: Placing %luMB software IO TLB between %p - %p\n",
+ 	       bytes >> 20, io_tlb_start, io_tlb_end);
+-	printk(KERN_INFO "software IO TLB at phys %#llx - %#llx\n",
++	printk(KERN_INFO "DMA: software IO TLB at phys %#llx - %#llx\n",
+ 	       (unsigned long long)pstart,
+ 	       (unsigned long long)pend);
+ }
+@@ -162,7 +162,7 @@ swiotlb_init_early(size_t default_size, int verbose)
+ 	 */
+ 	io_tlb_start = alloc_bootmem_low_pages(bytes);
+ 	if (!io_tlb_start)
+-		panic("Cannot allocate SWIOTLB buffer");
++		panic("DMA: Cannot allocate SWIOTLB buffer");
+ 	io_tlb_end = io_tlb_start + bytes;
+ 
+ 	/*
+@@ -181,7 +181,7 @@ swiotlb_init_early(size_t default_size, int verbose)
+ 	 */
+ 	io_tlb_overflow_buffer = alloc_bootmem_low(io_tlb_overflow);
+ 	if (!io_tlb_overflow_buffer)
+-		panic("Cannot allocate SWIOTLB overflow buffer!\n");
++		panic("DMA: Cannot allocate SWIOTLB overflow buffer!\n");
+ 	if (verbose)
+ 		swiotlb_print_info();
+ }
+@@ -227,8 +227,8 @@ swiotlb_init_late(size_t default_size)
+ 		goto cleanup1;
+ 
+ 	if (order != get_order(bytes)) {
+-		printk(KERN_WARNING "Warning: only able to allocate %ld MB "
+-		       "for software IO TLB\n", (PAGE_SIZE << order) >> 20);
++		printk(KERN_WARNING "DMA: Warning: only able to allocate %ld MB"
++		       " for software IO TLB\n", (PAGE_SIZE << order) >> 20);
+ 		io_tlb_nslabs = SLABS_PER_PAGE << order;
+ 		bytes = io_tlb_nslabs << IO_TLB_SHIFT;
+ 	}
+@@ -574,7 +574,8 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 
+ 	/* Confirm address can be DMA'd by device */
+ 	if (dev_addr + size - 1 > dma_mask) {
+-		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
++		dev_err(hwdev, "DMA: hwdev DMA mask = 0x%016Lx, " \
++		       "dev_addr = 0x%016Lx\n",
+ 		       (unsigned long long)dma_mask,
+ 		       (unsigned long long)dev_addr);
+ 
+@@ -612,8 +613,7 @@ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+ 	 * When the mapping is small enough return a static buffer to limit
+ 	 * the damage, or panic when the transfer is too big.
+ 	 */
+-	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
+-	       "device %s\n", size, dev ? dev_name(dev) : "?");
++	dev_err(dev, "DMA: Out of SW-IOMMU space for %zu bytes.", size);
+ 
+ 	if (size <= io_tlb_overflow || !do_panic)
+ 		return;
+@@ -666,7 +666,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * Ensure that the address returned is DMA'ble
+ 	 */
+ 	if (!dma_capable(dev, dev_addr, size))
+-		panic("map_single: bounce buffer is not DMA'ble");
++		panic("DMA: swiotlb_map_single: bounce buffer is not DMA'ble");
+ 
+ 	return dev_addr;
+ }
+-- 
+1.6.2.5
 
