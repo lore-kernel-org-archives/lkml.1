@@ -1,81 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489Ab0CIWoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:44:00 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:44616 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727Ab0CIWn5 (ORCPT
+	id S1755320Ab0CIWrD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:47:03 -0500
+Received: from mail-iw0-f176.google.com ([209.85.223.176]:56252 "EHLO
+	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446Ab0CIWq6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:43:57 -0500
+	Tue, 9 Mar 2010 17:46:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VUEaTOoUfY/Oijma8kEo1iGf1j2w3w6OJ94eMGczeC8CTngYiavfWDuul8QOD+5cKu
-         85opRxn41EtEF5vDKFzsY7OQn4Dhkpl4ATe6GLfUF2YGFhZhq2HSzMzm1YYA8YdZ3JDb
-         nHuqP43BTpCqWuVO+bkw4597gQHVSwim3Qj0Q=
-Date: Tue, 9 Mar 2010 23:43:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Till Kamppeter <till.kamppeter@gmail.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       lsb-discuss@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux wireless GSoC 2010 project ideas
-Message-ID: <20100309224347.GD5058@nowhere>
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <20100128231545.GH18683@nowhere> <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com> <4B62231F.5080104@gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vQsLNQ8yUiKIVMzd6xEFibNJzbDyyp3wZD/3bja8mr05RQrimRupSmh264qfFkc0Xf
+         +wLMs4eWChmpUjVEWr5P4d+vf/DkRPeXVp0iFxV7Isa92Je+JjutmJQvOGuJQ8awpGBo
+         /rD8QcB86jzHHGFikCDboYZXIfMu+kV2KPm5I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B62231F.5080104@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B94ACE8.4060400@zytor.com>
+References: <4B947393.2050002@kernel.org>
+	 <1268031640.4389.11.camel@mulgrave.site> <4B94ACE8.4060400@zytor.com>
+Date: Tue, 9 Mar 2010 17:46:58 -0500
+Message-ID: <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com>
+Subject: Re: ATA 4 KiB sector issues.
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, mkp@mkp.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 12:51:59AM +0100, Till Kamppeter wrote:
-> No problem for students to suggest topics. We are not restricted to  
-> wireless in terms of kernel. We support kernel projects in general.
+<snip>
 >
-> Please give your suggestion as answer to this e-mail, doing "Reply to  
-> all", as I am not a kernel export, the other participants of this thread  
-> should have a look at the student's project ideas and help finding 
-> mentors.
+> As far as partitioning... I believe we should be using GPT partition tables
+> where possible.  Even on non-EFI systems, it's simply a much better
+> partition table format.
 >
->    Till
+>        -hpa
 
+GPT can not be used for boot disks in non-EFI systems, right?
 
-
-Ok, I hope it's not too late.
-Here is one subject that I would like to apply for:
-
-
-= Improving tracing in perf events / ftrace =
-
-
-Using trace events under perf events is still a young feature
-and needs various improvements.
-
-- Syscall events can carry only raw values and addresses.
-We need to make them "aware" of strings and structures contents
-from userspace.
-
-- Make function / function graph tracers usable by perf
-
-- Optimize tracing fast-path
-
-- Improve perf tools to better handle trace events scalability
-
-- Provide new perf tools that exploit trace events (scheduler
-  migration analysis, etc...)
-
-- Implement a per context excluding (eg: exclude irqs, exclude functions, etc...)
-
-- There are always things to do there.
-
-
-Of course, each of these elements require a lot of work,
-so not all of them can be done in two months, and some
-of them can be started already before the summer.
-
+Greg
