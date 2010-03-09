@@ -1,51 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320Ab0CIWrD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 17:47:03 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:56252 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446Ab0CIWq6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 17:46:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vQsLNQ8yUiKIVMzd6xEFibNJzbDyyp3wZD/3bja8mr05RQrimRupSmh264qfFkc0Xf
-         +wLMs4eWChmpUjVEWr5P4d+vf/DkRPeXVp0iFxV7Isa92Je+JjutmJQvOGuJQ8awpGBo
-         /rD8QcB86jzHHGFikCDboYZXIfMu+kV2KPm5I=
+	id S1755519Ab0CIWs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 17:48:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62155 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446Ab0CIWsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 17:48:24 -0500
+Date: Tue, 9 Mar 2010 22:45:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, David Howells <dhowells@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 2/3] call_usermodehelper: simplify/fix UMH_NO_WAIT case
+Message-ID: <20100309214501.GA32625@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4B94ACE8.4060400@zytor.com>
-References: <4B947393.2050002@kernel.org>
-	 <1268031640.4389.11.camel@mulgrave.site> <4B94ACE8.4060400@zytor.com>
-Date: Tue, 9 Mar 2010 17:46:58 -0500
-Message-ID: <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com>
-Subject: Re: ATA 4 KiB sector issues.
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, mkp@mkp.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<snip>
->
-> As far as partitioning... I believe we should be using GPT partition tables
-> where possible.  Even on non-EFI systems, it's simply a much better
-> partition table format.
->
->        -hpa
+__call_usermodehelper(UMH_NO_WAIT) has 2 problems:
 
-GPT can not be used for boot disks in non-EFI systems, right?
+	- if kernel_thread() fails, call_usermodehelper_freeinfo()
+	  is not called.
 
-Greg
+	- for unknown reason UMH_NO_WAIT has UMH_WAIT_PROC logic,
+	  we spawn yet another thread which waits until the user
+	  mode application exits.
+
+Change the UMH_NO_WAIT code to use ____call_usermodehelper() instead of
+wait_for_helper(), and do call_usermodehelper_freeinfo() unconditionally.
+We can rely on CLONE_VFORK, do_fork(CLONE_VFORK) until the child exits
+or execs.
+
+With or without this patch UMH_NO_WAIT does not report the error if
+kernel_thread() fails, this is correct since the caller doesn't wait
+for result.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/kmod.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+--- mm/kernel/kmod.c~2_UMH_NO_WAIT	2010-03-09 21:31:09.000000000 +0100
++++ mm/kernel/kmod.c	2010-03-09 21:56:36.000000000 +0100
+@@ -224,10 +224,7 @@ static int wait_for_helper(void *data)
+ 			sub_info->retval = ret;
+ 	}
+ 
+-	if (sub_info->wait == UMH_NO_WAIT)
+-		call_usermodehelper_freeinfo(sub_info);
+-	else
+-		complete(sub_info->complete);
++	complete(sub_info->complete);
+ 	return 0;
+ }
+ 
+@@ -236,13 +233,13 @@ static void __call_usermodehelper(struct
+ {
+ 	struct subprocess_info *sub_info =
+ 		container_of(work, struct subprocess_info, work);
+-	pid_t pid;
+ 	enum umh_wait wait = sub_info->wait;
++	pid_t pid;
+ 
+ 	/* CLONE_VFORK: wait until the usermode helper has execve'd
+ 	 * successfully We need the data structures to stay around
+ 	 * until that is done.  */
+-	if (wait == UMH_WAIT_PROC || wait == UMH_NO_WAIT)
++	if (wait == UMH_WAIT_PROC)
+ 		pid = kernel_thread(wait_for_helper, sub_info,
+ 				    CLONE_FS | CLONE_FILES | SIGCHLD);
+ 	else
+@@ -251,6 +248,7 @@ static void __call_usermodehelper(struct
+ 
+ 	switch (wait) {
+ 	case UMH_NO_WAIT:
++		call_usermodehelper_freeinfo(sub_info);
+ 		break;
+ 
+ 	case UMH_WAIT_PROC:
+
