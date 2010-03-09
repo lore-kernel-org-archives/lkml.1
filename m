@@ -1,53 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932147Ab0CICva (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:51:30 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35761 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932117Ab0CICv0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 21:51:26 -0500
-X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=2o6sa94q4GRDDrtDDxMA:9 a=QAmWeAJ89Eq68Ky4VhFbjfGCBbIA:4 a=PUjeQqilurYA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <2375c9f91003081840w5419d847q8ffd8b6ce46d86fb@mail.gmail.com>
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
-	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
-	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
-	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
-	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
-	 <2375c9f91003071831x4104dd8dp82967c0409391bd5@mail.gmail.com>
-	 <2375c9f91003081840w5419d847q8ffd8b6ce46d86fb@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 08 Mar 2010 21:51:25 -0500
-Message-ID: <1268103085.10871.1862.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 8bit
+	id S932159Ab0CICvx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 21:51:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48312 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752072Ab0CICvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 21:51:52 -0500
+Message-ID: <4B95B748.5080902@kernel.org>
+Date: Tue, 09 Mar 2010 11:49:44 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Karel Zak <kzak@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       tytso@mit.edu, "H. Peter Anvin" <hpa@zytor.com>,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, Jim Meyering <jim@meyering.net>
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net> <20100308195847.GC18077@nb.net.home> <4B95B39C.70402@kernel.org> <4B95B5A2.2090902@garzik.org>
+In-Reply-To: <4B95B5A2.2090902@garzik.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 02:49:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 10:40 +0800, Américo Wang wrote:
+Hello,
 
-> > I will try this now.
-> >
+On 03/09/2010 11:42 AM, Jeff Garzik wrote:
+> On 03/08/2010 09:34 PM, Tejun Heo wrote:
+>> libata is broken for logical 4KiB ATA devices tho.  I'll fix it up.
 > 
-> Unfortunately, this doesn't help.
-> 
-> What is worse, I got another soft lockup, although I already turned LOCKDEP off.
+> Does libata-dev.git#sectsize miss any details?
 
-Hmm, this really sounds like somethings badly broken.
+I haven't looked at it yet.  I'll review it soon but the thing is
+without actual hardware it would be a bit difficult to tell.  It's not
+only the drivers.  I have this mighty unhappy feeling that some
+controllers (especially some of the SATA ones with internal state
+machine to emulate SFF) would be sniffing the commands and making the
+wrong assumption if 4KiB logical sector size is used, so we'll need to
+test various controllers.  Some PATA-SATA bridge chips will definitely
+be having problems too.  Then there are the USB and other bridges too
+but well those aren't libata's problem at least.  :-)
 
-What version of GCC are you using?
+Thanks.
 
--- Steve
-
-
+-- 
+tejun
