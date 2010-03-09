@@ -1,66 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751437Ab0CIRN7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:13:59 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:16487 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999Ab0CIRNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:13:54 -0500
-Date: Tue, 9 Mar 2010 09:13:13 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.34-rc1
-Message-Id: <20100309091313.c568ef5a.randy.dunlap@oracle.com>
-In-Reply-To: <20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
-References: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
-	<20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+	id S1751306Ab0CIRPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:15:15 -0500
+Received: from lo.gmane.org ([80.91.229.12]:39949 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769Ab0CIRPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 12:15:11 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: Upstream first policy
+Date: Tue, 9 Mar 2010 16:16:11 +0100
+Message-ID: <20100309161611.1833523b@schatten.dmk.lab>
+References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
+	<20100308094647.GA14268@elte.hu>
+	<20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
+	<20100308190857.400bde09@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
+	<m1fx4apgch.fsf@fess.ebiederm.org>
+	<7e0fb38c1003081518o7cddd121wa9c363a4e8211115@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B9681C6.019B:SCFMA4539814,ss=1,fgs=0
+X-Complaints-To: usenet@dough.gmane.org
+X-Gmane-NNTP-Posting-Host: f053212233.adsl.alicedsl.de
+In-Reply-To: <7e0fb38c1003081518o7cddd121wa9c363a4e8211115@mail.gmail.com>
+X-Newsreader: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010 17:28:04 +0100 Jan Kara wrote:
-
-> > It's out there now. I still have a few trees I already got pull requests 
-> > for, and that I want to look over a bit more (ceph, gdb tree etc), and 
-> > it's possible that I've just overlooked some other pull request.
->   It seems you haven't pulled my UDF tree (requested on Thursday -
-> http://lkml.indiana.edu/hypermail/linux/kernel/1003.0/02186.html).
->   I've rebased the tree on top of 2.6.34-rc1 so could you please pull
-> now?
->   The full pull request for your convenience:
-> 
->   could you please pull from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
-> 
->   to get:
-> 
-> Akinobu Mita (1):
->       udf: use ext2_find_next_bit
-> 
-> Jan Kara (2):
->       udf: Fix unalloc space handling in udf_update_inode
->       udf: Do not read inode before writing it
-> 
-> The diffstat is
-> 
->  fs/udf/balloc.c |   49 +------------------------------------------------
->  fs/udf/inode.c  |   34 +++++++++++++++++-----------------
->  2 files changed, 18 insertions(+), 65 deletions(-)
+On Mon, 8 Mar 2010 18:18:21 -0500
+Eric Paris <eparis@parisplace.org> wrote:
 
 
-I have no objections, fwiw, but please change the $subject line...
+> You do realize that with content based security systems the pathnames
+> aren't important and you could implement your example patch?  Sure a
+> user could mount something on /lib and put their own files there, but
+> since that user couldn't get them labelled correctly the suid app
+> would not be able to use them and would fail.  Users would have new
+> and interesting way to break their computers!  
 
----
-~Randy
+but isn't that why a pathname based protect of /lib would be better? so
+that users couldn't break their system? 
+
+>I thank you for your
+> vote for content based security systems instead of pathname systems
+> and look forward to your future contributions to either that body of
+> knowledge or the bridging of the gap between the two *smile*
+> 
+> -Eric
+
+i interpret it not this way. but i'm an amateur securita :)
+
+cheers,
+Flo
+
+
