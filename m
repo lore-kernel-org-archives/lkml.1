@@ -1,99 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000Ab0CIJxM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 04:53:12 -0500
-Received: from mail-pz0-f200.google.com ([209.85.222.200]:34986 "EHLO
-	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753853Ab0CIJxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 04:53:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:x-operating-system:user-agent;
-        b=k1tZU7wo6VXoL+q/VyysKRpnsQ+/ShuZ8bTRShgDDmCEbsrywYgfkms5xUmHoWsZh3
-         +hOFjWcxPmKTIeNvt/vpK6m0kvo6DoHIThbXUBcJVMnICepPZsmfNJqhg0GPXP63FOpm
-         sbVkEt7vbRFpmtTlBIhHkb0LDmuMiy2m2kUhs=
-Date: Tue, 9 Mar 2010 17:52:55 +0800
-From: Li Hong <lihong.hi@gmail.com>
-To: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] slip: Remove the unused code and add some cleanups in
- slip.c
-Message-ID: <20100309095255.GA10793@xhl>
-Mail-Followup-To: "David S. Miller" <davem@davemloft.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	id S1754049Ab0CIJx6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 04:53:58 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39029 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753924Ab0CIJxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 04:53:53 -0500
+Date: Tue, 9 Mar 2010 20:53:42 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] page-allocator: Check zone pressure when batch of
+ pages are freed
+Message-ID: <20100309095342.GD8653@laptop>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+ <1268048904-19397-3-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Operating-System: Linux xhl 2.6.31-14-generic
+In-Reply-To: <1268048904-19397-3-git-send-email-mel@csn.ul.ie>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In sl_alloc(), after the for block:
+Cool, you found this doesn't hurt performance too much?
 
-	for (i = 0; i < slip_maxdev; i++) {
-		dev = slip_devs[i];
-		if (dev == NULL)
-			break;
-	}
+Can't you remove the check from the reclaim code now? (The check
+here should give a more timely wait anyway)
 
-The result is either i >= slip_maxdev or dev != NULL. So the following check
-on dev is needless.
+This is good because it should eliminate most all cases of extra
+waiting. I wonder if you've also thought of doing the check in the
+allocation path too as we were discussing? (this would give a better
+FIFO behaviour under memory pressure but I could easily agree it is not
+worth the cost)
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
----
- drivers/net/slip.c |   24 +++++++-----------------
- 1 files changed, 7 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/slip.c b/drivers/net/slip.c
-index ba5bbc5..adf89c0 100644
---- a/drivers/net/slip.c
-+++ b/drivers/net/slip.c
-@@ -737,24 +737,15 @@ static struct slip *sl_alloc(dev_t line)
- 	if (i >= slip_maxdev)
- 		return NULL;
- 
--	if (dev) {
--		sl = netdev_priv(dev);
--		if (test_bit(SLF_INUSE, &sl->flags)) {
--			unregister_netdevice(dev);
--			dev = NULL;
--			slip_devs[i] = NULL;
--		}
--	}
-+	char name[IFNAMSIZ];
-+	sprintf(name, "sl%d", i);
- 
--	if (!dev) {
--		char name[IFNAMSIZ];
--		sprintf(name, "sl%d", i);
-+	dev = alloc_netdev(sizeof(*sl), name, sl_setup);
-+	if (!dev)
-+		return NULL;
- 
--		dev = alloc_netdev(sizeof(*sl), name, sl_setup);
--		if (!dev)
--			return NULL;
--		dev->base_addr  = i;
--	}
-+	dev->base_addr  = i;
-+	slip_devs[i] = dev;
- 
- 	sl = netdev_priv(dev);
- 
-@@ -772,7 +763,6 @@ static struct slip *sl_alloc(dev_t line)
- 	sl->outfill_timer.data = (unsigned long)sl;
- 	sl->outfill_timer.function = sl_outfill;
- #endif
--	slip_devs[i] = dev;
- 	return sl;
- }
- 
--- 
-1.6.3.3
-
+On Mon, Mar 08, 2010 at 11:48:22AM +0000, Mel Gorman wrote:
+> When a batch of pages have been freed to the buddy allocator, it is possible
+> that it is enough to push a zone above its watermarks. This patch puts a
+> check in the free path for zone pressure. It's in a common path but for
+> the most part, it should only be checking if a linked list is empty and
+> have minimal performance impact.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/page_alloc.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 1383ff9..3c8e8b7 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -562,6 +562,9 @@ static void free_pcppages_bulk(struct zone *zone, int count,
+>  		} while (--count && --batch_free && !list_empty(list));
+>  	}
+>  	spin_unlock(&zone->lock);
+> +
+> +	/* A batch of pages have been freed so check zone pressure */
+> +	check_zone_pressure(zone);
+>  }
+>  
+>  static void free_one_page(struct zone *zone, struct page *page, int order,
+> -- 
+> 1.6.5
