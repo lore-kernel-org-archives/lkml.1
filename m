@@ -1,68 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936Ab0CIRaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 12:30:23 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52342 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552Ab0CIRaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 12:30:20 -0500
-Date: Tue, 9 Mar 2010 17:30:03 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
-	pressure to relieve instead of congestion
-Message-ID: <20100309173003.GH4883@csn.ul.ie>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1003090946180.28897@router.home> <4B966F93.9060207@linux.vnet.ibm.com> <alpine.DEB.2.00.1003091005310.28897@router.home> <20100309170123.GG4883@csn.ul.ie> <alpine.DEB.2.00.1003091109040.28897@router.home>
+	id S1754501Ab0CIRcO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 12:32:14 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:55583 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113Ab0CIRcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 12:32:12 -0500
+Date: Tue, 9 Mar 2010 18:32:34 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+Message-ID: <20100309173234.GE2371@aftab>
+References: <20100223190614.GB2401@aftab>
+ <4B875BBD.4060104@zytor.com>
+ <20100226074714.GA15310@aftab>
+ <4B88097E.7010608@zytor.com>
+ <20100227082807.GA21706@aftab>
+ <4B8979DA.9000201@zytor.com>
+ <20100309153628.GA2371@aftab>
+ <1268149840.5037.3.camel@laptop>
+ <20100309162352.GB2371@aftab>
+ <1268152369.5037.10.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1003091109040.28897@router.home>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1268152369.5037.10.camel@laptop>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 11:11:55AM -0600, Christoph Lameter wrote:
-> On Tue, 9 Mar 2010, Mel Gorman wrote:
-> 
-> > Until it's timeout at least. It's still better than the current
-> > situation of sleeping on congestion.
-> 
-> Congestion may clear if memory becomes available in other zones.
-> 
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Tue, Mar 09, 2010 at 05:32:49PM +0100
 
-I understand that.
+> I thought the patch did that, see this hunk (straight from
+> http://lkml.org/lkml/2010/2/4/119 ):
 
-> > The ideal would be waiting on a per-node basis. I'm just not liking having
-> > to look up the node structure when freeing a patch of pages and making a
-> > cache line in there unnecessarily hot.
-> 
-> The node structure (pgdat) contains the zone structures. If you know the
-> type of zone then you can calculate the pgdat address.
-> 
+Bollocks, I seem to have lost that hunk while applying the patch by
+foot, sorry for the noise.
 
-I know you can lookup the pgdat from the zone structure. The concern is that
-the suggestion requires adding fields to the node structure that then become
-hot in the free_page path when the per-cpu lists are being drained. This patch
-also adds a hot cache line to the zone but at least it can be eliminated by
-using zone->flags. The same optimisation does not apply to working on a
-per-node basis.
-
-Adding such a hot line is a big minus and the gain is that processes may
-wake up slightly faster when under memory pressure. It's not a good trade-off.
-
-> > > But then an overallocated node may stall processes. If that node is full
-> > > of unreclaimable memory then the process may never wake up?
-> >
-> > Processes wake after a timeout.
-> 
-> Ok that limits it but still we may be waiting for no reason.
-> 
+By the way, I can't seem to find your patch in Andrew's tree, is it
+still going through his tree?
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
