@@ -1,98 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751585Ab0CIGU6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:20:58 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48138 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446Ab0CIGU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:20:56 -0500
-Date: Tue, 9 Mar 2010 17:20:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 9
-Message-Id: <20100309172050.28af0584.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__9_Mar_2010_17_20_50_+1100_W_witNavk7Vb3f5s"
+	id S1751814Ab0CIGVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:21:20 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:60734 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446Ab0CIGVQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 01:21:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=o/oAJuJc1CvQ7f2DOz73ZcVdYdciSPUO4+7tACPglbx5cuuggiWgwvEGnne0q0VpeO
+         ze7vTPgO9oxOdX5ia4JadaG50N4oXDZfHCr36mCa9gPa+8q+b/WWDNrp74dxwEEm1g9w
+         HEO03oworHS9WFfLf7giT59CtwnA4iXJ0PyRM=
+MIME-Version: 1.0
+In-Reply-To: <4B916169.5040303@oracle.com>
+References: <201003050232.o252WD4K011798@imap1.linux-foundation.org>
+	 <4B916169.5040303@oracle.com>
+Date: Tue, 9 Mar 2010 12:21:15 +0600
+Message-ID: <b9df5fa11003082221u4f8ad73mee4397f3cc0f9aa9@mail.gmail.com>
+Subject: Re: [PATCH -mmotm] acpi/sbs: fix build for ACPI_SYSFS_POWER=n
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__9_Mar_2010_17_20_50_+1100_W_witNavk7Vb3f5s
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Randy,
 
-Hi all,
+On 3/6/10, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> When CONFIG_ACPI_SYSFS_POWER is not enabled:
+>
+> drivers/acpi/sbs.c:640: error: implicit declaration of function
+> 'acpi_battery_get_alarm'
+> drivers/acpi/sbs.c:679: error: implicit declaration of function
+> 'acpi_battery_set_alarm'
+>
+This problem is introduced by the patch
+(http://lkml.org/lkml/2010/3/1/29) named
+acpi-put-acpi_battery_get-set_alarm-into-config_acpi_sysfs_power.patch.
+If we use CONFIG_ACPI_SYSFS_POWER=y then we are warned by the
+following warning:
 
-Changes since 20100308:
+drivers/acpi/sbs.c:399: warning: ‘acpi_battery_get_alarm’ defined but not used
+drivers/acpi/sbs.c:406: warning: ‘acpi_battery_set_alarm’ defined but not used
 
-Dropped tree: tmio-mmc (long unresolved conflicts and unable to fetch)
+So, I think it's better that we wrap CONFIG_ACPI_SYSFS_POWER with
+#ifdef and #else. Otherwise we have to face the above warning.
 
-My fixes tree contains:
-	a patch for a pktcdvd build error from Arnd Bergmann
-	two fixes for i2c-xii.c
-	an update to cope with the semaphore to mutex conversion in
-		driver-core (this turns out not to be necessary).
-=20
-The mtd tree still has its 2 build failures for which I applied patches.
+Thanks,
+Rakib
 
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 159 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__9_Mar_2010_17_20_50_+1100_W_witNavk7Vb3f5s
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuV6MIACgkQjjKRsyhoI8wCpgCfW12bi6QUw2pB6NWWplChaCSe
-EQ8AnR/vR5vtDlBZI2I+xzXlc6Amu+tR
-=I6wH
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Mar_2010_17_20_50_+1100_W_witNavk7Vb3f5s--
+>
+> so move those functions outside of the ifdef/endif block for that
+> config option.
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/acpi/sbs.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> --- mmotm-2010-0304-1805.orig/drivers/acpi/sbs.c
+> +++ mmotm-2010-0304-1805/drivers/acpi/sbs.c
+> @@ -412,8 +412,6 @@ static int acpi_ac_get_present(struct ac
+>  	return result;
+>  }
+>
+> -#ifdef CONFIG_ACPI_SYSFS_POWER
+> -
+>  static int acpi_battery_get_alarm(struct acpi_battery *battery)
+>  {
+>  	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
+> @@ -450,6 +448,8 @@ static int acpi_battery_set_alarm(struct
+>  	return ret;
+>  }
+>
+> +#ifdef CONFIG_ACPI_SYSFS_POWER
+> +
+>  static ssize_t acpi_battery_alarm_show(struct device *dev,
+>  					struct device_attribute *attr,
+>  					char *buf)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
