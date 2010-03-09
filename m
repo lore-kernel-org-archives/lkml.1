@@ -1,65 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178Ab0CIAYi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 19:24:38 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47976 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753884Ab0CIAYg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 19:24:36 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 9 Mar 2010 09:20:54 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure
-Message-Id: <20100309092054.b18a4ff2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100309091845.d38b43ff.nishimura@mxp.nes.nec.co.jp>
-References: <1267995474-9117-1-git-send-email-arighi@develer.com>
-	<1267995474-9117-4-git-send-email-arighi@develer.com>
-	<20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
-	<20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
-	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
-	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100309091845.d38b43ff.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1756182Ab0CIAbm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 19:31:42 -0500
+Received: from mail.perches.com ([173.55.12.10]:1530 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753884Ab0CIAbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 19:31:40 -0500
+Subject: [PATCH] net/netfilter/ipvs/ip_vs_ftp.c: Remove use of NIPQUAD
+From: Joe Perches <joe@perches.com>
+To: Wensong Zhang <wensong@linux-vs.org>, Simon Horman <horms@verge.net.au>,
+       Julian Anastasov <ja@ssi.bg>, Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, lvs-devel <lvs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Mar 2010 16:31:39 -0800
+Message-ID: <1268094699.1617.5.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Mar 2010 09:18:45 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+NIPQUAD has very few uses left.
 
-> On Mon, 8 Mar 2010 17:31:00 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Mon, 8 Mar 2010 17:07:11 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Remove this use and make the code have the identical form of the only
+other use of "%u,%u,%u,%u,%u,%u" in net/ipv4/netfilter/nf_nat_ftp.c
 
-> > Hmm...accepatable ? (sounds it's in error-range)
-> > 
-> > BTW, why local_irq_disable() ? 
-> > local_irq_save()/restore() isn't better ?
-> > 
-> I don't have any strong reason. All of lock_page_cgroup() is *now* called w/o irq disabled,
-> so I used just disable()/enable() instead of save()/restore().
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/netfilter/ipvs/ip_vs_ftp.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-My point is, this will be used under treelock soon.
+diff --git a/net/netfilter/ipvs/ip_vs_ftp.c
+b/net/netfilter/ipvs/ip_vs_ftp.c
+index 73f38ea..9f63283 100644
+--- a/net/netfilter/ipvs/ip_vs_ftp.c
++++ b/net/netfilter/ipvs/ip_vs_ftp.c
+@@ -208,8 +208,14 @@ static int ip_vs_ftp_out(struct ip_vs_app *app,
+struct ip_vs_conn *cp,
+ 		 */
+ 		from.ip = n_cp->vaddr.ip;
+ 		port = n_cp->vport;
+-		sprintf(buf, "%u,%u,%u,%u,%u,%u", NIPQUAD(from.ip),
+-			(ntohs(port)>>8)&255, ntohs(port)&255);
++		snprintf(buf, sizeof(buf), "%u,%u,%u,%u,%u,%u",
++			 ((unsigned char *)&from.ip)[0],
++			 ((unsigned char *)&from.ip)[1],
++			 ((unsigned char *)&from.ip)[2],
++			 ((unsigned char *)&from.ip)[3],
++			 ntohs(port) >> 8,
++			 ntohs(port) & 0xFF);
++
+ 		buf_len = strlen(buf);
+ 
+ 		/*
 
-Thanks,
--Kame
 
