@@ -1,119 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572Ab0CIURQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 15:17:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17343 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754812Ab0CIURO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 15:17:14 -0500
-Date: Tue, 9 Mar 2010 15:16:56 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, jens.axboe@oracle.com,
-       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface
-	"weight_device" for IO-Controller
-Message-ID: <20100309201656.GA3013@redhat.com>
-References: <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com> <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
+	id S1755194Ab0CIUSs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:18:48 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59542 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751494Ab0CIUSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 15:18:45 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX19ZDuJ4qxxZRqpSWEu0VkdK7B/doXxFCZeEuMWbib
+	Ak6pXVfK7NuUrb
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: [PATCH] serial/sh_sci: Fix build failure for non-sh architectures
+Date: Tue, 9 Mar 2010 21:18:25 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.27-05415-g69a8594; KDE/4.3.5; x86_64; ; )
+Cc: Magnus Damm <damm@igel.co.jp>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003092118.26274.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 11:39:54AM -0800, Nauman Rafique wrote:
-[..]
-> >> +static int blkio_policy_parse_and_set(char *buf,
-> >> +                                   struct blkio_policy_node *newpn)
-> >> +{
-> >> +     char *s[4], *p, *major_s = NULL, *minor_s = NULL;
-> >> +     int ret;
-> >> +     unsigned long major, minor, temp;
-> >> +     int i = 0;
-> >> +     dev_t dev;
-> >> +
-> >> +     memset(s, 0, sizeof(s));
-> >> +
-> >> +     while ((p = strsep(&buf, " ")) != NULL) {
-> >> +             if (!*p)
-> >> +                     continue;
-> >> +
-> >> +             s[i++] = p;
-> >> +
-> >> +             /* Prevent from inputing too many things */
-> >> +             if (i == 3)
-> >> +                     break;
-> >> +     }
-> >> +
-> >> +     if (i != 2)
-> >> +             return -EINVAL;
-> >> +
-> >> +     p = strsep(&s[0], ":");
-> >> +     if (p != NULL)
-> >> +             major_s = p;
-> >> +     else
-> >> +             return -EINVAL;
-> >> +
-> >> +     minor_s = s[0];
-> >> +     if (!minor_s)
-> >> +             return -EINVAL;
-> >> +
-> >> +     ret = strict_strtoul(major_s, 10, &major);
-> >> +     if (ret)
-> >> +             return -EINVAL;
-> >> +
-> >> +     ret = strict_strtoul(minor_s, 10, &minor);
-> >> +     if (ret)
-> >> +             return -EINVAL;
-> >> +
-> >> +     dev = MKDEV(major, minor);
-> 
-> I am not quite sure if exposing a mojor,minor number is the best
-> interface that can be exposed to user space. How about actual disk
-> names like sda, sdb, .. etc? The only problem I see there is that it
-> seems tricky to get to these disk names from within the block layer.
-> "struct request_queue" has a pointer to backing_dev which has a device
-> from which we can get major,minor. But in order to get to disk name,
-> we would have to call get_gendisk which can hold a semaphore. Is this
-> the reason for us going with major,minor as a user interface to
-> specify a disk? I bet there are good reasons for us not keeping a
-> pointer to "struct gendisk" from "struct request_queue". If we could
-> keep that pointer, our user interface could be very easily modified to
-> be the disk name like sda, sdb, etc.
+From: Peter Huewe <peterhuewe@gmx.de>
 
-Hi Nauman,
+This patch fixes a build failure for various arm based defconfigs
+[1][2][3] and maybe other architectures/configs.
 
-Do we really store a device name in "struct gendisk"? IIUC, a disk is
-identified by its major and minor number and then there can be multiple
-device files pointing to same disk. 
+The build failure was introduced by the sh specific patch [4]
+"serial: sh-sci: Add DMA support"
+by Guennadi Liakhovetski
 
-So I have a disk /dev/sdc in my system and I created another alias to
-same disk using mknod and mounted the disk using the alias.
+Patch against linux-next of 20100309
 
-mknod /dev/sdc-alias b 8 32
-mount /dev/sdc-alias /mnt
+References:
+[1] http://kisskb.ellerman.id.au/kisskb/buildresult/2248992/
+[2] http://kisskb.ellerman.id.au/kisskb/buildresult/2248996/
+[3] http://kisskb.ellerman.id.au/kisskb/buildresult/2248998/
+[4] http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=73a19e4c0301908ce6346715fd08a74308451f5a
 
-If that's the case, there is no way gendisk can store the pathname.
-Instead, device file has inode associated with it, and there we store
-major, minor number of disk, and using that we operate on disk/partition.
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ include/linux/serial_sci.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-If that's the case, then major/minor number based interface for blkio
-makes sense. Because we also need to export stats regarding the disk
-time consumed by cgroup on a particular device, the only unique identifier
-of the disk seems to be {major,minor} pair and multiple block device
-files can be pointing to same disk. Because it is many to one mapping, it
-will not be possible to reverse map it.
+diff --git a/include/linux/serial_sci.h b/include/linux/serial_sci.h
+index 1b177d2..193d4bf 100644
+--- a/include/linux/serial_sci.h
++++ b/include/linux/serial_sci.h
+@@ -2,7 +2,9 @@
+ #define __LINUX_SERIAL_SCI_H
+ 
+ #include <linux/serial_core.h>
++#ifdef CONFIG_SERIAL_SH_SCI_DMA
+ #include <asm/dmaengine.h>
++#endif
+ 
+ /*
+  * Generic header for SuperH SCI(F) (used by sh/sh64/h8300 and related parts)
+@@ -30,8 +32,10 @@ struct plat_sci_port {
+ 	upf_t		flags;			/* UPF_* flags */
+ 	char		*clk;			/* clock string */
+ 	struct device	*dma_dev;
++#ifdef CONFIG_SERIAL_SH_SCI_DMA
+ 	enum sh_dmae_slave_chan_id dma_slave_tx;
+ 	enum sh_dmae_slave_chan_id dma_slave_rx;
++#endif
+ };
+ 
+ #endif /* __LINUX_SERIAL_SCI_H */
+-- 
+1.6.4.4
 
-So I guess we need to continue to handle rules and stats using major/minor
-numbers. One improvement probably we can do and that is allow setting
-rules both by major/minor number and device file path. But internally
-cgroup code will map device file path to major minor numbers and rules
-will be displayed against major/minor number and not original device path.
-
-Thanks
-Vivek
