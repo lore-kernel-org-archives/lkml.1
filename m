@@ -1,212 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728Ab0CITth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:49:37 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:60878 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376Ab0CITtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:49:33 -0500
-Message-id: <4B96A633.2080207@acm.org>
-Date: Tue, 09 Mar 2010 13:49:07 -0600
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-version: 1.0
-To: Jean Delvare <jdelvare@suse.de>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Wilck <martin.wilck@ts.fujitsu.com>,
-       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>,
-       Gary Smith <gasmith@redhat.com>
-Subject: Re: [PATCH 1/4] IPMI: Add parameter to limit CPU usage in kipmid
-References: <20100303161438.GA17623@minyard.local>
- <201003091305.58136.jdelvare@suse.de>
-In-reply-to: <201003091305.58136.jdelvare@suse.de>
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
+	id S1755511Ab0CISWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:22:47 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:49422 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751829Ab0CISWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 13:22:46 -0500
+Date: Tue, 9 Mar 2010 18:22:28 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
+	pressure to relieve instead of congestion
+Message-ID: <20100309182228.GJ4883@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <20100309133513.GL8653@laptop> <20100309141713.GF4883@csn.ul.ie> <20100309150332.GP8653@laptop> <4B966C7A.5040706@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B966C7A.5040706@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Corey, Linus,
+On Tue, Mar 09, 2010 at 04:42:50PM +0100, Christian Ehrhardt wrote:
 >
-> On Wednesday 03 March 2010 05:14:38 pm Corey Minyard wrote:
->   
->> From: Martin Wilck <martin.wilck@ts.fujitsu.com>
->>
->> In some cases kipmid can use a lot of CPU.  This adds a way to tune
->> the CPU used by kipmid to help in those cases.  By setting
->> kipmid_max_busy_us to a value between 100 and 500, it is possible to
->> bring down kipmid CPU load to practically 0 without loosing too much
->> ipmi throughput performance.  Not setting the value, or setting the
->> value to zero, operation is unaffected.
->>
->> Signed-off-by: Martin Wilck <martin.wilck@ts.fujitsu.com>
->> Cc: Jean Delvare <jdelvare@suse.de>
->> Signed-off-by: Corey Minyard <cminyard@mvista.com>
->> ---
->> This patch has been discussed quite a bit, and I believe all issues with it
->> have been resolved.  It's not great, but nobody has a better way to handle
->> the problem.
->>     
 >
-> I still can't see this patch in Linus' tree as of 2.6.34-rc1. It has been 
-> waiting for sooo long already, can we finally get it in? Linus, will you apply 
-> it? Or should it go through Andrew?
->   
-It's already in Andrew's patches.  It would be good if this could go in 
-for 2.6.34, I think it has been through enough review and such.
+> Nick Piggin wrote:
+>> On Tue, Mar 09, 2010 at 02:17:13PM +0000, Mel Gorman wrote:
+>>> On Wed, Mar 10, 2010 at 12:35:13AM +1100, Nick Piggin wrote:
+>>>> On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
+>>>>> Under heavy memory pressure, the page allocator may call congestion_wait()
+>>>>> to wait for IO congestion to clear or a timeout. This is not as sensible
+>>>>> a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
+>>>>> even congested as the pressure could have been due to a large number of
+>>>>> SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
+>>>>>
+>>>>> At the point of congestion_wait(), the allocator is struggling to get the
+>>>>> pages it needs and it should back off. This patch puts the allocator to sleep
+>>>>> on a zone->pressure_wq for either a timeout or until a direct reclaimer or
+>>>>> kswapd brings the zone over the low watermark, whichever happens first.
+>>>>>
+>>>>> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+>>>>> ---
+>>>>>  include/linux/mmzone.h |    3 ++
+>>>>>  mm/internal.h          |    4 +++
+>>>>>  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
+>>>>>  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
+>>>>>  mm/vmscan.c            |    2 +
+>>>>>  5 files changed, 101 insertions(+), 5 deletions(-)
+>>>>>
+>>>>> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+>>>>> index 30fe668..72465c1 100644
+>>>>> --- a/include/linux/mmzone.h
+>>>>> +++ b/include/linux/mmzone.h
+> [...]
+>>>>> +{
+>>>>> +	/* If no process is waiting, nothing to do */
+>>>>> +	if (!waitqueue_active(zone->pressure_wq))
+>>>>> +		return;
+>>>>> +
+>>>>> +	/* Check if the high watermark is ok for order 0 */
+>>>>> +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
+>>>>> +		wake_up_interruptible(zone->pressure_wq);
+>>>>> +}
+>>>> If you were to do this under the zone lock (in your subsequent patch),
+>>>> then it could avoid races. I would suggest doing it all as a single
+>>>> patch and not doing the pressure checks in reclaim at all.
+>>>>
+>>> That is reasonable. I've already dropped the checks in reclaim because as you
+>>> say, if the free path check is cheap enough, it's also sufficient. Checking
+>>> in the reclaim paths as well is redundant.
+>>>
+>>> I'll move the call to check_zone_pressure() within the zone lock to avoid
+>>> races.
+>>>
+>
+> Mel, we talked about a thundering herd issue that might come up here in  
+> very constraint cases.
+> So wherever you end up putting that wake_up call, how about being extra  
+> paranoid about a thundering herd flagging them WQ_FLAG_EXCLUSIVE and  
+> waking them with something like that:
+>
+> wake_up_interruptible_nr(zone->pressure_wq, #nrofpagesabovewatermark#);
+>
+> That should be an easy to calculate sane max of waiters to wake up.
+> On the other hand it might be over-engineered and it implies the need to  
+> reconsider when it would be best to wake up the rest.
+>
 
--corey
+It seems over-engineering considering that they wake up after a timeout
+unconditionally. I think it's best for the moment to let them wake up in
+a herd and recheck their zonelists as they'll go back to sleep if
+necessary.
 
-> Thanks.
+> Get me right - I don't really have a hard requirement or need for that,  
+> I just wanted to mention it early on to hear your opinions about it.
 >
->   
->> Index: linux-2.6.32/drivers/char/ipmi/ipmi_si_intf.c
->> ===================================================================
->> --- linux-2.6.32.orig/drivers/char/ipmi/ipmi_si_intf.c
->> +++ linux-2.6.32/drivers/char/ipmi/ipmi_si_intf.c
->> @@ -294,6 +294,9 @@ struct smi_info {
->>  static int force_kipmid[SI_MAX_PARMS];
->>  static int num_force_kipmid;
->>
->> +static unsigned int kipmid_max_busy_us[SI_MAX_PARMS];
->> +static int num_max_busy_us;
->> +
->>  static int unload_when_empty = 1;
->>
->>  static int try_smi_init(struct smi_info *smi);
->> @@ -924,23 +927,77 @@ static void set_run_to_completion(void *
->>  	}
->>  }
->>
->> +/*
->> + * Use -1 in the nsec value of the busy waiting timespec to tell that
->> + * we are spinning in kipmid looking for something and not delaying
->> + * between checks
->> + */
->> +static inline void ipmi_si_set_not_busy(struct timespec *ts)
->> +{
->> +	ts->tv_nsec = -1;
->> +}
->> +static inline int ipmi_si_is_busy(struct timespec *ts)
->> +{
->> +	return ts->tv_nsec != -1;
->> +}
->> +
->> +static int ipmi_thread_busy_wait(enum si_sm_result smi_result,
->> +				 const struct smi_info *smi_info,
->> +				 struct timespec *busy_until)
->> +{
->> +	unsigned int max_busy_us = 0;
->> +
->> +	if (smi_info->intf_num < num_max_busy_us)
->> +		max_busy_us = kipmid_max_busy_us[smi_info->intf_num];
->> +	if (max_busy_us == 0 || smi_result != SI_SM_CALL_WITH_DELAY)
->> +		ipmi_si_set_not_busy(busy_until);
->> +	else if (!ipmi_si_is_busy(busy_until)) {
->> +		getnstimeofday(busy_until);
->> +		timespec_add_ns(busy_until, max_busy_us*NSEC_PER_USEC);
->> +	} else {
->> +		struct timespec now;
->> +		getnstimeofday(&now);
->> +		if (unlikely(timespec_compare(&now, busy_until) > 0)) {
->> +			ipmi_si_set_not_busy(busy_until);
->> +			return 0;
->> +		}
->> +	}
->> +	return 1;
->> +}
->> +
->> +
->> +/*
->> + * A busy-waiting loop for speeding up IPMI operation.
->> + *
->> + * Lousy hardware makes this hard.  This is only enabled for systems
->> + * that are not BT and do not have interrupts.  It starts spinning
->> + * when an operation is complete or until max_busy tells it to stop
->> + * (if that is enabled).  See the paragraph on kimid_max_busy_us in
->> + * Documentation/IPMI.txt for details.
->> + */
->>  static int ipmi_thread(void *data)
->>  {
->>  	struct smi_info *smi_info = data;
->>  	unsigned long flags;
->>  	enum si_sm_result smi_result;
->> +	struct timespec busy_until;
->>
->> +	ipmi_si_set_not_busy(&busy_until);
->>  	set_user_nice(current, 19);
->>  	while (!kthread_should_stop()) {
->> +		int busy_wait;
->> +
->>  		spin_lock_irqsave(&(smi_info->si_lock), flags);
->>  		smi_result = smi_event_handler(smi_info, 0);
->>  		spin_unlock_irqrestore(&(smi_info->si_lock), flags);
->> +		busy_wait = ipmi_thread_busy_wait(smi_result, smi_info,
->> +						  &busy_until);
->>  		if (smi_result == SI_SM_CALL_WITHOUT_DELAY)
->>  			; /* do nothing */
->> -		else if (smi_result == SI_SM_CALL_WITH_DELAY)
->> +		else if (smi_result == SI_SM_CALL_WITH_DELAY && busy_wait)
->>  			schedule();
->>  		else
->> -			schedule_timeout_interruptible(1);
->> +			schedule_timeout_interruptible(0);
->>  	}
->>  	return 0;
->>  }
->> @@ -1211,6 +1268,11 @@ module_param(unload_when_empty, int, 0);
->>  MODULE_PARM_DESC(unload_when_empty, "Unload the module if no interfaces
->>  are" " specified or found, default is 1.  Setting to 0"
->>  		 " is useful for hot add of devices using hotmod.");
->> +module_param_array(kipmid_max_busy_us, uint, &num_max_busy_us, 0644);
->> +MODULE_PARM_DESC(kipmid_max_busy_us,
->> +		 "Max time (in microseconds) to busy-wait for IPMI data before"
->> +		 " sleeping. 0 (default) means to wait forever. Set to 100-500"
->> +		 " if kipmid is using up a lot of CPU time.");
->>
->>
->>  static void std_irq_cleanup(struct smi_info *info)
->> Index: linux-2.6.32/Documentation/IPMI.txt
->> ===================================================================
->> --- linux-2.6.32.orig/Documentation/IPMI.txt
->> +++ linux-2.6.32/Documentation/IPMI.txt
->> @@ -365,6 +365,7 @@ You can change this at module load time
->>         regshifts=<shift1>,<shift2>,...
->>         slave_addrs=<addr1>,<addr2>,...
->>         force_kipmid=<enable1>,<enable2>,...
->> +       kipmid_max_busy_us=<ustime1>,<ustime2>,...
->>         unload_when_empty=[0|1]
->>
->>  Each of these except si_trydefaults is a list, the first item for the
->> @@ -433,6 +434,7 @@ kernel command line as:
->>         ipmi_si.regshifts=<shift1>,<shift2>,...
->>         ipmi_si.slave_addrs=<addr1>,<addr2>,...
->>         ipmi_si.force_kipmid=<enable1>,<enable2>,...
->> +       ipmi_si.kipmid_max_busy_us=<ustime1>,<ustime2>,...
->>
->>  It works the same as the module parameters of the same names.
->>
->> @@ -450,6 +452,16 @@ force this thread on or off.  If you for
->>  interrupts, the driver will run VERY slowly.  Don't blame me,
->>  these interfaces suck.
->>
->> +Unfortunately, this thread can use a lot of CPU depending on the
->> +interface's performance.  This can waste a lot of CPU and cause
->> +various issues with detecting idle CPU and using extra power.  To
->> +avoid this, the kipmid_max_busy_us sets the maximum amount of time, in
->> +microseconds, that kipmid will spin before sleeping for a tick.  This
->> +value sets a balance between performance and CPU waste and needs to be
->> +tuned to your needs.  Maybe, someday, auto-tuning will be added, but
->> +that's not a simple thing and even the auto-tuning would need to be
->> +tuned to the user's desired performance.
->> +
->>  The driver supports a hot add and remove of interfaces.  This way,
->>  interfaces can be added or removed after the kernel is up and running.
->>  This is done using /sys/modules/ipmi_si/parameters/hotmod, which is a
->>     
+> looking forward to test the v2 patch series, adapted to all the good  
+> stuff already discussed.
 >
->   
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
