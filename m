@@ -1,59 +1,360 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932088Ab0CICJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:09:22 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:35877 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932069Ab0CICJQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S932073Ab0CICJQ (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 8 Mar 2010 21:09:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CXqU1CCNLw36YvAmz/qHYCThH2832/HBwjaDf+XJ8kc81qFlJvxuHRa0nCONfXcjS2
-         GqbCYf2q8uypVyS5kZDXz6/HX98b0DUy+sZ2cei9FvRu6bAimeMY/Qq/4kkGXF1+TLut
-         rCTmjdE73GH3vQl7xft9SaUU9ReIMSZS1hMr4=
-MIME-Version: 1.0
-In-Reply-To: <20100309015518.GS30031@ZenIV.linux.org.uk>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
-	 <20100308094647.GA14268@elte.hu>
-	 <20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
-	 <20100308184521.GK30031@ZenIV.linux.org.uk>
-	 <alpine.LFD.2.00.1003081051130.3989@localhost.localdomain>
-	 <ff13bc9a1003081718k1e7964f5ta9e582866dea94ee@mail.gmail.com>
-	 <20100309012552.GR30031@ZenIV.linux.org.uk>
-	 <ff13bc9a1003081751s535fbf71l9d261b303587b23a@mail.gmail.com>
-	 <20100309015518.GS30031@ZenIV.linux.org.uk>
-Date: Tue, 9 Mar 2010 03:09:11 +0100
-Message-ID: <ff13bc9a1003081809x7a4b5828wdcb0a56594a1fb24@mail.gmail.com>
-Subject: Re: Upstream first policy
-From: Luca Barbieri <luca.barbieri@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:51667 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756468Ab0CICJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 21:09:12 -0500
+Date: Tue, 9 Mar 2010 10:29:28 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
+ [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
+ infrastructure)
+Message-Id: <20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1267995474-9117-1-git-send-email-arighi@develer.com>
+	<1267995474-9117-4-git-send-email-arighi@develer.com>
+	<20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
+	<20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
+	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
+	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309001252.GB13490@linux>
+	<20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> <sarcasm>
-> Yeah, especially when it's read by sshd.  Who cares, indeed?  So it's got
-> a passwordless root, that's even better, right?  Nobody will see your
-> real root password that way...
-> </sarcasm>
+On Tue, 9 Mar 2010 09:19:14 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 9 Mar 2010 01:12:52 +0100
+> Andrea Righi <arighi@develer.com> wrote:
+> 
+> > On Mon, Mar 08, 2010 at 05:31:00PM +0900, KAMEZAWA Hiroyuki wrote:
+> > > On Mon, 8 Mar 2010 17:07:11 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > 
+> > > > On Mon, 8 Mar 2010 11:37:11 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > > On Mon, 8 Mar 2010 11:17:24 +0900
+> > > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > 
+> > > > > > > But IIRC, clear_writeback is done under treelock.... No ?
+> > > > > > > 
+> > > > > > The place where NR_WRITEBACK is updated is out of tree_lock.
+> > > > > > 
+> > > > > >    1311 int test_clear_page_writeback(struct page *page)
+> > > > > >    1312 {
+> > > > > >    1313         struct address_space *mapping = page_mapping(page);
+> > > > > >    1314         int ret;
+> > > > > >    1315
+> > > > > >    1316         if (mapping) {
+> > > > > >    1317                 struct backing_dev_info *bdi = mapping->backing_dev_info;
+> > > > > >    1318                 unsigned long flags;
+> > > > > >    1319
+> > > > > >    1320                 spin_lock_irqsave(&mapping->tree_lock, flags);
+> > > > > >    1321                 ret = TestClearPageWriteback(page);
+> > > > > >    1322                 if (ret) {
+> > > > > >    1323                         radix_tree_tag_clear(&mapping->page_tree,
+> > > > > >    1324                                                 page_index(page),
+> > > > > >    1325                                                 PAGECACHE_TAG_WRITEBACK);
+> > > > > >    1326                         if (bdi_cap_account_writeback(bdi)) {
+> > > > > >    1327                                 __dec_bdi_stat(bdi, BDI_WRITEBACK);
+> > > > > >    1328                                 __bdi_writeout_inc(bdi);
+> > > > > >    1329                         }
+> > > > > >    1330                 }
+> > > > > >    1331                 spin_unlock_irqrestore(&mapping->tree_lock, flags);
+> > > > > >    1332         } else {
+> > > > > >    1333                 ret = TestClearPageWriteback(page);
+> > > > > >    1334         }
+> > > > > >    1335         if (ret)
+> > > > > >    1336                 dec_zone_page_state(page, NR_WRITEBACK);
+> > > > > >    1337         return ret;
+> > > > > >    1338 }
+> > > > > 
+> > > > > We can move this up to under tree_lock. Considering memcg, all our target has "mapping".
+> > > > > 
+> > > > > If we newly account bounce-buffers (for NILFS, FUSE, etc..), which has no ->mapping,
+> > > > > we need much more complex new charge/uncharge theory.
+> > > > > 
+> > > > > But yes, adding new lock scheme seems complicated. (Sorry Andrea.)
+> > > > > My concerns is performance. We may need somehing new re-implementation of
+> > > > > locks/migrate/charge/uncharge.
+> > > > > 
+> > > > I agree. Performance is my concern too.
+> > > > 
+> > > > I made a patch below and measured the time(average of 10 times) of kernel build
+> > > > on tmpfs(make -j8 on 8 CPU machine with 2.6.33 defconfig).
+> > > > 
+> > > > <before>
+> > > > - root cgroup: 190.47 sec
+> > > > - child cgroup: 192.81 sec
+> > > > 
+> > > > <after>
+> > > > - root cgroup: 191.06 sec
+> > > > - child cgroup: 193.06 sec
+> > > > 
+> > > > Hmm... about 0.3% slower for root, 0.1% slower for child.
+> > > > 
+> > > 
+> > > Hmm...accepatable ? (sounds it's in error-range)
+> > > 
+> > > BTW, why local_irq_disable() ? 
+> > > local_irq_save()/restore() isn't better ?
+> > 
+> > Probably there's not the overhead of saving flags? 
+> maybe.
+> 
+> > Anyway, it would make the code much more readable...
+> > 
+> ok.
+> 
+> please go ahead in this direction. Nishimura-san, would you post an
+> independent patch ? If no, Andrea-san, please.
+> 
+This is the updated version.
 
-Not sure what you mean exactly.
-You won't have a passwordless root if you don't allow anyone to modify
-the file at /etc/shadow, or change that dentry by deleting a file
-there or putting an arbitrary file there (with creat, rename or link).
-This is conceptually a path-based security check.
+Andrea-san, can you merge this into your patch set ?
 
-It is also separate from the problem of not giving anyone knowledge of
-the root password or hash of it, which a conceptually content-based
-security check on reads.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+In current implementation, we don't have to disable irq at lock_page_cgroup()
+because the lock is never acquired in interrupt context.
+But we are going to call it in later patch in an interrupt context or with
+irq disabled, so this patch disables irq at lock_page_cgroup() and enables it
+at unlock_page_cgroup().
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/page_cgroup.h |   16 ++++++++++++++--
+ mm/memcontrol.c             |   43 +++++++++++++++++++++++++------------------
+ 2 files changed, 39 insertions(+), 20 deletions(-)
+
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 30b0813..0d2f92c 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -83,16 +83,28 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+ 	return page_zonenum(pc->page);
+ }
+ 
+-static inline void lock_page_cgroup(struct page_cgroup *pc)
++static inline void __lock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_lock(PCG_LOCK, &pc->flags);
+ }
+ 
+-static inline void unlock_page_cgroup(struct page_cgroup *pc)
++static inline void __unlock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
++#define lock_page_cgroup(pc, flags)		\
++	do {					\
++		local_irq_save(flags);		\
++		__lock_page_cgroup(pc);		\
++	} while (0)
++
++#define unlock_page_cgroup(pc, flags)		\
++	do {					\
++		__unlock_page_cgroup(pc);	\
++		local_irq_restore(flags);	\
++	} while (0)
++
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct page_cgroup;
+ 
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 7fab84e..a9fd736 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1352,12 +1352,13 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc;
++	unsigned long flags;
+ 
+ 	pc = lookup_page_cgroup(page);
+ 	if (unlikely(!pc))
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	mem = pc->mem_cgroup;
+ 	if (!mem)
+ 		goto done;
+@@ -1371,7 +1372,7 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ 	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+ 
+ done:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ }
+ 
+ /*
+@@ -1705,11 +1706,12 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 	struct page_cgroup *pc;
+ 	unsigned short id;
+ 	swp_entry_t ent;
++	unsigned long flags;
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		if (mem && !css_tryget(&mem->css))
+@@ -1723,7 +1725,7 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 			mem = NULL;
+ 		rcu_read_unlock();
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return mem;
+ }
+ 
+@@ -1736,13 +1738,15 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 				     struct page_cgroup *pc,
+ 				     enum charge_type ctype)
+ {
++	unsigned long flags;
++
+ 	/* try_charge() can return NULL to *memcg, taking care of it. */
+ 	if (!mem)
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (unlikely(PageCgroupUsed(pc))) {
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 		mem_cgroup_cancel_charge(mem);
+ 		return;
+ 	}
+@@ -1772,7 +1776,7 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 
+ 	mem_cgroup_charge_statistics(mem, pc, true);
+ 
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * "charge_statistics" updated event counter. Then, check it.
+ 	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+@@ -1842,12 +1846,13 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 		struct mem_cgroup *from, struct mem_cgroup *to, bool uncharge)
+ {
+ 	int ret = -EINVAL;
+-	lock_page_cgroup(pc);
++	unsigned long flags;
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc) && pc->mem_cgroup == from) {
+ 		__mem_cgroup_move_account(pc, from, to, uncharge);
+ 		ret = 0;
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * check events
+ 	 */
+@@ -1974,17 +1979,17 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+ 	 */
+ 	if (!(gfp_mask & __GFP_WAIT)) {
+ 		struct page_cgroup *pc;
+-
++		unsigned long flags;
+ 
+ 		pc = lookup_page_cgroup(page);
+ 		if (!pc)
+ 			return 0;
+-		lock_page_cgroup(pc);
++		lock_page_cgroup(pc, flags);
+ 		if (PageCgroupUsed(pc)) {
+-			unlock_page_cgroup(pc);
++			unlock_page_cgroup(pc, flags);
+ 			return 0;
+ 		}
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 	}
+ 
+ 	if (unlikely(!mm && !mem))
+@@ -2166,6 +2171,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	struct mem_cgroup_per_zone *mz;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return NULL;
+@@ -2180,7 +2186,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	if (unlikely(!pc || !PageCgroupUsed(pc)))
+ 		return NULL;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 
+ 	mem = pc->mem_cgroup;
+ 
+@@ -2219,7 +2225,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	 */
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	memcg_check_events(mem, page);
+ 	/* at swapout, this memcg will be accessed to record to swap */
+@@ -2229,7 +2235,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	return mem;
+ 
+ unlock_out:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return NULL;
+ }
+ 
+@@ -2417,17 +2423,18 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	int ret = 0;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return 0;
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	if (mem) {
+ 		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
+-- 
+1.6.4
+
