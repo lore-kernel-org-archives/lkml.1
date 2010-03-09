@@ -1,60 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657Ab0CILBY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:01:24 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60379 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754158Ab0CILBU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:01:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rku+hoQC+SJEEUWS/qbFYUvuyiyW+erBej1Z0Cx1wWNyrwkNedDRcKcc1eo8BPS5EY
-         e84QuDc6mXX9SStb3lGMGFOAbiPjniDhYLrKt1LLj+IYQVJhC8kipjmh3mnk0Gi6jT18
-         G9ZbsM5TdLCUeERj6VE3IyyO+e0RP8O9f04yU=
+	id S1754644Ab0CILLp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:11:45 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35582 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753546Ab0CILLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 06:11:43 -0500
+Date: Tue, 9 Mar 2010 22:11:18 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] page-allocator: Check zone pressure when batch of
+ pages are freed
+Message-ID: <20100309111117.GI8653@laptop>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+ <1268048904-19397-3-git-send-email-mel@csn.ul.ie>
+ <20100309095342.GD8653@laptop>
+ <20100309100835.GA4883@csn.ul.ie>
+ <20100309102345.GG8653@laptop>
+ <20100309103608.GD4883@csn.ul.ie>
 MIME-Version: 1.0
-In-Reply-To: <201003062236.09801.rjw@sisk.pl>
-References: <201003062236.09801.rjw@sisk.pl>
-Date: Tue, 9 Mar 2010 12:01:18 +0100
-Message-ID: <68676e01003090301s5bb40d4hac1224a9658339ac@mail.gmail.com>
-Subject: Re: [Q] How to tell we're using the KMS (during suspend/resume) 
-	outside the graphics driver
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100309103608.GD4883@csn.ul.ie>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 6, 2010 at 10:36 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Hi,
->
-> For at least two reasons it would be beneficial for some code outisde the
-> graphics driver(s) to know if the KMS are used.
->
-> First, in the non-KMS (ie. UMS) case we probably wouldn't want to call
-> acpi_video_resume(), because that has a potential to mess up with the GPU
-> (it actually is known to do that on at least one system).
->
-> Second, in the KMS case, we'd be able to skip the kernel VT switch, because
-> the KMS driver uses its own framebuffer anyway.
->
-> So, is there any reasonable way to check that from the outside of the graphics
-> driver?  It should be general enough to cover the cases when there are two
-> graphics adapters with different drivers in the system and so forth.
+On Tue, Mar 09, 2010 at 10:36:08AM +0000, Mel Gorman wrote:
+> On Tue, Mar 09, 2010 at 09:23:45PM +1100, Nick Piggin wrote:
+> > On Tue, Mar 09, 2010 at 10:08:35AM +0000, Mel Gorman wrote:
+> > > On Tue, Mar 09, 2010 at 08:53:42PM +1100, Nick Piggin wrote:
+> > > > Cool, you found this doesn't hurt performance too much?
+> > > > 
+> > > 
+> > > Nothing outside the noise was measured. I didn't profile it to be
+> > > absolutly sure but I expect it's ok.
+> > 
+> > OK. Moving the waitqueue cacheline out of the fastpath footprint
+> > and doing the flag thing might be a good idea?
+> > 
+> 
+> Probably, I'll do it as a separate micro-optimisation patch so it's
+> clear what I'm doing.
 
-Inside the kernel? If you have a struct pci_dev you can get the
-associated struct drm_device with pci_get_drvdata and then check the
-KMS feature: drm_core_check_feature(dev, DRIVER_MODESET).
-I'm note sure how to check that a device is graphic card though :|
+Fair enough.
 
-Luca
+ 
+> > > > Can't you remove the check from the reclaim code now? (The check
+> > > > here should give a more timely wait anyway)
+> > > > 
+> > > 
+> > > I'll try and see what the timing and total IO figures look like.
+> > 
+> > Well reclaim goes through free_pages_bulk anyway, doesn't it? So
+> > I don't see why you would have to run any test.
+> >  
+> 
+> It should be fine but no harm in double checking. The tests I'm doing
+> are not great anyway. I'm somewhat depending on people familar with
+> IO-related performance testing to give this a whirl or tell me how they
+> typically benchmark low-memory situations.
+
+I don't really like that logic. It makes things harder to understand
+down the road if you have double checks.
+
+ 
+> > > > This is good because it should eliminate most all cases of extra
+> > > > waiting. I wonder if you've also thought of doing the check in the
+> > > > allocation path too as we were discussing? (this would give a better
+> > > > FIFO behaviour under memory pressure but I could easily agree it is not
+> > > > worth the cost)
+> > > > 
+> > > 
+> > > I *could* make the check but as I noted in the leader, there isn't
+> > > really a good test case that determines if these changes are "good" or
+> > > "bad". Removing congestion_wait() seems like an obvious win but other
+> > > modifications that alter how and when processes wait are less obvious.
+> > 
+> > Fair enough. But we could be sure it increases fairness, which is a
+> > good thing. So then we'd just have to check it against performance.
+> > 
+> 
+> Ordinarily, I'd agree but we've seen bug reports before from applications
+> that depended on unfairness for good performance. dbench figures depended
+> at one point in unfair behaviour (specifically being allowed to dirty the
+> whole system). volanomark was one that suffered when the scheduler became
+> more fair (think sched_yield was also a biggie). The new behaviour was
+> better and arguably the applications were doing the wrong thing but I'd
+> still like to treat "increase fairness in the page allocator" as a
+> separate patch as a result.
+
+Yeah sure it would be done as another patch. I don't think there is much
+question that making things fairer is better. Especially if the
+alternative is a theoretical starvation.
+
+That's not to say that batching shouldn't then be used to help improve
+performance of fairly scheduled resources. But it should be done in a
+carefully designed and controlled way, so that neither the fairness /
+starvation, nor the good performance from batching, depend on timing
+and behaviours of the hardware interconnect etc.
+
+
