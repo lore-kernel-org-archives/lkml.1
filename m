@@ -1,57 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932208Ab0CIDXt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:23:49 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:50612 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183Ab0CIDXp (ORCPT
+	id S932212Ab0CIDZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 22:25:17 -0500
+Received: from mail-pz0-f200.google.com ([209.85.222.200]:35851 "EHLO
+	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183Ab0CIDZM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:23:45 -0500
-To: Tejun Heo <tj@kernel.org>
-Cc: Mike Snitzer <snitzer@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
-       Jim Meyering <jim@meyering.net>
-Subject: Re: ATA 4 KiB sector issues.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
-	<170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
-	<4B95B843.6030900@kernel.org>
-Date: Mon, 08 Mar 2010 22:20:41 -0500
-In-Reply-To: <4B95B843.6030900@kernel.org> (Tejun Heo's message of "Tue, 09
-	Mar 2010 11:53:55 +0900")
-Message-ID: <yq17hpm89km.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Mon, 8 Mar 2010 22:25:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=ACFpeDJ6WDwqE3Kr/biVV7ArDsXNLH7Hw+vQfFND0+Os2JFmvIs/oN5VAMFRLU3S10
+         j6oWKGraGfoHSik+bUtmEaO5UuIYtDBXMTpIO0ZPRBd0Q22+xU47YXCjCaJxR+j/HPGH
+         zTXwN6cobp9WyDm9YRaHMeDaSFGkyGT+obhfs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B95BEFF.000F:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <cover.1267008049.git.lasaine@lvk.cs.msu.su>
+References: <cover.1267008049.git.lasaine@lvk.cs.msu.su>
+Date: Mon, 8 Mar 2010 19:25:07 -0800
+X-Google-Sender-Auth: fea9b19159c097f9
+Message-ID: <1f1b08da1003081925p61a810e4v96be56640287d61@mail.gmail.com>
+Subject: Re: [PATCHv2 0/6] pps: time synchronization over LPT
+From: john stultz <johnstul@us.ibm.com>
+To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
+       Rodolfo Giometti <giometti@enneenne.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Tejun" == Tejun Heo <tj@kernel.org> writes:
+On Wed, Feb 24, 2010 at 4:28 AM, Alexander Gordeev
+<lasaine@lvk.cs.msu.su> wrote:
+> This patchset is tested against the vanilla 2.6.32.9 kernel. But we are
+> actually using it on 2.6.31.12-rt20 rt-preempt kernel most of the time.
+> Also there is a version which should be applied on top of LinuxPPS out
+> of tree patches (i.e. all clients and low-level irq timestamps stuff).
+> Those who are interested in other versions of the patchset can find
+> them in my git repository:
+> http://lvk.cs.msu.su/~lasaine/timesync/linux-2.6-timesync.git
+>
+> There is one problem however: hardpps() works bad when used on top
+> of 2.6.33-rc* with CONFIG_NO_HZ enabled. The reason for this is commit
+> a092ff0f90cae22b2ac8028ecd2c6f6c1a9e4601. Without it hardpps() is able
+> to sync to 1us precision in about 10 seconds. With it
 
->> http://people.redhat.com/msnitzer/docs/io-limits.txt
+Uh. Not sure I see right off why the logarithmic time accumulation
+would give you troubles. Its actually there to try to fix a couple of
+NTP issues that cropped up when the accumulation interval was pushed
+out to 2HZ with CONFIG_NO_HZ.
 
-Tejun> Ah... this is great.  I'll link the doc and shamelessly steal
-Tejun> parts of it if that's okay with you.
+Do you have any extra insight here as to whats going on with your
+code?   The only thing I could guess would be second_overflow() is
+happening closer to the actual overflow, but maybe less regularly? But
+again, I'm not sure how this would be drastically different then
+before with the 2HZ accumulation period.
 
-There's also this one:
-
-    http://oss.oracle.com/~mkp/docs/linux-advanced-storage.pdf
-
-It is more aimed at storage vendors than end users, though.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+thanks
+-john
