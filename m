@@ -1,100 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334Ab0CIXAZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 18:00:25 -0500
-Received: from mailhost.informatik.uni-hamburg.de ([134.100.9.70]:48035 "EHLO
-	mailhost.informatik.uni-hamburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753648Ab0CIXAY (ORCPT
+	id S1755574Ab0CIXAy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 18:00:54 -0500
+Received: from trinity.develer.com ([83.149.158.210]:52788 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328Ab0CIXAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 18:00:24 -0500
-X-Greylist: delayed 666 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 18:00:23 EST
-Message-ID: <4B96D055.90201@metafoo.de>
-Date: Tue, 09 Mar 2010 23:48:53 +0100
-From: Lars-Peter Clausen <lars@metafoo.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Valdis.Kletnieks@vt.edu, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] IRQ: Fix oneshot irq race between irq_finalize_oneshot
- and handle_level_irq
-References: <1268092679-18070-1-git-send-email-lars@metafoo.de>            <alpine.LFD.2.00.1003090855250.22855@localhost.localdomain> <5309.1268153945@localhost> <alpine.LFD.2.00.1003091907500.22855@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1003091907500.22855@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Mar 2010 18:00:53 -0500
+From: Andrea Righi <arighi@develer.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Date: Wed, 10 Mar 2010 00:00:31 +0100
+Message-Id: <1268175636-4673-1-git-send-email-arighi@develer.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Control the maximum amount of dirty pages a cgroup can have at any given time.
 
-Thomas Gleixner wrote:
-> On Tue, 9 Mar 2010, Valdis.Kletnieks@vt.edu wrote:
->> On Tue, 09 Mar 2010 08:58:11 +0100, Thomas Gleixner said:
->>> On Tue, 9 Mar 2010, Lars-Peter Clausen wrote:
->>>
->>>> If the kernel has been compiled with preemtion support and
-handle_level_irq is
->>>> called from process context for a oneshot irq there is a race between
->>>> irq_finalize_oneshot and handle_level_irq which results in the irq
-not being
->>>> unmasked after its handlers have been run.
->>>>
->>>> irq_finalize_oneshot is expected to unmask the irq after the
-threaded irq
->>>> handler has been run. It only does so if IRQ_MASKED is set for the
-irqs status.
->>>> IRQ_MASKED gets set in the lower part of handle_level_irq after
-handle_IRQ_event
->>>> has been called.
->>>> handle_IRQ_event will wakeup the oneshot irqs threaded handler and
-if the
->>>> kernel has been build with preemption there is a chance that the
-threaded irq
->>>> handler will finish before execution is returned to handle_level_irq.
->>>> As a result irq_finalize_oneshot will not unmask the irq and
-handle_level_irq
->>>> will set the IRQ_MASKED flag. Thus the irq will stay masked and stalls.
->>>>
->>>> In case of an race the call-graph would look like this:
->>>>  handle_level_irq
->>>>  |- mask_ack_irq
->>>>  |- handle_IRQ_event
->>>>     |- wake_up_process
->>>>        |- irq_thread
->>>>           |- action->thread_fn
->>>>           |- irq_finalize_oneshot # Does not unmask the irq
->>>> |- # Set IRQ_MASKED status flag
->>> Errm, a thread _CANNOT_ preempt a hard interrupt handler.
->> What stops the thread from concurrently running on another CPU and racing
->> that way?  I'm an idiot, use small words. :)
->
-> Right it's a valid SMP problem, but I got confused by the lengthy
-> explanation of a thread preempting an hard interrupt handler. :)
-Yes, sorry for bothering you with that. I actually had the symptoms
-described on a non SMP system. The irq in question was part of a
-longer irq chain and I though that it might be detached from the
-hardirq context somewhere along the chain.
-After your comment I reread some parts and it turned out that
-irq_enter()/irq_exit() was missing around the first level irq handler.
+Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+page cache used by any cgroup. So, in case of multiple cgroup writers, they
+will not be able to consume more than their designated share of dirty pages and
+will be forced to perform write-out if they cross that limit.
 
-- - Lars
->
-> Will have a look after dinner.
->
-> Thanks,
->
->     tglx
->
+The overall design is the following:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+ - account dirty pages per cgroup
+ - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+   and memory.dirty_background_ratio / memory.dirty_background_bytes in
+   cgroupfs
+ - start to write-out (background or actively) when the cgroup limits are
+   exceeded
 
-iEYEARECAAYFAkuW0FUACgkQBX4mSR26RiOiSgCfUJJM6i8rEoiifuY5LwoOaJnA
-kfAAnjHh5us4m8NgPEV2wYkyIPh7zzly
-=R/J/
------END PGP SIGNATURE-----
+This feature is supposed to be strictly connected to any underlying IO
+controller implementation, so we can stop increasing dirty pages in VM layer
+and enforce a write-out before any cgroup will consume the global amount of
+dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
+/proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
 
+Changelog (v5 -> v6)
+~~~~~~~~~~~~~~~~~~~~~~
+ * always disable/enable IRQs at lock/unlock_page_cgroup(): this allows to drop
+   the previous complicated locking scheme in favor of a simpler locking, even
+   if this obviously adds some overhead (see results below)
+ * drop FUSE and NILFS2 dirty pages accounting for now (this depends on
+   charging bounce pages per cgroup)
+
+Results
+~~~~~~~
+I ran some tests using a kernel build (2.6.33 x86_64_defconfig) on a
+Intel Core 2 @ 1.2GHz as testcase using different kernels:
+ - mmotm "vanilla"
+ - mmotm with cgroup-dirty-memory using the previous "complex" locking scheme
+   (my previous patchset + the fixes reported by Kame-san and Daisuke-san)
+ - mmotm with cgroup-dirty-memory using the simple locking scheme
+   (lock_page_cgroup() with IRQs disabled)
+
+Following the results:
+<before>
+ - mmotm "vanilla", root  cgroup:			11m51.983s
+ - mmotm "vanilla", child cgroup:			11m56.596s
+
+<after>
+ - mmotm, "complex" locking scheme, root  cgroup:	11m53.037s
+ - mmotm, "complex" locking scheme, child cgroup:	11m57.896s
+
+ - mmotm, lock_page_cgroup+irq_disabled, root  cgroup:	12m5.499s
+ - mmotm, lock_page_cgroup+irq_disabled, child cgroup:	12m9.920s
+
+With the "complex" locking solution, the overhead introduced by the
+cgroup dirty memory accounting is minimal (0.14%), compared with the overhead
+introduced by the lock_page_cgroup+irq_disabled solution (1.90%).
+
+The performance overhead is not so huge in both solutions, but the impact on
+performance is even more reduced using a complicated solution...
+
+Maybe we can go ahead with the simplest implementation for now and start to
+think to an alternative implementation of the page_cgroup locking and
+charge/uncharge of pages.
+
+If someone is interested or want to repeat the tests (maybe on a bigger
+machine) I can post also the other version of the patchset. Just let me know.
+
+-Andrea
+
+ Documentation/cgroups/memory.txt |   36 +++
+ fs/nfs/write.c                   |    4 +
+ include/linux/memcontrol.h       |   87 +++++++-
+ include/linux/page_cgroup.h      |   42 ++++-
+ include/linux/writeback.h        |    2 -
+ mm/filemap.c                     |    1 +
+ mm/memcontrol.c                  |  475 +++++++++++++++++++++++++++++++++-----
+ mm/page-writeback.c              |  215 +++++++++++-------
+ mm/rmap.c                        |    4 +-
+ mm/truncate.c                    |    1 +
+ 10 files changed, 722 insertions(+), 145 deletions(-)
