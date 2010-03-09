@@ -1,44 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174Ab0CIM7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 07:59:17 -0500
-Received: from verein.lst.de ([213.95.11.210]:54825 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239Ab0CIM7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 07:59:14 -0500
-Date: Tue, 9 Mar 2010 13:58:17 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@lst.de>, Arnd Bergmann <arnd@arndb.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       tony.luck@intel.com, ralf@linux-mips.org, kyle@mcmartin.ca,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@redhat.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
-Message-ID: <20100309125817.GA18435@lst.de>
-References: <201002021536.51928.arnd@arndb.de> <20100203.091309.52886984.davem@davemloft.net> <4B69D6BA.4030704@zytor.com> <201002040838.10783.arnd@arndb.de> <20100204160057.GA5120@lst.de> <20100305114911.ef629eb1.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100305114911.ef629eb1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	id S1752199Ab0CINAp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 08:00:45 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:17156 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239Ab0CINAm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 08:00:42 -0500
+X-IronPort-AV: E=Sophos;i="4.49,608,1262581200"; 
+   d="scan'208";a="13837039"
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "gregkh@suse.de" <gregkh@suse.de>
+CC: "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "uclinux-dist-devel@blackfin.uclinux.org" 
+	<uclinux-dist-devel@blackfin.uclinux.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>
+Date: Tue, 9 Mar 2010 13:00:38 +0000
+Subject: [PATCH] iio_trigger_find_by_name: Skip trailing newline if available
+Thread-Topic: [PATCH] iio_trigger_find_by_name: Skip trailing newline if
+ available
+Thread-Index: Acq+ojCCqD8wjfStT1mzrkt7iCbLLwAyXmuQAAcCElA=
+Message-ID: <544AC56F16B56944AEC3BD4E3D5917712D6B1D976A@LIMKCMBX1.ad.analog.com>
+Accept-Language: de-DE, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: de-DE, en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 11:49:11AM -0800, Andrew Morton wrote:
-> > Yes, this should be common over architectures.  Anyway, I expect there
-> > to be some discussion until we've reached that point, so for now I'll
-> > rebase patches 5 and 6 to not require this patch, and will send one
-> > to kill the unused x86 implementation.  Whatever is the final outcome
-> > can be implemented on top.
-> > 
-> 
-> This never happened?
+Skip trailing newline if available.
 
-Seems like no one cared enough to discuss this issue in detail.  I'll
-start a fresh discussion once we got the other patches in and I have
-a clean sheet to work against.
+Signed-off-by: Michael Hennerich <Michael.Hennerich@analog.com>
+Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+
+Index: drivers/staging/iio/industrialio-trigger.c
+===================================================================
+--- drivers/staging/iio/industrialio-trigger.c  (revision 8368)
++++ drivers/staging/iio/industrialio-trigger.c  (working copy)
+@@ -155,6 +155,9 @@
+        struct iio_trigger *trig;
+        bool found = false;
+
++       if (len && name[len - 1] == '\n')
++               len--;
++
+        mutex_lock(&iio_trigger_list_lock);
+        list_for_each_entry(trig, &iio_trigger_list, list) {
+                if (strncmp(trig->name, name, len) == 0) {
+
+------------------------------------------------------------------
+********* Analog Devices GmbH              Open Platform Solutions
+**  *****
+**     ** Wilhelm-Wagenfeld-Strasse 6
+**  ***** D-80807 Munich
+********* Germany
+Registergericht München HRB 40368,  Geschäftsführer: Thomas Wessel, William A. Martin, Margaret K. Seif
+
+
