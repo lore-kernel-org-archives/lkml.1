@@ -1,53 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932144Ab0CICql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 21:46:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52303 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072Ab0CICqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 21:46:36 -0500
-Message-ID: <4B95B623.9040705@kernel.org>
-Date: Tue, 09 Mar 2010 11:44:51 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
-       Jim Meyering <jim@meyering.net>
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
-In-Reply-To: <yq1zl2ic058.fsf@sermon.lab.mkp.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S932151Ab0CICtO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 21:49:14 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45273 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932118Ab0CICtN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 21:49:13 -0500
+Subject: Re: linux-next: Tree for March 8 (mtd)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+In-Reply-To: <4B9532FE.8030901@oracle.com>
+References: <20100308152740.a007e8cb.sfr@canb.auug.org.au>
+	 <4B9532FE.8030901@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Mar 2010 18:49:02 -0800
+Message-ID: <1268102942.3908.957.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 02:44:53 +0000 (UTC)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 03/09/2010 12:18 AM, Martin K. Petersen wrote:
->>>>>> "Tejun" == Tejun Heo <tj@kernel.org> writes:
-> Tejun> Please note that hdparm is misreporting the alignment offset.  It
-> Tejun> should be reporting 512 instead of 256 for offset-by-one drives.
+On Mon, 2010-03-08 at 09:25 -0800, Randy Dunlap wrote:
+> On 03/07/10 20:27, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20100305:
+> > 
+> > 
+> > The mtd tree still has its 2 build failures for which I applied patches.
 > 
-> Already fixed.  Your hdparm must be old.
-
-Yeah, I know Mark fixed it but couldn't find where the tree was.  SF
-only had old releases, so...
-
-(other stuff replied further down the thread)
+> 
+> drivers/mtd/sm_ftl.c:
+> sm_ftl.c:(.text+0x9c110): undefined reference to `__nand_calculate_ecc'
+> sm_ftl.c:(.text+0x9c123): undefined reference to `__nand_correct_data'
+> sm_ftl.c:(.text+0x9c14a): undefined reference to `__nand_calculate_ecc'
+> sm_ftl.c:(.text+0x9c15d): undefined reference to `__nand_correct_data'
+> sm_ftl.c:(.text+0x9c9ac): undefined reference to `__nand_calculate_ecc'
+> sm_ftl.c:(.text+0x9c9bf): undefined reference to `__nand_calculate_ecc'
 
 Thanks.
 
+http://git.infradead.org/mtd-2.6.git/commitdiff/7de6f798
+
 -- 
-tejun
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
