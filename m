@@ -1,75 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982Ab0CITUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:20:32 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:39155 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083Ab0CITUI (ORCPT
+	id S1755607Ab0CIS5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:57:18 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:50132 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366Ab0CIS5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:20:08 -0500
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>, John Kacur <jkacur@gmail.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH 2/3] input: use input_mutex instead of BKL when opening input device
-Date: Tue,  9 Mar 2010 16:19:45 -0300
-Message-Id: <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1268162386-2745-1-git-send-email-cascardo@holoscopio.com>
-References: <1268162386-2745-1-git-send-email-cascardo@holoscopio.com>
+	Tue, 9 Mar 2010 13:57:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LMLp5NTav9jpTEoJy+3tHu2i6s47hDXy/NBlC21bQ5R4xfMWzH06x2IrhGXdf42TfY
+         mv9ZS/5j/dmbz+yFHPUwt/w7yuFnedwZJKtYDje4zLxtA2f9aoROjF4VthBlP056BNnu
+         5fTFE2T3MBdLwLGBWau9DpZR2vfo1B/jxh9Us=
+Date: Tue, 9 Mar 2010 10:57:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Melchior FRANZ <melchior.franz@gmail.com>
+Cc: linux-input@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-iio@vger.kernel.org
+Subject: Re: [BUG?] hid-core.c: hid->name = dev->manufacturer + dev->product
+ ... why not + dev->serial?
+Message-ID: <20100309185705.GA28000@core.coreip.homeip.net>
+References: <201003071655.06644@rk-nord.at>
+ <201003091342.20273@rk-nord.at>
+ <20100309184127.GE19814@core.coreip.homeip.net>
+ <201003091952.40853@rk-nord.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201003091952.40853@rk-nord.at>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are three types of input character devices: mousedev, joydev and
-evdev. They all use the same major device and, then, their opening is
-multiplexed in input_open_file.
+On Tue, Mar 09, 2010 at 07:52:40PM +0100, Melchior FRANZ wrote:
+> * Dmitry Torokhov -- Tuesday 09 March 2010:
+> > Have you considered the fact that maybe you not using the right interface?
+> 
+> No. Because I'm not talking about *writing* an application, but about
+> *using* applications written by others.
 
-After the BKL pushdown, this multiplexing is protected by the BKL. But
-there's already a mutex used for adding and removing to the table
-indexed by input_open_file.
+Then you need to mention that to your ISV.
 
-So, we use this mutex instead of the BKL. Since it will call the
-handlers' open function under the mutex, I've checked that the current
-functions do not call input_{un,}register_{handler,device}, which are
-the only other functions to take the mutex.
+> The producer of my two BU0836A
+> knows that the devices are different, I know that they are different,
+> the kernel knows that they are different, but the applications don't
+> know that, because the kernel doesn't tell them (via JSIOCGNAME).
+> 
+> 
+> 
+> > You need to work with guys at linux-iio@vger.kernel.org (which stands
+> > for Industrial I/O which is exactly what you are working with).
+> 
+> Hmm, then I wonder why the joystick names are different on Windows and
+> Linux already.  :-}
+>  
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- drivers/input/input.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Probably because these are 2 quite different OSes?
 
-diff --git a/drivers/input/input.c b/drivers/input/input.c
-index 41168d5..af9c246 100644
---- a/drivers/input/input.c
-+++ b/drivers/input/input.c
-@@ -23,7 +23,6 @@
- #include <linux/device.h>
- #include <linux/mutex.h>
- #include <linux/rcupdate.h>
--#include <linux/smp_lock.h>
- #include "input-compat.h"
- 
- MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
-@@ -1881,7 +1880,7 @@ static int input_open_file(struct inode *inode, struct file *file)
- 	const struct file_operations *old_fops, *new_fops = NULL;
- 	int err;
- 
--	lock_kernel();
-+	mutex_lock(&input_mutex);
- 	/* No load-on-demand here? */
- 	handler = input_table[iminor(inode) >> 5];
- 	if (!handler || !(new_fops = fops_get(handler->fops))) {
-@@ -1909,7 +1908,7 @@ static int input_open_file(struct inode *inode, struct file *file)
- 	}
- 	fops_put(old_fops);
- out:
--	unlock_kernel();
-+	mutex_unlock(&input_mutex);
- 	return err;
- }
- 
+>   unpatched Linux:  "Leo Bodnar BU0836A Interface"
+>   (Vista?) Windows: "BU0836A Interface" (not even the manufacturer ... pff)
+> 
+> Oh, well. Forget it. I'll just distribute the patch, then. I didn't have
+> much hope, anyway.
+>
+> m.
+
 -- 
-1.6.6.1
-
+Dmitry
