@@ -1,156 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582Ab0CIKxE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 05:53:04 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34956 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044Ab0CIKxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 05:53:00 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
-       "Yinghai Lu" <yinghai@kernel.org>, akpm@linux-foundation.org,
-       mingo@elte.hu, "Avi Kivity" <avi@redhat.com>,
-       Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec - V5
-Date: Tue,  9 Mar 2010 11:52:34 +0100
-Message-Id: <1268131954-13845-1-git-send-email-trenn@suse.de>
-X-Mailer: git-send-email 1.6.3
-In-Reply-To: <4B96116A.6090705@ericsson.com>
-References: <4B96116A.6090705@ericsson.com>
+	id S1754608Ab0CIKyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 05:54:18 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:42493 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044Ab0CIKyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 05:54:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding:organization;
+        b=hRl4Ef6HRXMB1mtaZZZ8IYJjygmzI4nvxfKuGVFGjctnVMOgQLKO5xDsGLa61SCsBJ
+         Nv1PEG34bLgLkpz32YRM+8EZ1mW1vODHUDUzvA6mhjXAxCvUyhPKDSoLzGqRgljN/enI
+         WwKFRJyhdWj4b3LLG+brb8JxpsA/Aslfc8GQQ=
+From: Fang Wenqi <anton.fang@gmail.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Cc: anton.fang@gmail.com, antonf@turbolinux.com.cn
+Subject: [PATCH] tty_buffer: Fix distinct type warning
+Date: Tue,  9 Mar 2010 18:54:28 +0800
+Message-Id: <1268132068-5459-1-git-send-email-antonf@turbolinux.com.cn>
+X-Mailer: git-send-email 1.6.6.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Organization: Turbolinux China, Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+CC      drivers/char/tty_buffer.o
+drivers/char/tty_buffer.c: In function ‘tty_insert_flip_string_fixed_flag’:
+drivers/char/tty_buffer.c:251: warning: comparison of distinct pointer types lacks a cast
+drivers/char/tty_buffer.c: In function ‘tty_insert_flip_string_flags’:
+drivers/char/tty_buffer.c:288: warning: comparison of distinct pointer types lacks a cast
 
-When the SMP kernel decides to crash_kexec() the local APICs may have
-pending interrupts in their vector tables.
-The setup routine for the local APIC has a deficient mechanism for
-clearing these interrupts, it only handles interrupts that has already
-been dispatched to the local core for servicing (the ISR register)
-safely, it doesn't consider lower prioritized queued interrupts stored
-in the IRR register.
+Fix it by replacing min() with min_t() in tty_insert_flip_string_flags and
+					  tty_insert_flip_string_fixed_flag().
 
-If you have more than one pending interrupt within the same 32 bit word
-in the LAPIC vector table registers you may find yourself entering the
-IO APIC setup with pending interrupts left in the LAPIC. This is a
-situation for wich the IO APIC setup is not prepared. Depending of
-what/which interrupt vector/vectors are stuck in the APIC tables your
-system may show various degrees of malfunctioning.
-That was the reason why the check_timer() failed in our system, the
-timer interrupts was blocked by pending interrupts from the old kernel
-when routed trough the IO APIC.
-
-Additional comment from Jiri Bohac:
-==============
-If this should go into stable release,
-I'd add some kind of limit on the number of iterations, just to be safe from
-hard to debug lock-ups:
-
-+if (loops++  > MAX_LOOPS) {
-+        printk("LAPIC pending clean-up")
-+        break;
-+}
- while (queued);
-
-with MAX_LOOPS something like 1E9 this would leave plenty of time for the
-pending IRQs to be cleared and would and still cause at most a second of delay
-if the loop were to lock-up for whatever reason.
-==============
-
->From trenn@suse.de:
-V2: Use tsc if avail to bail out after 1 sec due to possible virtual apic_read
-    calls which may take rather long (suggested by: Avi Kivity <avi@redhat.com>)
-    If no tsc is available bail out quickly after cpu_khz, if we broke out too
-    early and still have irqs pending (which should never happen?) we still
-    get a WARN_ON...
-
-V3: - Fixed indentation -> checkpatch clean
-    - max_loops must be signed
-
-V4: - Fix typo, mixed up tsc and ntsc in first rdtscll() call
-
-V5: Adjust WARN_ON() condition to also catch error in cpu_has_tsc case
-
-CC: jbohac@novell.com
-CC: "Yinghai Lu" <yinghai@kernel.org>
-CC: akpm@linux-foundation.org
-CC: mingo@elte.hu
-CC: "Kerstin Jonsson" <kerstin.jonsson@ericsson.com>
-CC: "Avi Kivity" <avi@redhat.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Fang Wenqi <antonf@turbolinux.com.cn>
 ---
- arch/x86/kernel/apic/apic.c |   41 +++++++++++++++++++++++++++++++++--------
- 1 files changed, 33 insertions(+), 8 deletions(-)
+ drivers/char/tty_buffer.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 00187f1..cfcc87f 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -51,6 +51,7 @@
- #include <asm/smp.h>
- #include <asm/mce.h>
- #include <asm/kvm_para.h>
-+#include <asm/tsc.h>
- 
- unsigned int num_processors;
- 
-@@ -1151,8 +1152,13 @@ static void __cpuinit lapic_setup_esr(void)
-  */
- void __cpuinit setup_local_APIC(void)
+diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+index af8d977..7ee5216 100644
+--- a/drivers/char/tty_buffer.c
++++ b/drivers/char/tty_buffer.c
+@@ -248,7 +248,7 @@ int tty_insert_flip_string_fixed_flag(struct tty_struct *tty,
  {
--	unsigned int value;
--	int i, j;
-+	unsigned int value, queued;
-+	int i, j, acked = 0;
-+	unsigned long long tsc = 0, ntsc;
-+	long long max_loops = cpu_khz;
-+
-+	if (cpu_has_tsc)
-+		rdtscll(tsc);
- 
- 	if (disable_apic) {
- 		arch_disable_smp_support();
-@@ -1204,13 +1210,32 @@ void __cpuinit setup_local_APIC(void)
- 	 * the interrupt. Hence a vector might get locked. It was noticed
- 	 * for timer irq (vector 0x31). Issue an extra EOI to clear ISR.
- 	 */
--	for (i = APIC_ISR_NR - 1; i >= 0; i--) {
--		value = apic_read(APIC_ISR + i*0x10);
--		for (j = 31; j >= 0; j--) {
--			if (value & (1<<j))
--				ack_APIC_irq();
-+	do {
-+		queued = 0;
-+		for (i = APIC_ISR_NR - 1; i >= 0; i--)
-+			queued |= apic_read(APIC_IRR + i*0x10);
-+
-+		for (i = APIC_ISR_NR - 1; i >= 0; i--) {
-+			value = apic_read(APIC_ISR + i*0x10);
-+			for (j = 31; j >= 0; j--) {
-+				if (value & (1<<j)) {
-+					ack_APIC_irq();
-+					acked++;
-+				}
-+			}
- 		}
--	}
-+		if (acked > 256) {
-+			printk(KERN_ERR "LAPIC pending interrupts after %d EOI\n",
-+			       acked);
-+			break;
-+		}
-+		if (cpu_has_tsc) {
-+			rdtscll(ntsc);
-+			max_loops = (cpu_khz << 10) - (ntsc - tsc);
-+		} else
-+			max_loops--;
-+	} while (queued && max_loops > 0);
-+	WARN_ON(max_loops <= 0);
- 
- 	/*
- 	 * Now that we are all set up, enable the APIC
+ 	int copied = 0;
+ 	do {
+-		int goal = min(size - copied, TTY_BUFFER_PAGE);
++		int goal = min_t(size_t, size - copied, TTY_BUFFER_PAGE);
+ 		int space = tty_buffer_request_room(tty, goal);
+ 		struct tty_buffer *tb = tty->buf.tail;
+ 		/* If there is no space then tb may be NULL */
+@@ -285,7 +285,7 @@ int tty_insert_flip_string_flags(struct tty_struct *tty,
+ {
+ 	int copied = 0;
+ 	do {
+-		int goal = min(size - copied, TTY_BUFFER_PAGE);
++		int goal = min_t(size_t, size - copied, TTY_BUFFER_PAGE);
+ 		int space = tty_buffer_request_room(tty, goal);
+ 		struct tty_buffer *tb = tty->buf.tail;
+ 		/* If there is no space then tb may be NULL */
 -- 
-1.6.3
+1.6.6.1
 
