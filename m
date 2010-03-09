@@ -1,248 +1,165 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718Ab0CIIwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 03:52:17 -0500
-Received: from mga02.intel.com ([134.134.136.20]:54110 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752837Ab0CIIwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 03:52:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,607,1262592000"; 
-   d="scan'208";a="602621050"
-From: "Wang, Shane" <shane.wang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "andi@firstfloor.org" <andi@firstfloor.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>
-Date: Tue, 9 Mar 2010 16:52:04 +0800
-Subject: [PATCH v2] intel_txt: add support for S3 memory integrity
- protection within Intel(R) TXT launched kernel
-Thread-Topic: [PATCH v2] intel_txt: add support for S3 memory integrity
- protection within Intel(R) TXT launched kernel
-Thread-Index: AcpFJKulI4VaMumtT6yJkLui35CqzARsdbpwGiNv9mA=
-Message-ID: <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
-References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com>
- <20091004185801.GC1378@ucw.cz> 
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FAshsmsx501ccrcor_"
-MIME-Version: 1.0
+	id S1753745Ab0CIIyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 03:54:25 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:53863 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592Ab0CIIyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 03:54:22 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tejun Heo <tj@kernel.org>, Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: odd lockdep messages
+In-Reply-To: Your message of "Tue, 09 Mar 2010 15:44:28 +0900."
+             <4B95EE4C.3020606@kernel.org>
+From: Valdis.Kletnieks@vt.edu
+References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop> <4B95AA4C.2030303@kernel.org> <4298.1268116039@localhost>
+            <4B95EE4C.3020606@kernel.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1268124692_4014P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 09 Mar 2010 03:51:32 -0500
+Message-ID: <5221.1268124692@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020201.4B960C15.0204,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FAshsmsx501ccrcor_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1268124692_4014P
+Content-Type: text/plain; charset=us-ascii
 
-v2: Based on a complexity analysis and tradeoff, we moved all MAC'ing into =
-tboot.
+On Tue, 09 Mar 2010 15:44:28 +0900, Tejun Heo said:
 
-This patch adds support for S3 memory integrity protection within an Intel(=
-R) TXT launched kernel, for all kernel and userspace memory.  All RAM used =
-by the kernel and userspace, as indicated by memory ranges of type E820_RAM=
- and E820_RESERVED_KERN in the e820 table, will be integrity protected.
+(adding some cc: from the other 'BUG: key %p not found' thread)
 
-The MAINTAINERS file is also updated to reflect the maintainers of the TXT-=
-related code.
+> Hmm... the original percpu address check wasn't correct but wasn't too
+> far off either so it wouldn't be surprising nothing triggered it.
+> Yeap, stack trace should tell us where the address is coming from.
 
-Signed-off-by: Shane Wang <shane.wang@intel.com>
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+OK, I stuck in a dump_stack(), and took out the built-in firmware so we'd
+get 4 hits rather than 2.  What we got:
 
- Documentation/intel_txt.txt |   14 +++++++-------
- MAINTAINERS                 |   11 +++++++++++
- arch/x86/include/asm/e820.h |    7 ++++++-
- arch/x86/kernel/tboot.c     |   17 ++++++++---------
- 4 files changed, 32 insertions(+), 17 deletions(-)
+[    1.007551] BUG: key ffff88011c8b7d00 not in .data!
+[    1.007657] Pid: 1, comm: swapper Not tainted 2.6.33-mmotm0304 #5
+[    1.007763] Call Trace:
+[    1.007869]  [<ffffffff81061f63>] lockdep_init_map+0xab/0x10d
+[    1.007977]  [<ffffffff81135d83>] sysfs_add_file_mode+0x61/0xa7
+[    1.008095]  [<ffffffff81135dd5>] sysfs_add_file+0xc/0xe
+[    1.008201]  [<ffffffff81135e95>] sysfs_create_file+0x5a/0x63
+[    1.008320]  [<ffffffff812fb51c>] device_create_file+0x14/0x16
+[    1.008428]  [<ffffffff813d9942>] thermal_zone_device_register+0x3d2/0x63c
+[    1.008538]  [<ffffffff81264be9>] acpi_thermal_add+0x2dc/0x59f
+[    1.008646]  [<ffffffff8123a50b>] acpi_device_probe+0x4b/0x11d
+[    1.008753]  [<ffffffff812fdd25>] driver_probe_device+0xd5/0x166
+[    1.008861]  [<ffffffff812fde12>] __driver_attach+0x5c/0x80
+[    1.008968]  [<ffffffff812fddb6>] ? __driver_attach+0x0/0x80
+[    1.009079]  [<ffffffff812fddb6>] ? __driver_attach+0x0/0x80
+[    1.009185]  [<ffffffff812fd31f>] bus_for_each_dev+0x54/0x89
+[    1.009301]  [<ffffffff812fdb66>] driver_attach+0x19/0x1b
+[    1.009407]  [<ffffffff812fd7b1>] bus_add_driver+0xb4/0x203
+[    1.009513]  [<ffffffff812fe10f>] driver_register+0xb8/0x129
+[    1.009621]  [<ffffffff81b4b7a0>] ? acpi_thermal_init+0x0/0x7b
+[    1.009727]  [<ffffffff8123af12>] acpi_bus_register_driver+0x3e/0x40
+[    1.009835]  [<ffffffff81b4b7f9>] acpi_thermal_init+0x59/0x7b
+[    1.009942]  [<ffffffff810001ef>] do_one_initcall+0x59/0x14e
+[    1.010064]  [<ffffffff81b2c687>] kernel_init+0x14d/0x1d7
+[    1.010171]  [<ffffffff810033d4>] kernel_thread_helper+0x4/0x10
+[    1.010289]  [<ffffffff81584040>] ? restore_args+0x0/0x30
+[    1.010394]  [<ffffffff81b2c53a>] ? kernel_init+0x0/0x1d7
+[    1.010500]  [<ffffffff810033d0>] ? kernel_thread_helper+0x0/0x10
 
-diff -r d2911aa1461d Documentation/intel_txt.txt
---- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
-+++ b/Documentation/intel_txt.txt	Tue Mar 09 10:40:17 2010 -0500
-@@ -161,13 +161,13 @@ o  In order to put a system into any of=20
-       has been restored, it will restore the TPM PCRs and then
-       transfer control back to the kernel's S3 resume vector.
-       In order to preserve system integrity across S3, the kernel
--      provides tboot with a set of memory ranges (kernel
--      code/data/bss, S3 resume code, and AP trampoline) that tboot
--      will calculate a MAC (message authentication code) over and then
--      seal with the TPM.  On resume and once the measured environment
--      has been re-established, tboot will re-calculate the MAC and
--      verify it against the sealed value.  Tboot's policy determines
--      what happens if the verification fails.
-+      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
-+      in the e820 table, but not any memory that BIOS might alter over
-+      the S3 transition) that tboot will calculate a MAC (message
-+      authentication code) over and then seal with the TPM. On resume
-+      and once the measured environment has been re-established, tboot
-+      will re-calculate the MAC and verify it against the sealed value.
-+      Tboot's policy determines what happens if the verification fails.
-=20
- That's pretty much it for TXT support.
-=20
-diff -r d2911aa1461d MAINTAINERS
---- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
-+++ b/MAINTAINERS	Tue Mar 09 10:40:17 2010 -0500
-@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
- F:	Documentation/networking/README.ipw2200
- F:	drivers/net/wireless/ipw2x00/ipw2200.*
-=20
-+INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
-+M:	Joseph Cihula <joseph.cihula@intel.com>
-+M:	Shane Wang <shane.wang@intel.com>
-+L:	tboot-devel@lists.sourceforge.net
-+W:	http://tboot.sourceforge.net
-+T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
-+S:	Supported
-+F:	Documentation/intel_txt.txt
-+F:	include/linux/tboot.h
-+F:	arch/x86/kernel/tboot.c
-+
- INTEL WIRELESS WIMAX CONNECTION 2400
- M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
- M:	linux-wimax@intel.com
-diff -r d2911aa1461d arch/x86/include/asm/e820.h
---- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/include/asm/e820.h	Tue Mar 09 10:40:17 2010 -0500
-@@ -45,7 +45,12 @@
- #define E820_NVS	4
- #define E820_UNUSABLE	5
-=20
--/* reserved RAM used by kernel itself */
-+/*
-+ * reserved RAM used by kernel itself
-+ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
-+ * included in the S3 integrity calculation and so should not include
-+ * any memory that BIOS might alter over the S3 transition
-+ */
- #define E820_RESERVED_KERN        128
-=20
- #ifndef __ASSEMBLY__
-diff -r d2911aa1461d arch/x86/kernel/tboot.c
---- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/kernel/tboot.c	Tue Mar 09 10:40:17 2010 -0500
-@@ -139,18 +139,17 @@ static void add_mac_region(phys_addr_t s
-=20
- static void __init tboot_setup_sleep(void)
- {
-+	int i;
-+
- 	tboot->num_mac_regions =3D 0;
-=20
--	/* S3 resume code */
--	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
-+	for (i =3D 0; i < e820.nr_map; i++) {
-+		if ((e820.map[i].type !=3D E820_RAM)
-+		 && (e820.map[i].type !=3D E820_RESERVED_KERN))
-+			continue;
-=20
--#ifdef CONFIG_X86_TRAMPOLINE
--	/* AP trampoline code */
--	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
--#endif
--
--	/* kernel code + data + bss */
--	add_mac_region(virt_to_phys(_text), _end - _text);
-+		add_mac_region(e820.map[i].addr, e820.map[i].size);
-+	}
-=20
- 	tboot->acpi_sinfo.kernel_s3_resume_vector =3D acpi_wakeup_address;
- }=
+[    1.010607] BUG: key ffff88011c8b7d48 not in .data!
+[    1.010711] Pid: 1, comm: swapper Not tainted 2.6.33-mmotm0304 #5
+[    1.010817] Call Trace:
+[    1.010919]  [<ffffffff81061f63>] lockdep_init_map+0xab/0x10d
+[    1.011030]  [<ffffffff81135d83>] sysfs_add_file_mode+0x61/0xa7
+[    1.011138]  [<ffffffff81135dd5>] sysfs_add_file+0xc/0xe
+[    1.011243]  [<ffffffff81135e95>] sysfs_create_file+0x5a/0x63
+[    1.011360]  [<ffffffff812fb51c>] device_create_file+0x14/0x16
+[    1.011467]  [<ffffffff813d99c1>] thermal_zone_device_register+0x451/0x63c
+[    1.011576]  [<ffffffff81264be9>] acpi_thermal_add+0x2dc/0x59f
+[    1.011683]  [<ffffffff8123a50b>] acpi_device_probe+0x4b/0x11d
+[    1.011790]  [<ffffffff812fdd25>] driver_probe_device+0xd5/0x166
+[    1.011897]  [<ffffffff812fde12>] __driver_attach+0x5c/0x80
+[    1.012003]  [<ffffffff812fddb6>] ? __driver_attach+0x0/0x80
+[    1.012114]  [<ffffffff812fddb6>] ? __driver_attach+0x0/0x80
+[    1.012221]  [<ffffffff812fd31f>] bus_for_each_dev+0x54/0x89
+[    1.012340]  [<ffffffff812fdb66>] driver_attach+0x19/0x1b
+[    1.012446]  [<ffffffff812fd7b1>] bus_add_driver+0xb4/0x203
+[    1.012553]  [<ffffffff812fe10f>] driver_register+0xb8/0x129
+[    1.012659]  [<ffffffff81b4b7a0>] ? acpi_thermal_init+0x0/0x7b
+[    1.012766]  [<ffffffff8123af12>] acpi_bus_register_driver+0x3e/0x40
+[    1.012874]  [<ffffffff81b4b7f9>] acpi_thermal_init+0x59/0x7b
+[    1.012980]  [<ffffffff810001ef>] do_one_initcall+0x59/0x14e
+[    1.013092]  [<ffffffff81b2c687>] kernel_init+0x14d/0x1d7
+[    1.013197]  [<ffffffff810033d4>] kernel_thread_helper+0x4/0x10
+[    1.013314]  [<ffffffff81584040>] ? restore_args+0x0/0x30
+[    1.013421]  [<ffffffff81b2c53a>] ? kernel_init+0x0/0x1d7
+[    1.013526]  [<ffffffff810033d0>] ? kernel_thread_helper+0x0/0x10
 
---_002_D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FAshsmsx501ccrcor_
-Content-Type: application/octet-stream; name="s3_memory_integrity.patch"
-Content-Description: s3_memory_integrity.patch
-Content-Disposition: attachment; filename="s3_memory_integrity.patch";
-	size=4253; creation-date="Tue, 09 Mar 2010 08:33:00 GMT";
-	modification-date="Tue, 09 Mar 2010 08:33:00 GMT"
-Content-Transfer-Encoding: base64
+[    2.859634] BUG: key ffff88011fe16270 not in .data!
+[    2.859654] Pid: 828, comm: firmware/iwlwif Not tainted 2.6.33-mmotm0304 #5
+[    2.859656] Call Trace:
+[    2.859665]  [<ffffffff81061f63>] lockdep_init_map+0xab/0x10d
+[    2.859669]  [<ffffffff81135d83>] sysfs_add_file_mode+0x61/0xa7
+[    2.859672]  [<ffffffff81135dd5>] sysfs_add_file+0xc/0xe
+[    2.859675]  [<ffffffff81137f08>] sysfs_create_bin_file+0x5a/0x63
+[    2.859680]  [<ffffffff81303a0f>] _request_firmware+0x421/0x431
+[    2.859683]  [<ffffffff81303a1f>] ? request_firmware_work_func+0x0/0x63
+[    2.859686]  [<ffffffff81303a59>] request_firmware_work_func+0x3a/0x63
+[    2.859690]  [<ffffffff81051d87>] kthread+0x7a/0x82
+[    2.859694]  [<ffffffff810033d4>] kernel_thread_helper+0x4/0x10
+[    2.859699]  [<ffffffff81584040>] ? restore_args+0x0/0x30
+[    2.859702]  [<ffffffff81051d0d>] ? kthread+0x0/0x82
+[    2.859704]  [<ffffffff810033d0>] ? kernel_thread_helper+0x0/0x10
 
-djI6IEJhc2VkIG9uIGEgY29tcGxleGl0eSBhbmFseXNpcyBhbmQgdHJhZGVvZmYsIHdlIG1vdmVk
-IGFsbCBNQUMnaW5nIGludG8gdGJvb3QuCgpUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgUzMg
-bWVtb3J5IGludGVncml0eSBwcm90ZWN0aW9uIHdpdGhpbiBhbiBJbnRlbChSKSBUWFQgbGF1bmNo
-ZWQga2VybmVsLCBmb3IgYWxsIGtlcm5lbCBhbmQgdXNlcnNwYWNlIG1lbW9yeS4gIEFsbCBSQU0g
-dXNlZCBieSB0aGUga2VybmVsIGFuZCB1c2Vyc3BhY2UsIGFzIGluZGljYXRlZCBieSBtZW1vcnkg
-cmFuZ2VzIG9mIHR5cGUgRTgyMF9SQU0gYW5kIEU4MjBfUkVTRVJWRURfS0VSTiBpbiB0aGUgZTgy
-MCB0YWJsZSwgd2lsbCBiZSBpbnRlZ3JpdHkgcHJvdGVjdGVkLgoKVGhlIE1BSU5UQUlORVJTIGZp
-bGUgaXMgYWxzbyB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIG1haW50YWluZXJzIG9mIHRoZSBUWFQt
-cmVsYXRlZCBjb2RlLgoKU2lnbmVkLW9mZi1ieTogU2hhbmUgV2FuZyA8c2hhbmUud2FuZ0BpbnRl
-bC5jb20+ClNpZ25lZC1vZmYtYnk6IEpvc2VwaCBDaWh1bGEgPGpvc2VwaC5jaWh1bGFAaW50ZWwu
-Y29tPgoKZGlmZiAtciBkMjkxMWFhMTQ2MWQgRG9jdW1lbnRhdGlvbi9pbnRlbF90eHQudHh0Ci0t
-LSBhL0RvY3VtZW50YXRpb24vaW50ZWxfdHh0LnR4dAlUaHUgTWFyIDA0IDA5OjM3OjUzIDIwMTAg
-LTA1MDAKKysrIGIvRG9jdW1lbnRhdGlvbi9pbnRlbF90eHQudHh0CVR1ZSBNYXIgMDkgMTA6NDA6
-MTcgMjAxMCAtMDUwMApAQCAtMTYxLDEzICsxNjEsMTMgQEAgbyAgSW4gb3JkZXIgdG8gcHV0IGEg
-c3lzdGVtIGludG8gYW55IG9mIAogICAgICAgaGFzIGJlZW4gcmVzdG9yZWQsIGl0IHdpbGwgcmVz
-dG9yZSB0aGUgVFBNIFBDUnMgYW5kIHRoZW4KICAgICAgIHRyYW5zZmVyIGNvbnRyb2wgYmFjayB0
-byB0aGUga2VybmVsJ3MgUzMgcmVzdW1lIHZlY3Rvci4KICAgICAgIEluIG9yZGVyIHRvIHByZXNl
-cnZlIHN5c3RlbSBpbnRlZ3JpdHkgYWNyb3NzIFMzLCB0aGUga2VybmVsCi0gICAgICBwcm92aWRl
-cyB0Ym9vdCB3aXRoIGEgc2V0IG9mIG1lbW9yeSByYW5nZXMgKGtlcm5lbAotICAgICAgY29kZS9k
-YXRhL2JzcywgUzMgcmVzdW1lIGNvZGUsIGFuZCBBUCB0cmFtcG9saW5lKSB0aGF0IHRib290Ci0g
-ICAgICB3aWxsIGNhbGN1bGF0ZSBhIE1BQyAobWVzc2FnZSBhdXRoZW50aWNhdGlvbiBjb2RlKSBv
-dmVyIGFuZCB0aGVuCi0gICAgICBzZWFsIHdpdGggdGhlIFRQTS4gIE9uIHJlc3VtZSBhbmQgb25j
-ZSB0aGUgbWVhc3VyZWQgZW52aXJvbm1lbnQKLSAgICAgIGhhcyBiZWVuIHJlLWVzdGFibGlzaGVk
-LCB0Ym9vdCB3aWxsIHJlLWNhbGN1bGF0ZSB0aGUgTUFDIGFuZAotICAgICAgdmVyaWZ5IGl0IGFn
-YWluc3QgdGhlIHNlYWxlZCB2YWx1ZS4gIFRib290J3MgcG9saWN5IGRldGVybWluZXMKLSAgICAg
-IHdoYXQgaGFwcGVucyBpZiB0aGUgdmVyaWZpY2F0aW9uIGZhaWxzLgorICAgICAgcHJvdmlkZXMg
-dGJvb3Qgd2l0aCBhIHNldCBvZiBtZW1vcnkgcmFuZ2VzIChSQU0gYW5kIFJFU0VSVkVEX0tFUk4K
-KyAgICAgIGluIHRoZSBlODIwIHRhYmxlLCBidXQgbm90IGFueSBtZW1vcnkgdGhhdCBCSU9TIG1p
-Z2h0IGFsdGVyIG92ZXIKKyAgICAgIHRoZSBTMyB0cmFuc2l0aW9uKSB0aGF0IHRib290IHdpbGwg
-Y2FsY3VsYXRlIGEgTUFDIChtZXNzYWdlCisgICAgICBhdXRoZW50aWNhdGlvbiBjb2RlKSBvdmVy
-IGFuZCB0aGVuIHNlYWwgd2l0aCB0aGUgVFBNLiBPbiByZXN1bWUKKyAgICAgIGFuZCBvbmNlIHRo
-ZSBtZWFzdXJlZCBlbnZpcm9ubWVudCBoYXMgYmVlbiByZS1lc3RhYmxpc2hlZCwgdGJvb3QKKyAg
-ICAgIHdpbGwgcmUtY2FsY3VsYXRlIHRoZSBNQUMgYW5kIHZlcmlmeSBpdCBhZ2FpbnN0IHRoZSBz
-ZWFsZWQgdmFsdWUuCisgICAgICBUYm9vdCdzIHBvbGljeSBkZXRlcm1pbmVzIHdoYXQgaGFwcGVu
-cyBpZiB0aGUgdmVyaWZpY2F0aW9uIGZhaWxzLgogCiBUaGF0J3MgcHJldHR5IG11Y2ggaXQgZm9y
-IFRYVCBzdXBwb3J0LgogCmRpZmYgLXIgZDI5MTFhYTE0NjFkIE1BSU5UQUlORVJTCi0tLSBhL01B
-SU5UQUlORVJTCVRodSBNYXIgMDQgMDk6Mzc6NTMgMjAxMCAtMDUwMAorKysgYi9NQUlOVEFJTkVS
-UwlUdWUgTWFyIDA5IDEwOjQwOjE3IDIwMTAgLTA1MDAKQEAgLTI4OTEsNiArMjg5MSwxNyBAQCBG
-OglEb2N1bWVudGF0aW9uL25ldHdvcmtpbmcvUkVBRE1FLmlwdzIyCiBGOglEb2N1bWVudGF0aW9u
-L25ldHdvcmtpbmcvUkVBRE1FLmlwdzIyMDAKIEY6CWRyaXZlcnMvbmV0L3dpcmVsZXNzL2lwdzJ4
-MDAvaXB3MjIwMC4qCiAKK0lOVEVMKFIpIFRSVVNURUQgRVhFQ1VUSU9OIFRFQ0hOT0xPR1kgKFRY
-VCkKK006CUpvc2VwaCBDaWh1bGEgPGpvc2VwaC5jaWh1bGFAaW50ZWwuY29tPgorTToJU2hhbmUg
-V2FuZyA8c2hhbmUud2FuZ0BpbnRlbC5jb20+CitMOgl0Ym9vdC1kZXZlbEBsaXN0cy5zb3VyY2Vm
-b3JnZS5uZXQKK1c6CWh0dHA6Ly90Ym9vdC5zb3VyY2Vmb3JnZS5uZXQKK1Q6CU1lcmN1cmlhbCBo
-dHRwOi8vd3d3LmJ1Z2hvc3Qub3JnL3JlcG9zLmhnL3Rib290LmhnCitTOglTdXBwb3J0ZWQKK0Y6
-CURvY3VtZW50YXRpb24vaW50ZWxfdHh0LnR4dAorRjoJaW5jbHVkZS9saW51eC90Ym9vdC5oCitG
-OglhcmNoL3g4Ni9rZXJuZWwvdGJvb3QuYworCiBJTlRFTCBXSVJFTEVTUyBXSU1BWCBDT05ORUNU
-SU9OIDI0MDAKIE06CUluYWt5IFBlcmV6LUdvbnphbGV6IDxpbmFreS5wZXJlei1nb256YWxlekBp
-bnRlbC5jb20+CiBNOglsaW51eC13aW1heEBpbnRlbC5jb20KZGlmZiAtciBkMjkxMWFhMTQ2MWQg
-YXJjaC94ODYvaW5jbHVkZS9hc20vZTgyMC5oCi0tLSBhL2FyY2gveDg2L2luY2x1ZGUvYXNtL2U4
-MjAuaAlUaHUgTWFyIDA0IDA5OjM3OjUzIDIwMTAgLTA1MDAKKysrIGIvYXJjaC94ODYvaW5jbHVk
-ZS9hc20vZTgyMC5oCVR1ZSBNYXIgMDkgMTA6NDA6MTcgMjAxMCAtMDUwMApAQCAtNDUsNyArNDUs
-MTIgQEAKICNkZWZpbmUgRTgyMF9OVlMJNAogI2RlZmluZSBFODIwX1VOVVNBQkxFCTUKIAotLyog
-cmVzZXJ2ZWQgUkFNIHVzZWQgYnkga2VybmVsIGl0c2VsZiAqLworLyoKKyAqIHJlc2VydmVkIFJB
-TSB1c2VkIGJ5IGtlcm5lbCBpdHNlbGYKKyAqIGlmIENPTkZJR19JTlRFTF9UWFQgaXMgZW5hYmxl
-ZCwgbWVtb3J5IG9mIHRoaXMgdHlwZSB3aWxsIGJlCisgKiBpbmNsdWRlZCBpbiB0aGUgUzMgaW50
-ZWdyaXR5IGNhbGN1bGF0aW9uIGFuZCBzbyBzaG91bGQgbm90IGluY2x1ZGUKKyAqIGFueSBtZW1v
-cnkgdGhhdCBCSU9TIG1pZ2h0IGFsdGVyIG92ZXIgdGhlIFMzIHRyYW5zaXRpb24KKyAqLwogI2Rl
-ZmluZSBFODIwX1JFU0VSVkVEX0tFUk4gICAgICAgIDEyOAogCiAjaWZuZGVmIF9fQVNTRU1CTFlf
-XwpkaWZmIC1yIGQyOTExYWExNDYxZCBhcmNoL3g4Ni9rZXJuZWwvdGJvb3QuYwotLS0gYS9hcmNo
-L3g4Ni9rZXJuZWwvdGJvb3QuYwlUaHUgTWFyIDA0IDA5OjM3OjUzIDIwMTAgLTA1MDAKKysrIGIv
-YXJjaC94ODYva2VybmVsL3Rib290LmMJVHVlIE1hciAwOSAxMDo0MDoxNyAyMDEwIC0wNTAwCkBA
-IC0xMzksMTggKzEzOSwxNyBAQCBzdGF0aWMgdm9pZCBhZGRfbWFjX3JlZ2lvbihwaHlzX2FkZHJf
-dCBzCiAKIHN0YXRpYyB2b2lkIF9faW5pdCB0Ym9vdF9zZXR1cF9zbGVlcCh2b2lkKQogeworCWlu
-dCBpOworCiAJdGJvb3QtPm51bV9tYWNfcmVnaW9ucyA9IDA7CiAKLQkvKiBTMyByZXN1bWUgY29k
-ZSAqLwotCWFkZF9tYWNfcmVnaW9uKGFjcGlfd2FrZXVwX2FkZHJlc3MsIFdBS0VVUF9TSVpFKTsK
-Kwlmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlpZiAoKGU4MjAubWFwW2ld
-LnR5cGUgIT0gRTgyMF9SQU0pCisJCSAmJiAoZTgyMC5tYXBbaV0udHlwZSAhPSBFODIwX1JFU0VS
-VkVEX0tFUk4pKQorCQkJY29udGludWU7CiAKLSNpZmRlZiBDT05GSUdfWDg2X1RSQU1QT0xJTkUK
-LQkvKiBBUCB0cmFtcG9saW5lIGNvZGUgKi8KLQlhZGRfbWFjX3JlZ2lvbih2aXJ0X3RvX3BoeXMo
-dHJhbXBvbGluZV9iYXNlKSwgVFJBTVBPTElORV9TSVpFKTsKLSNlbmRpZgotCi0JLyoga2VybmVs
-IGNvZGUgKyBkYXRhICsgYnNzICovCi0JYWRkX21hY19yZWdpb24odmlydF90b19waHlzKF90ZXh0
-KSwgX2VuZCAtIF90ZXh0KTsKKwkJYWRkX21hY19yZWdpb24oZTgyMC5tYXBbaV0uYWRkciwgZTgy
-MC5tYXBbaV0uc2l6ZSk7CisJfQogCiAJdGJvb3QtPmFjcGlfc2luZm8ua2VybmVsX3MzX3Jlc3Vt
-ZV92ZWN0b3IgPSBhY3BpX3dha2V1cF9hZGRyZXNzOwogfQo=
+[   11.534112] BUG: key ffff88011fe16270 not in .data!
+[   11.534116] Pid: 1556, comm: firmware/iwlwif Not tainted 2.6.33-mmotm0304 #5
+[   11.534118] Call Trace:
+[   11.534128]  [<ffffffff81061f63>] lockdep_init_map+0xab/0x10d
+[   11.534133]  [<ffffffff81135d83>] sysfs_add_file_mode+0x61/0xa7
+[   11.534137]  [<ffffffff81135dd5>] sysfs_add_file+0xc/0xe
+[   11.534141]  [<ffffffff81137f08>] sysfs_create_bin_file+0x5a/0x63
+[   11.534151]  [<ffffffff81303a1f>] ? request_firmware_work_func+0x0/0x63
+[   11.534147]  [<ffffffff81303a0f>] _request_firmware+0x421/0x431
+[   11.534154]  [<ffffffff81303a59>] request_firmware_work_func+0x3a/0x63
+[   11.534159]  [<ffffffff81051d87>] kthread+0x7a/0x82
+[   11.534164]  [<ffffffff810033d4>] kernel_thread_helper+0x4/0x10
+[   11.534169]  [<ffffffff81584040>] ? restore_args+0x0/0x30
+[   11.534173]  [<ffffffff81051d0d>] ? kthread+0x0/0x82
+[   11.534176]  [<ffffffff810033d0>] ? kernel_thread_helper+0x0/0x10
 
---_002_D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FAshsmsx501ccrcor_--
+So yeah, this looks like more sysfs breakage.
+
+--==_Exmh_1268124692_4014P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLlgwUcC3lWbTT17ARArXnAKDsWR+ajhVA+8lWq//ud0AAaANPlACfTVPH
+V6rRq4RoeSuNGQGCsiYB+ps=
+=euhH
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1268124692_4014P--
+
