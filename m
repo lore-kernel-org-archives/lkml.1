@@ -1,143 +1,348 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649Ab0CIEvH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 23:51:07 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:53458 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756530Ab0CIEvF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 23:51:05 -0500
-Date: Tue, 9 Mar 2010 10:20:58 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrea Righi <arighi@develer.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
- [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure)
-Message-ID: <20100309045058.GX3073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1267995474-9117-4-git-send-email-arighi@develer.com>
- <20100308104447.c124c1ff.nishimura@mxp.nes.nec.co.jp>
- <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
- <20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
- <20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
- <20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
- <20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
- <20100309001252.GB13490@linux>
- <20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
- <20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S932309Ab0CIEyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 23:54:43 -0500
+Received: from sh.osrg.net ([192.16.179.4]:32812 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756530Ab0CIEyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 23:54:35 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: akpm@linux-foundation.org
+Cc: James.Bottomley@suse.de, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       rdunlap@xenotime.net, davem@davemloft.net
+Subject: [PATCH -mm 2/3] Documentation: remove the PCI DMA API description in DMA-API.txt
+Date: Tue,  9 Mar 2010 13:53:08 +0900
+Message-Id: <1268110389-12444-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1268110389-12444-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1268110389-12444-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 09 Mar 2010 13:54:22 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2010-03-09 10:29:28]:
+- remove the PCI DMA API description in DMA-API.txt
+- remove the descriptions of dma_unmap macros since
+  PCI-DMA-mapping.txt has the same description.
 
-> On Tue, 9 Mar 2010 09:19:14 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Tue, 9 Mar 2010 01:12:52 +0100
-> > Andrea Righi <arighi@develer.com> wrote:
-> > 
-> > > On Mon, Mar 08, 2010 at 05:31:00PM +0900, KAMEZAWA Hiroyuki wrote:
-> > > > On Mon, 8 Mar 2010 17:07:11 +0900
-> > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > 
-> > > > > On Mon, 8 Mar 2010 11:37:11 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > > > > On Mon, 8 Mar 2010 11:17:24 +0900
-> > > > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > > 
-> > > > > > > > But IIRC, clear_writeback is done under treelock.... No ?
-> > > > > > > > 
-> > > > > > > The place where NR_WRITEBACK is updated is out of tree_lock.
-> > > > > > > 
-> > > > > > >    1311 int test_clear_page_writeback(struct page *page)
-> > > > > > >    1312 {
-> > > > > > >    1313         struct address_space *mapping = page_mapping(page);
-> > > > > > >    1314         int ret;
-> > > > > > >    1315
-> > > > > > >    1316         if (mapping) {
-> > > > > > >    1317                 struct backing_dev_info *bdi = mapping->backing_dev_info;
-> > > > > > >    1318                 unsigned long flags;
-> > > > > > >    1319
-> > > > > > >    1320                 spin_lock_irqsave(&mapping->tree_lock, flags);
-> > > > > > >    1321                 ret = TestClearPageWriteback(page);
-> > > > > > >    1322                 if (ret) {
-> > > > > > >    1323                         radix_tree_tag_clear(&mapping->page_tree,
-> > > > > > >    1324                                                 page_index(page),
-> > > > > > >    1325                                                 PAGECACHE_TAG_WRITEBACK);
-> > > > > > >    1326                         if (bdi_cap_account_writeback(bdi)) {
-> > > > > > >    1327                                 __dec_bdi_stat(bdi, BDI_WRITEBACK);
-> > > > > > >    1328                                 __bdi_writeout_inc(bdi);
-> > > > > > >    1329                         }
-> > > > > > >    1330                 }
-> > > > > > >    1331                 spin_unlock_irqrestore(&mapping->tree_lock, flags);
-> > > > > > >    1332         } else {
-> > > > > > >    1333                 ret = TestClearPageWriteback(page);
-> > > > > > >    1334         }
-> > > > > > >    1335         if (ret)
-> > > > > > >    1336                 dec_zone_page_state(page, NR_WRITEBACK);
-> > > > > > >    1337         return ret;
-> > > > > > >    1338 }
-> > > > > > 
-> > > > > > We can move this up to under tree_lock. Considering memcg, all our target has "mapping".
-> > > > > > 
-> > > > > > If we newly account bounce-buffers (for NILFS, FUSE, etc..), which has no ->mapping,
-> > > > > > we need much more complex new charge/uncharge theory.
-> > > > > > 
-> > > > > > But yes, adding new lock scheme seems complicated. (Sorry Andrea.)
-> > > > > > My concerns is performance. We may need somehing new re-implementation of
-> > > > > > locks/migrate/charge/uncharge.
-> > > > > > 
-> > > > > I agree. Performance is my concern too.
-> > > > > 
-> > > > > I made a patch below and measured the time(average of 10 times) of kernel build
-> > > > > on tmpfs(make -j8 on 8 CPU machine with 2.6.33 defconfig).
-> > > > > 
-> > > > > <before>
-> > > > > - root cgroup: 190.47 sec
-> > > > > - child cgroup: 192.81 sec
-> > > > > 
-> > > > > <after>
-> > > > > - root cgroup: 191.06 sec
-> > > > > - child cgroup: 193.06 sec
-> > > > > 
-> > > > > Hmm... about 0.3% slower for root, 0.1% slower for child.
-> > > > > 
-> > > > 
-> > > > Hmm...accepatable ? (sounds it's in error-range)
-> > > > 
-> > > > BTW, why local_irq_disable() ? 
-> > > > local_irq_save()/restore() isn't better ?
-> > > 
-> > > Probably there's not the overhead of saving flags? 
-> > maybe.
-> > 
-> > > Anyway, it would make the code much more readable...
-> > > 
-> > ok.
-> > 
-> > please go ahead in this direction. Nishimura-san, would you post an
-> > independent patch ? If no, Andrea-san, please.
-> > 
-> This is the updated version.
-> 
-> Andrea-san, can you merge this into your patch set ?
-> 
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ Documentation/DMA-API.txt |  152 +++++----------------------------------------
+ 1 files changed, 15 insertions(+), 137 deletions(-)
 
-Please please measure the performance overhead of this change.
-
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index 0fc5728..5e018f6 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -4,20 +4,18 @@
+         James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+ 
+ This document describes the DMA API.  For a more gentle introduction
+-phrased in terms of the pci_ equivalents (and actual examples) see
++of the API (and actual examples) see
+ Documentation/PCI/PCI-DMA-mapping.txt.
+ 
+-This API is split into two pieces.  Part I describes the API and the
+-corresponding pci_ API.  Part II describes the extensions to the API
+-for supporting non-consistent memory machines.  Unless you know that
+-your driver absolutely has to support non-consistent platforms (this
+-is usually only legacy platforms) you should only use the API
+-described in part I.
++This API is split into two pieces.  Part I describes the API.  Part II
++describes the extensions to the API for supporting non-consistent
++memory machines.  Unless you know that your driver absolutely has to
++support non-consistent platforms (this is usually only legacy
++platforms) you should only use the API described in part I.
+ 
+-Part I - pci_ and dma_ Equivalent API 
++Part I - dma_ API
+ -------------------------------------
+ 
+-To get the pci_ API, you must #include <linux/pci.h>
+ To get the dma_ API, you must #include <linux/dma-mapping.h>
+ 
+ 
+@@ -27,9 +25,6 @@ Part Ia - Using large dma-coherent buffers
+ void *
+ dma_alloc_coherent(struct device *dev, size_t size,
+ 			     dma_addr_t *dma_handle, gfp_t flag)
+-void *
+-pci_alloc_consistent(struct pci_dev *dev, size_t size,
+-			     dma_addr_t *dma_handle)
+ 
+ Consistent memory is memory for which a write by either the device or
+ the processor can immediately be read by the processor or device
+@@ -53,15 +48,11 @@ The simplest way to do that is to use the dma_pool calls (see below).
+ The flag parameter (dma_alloc_coherent only) allows the caller to
+ specify the GFP_ flags (see kmalloc) for the allocation (the
+ implementation may choose to ignore flags that affect the location of
+-the returned memory, like GFP_DMA).  For pci_alloc_consistent, you
+-must assume GFP_ATOMIC behaviour.
++the returned memory, like GFP_DMA).
+ 
+ void
+ dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
+ 			   dma_addr_t dma_handle)
+-void
+-pci_free_consistent(struct pci_dev *dev, size_t size, void *cpu_addr,
+-			   dma_addr_t dma_handle)
+ 
+ Free the region of consistent memory you previously allocated.  dev,
+ size and dma_handle must all be the same as those passed into the
+@@ -89,10 +80,6 @@ for alignment, like queue heads needing to be aligned on N-byte boundaries.
+ 	dma_pool_create(const char *name, struct device *dev,
+ 			size_t size, size_t align, size_t alloc);
+ 
+-	struct pci_pool *
+-	pci_pool_create(const char *name, struct pci_device *dev,
+-			size_t size, size_t align, size_t alloc);
+-
+ The pool create() routines initialize a pool of dma-coherent buffers
+ for use with a given device.  It must be called in a context which
+ can sleep.
+@@ -108,9 +95,6 @@ from this pool must not cross 4KByte boundaries.
+ 	void *dma_pool_alloc(struct dma_pool *pool, gfp_t gfp_flags,
+ 			dma_addr_t *dma_handle);
+ 
+-	void *pci_pool_alloc(struct pci_pool *pool, gfp_t gfp_flags,
+-			dma_addr_t *dma_handle);
+-
+ This allocates memory from the pool; the returned memory will meet the size
+ and alignment requirements specified at creation time.  Pass GFP_ATOMIC to
+ prevent blocking, or if it's permitted (not in_interrupt, not holding SMP locks),
+@@ -122,9 +106,6 @@ pool's device.
+ 	void dma_pool_free(struct dma_pool *pool, void *vaddr,
+ 			dma_addr_t addr);
+ 
+-	void pci_pool_free(struct pci_pool *pool, void *vaddr,
+-			dma_addr_t addr);
+-
+ This puts memory back into the pool.  The pool is what was passed to
+ the pool allocation routine; the cpu (vaddr) and dma addresses are what
+ were returned when that routine allocated the memory being freed.
+@@ -132,8 +113,6 @@ were returned when that routine allocated the memory being freed.
+ 
+ 	void dma_pool_destroy(struct dma_pool *pool);
+ 
+-	void pci_pool_destroy(struct pci_pool *pool);
+-
+ The pool destroy() routines free the resources of the pool.  They must be
+ called in a context which can sleep.  Make sure you've freed all allocated
+ memory back to the pool before you destroy it.
+@@ -144,8 +123,6 @@ Part Ic - DMA addressing limitations
+ 
+ int
+ dma_supported(struct device *dev, u64 mask)
+-int
+-pci_dma_supported(struct pci_dev *hwdev, u64 mask)
+ 
+ Checks to see if the device can support DMA to the memory described by
+ mask.
+@@ -159,8 +136,6 @@ driver writers.
+ 
+ int
+ dma_set_mask(struct device *dev, u64 mask)
+-int
+-pci_set_dma_mask(struct pci_device *dev, u64 mask)
+ 
+ Checks to see if the mask is possible and updates the device
+ parameters if it is.
+@@ -169,8 +144,6 @@ Returns: 0 if successful and a negative error if not.
+ 
+ int
+ dma_set_coherent_mask(struct device *dev, u64 mask)
+-int
+-pci_set_consistent_dma_mask(struct pci_device *dev, u64 mask)
+ 
+ Checks to see if the mask is possible and updates the device
+ parameters if it is.
+@@ -197,9 +170,6 @@ Part Id - Streaming DMA mappings
+ dma_addr_t
+ dma_map_single(struct device *dev, void *cpu_addr, size_t size,
+ 		      enum dma_data_direction direction)
+-dma_addr_t
+-pci_map_single(struct pci_dev *hwdev, void *cpu_addr, size_t size,
+-		      int direction)
+ 
+ Maps a piece of processor virtual memory so it can be accessed by the
+ device and returns the physical handle of the memory.
+@@ -208,14 +178,10 @@ The direction for both api's may be converted freely by casting.
+ However the dma_ API uses a strongly typed enumerator for its
+ direction:
+ 
+-DMA_NONE		= PCI_DMA_NONE		no direction (used for
+-						debugging)
+-DMA_TO_DEVICE		= PCI_DMA_TODEVICE	data is going from the
+-						memory to the device
+-DMA_FROM_DEVICE		= PCI_DMA_FROMDEVICE	data is coming from
+-						the device to the
+-						memory
+-DMA_BIDIRECTIONAL	= PCI_DMA_BIDIRECTIONAL	direction isn't known
++DMA_NONE		no direction (used for debugging)
++DMA_TO_DEVICE		data is going from the memory to the device
++DMA_FROM_DEVICE		data is coming from the device to the memory
++DMA_BIDIRECTIONAL	direction isn't known
+ 
+ Notes:  Not all memory regions in a machine can be mapped by this
+ API.  Further, regions that appear to be physically contiguous in
+@@ -278,9 +244,6 @@ cache lines are updated with data that the device may have changed).
+ void
+ dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
+ 		 enum dma_data_direction direction)
+-void
+-pci_unmap_single(struct pci_dev *hwdev, dma_addr_t dma_addr,
+-		 size_t size, int direction)
+ 
+ Unmaps the region previously mapped.  All the parameters passed in
+ must be identical to those passed in (and returned) by the mapping
+@@ -290,15 +253,9 @@ dma_addr_t
+ dma_map_page(struct device *dev, struct page *page,
+ 		    unsigned long offset, size_t size,
+ 		    enum dma_data_direction direction)
+-dma_addr_t
+-pci_map_page(struct pci_dev *hwdev, struct page *page,
+-		    unsigned long offset, size_t size, int direction)
+ void
+ dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
+ 	       enum dma_data_direction direction)
+-void
+-pci_unmap_page(struct pci_dev *hwdev, dma_addr_t dma_address,
+-	       size_t size, int direction)
+ 
+ API for mapping and unmapping for pages.  All the notes and warnings
+ for the other mapping APIs apply here.  Also, although the <offset>
+@@ -309,9 +266,6 @@ cache width is.
+ int
+ dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 
+-int
+-pci_dma_mapping_error(struct pci_dev *hwdev, dma_addr_t dma_addr)
+-
+ In some circumstances dma_map_single and dma_map_page will fail to create
+ a mapping. A driver can check for these errors by testing the returned
+ dma address with dma_mapping_error(). A non-zero return value means the mapping
+@@ -321,9 +275,6 @@ reduce current DMA mapping usage or delay and try again later).
+ 	int
+ 	dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		int nents, enum dma_data_direction direction)
+-	int
+-	pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
+-		int nents, int direction)
+ 
+ Returns: the number of physical segments mapped (this may be shorter
+ than <nents> passed in if some elements of the scatter/gather list are
+@@ -363,9 +314,6 @@ accessed sg->address and sg->length as shown above.
+ 	void
+ 	dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+ 		int nhwentries, enum dma_data_direction direction)
+-	void
+-	pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sg,
+-		int nents, int direction)
+ 
+ Unmap the previously mapped scatter/gather list.  All the parameters
+ must be the same as those and passed in to the scatter/gather mapping
+@@ -378,26 +326,14 @@ void
+ dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
+ 			enum dma_data_direction direction)
+ void
+-pci_dma_sync_single_for_cpu(struct pci_dev *hwdev, dma_addr_t dma_handle,
+-			    size_t size, int direction)
+-void
+ dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle, size_t size,
+ 			   enum dma_data_direction direction)
+ void
+-pci_dma_sync_single_for_device(struct pci_dev *hwdev, dma_addr_t dma_handle,
+-			       size_t size, int direction)
+-void
+ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
+ 		    enum dma_data_direction direction)
+ void
+-pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev, struct scatterlist *sg,
+-		        int nelems, int direction)
+-void
+ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
+ 		       enum dma_data_direction direction)
+-void
+-pci_dma_sync_sg_for_device(struct pci_dev *hwdev, struct scatterlist *sg,
+-		           int nelems, int direction)
+ 
+ Synchronise a single contiguous or scatter/gather mapping for the cpu
+ and device. With the sync_sg API, all the parameters must be the same
+@@ -482,70 +418,12 @@ void whizco_dma_map_sg_attrs(struct device *dev, dma_addr_t dma_addr,
+ 	....
+ 
+ 
+-Part Ie - Optimizing Unmap State Space Consumption
+---------------------------------
+-
+-On some platforms, dma_unmap_{single,page}() is simply a nop.
+-Therefore, keeping track of the mapping address and length is a waste
+-of space. Instead of filling your drivers up with ifdefs and the like
+-to "work around" this (which would defeat the whole purpose of a
+-portable API) the following facilities are provided.
+-
+-Actually, instead of describing the macros one by one, we'll
+-transform some example code.
+-
+-1) Use DEFINE_DMA_UNMAP_{ADDR,LEN} in state saving structures.
+-   Example, before:
+-
+-	struct ring_state {
+-		struct sk_buff *skb;
+-		dma_addr_t mapping;
+-		__u32 len;
+-	};
+-
+-   after:
+-
+-	struct ring_state {
+-		struct sk_buff *skb;
+-		DEFINE_DMA_UNMAP_ADDR(mapping);
+-		DEFINE_DMA_UNMAP_LEN(len);
+-	};
+-
+-2) Use dma_unmap_{addr,len}_set to set these values.
+-   Example, before:
+-
+-	ringp->mapping = FOO;
+-	ringp->len = BAR;
+-
+-   after:
+-
+-	dma_unmap_addr_set(ringp, mapping, FOO);
+-	dma_unmap_len_set(ringp, len, BAR);
+-
+-3) Use dma_unmap_{addr,len} to access these values.
+-   Example, before:
+-
+-	dma_unmap_single(dev, ringp->mapping, ringp->len,
+-			 DMA_FROM_DEVICE);
+-
+-   after:
+-
+-	dma_unmap_single(dev,
+-			 dma_unmap_addr(ringp, mapping),
+-			 dma_unmap_len(ringp, len),
+-			 DMA_FROM_DEVICE);
+-
+-It really should be self-explanatory.  We treat the ADDR and LEN
+-separately, because it is possible for an implementation to only
+-need the address in order to perform the unmap operation.
+-
+-
+ Part II - Advanced dma_ usage
+ -----------------------------
+ 
+-Warning: These pieces of the DMA API have no PCI equivalent.  They
+-should also not be used in the majority of cases, since they cater for
+-unlikely corner cases that don't belong in usual drivers.
++Warning: These pieces of the DMA API should not be used in the
++majority of cases, since they cater for unlikely corner cases that
++don't belong in usual drivers.
+ 
+ If you don't understand how cache line coherency works between a
+ processor and an I/O device, you should not be using this part of the
 -- 
-	Three Cheers,
-	Balbir
+1.6.5
+
