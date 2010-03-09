@@ -1,92 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492Ab0CIGaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:30:25 -0500
-Received: from mail.windriver.com ([147.11.1.11]:33987 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425Ab0CIGaP (ORCPT
+	id S1751941Ab0CIGeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:34:23 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52373 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494Ab0CIGeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:30:15 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>,
-       Alan Cox <alan@linux.intel.com>, Oliver Neukum <oliver@neukum.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/6] tty_port,usb-console: Fix usb serial console open/close regression
-Date: Tue,  9 Mar 2010 00:29:06 -0600
-Message-Id: <1268116151-1448-2-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1268116151-1448-1-git-send-email-jason.wessel@windriver.com>
-References: <1268116151-1448-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 09 Mar 2010 06:29:21.0109 (UTC) FILETIME=[DA699850:01CABF51]
+	Tue, 9 Mar 2010 01:34:20 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: mm: Do not iterate over NR_CPUS in __zone_pcp_update()
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+References: <alpine.LFD.2.00.1003081018070.22855@localhost.localdomain>
+Message-Id: <20100309153342.7CEE.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Mar 2010 15:34:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit e1108a63e10d344284011cccc06328b2cd3e5da3 ("usb_serial: Use the
-shutdown() operation") breaks the ability to use a usb console
-starting in 2.6.33.  This was observed when using
-console=ttyUSB0,115200 as a boot argument with an FTDI device.  The
-error is:
+> __zone_pcp_update() iterates over NR_CPUS instead of limiting the
+> access to the possible cpus. This might result in access to
+> uninitialized areas as the per cpu allocator only populates the per
+> cpu memory for possible cpus.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-ftdi_sio ttyUSB0: ftdi_submit_read_urb - failed submitting read urb, error -22
+Looks good.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-The handling of the ASYNCB_INITIALIZED changed in 2.6.32 such that in
-tty_port_shutdown() it always clears the flag if it is set.  The fix
-is to add a variable to the tty_port struct to indicate when the tty
-port is a console.
+> 
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -3224,7 +3224,7 @@ static int __zone_pcp_update(void *data)
+>  	int cpu;
+>  	unsigned long batch = zone_batchsize(zone), flags;
+>  
+> -	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+> +	for_each_possible_cpu(cpu) {
+>  		struct per_cpu_pageset *pset;
+>  		struct per_cpu_pages *pcp;
+>  
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-CC: Greg Kroah-Hartman <gregkh@suse.de>
-CC: Alan Cox <alan@linux.intel.com>
-CC: Alan Stern <stern@rowland.harvard.edu>
-CC: Oliver Neukum <oliver@neukum.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-usb@vger.kernel.org
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- drivers/char/tty_port.c      |    2 +-
- drivers/usb/serial/console.c |    1 +
- include/linux/tty.h          |    1 +
- 3 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-index be492dd..a3bd1d0 100644
---- a/drivers/char/tty_port.c
-+++ b/drivers/char/tty_port.c
-@@ -119,7 +119,7 @@ EXPORT_SYMBOL(tty_port_tty_set);
- static void tty_port_shutdown(struct tty_port *port)
- {
- 	mutex_lock(&port->mutex);
--	if (port->ops->shutdown &&
-+	if (port->ops->shutdown && !port->console &&
- 		test_and_clear_bit(ASYNCB_INITIALIZED, &port->flags))
- 			port->ops->shutdown(port);
- 	mutex_unlock(&port->mutex);
-diff --git a/drivers/usb/serial/console.c b/drivers/usb/serial/console.c
-index b22ac32..f347da2 100644
---- a/drivers/usb/serial/console.c
-+++ b/drivers/usb/serial/console.c
-@@ -181,6 +181,7 @@ static int usb_console_setup(struct console *co, char *options)
- 	/* The console is special in terms of closing the device so
- 	 * indicate this port is now acting as a system console. */
- 	port->console = 1;
-+	port->port.console = 1;
- 
- 	mutex_unlock(&serial->disc_mutex);
- 	return retval;
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index d96e588..a42d7a6 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -223,6 +223,7 @@ struct tty_port {
- 	wait_queue_head_t	close_wait;	/* Close waiters */
- 	wait_queue_head_t	delta_msr_wait;	/* Modem status change */
- 	unsigned long		flags;		/* TTY flags ASY_*/
-+	unsigned char		console:1;	/* port is a console */
- 	struct mutex		mutex;		/* Locking */
- 	struct mutex		buf_mutex;	/* Buffer alloc lock */
- 	unsigned char		*xmit_buf;	/* Optional buffer */
--- 
-1.6.3.1.9.g95405b
 
