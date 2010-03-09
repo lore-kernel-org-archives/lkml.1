@@ -1,48 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932272Ab0CID7k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 22:59:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46640 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932243Ab0CID7g (ORCPT
+	id S932284Ab0CIEIM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 23:08:12 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:59915 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932243Ab0CIEIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 22:59:36 -0500
-Date: Mon, 8 Mar 2010 19:58:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-In-Reply-To: <4B95BFF6.5060503@schaufler-ca.com>
-Message-ID: <alpine.LFD.2.00.1003081955010.3669@localhost.localdomain>
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org> <20100308094647.GA14268@elte.hu> <20100308173008.7ae389ab@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.1003080948060.3989@localhost.localdomain> <4B9585BD.6070904@redhat.com>
- <alpine.LFD.2.00.1003081523280.3669@localhost.localdomain> <4B958D7F.1030900@redhat.com> <alpine.LFD.2.00.1003081555480.3669@localhost.localdomain> <4B95BFF6.5060503@schaufler-ca.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 8 Mar 2010 23:08:10 -0500
+Date: Tue, 9 Mar 2010 15:08:07 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Joe Perches <joe@perches.com>
+Cc: Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       lvs-devel <lvs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] net/netfilter/ipvs/ip_vs_ftp.c: Remove use of NIPQUAD
+Message-ID: <20100309040805.GA23772@verge.net.au>
+References: <1268094699.1617.5.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268094699.1617.5.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 8 Mar 2010, Casey Schaufler wrote:
+On Mon, Mar 08, 2010 at 04:31:39PM -0800, Joe Perches wrote:
+> NIPQUAD has very few uses left.
 > 
-> Those of you who say we ought to come up with a single framework
-> that we can use to Do The Right Thing haven't been reading the code.
-> We have such a framework in the LSM.
+> Remove this use and make the code have the identical form of the only
+> other use of "%u,%u,%u,%u,%u,%u" in net/ipv4/netfilter/nf_nat_ftp.c
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+Acked-by: Simon Horman <horms@verge.net.au>
 
-.. and people are also interested in using (and expanding) the 'notify' 
-layer, probably because it is obviously designed for efficiently talking 
-at a user-level program about the relevant accesses. Whether that is 
-because they are just crazy ("malware detection") or whether it is an 
-indication that the LSM layer and current security models are just not 
-convenient enough, I dunno.
-
-And whether all that has anything to do with "Do The Rigth Thing" is 
-obviously very much unclear, but the interest is clearly there.
-
-			Linus
+> ---
+>  net/netfilter/ipvs/ip_vs_ftp.c |   10 ++++++++--
+>  1 files changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/net/netfilter/ipvs/ip_vs_ftp.c
+> b/net/netfilter/ipvs/ip_vs_ftp.c
+> index 73f38ea..9f63283 100644
+> --- a/net/netfilter/ipvs/ip_vs_ftp.c
+> +++ b/net/netfilter/ipvs/ip_vs_ftp.c
+> @@ -208,8 +208,14 @@ static int ip_vs_ftp_out(struct ip_vs_app *app,
+> struct ip_vs_conn *cp,
+>  		 */
+>  		from.ip = n_cp->vaddr.ip;
+>  		port = n_cp->vport;
+> -		sprintf(buf, "%u,%u,%u,%u,%u,%u", NIPQUAD(from.ip),
+> -			(ntohs(port)>>8)&255, ntohs(port)&255);
+> +		snprintf(buf, sizeof(buf), "%u,%u,%u,%u,%u,%u",
+> +			 ((unsigned char *)&from.ip)[0],
+> +			 ((unsigned char *)&from.ip)[1],
+> +			 ((unsigned char *)&from.ip)[2],
+> +			 ((unsigned char *)&from.ip)[3],
+> +			 ntohs(port) >> 8,
+> +			 ntohs(port) & 0xFF);
+> +
+>  		buf_len = strlen(buf);
+>  
+>  		/*
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe lvs-devel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
