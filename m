@@ -1,66 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754402Ab0CIQE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 11:04:26 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:52874 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973Ab0CIQEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 11:04:24 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH] [WATCHDOG] bfin: use new common Blackfin watchdog header
-Date: Tue,  9 Mar 2010 11:07:40 -0500
-Message-Id: <1268150860-28011-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.7.0.2
+	id S1755043Ab0CIQEm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 11:04:42 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60539 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754541Ab0CIQEl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 11:04:41 -0500
+Subject: Re: [PATCH] i2c: update for semaphore to mutex conversion of
+ devices
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>, tglx <tglx@linutronix.de>
+In-Reply-To: <20100308235953.GA7808@kroah.com>
+References: <20100309102828.18351564.sfr@canb.auug.org.au>
+	 <20100308235953.GA7808@kroah.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Mar 2010 17:04:37 +0100
+Message-ID: <1268150677.5037.8.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-note: this can be merged for 2.6.34 or 2.6.35
-
- drivers/watchdog/bfin_wdt.c |   19 +------------------
- 1 files changed, 1 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/watchdog/bfin_wdt.c b/drivers/watchdog/bfin_wdt.c
-index 2159e66..3546a46 100644
---- a/drivers/watchdog/bfin_wdt.c
-+++ b/drivers/watchdog/bfin_wdt.c
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/uaccess.h>
- #include <asm/blackfin.h>
-+#include <asm/bfin_watchdog.h>
- 
- #define stamp(fmt, args...) \
- 	pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
-@@ -51,24 +52,6 @@
- # define bfin_write_WDOG_STAT(x) bfin_write_WDOGA_STAT(x)
- #endif
- 
--/* Bit in SWRST that indicates boot caused by watchdog */
--#define SWRST_RESET_WDOG 0x4000
--
--/* Bit in WDOG_CTL that indicates watchdog has expired (WDR0) */
--#define WDOG_EXPIRED 0x8000
--
--/* Masks for WDEV field in WDOG_CTL register */
--#define ICTL_RESET   0x0
--#define ICTL_NMI     0x2
--#define ICTL_GPI     0x4
--#define ICTL_NONE    0x6
--#define ICTL_MASK    0x6
--
--/* Masks for WDEN field in WDOG_CTL register */
--#define WDEN_MASK    0x0FF0
--#define WDEN_ENABLE  0x0000
--#define WDEN_DISABLE 0x0AD0
--
- /* some defaults */
- #define WATCHDOG_TIMEOUT 20
- 
--- 
-1.7.0.2
+On Mon, 2010-03-08 at 15:59 -0800, Greg KH wrote:
+> 
+> Hopefully the lockdep core will be tweaked to handle the locking tree
+> that the device core requires and then when that happens, I will merge
+> the patch that will require this fix in order to keep the build from
+> breaking.
+> 
+?! Thomas send you patch shutting lockdep up for device mutex, look for
+<alpine.LFD.2.00.1002181116410.2811@localhost.localdomain> in your
+inbox.
 
