@@ -1,36 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752654Ab0CIGyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:54:21 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:54133 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732Ab0CIGyT (ORCPT
+	id S1752714Ab0CIG6o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:58:44 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:41225 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873Ab0CIG6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:54:19 -0500
-Message-Id: <201003090654.o296sCnh065487@www262.sakura.ne.jp>
-Subject: Re: [2.6.34-rc1] CPU stalls when closing TCP sockets.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: eric.dumazet@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com
+	Tue, 9 Mar 2010 01:58:42 -0500
+Date: Tue, 9 Mar 2010 15:57:53 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg KH <greg@kroah.com>
+Cc: Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org
+Subject: [PATCH] driver core: Early dev_name() support.
+Message-ID: <20100309065753.GA8287@linux-sh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Mar 2010 15:54:12 +0900
-References: <201003090319.o293J6WF026448@www262.sakura.ne.jp> <1268116647.2819.64.camel@edumazet-laptop>
-In-Reply-To: <1268116647.2819.64.camel@edumazet-laptop>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 08032010 #3512728, status: clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Nothing comes to my mind, I'll try to reproduce this here.
+Presently early platform devices suffer from the fact they are unable to
+use dev_xxx() calls early on due to dev_name() and others being
+unavailable at the time ->probe() is called.
 
-When stopped at (8), Ctrl-C doesn't work.
+This implements early init_name construction from the matched name/id
+pair following the semantics of the late device/driver match. As a
+result, matched IDs (inclusive of requested ones) are preserved when the
+handoff from the early platform code happens at kobject initialization
+time.
 
-> Is 2.6.33 OK ?
+Since we still require kmalloc slabs to be available at this point, using
+kstrdup() for establishing the init_name works fine. This subsequently
+needs to be tested from dev_name() prior to the init_name being cleared
+by the driver core. We don't kfree() since others will already have a
+handle on the string long before the kobject initialization takes place.
 
-Yes. 2.6.33 and earlier are OK.
+This is also needed to permit drivers to use the clock framework early,
+without having to manually construct their own device IDs from the match
+id/name pair locally (needed by the early console and timer code on sh
+and arm).
 
-Regards.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+---
+
+ drivers/base/platform.c |   19 +++++++++++++++++++
+ include/linux/device.h  |    4 ++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 58efaf2..bc38f63 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -1181,6 +1181,25 @@ static int __init early_platform_driver_probe_id(char *class_str,
+ 		}
+ 
+ 		if (match) {
++			/*
++			 * Set up a sensible init_name to enable
++			 * dev_name() and others to be used before the
++			 * rest of the driver core is initialized.
++			 */
++			if (!match->dev.init_name) {
++				char buf[32];
++
++				if (match->id != -1)
++					snprintf(buf, sizeof(buf), "%s.%d",
++						 match->name, match->id);
++				else
++					snprintf(buf, sizeof(buf), "%s",
++						 match->name);
++
++				match->dev.init_name = kstrdup(buf, GFP_KERNEL);
++				if (!match->dev.init_name)
++					return -ENOMEM;
++			}
+ 			if (epdrv->pdrv->probe(match))
+ 				pr_warning("%s: unable to probe %s early.\n",
+ 					   class_str, match->name);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index b30527d..3af5bce 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -432,6 +432,10 @@ struct device {
+ 
+ static inline const char *dev_name(const struct device *dev)
+ {
++	/* Use the init name until the kobject becomes available */
++	if (dev->init_name)
++		return dev->init_name;
++
+ 	return kobject_name(&dev->kobj);
+ }
+ 
