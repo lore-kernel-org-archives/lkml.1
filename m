@@ -1,147 +1,166 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860Ab0CIJMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 04:12:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35101 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854Ab0CIJM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 04:12:27 -0500
-Message-ID: <4B9610E5.4080805@kernel.org>
-Date: Tue, 09 Mar 2010 18:12:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1753925Ab0CIJNJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 04:13:09 -0500
+Received: from mailgw9.se.ericsson.net ([193.180.251.57]:64090 "EHLO
+	mailgw9.se.ericsson.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753507Ab0CIJNF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 04:13:05 -0500
+X-AuditID: c1b4fb39-b7c2dae000007b99-e3-4b96111da6d6
+Message-ID: <4B96116A.6090705@ericsson.com>
+Date: Tue, 09 Mar 2010 10:14:18 +0100
+From: "kerstin.jonsson" <kerstin.jonsson@ericsson.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] percpu,lockdep: implement and use is_static_percpu_address()
-References: <24605.1268073053@localhost> <1268073831.4997.69.camel@laptop>            <4B95AA4C.2030303@kernel.org> <4298.1268116039@localhost> <4B95EE4C.3020606@kernel.org>
-In-Reply-To: <4B95EE4C.3020606@kernel.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Thomas Renninger <trenn@suse.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbohac@novell.com" <jbohac@novell.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec
+ - V4
+References: <20100308113452.GK6004@lenovo> <1268048582-12219-1-git-send-email-trenn@suse.de>
+In-Reply-To: <1268048582-12219-1-git-send-email-trenn@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Mar 2010 09:12:07 +0000 (UTC)
+X-OriginalArrivalTime: 09 Mar 2010 09:13:01.0196 (UTC) FILETIME=[B7A3F4C0:01CABF68]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lockdep has custom code to check whether a pointer belongs to static
-percpu area which is somewhat broken.  Implement proper
-is_static_percpu_address() in percpu and replace the custom code.
+On 03/08/2010 12:43 PM, Thomas Renninger wrote:
+> From: Kerstin Jonsson<kerstin.jonsson@ericsson.com>
+>
+> When the SMP kernel decides to crash_kexec() the local APICs may have
+> pending interrupts in their vector tables.
+> The setup routine for the local APIC has a deficient mechanism for
+> clearing these interrupts, it only handles interrupts that has already
+> been dispatched to the local core for servicing (the ISR register)
+> safely, it doesn't consider lower prioritized queued interrupts stored
+> in the IRR register.
+>
+> If you have more than one pending interrupt within the same 32 bit word
+> in the LAPIC vector table registers you may find yourself entering the
+> IO APIC setup with pending interrupts left in the LAPIC. This is a
+> situation for wich the IO APIC setup is not prepared. Depending of
+> what/which interrupt vector/vectors are stuck in the APIC tables your
+> system may show various degrees of malfunctioning.
+> That was the reason why the check_timer() failed in our system, the
+> timer interrupts was blocked by pending interrupts from the old kernel
+> when routed trough the IO APIC.
+>
+> Additional comment from Jiri Bohac:
+> ==============
+> If this should go into stable release,
+> I'd add some kind of limit on the number of iterations, just to be safe from
+> hard to debug lock-ups:
+>
+> +if (loops++>  MAX_LOOPS) {
+> +        printk("LAPIC pending clean-up")
+> +        break;
+> +}
+>   while (queued);
+>
+> with MAX_LOOPS something like 1E9 this would leave plenty of time for the
+> pending IRQs to be cleared and would and still cause at most a second of delay
+> if the loop were to lock-up for whatever reason.
+> ==============
+>
+>  From trenn@suse.de:
+> V2: Use tsc if avail to bail out after 1 sec due to possible virtual apic_read
+>      calls which may take rather long (suggested by: Avi Kivity<avi@redhat.com>)
+>      If no tsc is available bail out quickly after cpu_khz, if we broke out too
+>      early and still have irqs pending (which should never happen?) we still
+>      get a WARN_ON...
+>
+> V3: - Fixed indentation ->  checkpatch clean
+>      - max_loops must be signed
+>
+> V4: - Fix typo, mixed up tsc and ntsc in first rdtscll() call
+>
+> CC: jbohac@novell.com
+> CC: "Yinghai Lu"<yinghai@kernel.org>
+> CC: akpm@linux-foundation.org
+> CC: mingo@elte.hu
+> CC: "Kerstin Jonsson"<kerstin.jonsson@ericsson.com>
+> CC: "Avi Kivity"<avi@redhat.com>
+> Signed-off-by: Thomas Renninger<trenn@suse.de>
+> ---
+>   arch/x86/kernel/apic/apic.c |   41 +++++++++++++++++++++++++++++++++--------
+>   1 files changed, 33 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+> index 3987e44..414a5df 100644
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -51,6 +51,7 @@
+>   #include<asm/smp.h>
+>   #include<asm/mce.h>
+>   #include<asm/kvm_para.h>
+> +#include<asm/tsc.h>
+>
+>   unsigned int num_processors;
+>
+> @@ -1151,8 +1152,13 @@ static void __cpuinit lapic_setup_esr(void)
+>    */
+>   void __cpuinit setup_local_APIC(void)
+>   {
+> -	unsigned int value;
+> -	int i, j;
+> +	unsigned int value, queued;
+> +	int i, j, acked = 0;
+> +	unsigned long long tsc = 0, ntsc;
+> +	long long max_loops = cpu_khz;
+> +
+> +	if (cpu_has_tsc)
+> +		rdtscll(tsc);
+>
+>   	if (disable_apic) {
+>   		arch_disable_smp_support();
+> @@ -1204,13 +1210,32 @@ void __cpuinit setup_local_APIC(void)
+>   	 * the interrupt. Hence a vector might get locked. It was noticed
+>   	 * for timer irq (vector 0x31). Issue an extra EOI to clear ISR.
+>   	 */
+> -	for (i = APIC_ISR_NR - 1; i>= 0; i--) {
+> -		value = apic_read(APIC_ISR + i*0x10);
+> -		for (j = 31; j>= 0; j--) {
+> -			if (value&  (1<<j))
+> -				ack_APIC_irq();
+> +	do {
+> +		queued = 0;
+> +		for (i = APIC_ISR_NR - 1; i>= 0; i--)
+> +			queued |= apic_read(APIC_IRR + i*0x10);
+> +
+> +		for (i = APIC_ISR_NR - 1; i>= 0; i--) {
+> +			value = apic_read(APIC_ISR + i*0x10);
+> +			for (j = 31; j>= 0; j--) {
+> +				if (value&  (1<<j)) {
+> +					ack_APIC_irq();
+> +					acked++;
+> +				}
+> +			}
+>   		}
+> -	}
+> +		if (acked>  256) {
+> +			printk(KERN_ERR "LAPIC pending interrupts after %d EOI\n",
+> +			       acked);
+> +			break;
+> +		}
+> +		if (cpu_has_tsc) {
+> +			rdtscll(ntsc);
+> +			max_loops = (cpu_khz<<  10) - (ntsc - tsc);
+> +		} else
+> +			max_loops--;
+> +	} while (queued&&  max_loops>  0);
+> +	WARN_ON(!max_loops);
+>
+>   	/*
+>   	 * Now that we are all set up, enable the APIC
+>    
+On the verge of being overzealous:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
----
-This wasn't the cause this time but I'll queue the fix in percpu tree
-anyway.
-
-Thanks.
-
- include/linux/percpu.h |    7 +++++++
- kernel/lockdep.c       |   15 ++-------------
- mm/percpu.c            |   26 ++++++++++++++++++++++++++
- 3 files changed, 35 insertions(+), 13 deletions(-)
-
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index a93e5bf..1eca064 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -137,6 +137,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
- extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align);
- extern void __percpu *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void __percpu *__pdata);
-+extern bool is_static_percpu_address(unsigned long addr);
- extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
- 
- #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-@@ -163,6 +164,12 @@ static inline void free_percpu(void __percpu *p)
- 	kfree(p);
- }
- 
-+/* can't distinguish from other static vars, always false */
-+static inline bool is_static_percpu_address(unsigned long addr)
-+{
-+	return false;
-+}
-+
- static inline phys_addr_t per_cpu_ptr_to_phys(void *addr)
- {
- 	return __pa(addr);
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 0c30d04..4206f6f 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -582,9 +582,6 @@ static int static_obj(void *obj)
- 	unsigned long start = (unsigned long) &_stext,
- 		      end   = (unsigned long) &_end,
- 		      addr  = (unsigned long) obj;
--#ifdef CONFIG_SMP
--	int i;
--#endif
- 
- 	/*
- 	 * static variable?
-@@ -595,19 +592,11 @@ static int static_obj(void *obj)
- 	if (arch_is_kernel_data(addr))
- 		return 1;
- 
--#ifdef CONFIG_SMP
- 	/*
- 	 * percpu var?
- 	 */
--	for_each_possible_cpu(i) {
--		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
--		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
--					+ per_cpu_offset(i);
--
--		if ((addr >= start) && (addr < end))
--			return 1;
--	}
--#endif
-+	if (is_static_percpu_address(addr))
-+		return 1;
- 
- 	/*
- 	 * module var?
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 768419d..ae4d058 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -1304,6 +1304,32 @@ void free_percpu(void __percpu *ptr)
- EXPORT_SYMBOL_GPL(free_percpu);
- 
- /**
-+ * is_static_percpu_address - test whether address is from static percpu area
-+ * @addr: address to test
-+ *
-+ * Test whether @addr belongs to static percpu area.  Module static
-+ * percpu areas allocated via __alloc_reserved_percpu() is not
-+ * considered.  Use is_module_address() for those.
-+ *
-+ * RETURNS:
-+ * %true if @addr is from static percpu area, %false otherwise.
-+ */
-+bool is_static_percpu_address(unsigned long addr)
-+{
-+	const size_t static_size = __per_cpu_end - __per_cpu_start;
-+	void __percpu *base = __addr_to_pcpu_ptr(pcpu_base_addr);
-+	unsigned int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		void *start = per_cpu_ptr(base, cpu);
-+
-+		if ((void *)addr >= start && (void *)addr < start + static_size)
-+			return true;
-+        }
-+	return false;
-+}
-+
-+/**
-  * per_cpu_ptr_to_phys - convert translated percpu address to physical address
-  * @addr: the address to be converted to physical address
-  *
--- 
-1.6.4.2
+WARN_ON(!max_loops); max_loops<  0 will probably be the most common error exit in a system that has tsc...
 
