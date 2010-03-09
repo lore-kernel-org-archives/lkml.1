@@ -1,75 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751859Ab0CIG2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 01:28:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61789 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526Ab0CIG2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 01:28:45 -0500
-Date: Tue, 9 Mar 2010 08:28:03 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Avi Kivity <avi@redhat.com>, john cooper <john.cooper@third-harmonic.com>,
-       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, mtosatti@redhat.com,
-       zamsden@redhat.com
-Subject: Re: use of setjmp/longjmp in x86 emulator.
-Message-ID: <20100309062803.GI16909@redhat.com>
-References: <20100301091819.GD16909@redhat.com>
- <4B8BB6FA.1000505@oss.ntt.co.jp>
- <20100301125223.GI16909@redhat.com>
- <4B8BBE61.3020503@oss.ntt.co.jp>
- <20100301132609.GJ16909@redhat.com>
- <4B8C11DC.1060004@third-harmonic.com>
- <20100302072809.GS16909@redhat.com>
- <4B936B27.1050207@redhat.com>
- <m1aauipfwq.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1aauipfwq.fsf@fess.ebiederm.org>
+	id S1751932Ab0CIG3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 01:29:31 -0500
+Received: from mail.windriver.com ([147.11.1.11]:33622 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243Ab0CIG33 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 01:29:29 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6] usb console improvements series
+Date: Tue,  9 Mar 2010 00:29:05 -0600
+Message-Id: <1268116151-1448-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.3.1.9.g95405b
+X-OriginalArrivalTime: 09 Mar 2010 06:29:19.0372 (UTC) FILETIME=[D9608CC0:01CABF51]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 03:11:49PM -0800, Eric W. Biederman wrote:
-> Avi Kivity <avi@redhat.com> writes:
-> 
-> > On 03/02/2010 09:28 AM, Gleb Natapov wrote:
-> >> On Mon, Mar 01, 2010 at 02:13:32PM -0500, john cooper wrote:
-> >>    
-> >>> Gleb Natapov wrote:
-> >>>
-> >>>      
-> >>>> Think about what happens if in the middle of
-> >>>> instruction emulation some data from device emulated in userspace is
-> >>>> needed. Emulator should be able to tell KVM that exit to userspace is
-> >>>> needed and restart instruction emulation when data is available.
-> >>>>        
-> >>> setjmp/longjmp are useful constructs in general but
-> >>> IME are better suited for infrequent exceptions vs.
-> >>> routine usage.
-> >>>      
-> >> Exception condition during instruction emulation _is_
-> >> infrequent.
-> >
-> > Well, with mmio you'd expect it to happen every read access.
-> 
-> Of course if you are hitting that kind of case very often
-> you don't want to do the emulation in the kernel but
-> in userspace so you don't have to take the context switch
-> overhead and everything else.
-> 
-The devices that do mmio most often are already in the kernel
-to avoid exit to usesrapce on each access. And mmio may be the
-most frequent cause of emulation, but not the only one.
+I aggregated and ported all usb patches I have previously posted which
+are not mainlined into a single series aimed at providing a stable usb
+console.
 
-> I know running emulations in userspace was for dosemu
-> the difference between a 16 color ega emulation on X
-> that was unusable to one that was good enough to play video
-> games like wolfenstein and doom.
-> 
-> Eric
+This is picking up where Alan Stern and I left after a discussion in
+September 2009.
 
---
-			Gleb.
+-- The recap about synchronous usb serial consoles --
+
+The serial uart code implements the console writes synchronously such
+that you get the data right away and "pay the toll" in terms of system
+performance loss if you do lots of printk's to the console.  The usb
+serial console code just eats the data if there is no room left in the
+queue, and you do not see the data until the interrupts are restored.
+
+If we assume the main reason you would use a usb console device is to
+get printk's then every effort should be made to be able to see the
+printk's on the usb console device.  In this patch series, two
+conditions must be met before the hcd device would get polled.
+
+1) The data write is a usb serial console write
+2) The usb serial driver has set the variable max_in_flight_urbs
+
+Based on Alan's comments about the 1ms minimum response time for the
+hcd device I ended up using a maximum 3ms delay loop.  The 3ms was
+selected based on testing the usb_debug device and the ftdi usb rs232
+port.  I found the usb_debug device needed the 1ms and the ftdi device
+required slightly more than 2ms in the worst case else there was some
+sporadic data loss.
+
+I also tested incurring the penalty 3ms for each write with the device
+in a "failed" capacity.  In that case it introduced a 3ms delay for
+each printk() which only showed any noticeable delay with the "SysRq t"
+packet.
+
+Part of having the console stable requires that usb sysrq handler get
+executed in a tasklet.  The hcd device lock is always held while the
+driver call backs are executed.  The means you cannot get the sysrq
+printk's out to the usb console device after the in_flight urb queue
+is filled.
+
+Thanks,
+Jason.
+
+---
+
+The following changes since commit 57d54889cd00db2752994b389ba714138652e60c:
+  Linus Torvalds (1):
+        Linux 2.6.34-rc1
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_gregkh
+
+Jason Wessel (6):
+      tty_port,usb-console: Fix usb serial console open/close regression
+      usb-serial: Use tty_port version of console instead of the usb_serial_port version
+      usb-console: pass baud from console to the initial tty open
+      usb-serial: optimize sysrq function calls
+      usb-hcd,usb-console: poll hcd device to force usb console writes
+      usb-serialy,sysrq: Run the sysrq handler in a tasklet
+
+ drivers/char/sysrq.c            |   29 ++++++++++++++++
+ drivers/char/tty_port.c         |    2 +-
+ drivers/usb/core/hcd.c          |   11 ++++++
+ drivers/usb/core/hcd.h          |    1 +
+ drivers/usb/serial/console.c    |   71 ++++++++++++++++++++++----------------
+ drivers/usb/serial/ftdi_sio.c   |    9 +++--
+ drivers/usb/serial/generic.c    |   28 +---------------
+ drivers/usb/serial/pl2303.c     |    8 +++--
+ drivers/usb/serial/usb-serial.c |    4 +-
+ drivers/usb/serial/usb_debug.c  |    2 +-
+ include/linux/sysrq.h           |    4 ++
+ include/linux/tty.h             |    1 +
+ include/linux/usb/serial.h      |   36 ++++++++++++++++----
+ 13 files changed, 131 insertions(+), 75 deletions(-)
+
