@@ -1,99 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754062Ab0CIKA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 05:00:56 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39285 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892Ab0CIKAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 05:00:52 -0500
-Date: Tue, 9 Mar 2010 21:00:44 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] vmscan: Put kswapd to sleep on its own waitqueue,
- not congestion
-Message-ID: <20100309100044.GE8653@laptop>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
- <1268048904-19397-4-git-send-email-mel@csn.ul.ie>
+	id S1754118Ab0CIKCd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 05:02:33 -0500
+Received: from smtpout3.vipway.net.br ([201.71.224.143]:60773 "EHLO
+	dionisio.vipway.net.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753853Ab0CIKC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 05:02:28 -0500
+X-Greylist: delayed 2064 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 05:02:27 EST
+Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=mx1; d=vipway.com.br;
+  b=aviwWTpk2WVtrUcQ4lIuaLviUq7St3FKQ/c6QOglMGhccg95LX/DvST9kTUB+T7uJpPPrI4dfX7C6H5i+vK4cKUDT1Pnkb76vYQAVYy7P69iakPkeagait6fQUiUDmWt  ;
+X-Squirrel-UserHash: BRcJDA0zEgsCFhIQQhcDCU8JFw==
+X-Squirrel-FromHash: VEsGAFIVVFM=
+Message-ID: <5759.VEsGAFIVVFM=.1268126366.squirrel@webmail.vipway.com.br>
+Date: Tue, 9 Mar 2010 06:19:26 -0300 (BRT)
+Subject: I Need Your Honesty.
+From: "UBS International Holdings BV" <info@vipway.com.br>
+Reply-To: mrbeukerhendrik@zhertam.com
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268048904-19397-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 08, 2010 at 11:48:23AM +0000, Mel Gorman wrote:
-> If kswapd is raising its priority to get the zone over the high
-> watermark, it may call congestion_wait() ostensibly to allow congestion
-> to clear. However, there is no guarantee that the queue is congested at
-> this point because it depends on kswapds previous actions as well as the
-> rest of the system. Kswapd could simply be working hard because there is
-> a lot of SYNC traffic in which case it shouldn't be sleeping.
-> 
-> Rather than waiting on congestion and potentially sleeping for longer
-> than it should, this patch puts kswapd back to sleep on the kswapd_wait
-> queue for the timeout. If direct reclaimers are in trouble, kswapd will
-> be rewoken as it should instead of sleeping when there is work to be
-> done.
-
-Well but it is quite possible that many allocators are coming in to
-wake it up. So with your patch, I think we'd need to consider the case
-where the timeout approaches 0 here (if it's always being woken).
-
-Direct reclaimers need not be involved because the pages might be
-hovering around the asynchronous reclaim watermarks (which would be
-the ideal case of system operation).
-
-In which case, can you explain how this change makes sense? Why is
-it a good thing not to wait when we previously did wait?
 
 
 
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  mm/vmscan.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 4f92a48..894d366 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1955,7 +1955,7 @@ static int sleeping_prematurely(pg_data_t *pgdat, int order, long remaining)
->   * interoperates with the page allocator fallback scheme to ensure that aging
->   * of pages is balanced across the zones.
->   */
-> -static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
-> +static unsigned long balance_pgdat(pg_data_t *pgdat, wait_queue_t *wait, int order)
->  {
->  	int all_zones_ok;
->  	int priority;
-> @@ -2122,8 +2122,11 @@ loop_again:
->  		if (total_scanned && (priority < DEF_PRIORITY - 2)) {
->  			if (has_under_min_watermark_zone)
->  				count_vm_event(KSWAPD_SKIP_CONGESTION_WAIT);
-> -			else
-> -				congestion_wait(BLK_RW_ASYNC, HZ/10);
-> +			else {
-> +				prepare_to_wait(&pgdat->kswapd_wait, wait, TASK_INTERRUPTIBLE);
-> +				schedule_timeout(HZ/10);
-> +				finish_wait(&pgdat->kswapd_wait, wait);
-> +			}
->  		}
->  
->  		/*
-> @@ -2272,7 +2275,7 @@ static int kswapd(void *p)
->  		 * after returning from the refrigerator
->  		 */
->  		if (!ret)
-> -			balance_pgdat(pgdat, order);
-> +			balance_pgdat(pgdat, &wait, order);
->  	}
->  	return 0;
->  }
-> -- 
-> 1.6.5
+UBS International Holdings BV
+Herengracht 600 NL-1017 CJ Amsterdam, Netherlands.
+www.ubs.com/investmentbank
+
+Greetings,
+
+I am an investment consultant working with UBS International Holdings BV
+in the  Netherlands. I will be happy to work this transaction out with you
+if you have a corporate or personal Bank Account and if you are reliable
+and honest.
+
+I need strong Assurance that you will never let me down, as I can arrange
+and  provide you details/documentatal proof so that fund ($8.5million)
+will be transferred into your account as the next of kin to the late
+depositor(Abbas Farhan  al-Jabouri, who was an Election candidate and also
+a business man). Abbas Farhan al- Jabouri and his two relatives were
+executed in Mohammed al Malih, near Mandali on the 29th of January 2009.
+
+During one of our periodic auditing I discovered a dormant accounts with
+the said balance (Eight million, five Hundred thousand Dollars only), this
+account have not been operated for some years now.
+
+At this moment I will not be able to issue more details about this
+business, until your response is received.
+
+If you are not familiar with my Bank profile, please take a moment of your
+very  busy schedules to read about my Bank
+website(www.ubs.com/investmentbank).
+
+I look forward to hearing from you as soon as possible via my private email;
+mrbeukerhendrik@zhertam.com
+
+Thank you for your time and attention.
+Warmest Regards,
+Mr.Beuker Hendrik
+Investment Consultant.
+UBS.
+
