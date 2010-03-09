@@ -1,86 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203Ab0CIKI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 05:08:56 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:42252 "EHLO gir.skynet.ie"
+	id S1754241Ab0CIKLi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 05:11:38 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33714 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892Ab0CIKIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 05:08:53 -0500
-Date: Tue, 9 Mar 2010 10:08:35 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-mm@kvack.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] page-allocator: Check zone pressure when batch of
-	pages are freed
-Message-ID: <20100309100835.GA4883@csn.ul.ie>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-3-git-send-email-mel@csn.ul.ie> <20100309095342.GD8653@laptop>
+	id S1752892Ab0CIKLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 05:11:36 -0500
+Date: Tue, 9 Mar 2010 11:11:34 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rafi Rubin <rafi@seas.upenn.edu>
+Cc: mickib1@gmail.com, chatty@enac.fr, peterhuewe@gmx.de, micki@n-trig.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] HID: N-trig MTM Driver fix and cleanup patch 1
+In-Reply-To: <4B959B69.80705@seas.upenn.edu>
+Message-ID: <alpine.LNX.2.00.1003091107460.17799@pobox.suse.cz>
+References: <1268082827-2680-1-git-send-email-micki@n-trig.com> <4B959B69.80705@seas.upenn.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100309095342.GD8653@laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 08:53:42PM +1100, Nick Piggin wrote:
-> Cool, you found this doesn't hurt performance too much?
+On Mon, 8 Mar 2010, Rafi Rubin wrote:
+
+> > + *	1.0 - Rafi Rubin ( Version From 2010-02-13 02:13:05)
+> > + *		This cleans up the identification of multitouch
+> > + *		groups and enables the end of group sync.
+> > + *		Taps are now explicitly handled to adjust for the changes in
+> > the
+> > + *		event stream in multitouch mode.
+> > + *		Added triple and quad tap for the benefit of
+> > + *		tools that recognize different tap types but
+> > + *		do not have full multi touch support.
+> > + *	1.1 - N-trig - Add Change Log and defines of MTM firmware.
+> > + *		Add debug Paramater change Driver name in hid_driver structure
+> >    */
 > 
+> I don't know that the change log needs to be in the code file itself. The
+> point was more that your commit messages should give us an idea about what
+> your changing.  Jiri, what's your take on that?
 
-Nothing outside the noise was measured. I didn't profile it to be
-absolutly sure but I expect it's ok.
+Fully agreed. I am all for removing any Changelog entries from the .c 
+source files altogether. We have excellent SCM to handle this all for us.
 
-> Can't you remove the check from the reclaim code now? (The check
-> here should give a more timely wait anyway)
+> Thank you, we should have named these constants earlier.
 > 
-
-I'll try and see what the timing and total IO figures look like.
-
-> This is good because it should eliminate most all cases of extra
-> waiting. I wonder if you've also thought of doing the check in the
-> allocation path too as we were discussing? (this would give a better
-> FIFO behaviour under memory pressure but I could easily agree it is not
-> worth the cost)
+> > +#define MODULE_NAME "hid_ntrig"
+> > -	.name = "ntrig",
 > 
+> I left off the "hid_" prefix based on what I saw in the other hid drivers.
+> Jiri, is there a standard to follow or do you have an opinion about this?
 
-I *could* make the check but as I noted in the leader, there isn't
-really a good test case that determines if these changes are "good" or
-"bad". Removing congestion_wait() seems like an obvious win but other
-modifications that alter how and when processes wait are less obvious.
+The convention used by all the other drivers hanging on HID bus are 
+without the 'hid' prefix, so we should obey that also for ntrig, yes.
 
-> On Mon, Mar 08, 2010 at 11:48:22AM +0000, Mel Gorman wrote:
-> > When a batch of pages have been freed to the buddy allocator, it is possible
-> > that it is enough to push a zone above its watermarks. This patch puts a
-> > check in the free path for zone pressure. It's in a common path but for
-> > the most part, it should only be checking if a linked list is empty and
-> > have minimal performance impact.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/page_alloc.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 1383ff9..3c8e8b7 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -562,6 +562,9 @@ static void free_pcppages_bulk(struct zone *zone, int count,
-> >  		} while (--count && --batch_free && !list_empty(list));
-> >  	}
-> >  	spin_unlock(&zone->lock);
-> > +
-> > +	/* A batch of pages have been freed so check zone pressure */
-> > +	check_zone_pressure(zone);
-> >  }
-> >  
-> >  static void free_one_page(struct zone *zone, struct page *page, int order,
-> > -- 
-> > 1.6.5
-> 
+Thanks,
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jiri Kosina
+SUSE Labs, Novell Inc.
