@@ -1,96 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676Ab0CILM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 06:12:59 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56128 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753685Ab0CILMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 06:12:55 -0500
-Message-ID: <4B962D57.1000406@cn.fujitsu.com>
-Date: Tue, 09 Mar 2010 19:13:27 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1754709Ab0CILPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 06:15:33 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:7656 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754541Ab0CILP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 06:15:29 -0500
+X-SpamScore: -1
+X-BigFish: VPS-1(zz9370Jzz1202hzzz32i6bh2a8h87h43h62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KZ0HVZ-02-1GD-02
+X-M-MSG: 
+Date: Tue, 9 Mar 2010 12:14:21 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: [git pull] IOMMU fixes and updates
+Message-ID: <20100309111421.GE5619@amd.com>
 MIME-Version: 1.0
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, josh@joshtriplett.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [RFC PATCH] rcu: don't ignore preempt_disable() in the idle loop
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 09 Mar 2010 11:14:22.0404 (UTC) FILETIME=[AB942040:01CABF79]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Current, synchronize_sched() ignores preempt-disable()
-sequences in the idle loop. It makes synchronize_sched()
-is not so pure, and it hurts tracing.
+I know that this pull-request comes too late, but these changes had kvm
+dependencies (this is the reason I didn't sent these changes via Ingo).
+The KVM changes appeared in your tree last friday and as I checked my
+prepared branch against the result I found out that the KVM people
+rebased the branch I put the largepage changes on. So I had to rebase my
+largepage branch too to eliminate the old commits and put a new
+pull-branch together.
+Sadly the KVM branch was rebased to some stage of your tree in the merge
+window which didn't even boot my test machine. So I spent the whole day
+yesterday to get the result booting and tested. After finding the reason
+for the boot crash I passed this issue to Boris which sent a fix for
+this one (see http://lkml.org/lkml/2010/3/8/199). Here is the
+tested result. With Boris fix it boots and has no know regressions.
+Please consider to pull these changes. If you decide thats too late to
+pull this it has to wait for the next merge window.
 
-Paul have a proposal before:
-http://lkml.org/lkml/2009/4/5/140
-http://lkml.org/lkml/2009/4/6/496
-But old fix needs to hack into all architectures' idle loops.
+Anyway:
 
-This is another try, it uses the fact that idle loops
-are executing with preept_count()=1.
-But I didn't look deep into all idle loops.
+The following changes since commit 57d54889cd00db2752994b389ba714138652e60c:
+  Linus Torvalds (1):
+        Linux 2.6.34-rc1
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 3ec8160..0761723 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -80,6 +80,10 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
- struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
- DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
- 
-+#ifndef IDLE_CORE_LOOP_PREEMPT_COUNT
-+#define IDLE_CORE_LOOP_PREEMPT_COUNT (1)
-+#endif
-+
- /*
-  * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
-  * permit this function to be invoked without holding the root rcu_node
-@@ -1114,6 +1118,26 @@ static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
- 		raise_softirq(RCU_SOFTIRQ);
- }
- 
-+static inline int rcu_idle_qs(int cpu)
-+{
-+	if (!idle_cpu(cpu))
-+		return 0;
-+
-+	if (!rcu_scheduler_active)
-+		return 0;
-+
-+	if (in_softirq())
-+		return 0;
-+
-+	if (hardirq_count() > (1 << HARDIRQ_SHIFT))
-+		return 0;
-+
-+	if ((preempt_count() & PREEMPT_MASK) > IDLE_CORE_LOOP_PREEMPT_COUNT)
-+		return 0;
-+
-+	return 1;
-+}
-+
- /*
-  * Check to see if this CPU is in a non-context-switch quiescent state
-  * (user mode or idle loop for rcu, non-softirq execution for rcu_bh).
-@@ -1127,9 +1151,7 @@ void rcu_check_callbacks(int cpu, int user)
- {
- 	if (!rcu_pending(cpu))
- 		return; /* if nothing for RCU to do. */
--	if (user ||
--	    (idle_cpu(cpu) && rcu_scheduler_active &&
--	     !in_softirq() && hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
-+	if (user || rcu_idle_qs(cpu)) {
- 
- 		/*
- 		 * Get here if this CPU took its interrupt from user
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/updates-2.6.34
+
+Chris Wright (1):
+      x86/amd-iommu: Pt mode fix for domain_destroy
+
+Joerg Roedel (14):
+      x86/amd-iommu: Protect IOMMU-API map/unmap path
+      x86/amd-iommu: Report errors in acpi parsing functions upstream
+      iommu-api: Rename ->{un}map function pointers to ->{un}map_range
+      iommu-api: Add iommu_map and iommu_unmap functions
+      iommu-api: Add ->{un}map callbacks to iommu_ops
+      VT-d: Change {un}map_range functions to implement {un}map interface
+      kvm: Change kvm_iommu_map_pages to map large pages
+      x86/amd-iommu: Make iommu_map_page and alloc_pte aware of page sizes
+      x86/amd-iommu: Make iommu_unmap_page and fetch_pte aware of page sizes
+      x86/amd-iommu: Make amd_iommu_iova_to_phys aware of multiple page sizes
+      x86/amd-iommu: Implement ->{un}map callbacks for iommu-api
+      iommu-api: Remove iommu_{un}map_range functions
+      x86/amd-iommu: Use helper function to destroy domain
+      Merge branches 'iommu/largepages' and 'amd-iommu/fixes' into iommu/updates-2.6.34
+
+Julia Lawall (1):
+      x86/amd-iommu: Remove double NULL check in check_device
+
+ arch/x86/include/asm/amd_iommu_types.h |   36 ++++++
+ arch/x86/kernel/amd_iommu.c            |  210 +++++++++++++++++++++-----------
+ arch/x86/kernel/amd_iommu_init.c       |   38 ++++--
+ drivers/base/iommu.c                   |   43 +++++--
+ drivers/pci/intel-iommu.c              |   22 ++--
+ include/linux/iommu.h                  |   24 ++--
+ virt/kvm/iommu.c                       |  113 ++++++++++++++----
+ 7 files changed, 343 insertions(+), 143 deletions(-)
+
 
