@@ -1,290 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085Ab0CIT3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 14:29:15 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:57404 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755819Ab0CIT3L (ORCPT
+	id S1755536Ab0CISiI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 13:38:08 -0500
+Received: from smtp149.mail.ukl.yahoo.com ([77.238.184.80]:45338 "HELO
+	smtp149.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752825Ab0CISiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 14:29:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ldB9zTMEDgMG9nJdiS3JlfihJKfwysyfeziTtydFoR9omNl6uBTEoLdjAhsmkVCiV6
-         cOlyAL3paLCJkcdb6/TgyatfTZi0E1JHAot8cEvzN8Qina9sEa9LrThXVz76Z6o3ySjW
-         RO1ntukTq7E02CegiurAKzhf/SDWC6LnnE86M=
-From: Nick Savage <nagaten@gmail.com>
-To: benh@kernel.crashing.org, fthain@telegraphics.com.au,
-       grant.likely@secretlab.ca, geert@linux-m68k.org, monstr@monstr.eu
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Nick Savage <nagaten@gmail.com>
-Subject: [PATCH] Staging: macintosh: fix whitespace and style in adb.c This is a patch to the adb.c file, fixing the formatting of braces and tabs. Signed-off-by: Nick Savage
-Date: Tue,  9 Mar 2010 14:28:35 -0500
-Message-Id: <1268162915-12767-1-git-send-email-nagaten@gmail.com>
-X-Mailer: git-send-email 1.7.0.1
+	Tue, 9 Mar 2010 13:38:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.es;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ZzY5vAp8T+TXhnkJRReFZoXvNHILgdxZuHNYP4Gd6+I1XswOa0AasH8FEmmYnNU8LgwdJazZ/DZ0+0jcNOq2Bve/VpbTZxaszoUGFYyJF0zgjCAokMob4kXpt4TFTTFlf3Jxpv496yUEixV6SpHA2A8Vy09yOISmZMe+tnaohqo=  ;
+X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
+X-YMail-OSG: 61Gxqa8VM1nMNXTAxcoMzRqww5WB4hV3uEsOTgw4qUA.NzwxrATWwWe3ANM9RVzA09Cv4ftsSc0AGLLnYsgQ0aJN9hn2Y8C23R83ilzIV8LU2cJ1x0wf4hFylz2ZodbT6AFFgW6sRxBWgxsB5xd03Cbx9khGBISYlRu11.yvlUNZTFbZBrUXMW7g_FIl4TBoSUPQZ0uSyqc1f.H4LDoxec9CE2uhbXEOHPzop.2UQ3aOkDwcJNceXLzy699TjwgB
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B96958B.3010403@yahoo.es>
+Date: Tue, 09 Mar 2010 19:38:03 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+CC: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [LKML] [RFC PATCH v3 05/11] swiotlb: add	swiotlb_set_default_size()
+References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es> <1267963912-984-6-git-send-email-albert_herranz@yahoo.es> <20100308165940.GC4568@phenom.dumpdata.com>
+In-Reply-To: <20100308165940.GC4568@phenom.dumpdata.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/macintosh/adb.c |   71 +++++++++++++++++++++++------------------------
- 1 files changed, 35 insertions(+), 36 deletions(-)
+Konrad Rzeszutek Wilk wrote:
+> On Sun, Mar 07, 2010 at 01:11:46PM +0100, Albert Herranz wrote:
+>> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
+>> This size can be influenced using a kernel command line parameter "swiotlb".
+>> Unfortunately, the parsing of the kernel command line is done _after_ the
+>> swiotlb is initialized on some architectures.
+> 
+> Why can't it be moved up? I mean move the parsing of the kernel
+> parameters before the PCI subsystem?
 
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 1c4ee6e..89891bb 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -115,27 +115,27 @@ static DEFINE_RWLOCK(adb_handler_lock);
- #if 0
- static void printADBreply(struct adb_request *req)
- {
--        int i;
-+	int i;
- 
--        printk("adb reply (%d)", req->reply_len);
--        for(i = 0; i < req->reply_len; i++)
--                printk(" %x", req->reply[i]);
--        printk("\n");
-+	printk("adb reply (%d)", req->reply_len);
-+	for (i = 0; i < req->reply_len; i++)
-+		printk(" %x", req->reply[i]);
-+	printk("\n");
- 
- }
- #endif
- 
- static int adb_scan_bus(void)
- {
--	int i, highFree=0, noMovement;
-+	int i, highFree = 0, noMovement;
- 	int devmask = 0;
- 	struct adb_request req;
--	
-+
- 	/* assumes adb_handler[] is all zeroes at this point */
- 	for (i = 1; i < 16; i++) {
- 		/* see if there is anything at address i */
- 		adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
--                            (i << 4) | 0xf);
-+			(i << 4) | 0xf);
- 		if (req.reply_len > 1)
- 			/* one or more devices at this address */
- 			adb_handler[i].original_address = i;
-@@ -161,7 +161,7 @@ static int adb_scan_bus(void)
- 			 * this only moves one device.
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC, 3,
--				    (i<< 4) | 0xb, (highFree | 0x60), 0xfe);
-+				    (i << 4) | 0xb, (highFree | 0x60), 0xfe);
- 			/*
- 			 * See if anybody actually moved. This is suggested
- 			 * by HW TechNote 01:
-@@ -170,7 +170,8 @@ static int adb_scan_bus(void)
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 				    (highFree << 4) | 0xf);
--			if (req.reply_len <= 1) continue;
-+			if (req.reply_len <= 1)
-+				continue;
- 			/*
- 			 * Test whether there are any device(s) left
- 			 * at address i.
-@@ -193,8 +194,7 @@ static int adb_scan_bus(void)
- 					break;
- 
- 				noMovement = 0;
--			}
--			else {
-+			} else {
- 				/*
- 				 * No devices left at address i; move the
- 				 * one(s) we moved to `highFree' back to i.
-@@ -203,7 +203,7 @@ static int adb_scan_bus(void)
- 					    (highFree << 4) | 0xb,
- 					    (i | 0x60), 0xfe);
- 			}
--		}	
-+		}
- 	}
- 
- 	/* Now fill in the handler_id field of the adb_handler entries. */
-@@ -307,7 +307,7 @@ static int __init adb_init(void)
- 	if (adb_inited)
- 		return 0;
- 	adb_inited = 1;
--		
-+
- 	adb_controller = NULL;
- 
- 	i = 0;
-@@ -341,10 +341,10 @@ static int
- do_adb_reset_bus(void)
- {
- 	int ret;
--	
-+
- 	if (adb_controller == NULL)
- 		return -ENXIO;
--		
-+
- 	if (adb_controller->autopoll)
- 		adb_controller->autopoll(0);
- 
-@@ -381,14 +381,14 @@ do_adb_reset_bus(void)
- 
- 	blocking_notifier_call_chain(&adb_client_list,
- 		ADB_MSG_POST_RESET, NULL);
--	
-+
- 	return ret;
- }
- 
- void
- adb_poll(void)
- {
--	if ((adb_controller == NULL)||(adb_controller->poll == NULL))
-+	if ((adb_controller == NULL) || (adb_controller->poll == NULL))
- 		return;
- 	adb_controller->poll();
- }
-@@ -459,7 +459,7 @@ adb_register(int default_id, int handler_id, struct adb_ids *ids,
- 	ids->nids = 0;
- 	for (i = 1; i < 16; i++) {
- 		if ((adb_handler[i].original_address == default_id) &&
--		    (!handler_id || (handler_id == adb_handler[i].handler_id) || 
-+		    (!handler_id || (handler_id == adb_handler[i].handler_id) ||
- 		    try_handler_change(i, handler_id))) {
- 			if (adb_handler[i].handler != 0) {
- 				printk(KERN_ERR
-@@ -485,7 +485,7 @@ adb_unregister(int index)
- 	mutex_lock(&adb_handler_mutex);
- 	write_lock_irq(&adb_handler_lock);
- 	if (adb_handler[index].handler) {
--		while(adb_handler[index].busy) {
-+		while (adb_handler[index].busy) {
- 			write_unlock_irq(&adb_handler_lock);
- 			yield();
- 			write_lock_irq(&adb_handler_lock);
-@@ -504,7 +504,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	int i, id;
- 	static int dump_adb_input = 0;
- 	unsigned long flags;
--	
-+
- 	void (*handler)(unsigned char *, int, int);
- 
- 	/* We skip keystrokes and mouse moves when the sleep process
-@@ -512,7 +512,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	 */
- 	if (adb_got_sleep)
- 		return;
--		
-+
- 	id = buf[0] >> 4;
- 	if (dump_adb_input) {
- 		printk(KERN_INFO "adb packet: ");
-@@ -530,7 +530,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 		wmb();
- 		adb_handler[id].busy = 0;
- 	}
--		
-+
- }
- 
- /* Try to change handler to new_id. Will return 1 if successful. */
-@@ -539,15 +539,15 @@ static int try_handler_change(int address, int new_id)
- 	struct adb_request req;
- 
- 	if (adb_handler[address].handler_id == new_id)
--	    return 1;
-+		return 1;
- 	adb_request(&req, NULL, ADBREQ_SYNC, 3,
- 	    ADB_WRITEREG(address, 3), address | 0x20, new_id);
- 	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 	    ADB_READREG(address, 3));
- 	if (req.reply_len < 2)
--	    return 0;
-+		return 0;
- 	if (req.reply[2] != new_id)
--	    return 0;
-+		return 0;
- 	adb_handler[address].handler_id = req.reply[2];
- 
- 	return 1;
-@@ -586,7 +586,7 @@ struct adbdev_state {
- 	spinlock_t	lock;
- 	atomic_t	n_pending;
- 	struct adb_request *completed;
--  	wait_queue_head_t wait_queue;
-+	wait_queue_head_t wait_queue;
- 	int		inuse;
- };
- 
-@@ -624,8 +624,7 @@ do_adb_query(struct adb_request *req)
- {
- 	int	ret = -EINVAL;
- 
--	switch(req->data[1])
--	{
-+	switch (req->data[1]) {
- 	case ADB_QUERY_GETDEVINFO:
- 		if (req->nbytes < 3)
- 			break;
-@@ -697,7 +696,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	int ret = 0;
- 	struct adbdev_state *state = file->private_data;
- 	struct adb_request *req;
--	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait,current);
-+	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
- 	unsigned long flags;
- 
- 	if (count < 2)
-@@ -720,7 +719,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 			ret = -EIO;
- 		if (req != NULL || ret != 0)
- 			break;
--		
-+
- 		if (file->f_flags & O_NONBLOCK) {
- 			ret = -EAGAIN;
- 			break;
-@@ -737,7 +736,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	current->state = TASK_RUNNING;
- 	remove_wait_queue(&state->wait_queue, &wait);
- 	spin_unlock_irqrestore(&state->lock, flags);
--	
-+
- 	if (ret)
- 		return ret;
- 
-@@ -774,7 +773,7 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	req->done = adb_write_done;
- 	req->arg = (void *) state;
- 	req->complete = 0;
--	
-+
- 	ret = -EFAULT;
- 	if (copy_from_user(req->data, buf, count))
- 		goto out;
-@@ -794,15 +793,15 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	}
- 	/* Special case for ADB_BUSRESET request, all others are sent to
- 	   the controller */
--	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
--		&&(req->data[1] == ADB_BUSRESET)) {
-+	else if ((req->data[0] == ADB_PACKET) && (count > 1)
-+		&& (req->data[1] == ADB_BUSRESET)) {
- 		ret = do_adb_reset_bus();
- 		up(&adb_probe_mutex);
- 		atomic_dec(&state->n_pending);
- 		if (ret == 0)
- 			ret = count;
- 		goto out;
--	} else {	
-+	} else {
- 		req->reply_expected = ((req->data[1] & 0xc) == 0xc);
- 		if (adb_controller && adb_controller->send_request)
- 			ret = adb_controller->send_request(req, 0);
--- 
-1.7.0.1
+(In my case there's no PCI subsystem, this is an embedded platform without PCI support).
+
+Currently, in the PowerPC tree a platform wanting to use the swiotlb just sets the global ppc_swiotlb_enable variable to true in its setup_arch() function.
+The PowerPC setup code then calls swiotlb_init(1) just after setup_arch() when SWIOTLB and ppc_swiotlb_enable is true.
+At this point the kernel command line is not yet parsed.
+
+So, at least in PowerPC linux, the early swiotlb initialization is not influenced by the kernel command line.
+
+Maybe switching swiotlb from __setup to early_param would help too.
+
+>> This patch adds a new function swiotlb_set_default_size() which can be used
+>> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
+>>
+>> This will be used later to implement a smaller IO TLB on the Nintendo Wii
+>> video game console which just comes with 24MB + 64MB of RAM.
+> 
+> Use the io_tlb_nslabs, which is what swiotlb_init_with_default_size uses
+> (the passed in argument is only used if io_tlb_nslabs is not set).
+> 
+
+True, thanks.
+
+Cheers,
+Albert
 
