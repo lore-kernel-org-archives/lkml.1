@@ -1,44 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014Ab0CIVOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 16:14:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:53472 "EHLO mx1.suse.de"
+	id S1754521Ab0CIVOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 16:14:22 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55274 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752695Ab0CIVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752963Ab0CIVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Mar 2010 16:14:17 -0500
-Date: Tue, 9 Mar 2010 13:01:50 -0800
-From: Greg KH <gregkh@suse.de>
-To: Joey Lee <jlee@novell.com>
-Cc: mzxreary@0pointer.de, mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that is
- need load SCM
-Message-ID: <20100309210150.GC32299@suse.de>
-References: <4B96DD0202000023000146D6@novprvlin0050.provo.novell.com>
+Date: Tue, 9 Mar 2010 22:14:11 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Ramkrishna Vepa <ram.vepa@neterion.com>,
+       Rastapur Santosh <santosh.rastapur@neterion.com>,
+       Sivakumar Subramani <sivakumar.subramani@neterion.com>,
+       Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
+       Anil Murthy <anil.murthy@neterion.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/5] drivers/net: drop redundant memset
+Message-ID: <Pine.LNX.4.64.1003092213500.4974@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B96DD0202000023000146D6@novprvlin0050.provo.novell.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 05:42:58AM -0700, Joey Lee wrote:
-> Hi Greg, 
-> 
-> Please kindly review the attached patch for removed the non-standard
-> interface "threeg" in msi-laptop driver.
+From: Julia Lawall <julia@diku.dk>
 
-Looks good to me.
+The region set by the call to memset is immediately overwritten by the
+subsequent call to memcpy.
 
-Matthew, are you going to be taking patches like this now?
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-If so, feel free to add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-to the patch.
+// <smpl>
+@@
+expression e1,e2,e3,e4;
+@@
 
-If not, please let me know.
+- memset(e1,e2,e3);
+  memcpy(e1,e4,e3);
+// </smpl>
 
-thanks,
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-greg k-h
+---
+ drivers/net/s2io.c                  |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index df70657..2eb7f8a 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -5819,10 +5819,8 @@ static void s2io_vpd_read(struct s2io_nic *nic)
+ 		}
+ 	}
+ 
+-	if ((!fail) && (vpd_data[1] < VPD_STRING_LEN)) {
+-		memset(nic->product_name, 0, vpd_data[1]);
++	if ((!fail) && (vpd_data[1] < VPD_STRING_LEN))
+ 		memcpy(nic->product_name, &vpd_data[3], vpd_data[1]);
+-	}
+ 	kfree(vpd_data);
+ 	swstats->mem_freed += 256;
+ }
