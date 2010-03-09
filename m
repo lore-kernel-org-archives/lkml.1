@@ -1,55 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971Ab0CIJPR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 04:15:17 -0500
-Received: from mail-px0-f188.google.com ([209.85.216.188]:57594 "EHLO
-	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753507Ab0CIJPN (ORCPT
+	id S1754004Ab0CIJ1F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 04:27:05 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:52791 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958Ab0CIJ1C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 04:15:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:reply-to:from:date:message-id:subject:to:content-type;
-        b=LDCXxN5O+2R0idRI+8+B2D4LFZZvfupprOp+75eXEol4L9trh/lT1bGvSH3MQ7sWOI
-         qlSIlMTDi0G1+t7Ay89c39+7MafuB8/0/UI0Wp786qt+3qx6KL3GQmb+BTkHMDTMo4z7
-         Ea362dPSbFCSaGB2Hc1sCvQQLzRmklrgd+2GY=
-MIME-Version: 1.0
-Reply-To: axel.lin@gmail.com
-From: axel lin <axel.lin@gmail.com>
-Date: Tue, 9 Mar 2010 17:14:53 +0800
-Message-ID: <427d64721003090114u5419e36dl23616cfa0afd3cde@mail.gmail.com>
-Subject: [PATCH] Regulators: lp3971 - Fix setting val for LDO2 and LDO4
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 9 Mar 2010 04:27:02 -0500
+Subject: opendir() on a file???
+From: Jon Masters <jonathan@jonmasters.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Tue, 09 Mar 2010 04:26:57 -0500
+Message-ID: <1268126817.10479.643.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4e4c5f8267a4fbf651b4cc26c5f72465514f6224 Mon Sep 17 00:00:00 2001
-From: Axel Lin <axel.lin@gmail.com>
-Date: Tue, 9 Mar 2010 16:53:59 +0800
-Subject: [PATCH] lp3971: Fix setting val for LDO2 and LDO4
+Folks,
 
-In lp3971_ldo_set_voltage function, it requires val to left shift 4
-bits for LDO2 and LDO4.
-This patch fix this issue.
----
- drivers/regulator/lp3971.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Now I might be missing something, and I know I'm behind on LKML[0], but
+the following isn't supposed to work in my book:
 
-diff --git a/drivers/regulator/lp3971.c b/drivers/regulator/lp3971.c
-index f5532ed..a28ae37 100644
---- a/drivers/regulator/lp3971.c
-+++ b/drivers/regulator/lp3971.c
-@@ -187,7 +187,8 @@ static int lp3971_ldo_set_voltage(struct regulator_dev *dev,
-                return -EINVAL;
+/*
+ * Weird kernel test
+ */
 
-        return lp3971_set_bits(lp3971, LP3971_LDO_VOL_CONTR_REG(ldo),
--               LDO_VOL_CONTR_MASK << LDO_VOL_CONTR_SHIFT(ldo), val);
-+               LDO_VOL_CONTR_MASK << LDO_VOL_CONTR_SHIFT(ldo),
-+               val << LDO_VOL_CONTR_SHIFT(ldo));
- }
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdio.h>
 
- static struct regulator_ops lp3971_ldo_ops = {
---
-1.5.4.3
+int main(int argc, char **argv)
+{
+        DIR *dir;
+
+        dir = opendir("foo.conf");
+
+        if (dir)
+                printf("WTF?\n");
+
+        return 0;
+}
+
+This is on an ext4 filesystem, whereas on a box with an older kernel
+this test correctly does not print "WTF?". I know some filesystems
+experiment with streams and treating files as directories, etc. but I
+wasn't aware that anything particular had changed recently?
+
+The box is running almost an upstream kernel, and I can poke if I'm told
+this not intended: 2.6.34-0.8.rc0.git11.fc14.x86_64.
+
+What am I missing?
+
+Jon.
+
+[0] The podcast isn't dead, I'm just suffering from a cold and will be
+taking a day off to recover and catch up with that sometime today.
+
+
