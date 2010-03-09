@@ -1,277 +1,376 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424Ab0CIBRL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Mar 2010 20:17:11 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50344 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756369Ab0CIBRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Mar 2010 20:17:04 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B95A171.5000207@jp.fujitsu.com>
-Date: Tue, 09 Mar 2010 10:16:33 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1756372Ab0CIBSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Mar 2010 20:18:11 -0500
+Received: from xenotime.net ([72.52.64.118]:48051 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756250Ab0CIBSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Mar 2010 20:18:09 -0500
+Message-ID: <4B95A1CD.2050401@xenotime.net>
+Date: Mon, 08 Mar 2010 17:18:05 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, willy@linux.intel.com
-Subject: Re: [PATCH] PCI: create function symlinks in /sys/bus/pci/slots/N/
-References: <20100308172429.GA20953@ldl.fc.hp.com>
-In-Reply-To: <20100308172429.GA20953@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: William Cohen <wcohen@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add DocBook documentation for the block tracepoints.
+References: <1267811199-29812-1-git-send-email-wcohen@redhat.com> <4B932672.3010309@xenotime.net> <4B952AC1.1030601@redhat.com>
+In-Reply-To: <4B952AC1.1030601@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> Create convenience symlinks in sysfs, linking slots to device
-> functions, and vice versa. These links make it easier for users to
-> figure out which devices actually live in what slots.
+On 03/08/10 08:50, William Cohen wrote:
+> On 03/06/2010 11:07 PM, Randy Dunlap wrote:
+>> William Cohen wrote:
+>>> This patch adds a simple description of the various block tracepoints
+>>> available in the kernel.
+>>>
+>>> Signed-off-by: William Cohen <wcohen@redhat.com>
+>>
+>> Thanks.  I have just a few nits below then it will be ready IMO.
 > 
-> For example:
+> I have gone through the patch and made the changes. Below is the updated patch
 > 
-> sapphire:/sys/bus/pci/slots # ls
-> 1  10  2  3  4  5  6  7  8  9
+> -Will
 > 
-> sapphire:/sys/bus/pci/slots # ls -l 3
-> total 0
-> -r--r--r-- 1 root root 65536 Aug 18 14:10 address
-> lrwxrwxrwx 1 root root     0 Aug 18 14:10 function0 ->
-> ../../../../devices/pci0000:23/0000:23:01.0
-> lrwxrwxrwx 1 root root     0 Aug 18 14:10 function1 ->
-> ../../../../devices/pci0000:23/0000:23:01.1
->
-
-I usually get the similar information like the followings. Is it not enough
-for you?
-
-# /sbin/lspci -s `cat /sys/bus/pci/slots/1/address`
-40:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (rev 06)
-40:00.1 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (rev 06)
-
- 
-> sapphire:/sys/bus/pci/slots # ls -l 3/function0/slot
-> lrwxrwxrwx 1 root root 0 Aug 18 14:13 3/function0/slot ->
-> ../../../bus/pci/slots/3
-
-IIRC, the latest 'lspci' command shows physical slot information (you added
-this useful feature, didn't you?). Is it not enough for you?
-
-Thanks,
-Kenji Kaneshige
-
-
-
 > 
-> The original form of this patch was written by Matthew Wilcox,
-> and was enhanced to include links from the sysfs slots/ directory
-> pointing back at the device functions.
-> 
-> Cc: willy@linux.intel.com
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+> Signed-off-by: William Cohen <wcohen@redhat.com>
+
+Thanks, looks good.  I'll merge it or get Jens to merge it.
+
 > ---
-> Not sure why I've been sitting on this patch for so long, but
-> I think it would be a useful thing to have upstream.
+>  Documentation/DocBook/tracepoint.tmpl |   13 +++
+>  include/trace/events/block.h          |  164 +++++++++++++++++++++++++++++++++
+>  2 files changed, 177 insertions(+), 0 deletions(-)
 > 
->  Documentation/ABI/testing/sysfs-bus-pci |   40 ++++++++++++++++++++++++++
->  drivers/pci/pci-sysfs.c                 |   37 ++++++++++++++++++++++++
->  drivers/pci/slot.c                      |   48 ++++++++++++++++++++++++++++++++
->  3 files changed, 125 insertions(+)
-> ---
-> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-> index 25be325..428676c 100644
-> --- a/Documentation/ABI/testing/sysfs-bus-pci
-> +++ b/Documentation/ABI/testing/sysfs-bus-pci
-> @@ -133,6 +133,46 @@ Description:
->  		The symbolic link points to the PCI device sysfs entry of the
->  		Physical Function this device associates with.
+> diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
+> index 8bca1d5..e8473ea 100644
+> --- a/Documentation/DocBook/tracepoint.tmpl
+> +++ b/Documentation/DocBook/tracepoint.tmpl
+> @@ -16,6 +16,15 @@
+>       </address>
+>      </affiliation>
+>     </author>
+> +   <author>
+> +    <firstname>William</firstname>
+> +    <surname>Cohen</surname>
+> +    <affiliation>
+> +     <address>
+> +      <email>wcohen@redhat.com</email>
+> +     </address>
+> +    </affiliation>
+> +   </author>
+>    </authorgroup>
 >  
-> +
-> +What:		/sys/bus/pci/slots/...
-> +Date:		April 2005 (possibly older)
-> +KernelVersion:	2.6.12 (possibly older)
-> +Contact:	linux-pci@vger.kernel.org
-> +Description:
-> +		When the appropriate driver is loaded, it will create a
-> +		directory per claimed physical PCI slot in
-> +		/sys/bus/pci/slots/.  The names of these directories are
-> +		specific to the driver, which in turn, are specific to the
-> +		platform, but in general, should match the label on the
-> +		machine's physical chassis.
-> +
-> +		The drivers that can create slot directories include the
-> +		PCI hotplug drivers, and as of 2.6.27, the pci_slot driver.
-> +
-> +		The slot directories contain, at a minimum, a file named
-> +		'address' which contains the PCI bus:device:function tuple.
-> +		Other files may appear as well, but are specific to the
-> +		driver.
-> +
-> +What:		/sys/bus/pci/slots/.../function[0-7]
-> +Date:		March 2010
-> +KernelVersion:	2.6.35
-> +Contact:	linux-pci@vger.kernel.org
-> +Description:
-> +		If PCI slot directories (as described above) are created,
-> +		and the physical slot is actually populated with a device,
-> +		symbolic links in the slot directory pointing to the
-> +		device's PCI functions are created as well.
-> +
-> +What:		/sys/bus/pci/devices/.../slot
-> +Date:		March 2010
-> +KernelVersion:	2.6.35
-> +Contact:	linux-pci@vger.kernel.org
-> +Description:
-> +		If PCI slot directories (as described above) are created,
-> +		a symbolic link pointing to the slot directory will be
-> +		created as well.
-> +
->  What:		/sys/bus/pci/slots/.../module
->  Date:		June 2009
->  Contact:	linux-pci@vger.kernel.org
-> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-> index 807224e..d234234 100644
-> --- a/drivers/pci/pci-sysfs.c
-> +++ b/drivers/pci/pci-sysfs.c
-> @@ -1006,6 +1006,39 @@ error:
->  	return retval;
->  }
+>    <legalnotice>
+> @@ -91,4 +100,8 @@
+>  !Iinclude/trace/events/signal.h
+>    </chapter>
 >  
-> +static void pci_remove_slot_links(struct pci_dev *dev)
-> +{
-> +	char func[10];
-> +	struct pci_slot *slot;
-> +
-> +	sysfs_remove_link(&dev->dev.kobj, "slot");
-> +	list_for_each_entry(slot, &dev->bus->slots, list) {
-> +		if (slot->number != PCI_SLOT(dev->devfn))
-> +			continue;
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		sysfs_remove_link(&slot->kobj, func);
-> +	}
-> +}
-> +
-> +static int pci_create_slot_links(struct pci_dev *dev)
-> +{
-> +	int result = 0;
-> +	char func[10];
-> +	struct pci_slot *slot;
-> +
-> +	list_for_each_entry(slot, &dev->bus->slots, list) {
-> +		if (slot->number != PCI_SLOT(dev->devfn))
-> +			continue;
-> +		result = sysfs_create_link(&dev->dev.kobj, &slot->kobj, "slot");
-> +		if (result)
-> +			goto out;
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		result = sysfs_create_link(&slot->kobj, &dev->dev.kobj, func);
-> +	}
-> +out:
-> +	return result;
-> +}
-> +
->  int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
->  {
->  	int retval;
-> @@ -1067,6 +1100,8 @@ int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
->  	if (retval)
->  		goto err_vga_file;
+> +  <chapter id="block">
+> +   <title>Block IO</title>
+> +!Iinclude/trace/events/block.h
+> +  </chapter>
+>  </book>
+> diff --git a/include/trace/events/block.h b/include/trace/events/block.h
+> index 5fb7273..6bb1181 100644
+> --- a/include/trace/events/block.h
+> +++ b/include/trace/events/block.h
+> @@ -40,6 +40,16 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
+>  		  __entry->nr_sector, __entry->errors)
+>  );
 >  
-> +	pci_create_slot_links(pdev);
-> +
->  	return 0;
+> +/**
+> + * block_rq_abort - abort block operation request
+> + * @q: queue containing the block operation request
+> + * @rq: block IO operation request
+> + *
+> + * Called immediately after pending block IO operation request @rq in
+> + * queue @q is aborted. The fields in the operation request @rq
+> + * can be examined to determine which device and sectors the pending
+> + * operation would access.
+> + */
+>  DEFINE_EVENT(block_rq_with_error, block_rq_abort,
 >  
->  err_vga_file:
-> @@ -1116,6 +1151,8 @@ void pci_remove_sysfs_dev_files(struct pci_dev *pdev)
->  	if (!sysfs_initialized)
->  		return;
+>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> @@ -47,6 +57,15 @@ DEFINE_EVENT(block_rq_with_error, block_rq_abort,
+>  	TP_ARGS(q, rq)
+>  );
 >  
-> +	pci_remove_slot_links(pdev);
-> +
->  	pci_remove_capabilities_sysfs(pdev);
+> +/**
+> + * block_rq_requeue - place block IO request back on a queue
+> + * @q: queue holding operation
+> + * @rq: block IO operation request
+> + *
+> + * The block operation request @rq is being placed back into queue
+> + * @q.  For some reason the request was not completed and needs to be
+> + * put back in the queue.
+> + */
+>  DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
 >  
->  	if (pdev->cfg_size < PCI_CFG_SPACE_EXP_SIZE)
-> diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-> index 49c9e6c..a8e22c6 100644
-> --- a/drivers/pci/slot.c
-> +++ b/drivers/pci/slot.c
-> @@ -96,6 +96,50 @@ static ssize_t cur_speed_read_file(struct pci_slot *slot, char *buf)
->  	return bus_speed_read(slot->bus->cur_bus_speed, buf);
->  }
+>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> @@ -54,6 +73,17 @@ DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
+>  	TP_ARGS(q, rq)
+>  );
 >  
-> +static void remove_sysfs_files(struct pci_slot *slot)
-> +{
-> +	char func[10];
-> +	struct list_head *tmp;
-> +
-> +	list_for_each(tmp, &slot->bus->devices) {
-> +		struct pci_dev *dev = pci_dev_b(tmp);
-> +		if (PCI_SLOT(dev->devfn) != slot->number)
-> +			continue;
-> +		sysfs_remove_link(&dev->dev.kobj, "slot");
-> +
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		sysfs_remove_link(&slot->kobj, func);
-> +	}
-> +}
-> +
-> +static int create_sysfs_files(struct pci_slot *slot)
-> +{
-> +	int result;
-> +	char func[10];
-> +	struct list_head *tmp;
-> +
-> +	list_for_each(tmp, &slot->bus->devices) {
-> +		struct pci_dev *dev = pci_dev_b(tmp);
-> +		if (PCI_SLOT(dev->devfn) != slot->number)
-> +			continue;
-> +
-> +		result = sysfs_create_link(&dev->dev.kobj, &slot->kobj, "slot");
-> +		if (result)
-> +			goto fail;
-> +
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		result = sysfs_create_link(&slot->kobj, &dev->dev.kobj, func);
-> +		if (result)
-> +			goto fail;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail:
-> +	remove_sysfs_files(slot);
-> +	return result;
-> +}
-> +
->  static void pci_slot_release(struct kobject *kobj)
->  {
->  	struct pci_dev *dev;
-> @@ -108,6 +152,8 @@ static void pci_slot_release(struct kobject *kobj)
->  		if (PCI_SLOT(dev->devfn) == slot->number)
->  			dev->slot = NULL;
+> +/**
+> + * block_rq_complete - block IO operation completed by device driver
+> + * @q: queue containing the block operation request
+> + * @rq: block operations request
+> + *
+> + * The block_rq_complete tracepoint event indicates that some portion
+> + * of operation request has been completed by the device driver.  If
+> + * the @rq->bio is %NULL, then there is absolutely no additional work to
+> + * do for the request. If @rq->bio is non-NULL then there is
+> + * additional work required to complete the request.
+> + */
+>  DEFINE_EVENT(block_rq_with_error, block_rq_complete,
 >  
-> +	remove_sysfs_files(slot);
-> +
->  	list_del(&slot->list);
+>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> @@ -95,6 +125,16 @@ DECLARE_EVENT_CLASS(block_rq,
+>  		  __entry->nr_sector, __entry->comm)
+>  );
 >  
->  	kfree(slot);
-> @@ -299,6 +345,8 @@ placeholder:
->  	INIT_LIST_HEAD(&slot->list);
->  	list_add(&slot->list, &parent->slots);
+> +/**
+> + * block_rq_insert - insert block operation request into queue
+> + * @q: target queue
+> + * @rq: block IO operation request
+> + *
+> + * Called immediately before block operation request @rq is inserted
+> + * into queue @q.  The fields in the operation request @rq struct can
+> + * be examined to determine which device and sectors the pending
+> + * operation would access.
+> + */
+>  DEFINE_EVENT(block_rq, block_rq_insert,
 >  
-> +	create_sysfs_files(slot);
-> +
->  	list_for_each_entry(dev, &parent->devices, bus_list)
->  		if (PCI_SLOT(dev->devfn) == slot_nr)
->  			dev->slot = slot;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> @@ -102,6 +142,14 @@ DEFINE_EVENT(block_rq, block_rq_insert,
+>  	TP_ARGS(q, rq)
+>  );
+>  
+> +/**
+> + * block_rq_issue - issue pending block IO request operation to device driver
+> + * @q: queue holding operation
+> + * @rq: block IO operation operation request
+> + *
+> + * Called when block operation request @rq from queue @q is sent to a
+> + * device driver for processing.
+> + */
+>  DEFINE_EVENT(block_rq, block_rq_issue,
+>  
+>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> @@ -109,6 +157,17 @@ DEFINE_EVENT(block_rq, block_rq_issue,
+>  	TP_ARGS(q, rq)
+>  );
+>  
+> +/**
+> + * block_bio_bounce - used bounce buffer when processing block operation
+> + * @q: queue holding the block operation
+> + * @bio: block operation
+> + *
+> + * A bounce buffer was used to handle the block operation @bio in @q.
+> + * This occurs when hardware limitations prevent a direct transfer of
+> + * data between the @bio data memory area and the IO device.  Use of a
+> + * bounce buffer requires extra copying of data and decreases
+> + * performance.
+> + */
+>  TRACE_EVENT(block_bio_bounce,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio),
+> @@ -138,6 +197,14 @@ TRACE_EVENT(block_bio_bounce,
+>  		  __entry->nr_sector, __entry->comm)
+>  );
+>  
+> +/**
+> + * block_bio_complete - completed all work on the block operation
+> + * @q: queue holding the block operation
+> + * @bio: block operation completed
+> + *
+> + * This tracepoint indicates there is no further work to do on this
+> + * block IO operation @bio.
+> + */
+>  TRACE_EVENT(block_bio_complete,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio),
+> @@ -193,6 +260,14 @@ DECLARE_EVENT_CLASS(block_bio,
+>  		  __entry->nr_sector, __entry->comm)
+>  );
+>  
+> +/**
+> + * block_bio_backmerge - merging block operation to the end of an existing operation
+> + * @q: queue holding operation
+> + * @bio: new block operation to merge
+> + *
+> + * Merging block request @bio to the end of an existing block request
+> + * in queue @q.
+> + */
+>  DEFINE_EVENT(block_bio, block_bio_backmerge,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio),
+> @@ -200,6 +275,14 @@ DEFINE_EVENT(block_bio, block_bio_backmerge,
+>  	TP_ARGS(q, bio)
+>  );
+>  
+> +/**
+> + * block_bio_frontmerge - merging block operation to the beginning of an existing operation
+> + * @q: queue holding operation
+> + * @bio: new block operation to merge
+> + *
+> + * Merging block IO operation @bio to the beginning of an existing block
+> + * operation in queue @q.
+> + */
+>  DEFINE_EVENT(block_bio, block_bio_frontmerge,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio),
+> @@ -207,6 +290,13 @@ DEFINE_EVENT(block_bio, block_bio_frontmerge,
+>  	TP_ARGS(q, bio)
+>  );
+>  
+> +/**
+> + * block_bio_queue - putting new block IO operation in queue
+> + * @q: queue holding operation
+> + * @bio: new block operation
+> + *
+> + * About to place the block IO operation @bio into queue @q.
+> + */
+>  DEFINE_EVENT(block_bio, block_bio_queue,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio),
+> @@ -243,6 +333,15 @@ DECLARE_EVENT_CLASS(block_get_rq,
+>  		  __entry->nr_sector, __entry->comm)
+>  );
+>  
+> +/**
+> + * block_getrq - get a free request entry in queue for block IO operations
+> + * @q: queue for operations
+> + * @bio: pending block IO operation
+> + * @rw: low bit indicates a read (%0) or a write (%1)
+> + *
+> + * A request struct for queue @q has been allocated to handle the
+> + * block IO operation @bio.
+> + */
+>  DEFINE_EVENT(block_get_rq, block_getrq,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
+> @@ -250,6 +349,17 @@ DEFINE_EVENT(block_get_rq, block_getrq,
+>  	TP_ARGS(q, bio, rw)
+>  );
+>  
+> +/**
+> + * block_sleeprq - waiting to get a free request entry in queue for block IO operation
+> + * @q: queue for operation
+> + * @bio: pending block IO operation
+> + * @rw: low bit indicates a read (%0) or a write (%1)
+> + *
+> + * In the case where a request struct cannot be provided for queue @q
+> + * the process needs to wait for an request struct to become
+> + * available.  This tracepoint event is generated each time the
+> + * process goes to sleep waiting for request struct become available.
+> + */
+>  DEFINE_EVENT(block_get_rq, block_sleeprq,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
+> @@ -257,6 +367,14 @@ DEFINE_EVENT(block_get_rq, block_sleeprq,
+>  	TP_ARGS(q, bio, rw)
+>  );
+>  
+> +/**
+> + * block_plug - keep operations requests in request queue
+> + * @q: request queue to plug
+> + *
+> + * Plug the request queue @q.  Do not allow block operation requests
+> + * to be sent to the device driver. Instead, accumulate requests in
+> + * the queue to improve throughput performance of the block device.
+> + */
+>  TRACE_EVENT(block_plug,
+>  
+>  	TP_PROTO(struct request_queue *q),
+> @@ -293,6 +411,13 @@ DECLARE_EVENT_CLASS(block_unplug,
+>  	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
+>  );
+>  
+> +/**
+> + * block_unplug_timer - timed release of operations requests in queue to device driver
+> + * @q: request queue to unplug
+> + *
+> + * Unplug the request queue @q because a timer expired and allow block
+> + * operation requests to be sent to the device driver.
+> + */
+>  DEFINE_EVENT(block_unplug, block_unplug_timer,
+>  
+>  	TP_PROTO(struct request_queue *q),
+> @@ -300,6 +425,13 @@ DEFINE_EVENT(block_unplug, block_unplug_timer,
+>  	TP_ARGS(q)
+>  );
+>  
+> +/**
+> + * block_unplug_io - release of operations requests in request queue
+> + * @q: request queue to unplug
+> + *
+> + * Unplug request queue @q because device driver is scheduled to work
+> + * on elements in the request queue.
+> + */
+>  DEFINE_EVENT(block_unplug, block_unplug_io,
+>  
+>  	TP_PROTO(struct request_queue *q),
+> @@ -307,6 +439,17 @@ DEFINE_EVENT(block_unplug, block_unplug_io,
+>  	TP_ARGS(q)
+>  );
+>  
+> +/**
+> + * block_split - split a single bio struct into two bio structs
+> + * @q: queue containing the bio
+> + * @bio: block operation being split
+> + * @new_sector: The starting sector for the new bio
+> + *
+> + * The bio request @bio in request queue @q needs to be split into two
+> + * bio requests. The newly created @bio request starts at
+> + * @new_sector. This split may be required due to hardware limitation
+> + * such as operation crossing device boundaries in a RAID system.
+> + */
+>  TRACE_EVENT(block_split,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio,
+> @@ -337,6 +480,16 @@ TRACE_EVENT(block_split,
+>  		  __entry->comm)
+>  );
+>  
+> +/**
+> + * block_remap - map request for a partition to the raw device
+> + * @q: queue holding the operation
+> + * @bio: revised operation
+> + * @dev: device for the operation
+> + * @from: original sector for the operation
+> + *
+> + * An operation for a partition on a block device has been mapped to the
+> + * raw block device.
+> + */
+>  TRACE_EVENT(block_remap,
+>  
+>  	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+> @@ -370,6 +523,17 @@ TRACE_EVENT(block_remap,
+>  		  (unsigned long long)__entry->old_sector)
+>  );
+>  
+> +/**
+> + * block_rq_remap - map request for a block operation request
+> + * @q: queue holding the operation
+> + * @rq: block IO operation request
+> + * @dev: device for the operation
+> + * @from: original sector for the operation
+> + *
+> + * The block operation request @rq in @q has been remapped.  The block
+> + * operation request @rq holds the current information and @from hold
+> + * the original sector.
+> + */
+>  TRACE_EVENT(block_rq_remap,
+>  
+>  	TP_PROTO(struct request_queue *q, struct request *rq, dev_t dev,
 
 
+-- 
+~Randy
