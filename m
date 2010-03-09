@@ -1,109 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511Ab0CISWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:22:47 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:49422 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829Ab0CISWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:22:46 -0500
-Date: Tue, 9 Mar 2010 18:22:28 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
-	pressure to relieve instead of congestion
-Message-ID: <20100309182228.GJ4883@csn.ul.ie>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie> <1268048904-19397-2-git-send-email-mel@csn.ul.ie> <20100309133513.GL8653@laptop> <20100309141713.GF4883@csn.ul.ie> <20100309150332.GP8653@laptop> <4B966C7A.5040706@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4B966C7A.5040706@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1754766Ab0CIT6L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 14:58:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43666 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751121Ab0CIT6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 14:58:07 -0500
+Date: Tue, 9 Mar 2010 11:57:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>,
+       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 01/11] lib: introduce common method to convert hex
+ digits
+Message-Id: <20100309115743.48cc125b.akpm@linux-foundation.org>
+In-Reply-To: <5ec8ebd51003081703r76fd2ba7pa850f7568a580181@mail.gmail.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+	<d8c224af14aa936dcd692c70656559fe9726d997.1266861291.git.ext-andriy.shevchenko@nokia.com>
+	<5ec8ebd51003081703r76fd2ba7pa850f7568a580181@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 04:42:50PM +0100, Christian Ehrhardt wrote:
->
->
-> Nick Piggin wrote:
->> On Tue, Mar 09, 2010 at 02:17:13PM +0000, Mel Gorman wrote:
->>> On Wed, Mar 10, 2010 at 12:35:13AM +1100, Nick Piggin wrote:
->>>> On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
->>>>> Under heavy memory pressure, the page allocator may call congestion_wait()
->>>>> to wait for IO congestion to clear or a timeout. This is not as sensible
->>>>> a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
->>>>> even congested as the pressure could have been due to a large number of
->>>>> SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
->>>>>
->>>>> At the point of congestion_wait(), the allocator is struggling to get the
->>>>> pages it needs and it should back off. This patch puts the allocator to sleep
->>>>> on a zone->pressure_wq for either a timeout or until a direct reclaimer or
->>>>> kswapd brings the zone over the low watermark, whichever happens first.
->>>>>
->>>>> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
->>>>> ---
->>>>>  include/linux/mmzone.h |    3 ++
->>>>>  mm/internal.h          |    4 +++
->>>>>  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
->>>>>  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
->>>>>  mm/vmscan.c            |    2 +
->>>>>  5 files changed, 101 insertions(+), 5 deletions(-)
->>>>>
->>>>> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
->>>>> index 30fe668..72465c1 100644
->>>>> --- a/include/linux/mmzone.h
->>>>> +++ b/include/linux/mmzone.h
-> [...]
->>>>> +{
->>>>> +	/* If no process is waiting, nothing to do */
->>>>> +	if (!waitqueue_active(zone->pressure_wq))
->>>>> +		return;
->>>>> +
->>>>> +	/* Check if the high watermark is ok for order 0 */
->>>>> +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
->>>>> +		wake_up_interruptible(zone->pressure_wq);
->>>>> +}
->>>> If you were to do this under the zone lock (in your subsequent patch),
->>>> then it could avoid races. I would suggest doing it all as a single
->>>> patch and not doing the pressure checks in reclaim at all.
->>>>
->>> That is reasonable. I've already dropped the checks in reclaim because as you
->>> say, if the free path check is cheap enough, it's also sufficient. Checking
->>> in the reclaim paths as well is redundant.
->>>
->>> I'll move the call to check_zone_pressure() within the zone lock to avoid
->>> races.
->>>
->
-> Mel, we talked about a thundering herd issue that might come up here in  
-> very constraint cases.
-> So wherever you end up putting that wake_up call, how about being extra  
-> paranoid about a thundering herd flagging them WQ_FLAG_EXCLUSIVE and  
-> waking them with something like that:
->
-> wake_up_interruptible_nr(zone->pressure_wq, #nrofpagesabovewatermark#);
->
-> That should be an easy to calculate sane max of waiters to wake up.
-> On the other hand it might be over-engineered and it implies the need to  
-> reconsider when it would be best to wake up the rest.
->
+On Tue, 9 Mar 2010 03:03:05 +0200
+Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
 
-It seems over-engineering considering that they wake up after a timeout
-unconditionally. I think it's best for the moment to let them wake up in
-a herd and recheck their zonelists as they'll go back to sleep if
-necessary.
+> On Mon, Feb 22, 2010 at 8:09 PM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+> > hex_to_bin() is a little method which converts hex digit to its actual value.
+> > There are plenty of places where such functionality is needed.
+> 
+> I found another more than 10 places (roughly there are > 20 of them
+> already) with such 'copy-paste' logic. Still waiting decision to
+> include first patch of this series... Any comments, suggestions?
 
-> Get me right - I don't really have a hard requirement or need for that,  
-> I just wanted to mention it early on to hear your opinions about it.
->
-> looking forward to test the v2 patch series, adapted to all the good  
-> stuff already discussed.
->
+This patch series turned up two days before the 2.6.33 release, which
+is fairly exactly the time when non-bugfixes won't get looked at!  I
+stored it all away for consideration after we've finished the
+2.6.34-rc1 merge scramble.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
