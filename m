@@ -1,91 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493Ab0CISVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 13:21:25 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:37818 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755327Ab0CISVX (ORCPT
+	id S1755324Ab0CIUMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:12:19 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:61751 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755100Ab0CIUMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 13:21:23 -0500
-From: Will Deacon <will.deacon@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Will Deacon <will.deacon@arm.com>,
-       KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] KGDB: add smp_mb() in synchronisation during exception handler exit
-Date: Tue,  9 Mar 2010 18:20:31 +0000
-Message-Id: <1268158831-6976-1-git-send-email-will.deacon@arm.com>
-X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 09 Mar 2010 18:21:05.0297 (UTC) FILETIME=[48179010:01CABFB5]
+	Tue, 9 Mar 2010 15:12:16 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: [PATCH 2/3] input: use input_mutex instead of BKL when opening input device
+Date: Tue, 9 Mar 2010 21:12:13 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, John Kacur <jkacur@gmail.com>
+References: <1268162386-2745-1-git-send-email-cascardo@holoscopio.com> <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
+In-Reply-To: <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003092112.14071.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19011Ys9rPGogO0axs4ZsQqKcdoyDTMAicfCyT
+ l1jrCo+dVDbxPechjfqiy4puyqSMQowftP3a1eU15tj+n58uma
+ bnrTcn3Vk7OQEi0dbAO8Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KGDB uses atomic variables and busy-wait loops to co-ordinate between
-multiple CPUs on an SMP system. When an exception is handled, the primary
-CPU executes kgdb_handle_exception() whilst the others execute kgdb_wait.
+On Tuesday 09 March 2010, Thadeu Lima de Souza Cascardo wrote:
+>  MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
+> @@ -1881,7 +1880,7 @@ static int input_open_file(struct inode *inode, struct file *file)
+>         const struct file_operations *old_fops, *new_fops = NULL;
+>         int err;
+>  
+> -       lock_kernel();
+> +       mutex_lock(&input_mutex);
+>         /* No load-on-demand here? */
+>         handler = input_table[iminor(inode) >> 5];
+>         if (!handler || !(new_fops = fops_get(handler->fops))) {
+> @@ -1909,7 +1908,7 @@ static int input_open_file(struct inode *inode, struct file *file)
+>         }
+>         fops_put(old_fops);
+>  out:
+> -       unlock_kernel();
+> +       mutex_unlock(&input_mutex);
+>         return err;
+>  }
+>  
+> -- 
 
-There comes a point when the waiters are waiting for the primary CPU to finish:
+Well, actually please have a look at
+http://git.kernel.org/?p=linux/kernel/git/arnd/playground.git;a=commitdiff;h=c06fd0234357618a5741ce958d58901ae4cb7ac1
 
-	/* Wait till primary CPU is done with debugging */
-(1)	while (atomic_read(&passive_cpu_wait[cpu]))
-		cpu_relax();
+* use mutex_lock_interruptible() where possible
+* you probably don't want to hold input_mutex when calling into the lower
+  device's open function
 
-	/* Do important KGDB stuff */
-
-	/* Signal the primary CPU that we are done: */
-	atomic_set(&cpu_in_kgdb[cpu], 0);
-
-In parallel to this, the primary CPU is doing:
-
-	for (i = NR_CPUS-1; i >= 0; i--)
-		atomic_set(&passive_cpu_wait[i], 0);
-	/*
-	 * Wait till all the CPUs have quit
-	 * from the debugger.
-	 */
-	for_each_online_cpu(i) {
-(1)		while (atomic_read(&cpu_in_kgdb[i]))
-			cpu_relax();
-	}
-
-There is a potential deadlock situation at point (1) because the previous
-writes to the passive_cpu_wait variables by the primary CPU may not yet be
-visible to the other CPUs [for instance, they may be sitting in the local
-store buffer]. This means that the waiter CPUs will never exit the while loop
-and therefore never write to the cpu_in_kgdb variables, which the primary CPU
-is blocked on. Furthermore, because the primary CPU is aggressively performing
-reads, the store buffer may not necessarily drain so the system will deadlock.
-
-This deadlock has been experienced on a quad-core ARM11MPCore platform.
-
-The following patch addresses the issue by adding a memory barrier to the
-primary CPU before the polling loop, therefore forcing the previous atomic_sets
-to be visible before waiting for the waiters to finish.
-
-Cc: KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org
-Signed-off-by: Will Deacon <will.deacon@arm.com>
----
- kernel/kgdb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 761fdd2..ee7694b 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -1537,6 +1537,7 @@ acquirelock:
- 		 * Wait till all the CPUs have quit
- 		 * from the debugger.
- 		 */
-+		smp_mb();
- 		for_each_online_cpu(i) {
- 			while (atomic_read(&cpu_in_kgdb[i]))
- 				cpu_relax();
--- 
-1.6.3.3
-
+	Arnd
