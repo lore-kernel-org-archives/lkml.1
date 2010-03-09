@@ -1,120 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597Ab0CIMnG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 07:43:06 -0500
-Received: from novprvlin0050.provo.novell.com ([137.65.248.33]:2399 "EHLO
-	novprvlin0050.provo.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750973Ab0CIMnE (ORCPT
-	<rfc822;groupwise-jlee@novell.com:4:1>);
-	Tue, 9 Mar 2010 07:43:04 -0500
-Message-Id: <4B96DD0202000023000146D6@novprvlin0050.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Tue, 09 Mar 2010 05:42:58 -0700
-From: "Joey Lee" <jlee@novell.com>
-To: <gregkh@suse.de>
-Cc: <mzxreary@0pointer.de>, <mjg59@srcf.ucam.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that
-	 is need load SCM
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=__PartB59F6542.3__="
+	id S1751784Ab0CIMtK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 07:49:10 -0500
+Received: from nat-warsl417-01.aon.at ([195.3.96.119]:43123 "EHLO email.aon.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751239Ab0CIMtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 07:49:07 -0500
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 07:49:06 EST
+From: Melchior FRANZ <melchior.franz@gmail.com>
+To: linux-input@vger.kernel.org
+Subject: Re: [BUG?] hid-core.c: hid->name = dev->manufacturer + dev->product ... why not + dev->serial?
+Date: Tue, 9 Mar 2010 13:42:20 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33; KDE/4.3.5; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-iio@vger.kernel.org
+References: <201003071655.06644@rk-nord.at> <20100309082216.GG17288@core.coreip.homeip.net>
+In-Reply-To: <20100309082216.GG17288@core.coreip.homeip.net>
+X-Fingerprint: 9FFB C079 5B78 4F27 099C C6C6 7399 02D1 919B D903
+X-PGP: http://members.aon.at/mfranz/melchior.franz
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003091342.20273@rk-nord.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME message. If you are reading this text, you may want to 
-consider changing to a mail reader or gateway that understands how to 
-properly handle MIME multipart messages.
+Hey,
 
---=__PartB59F6542.3__=
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
+* Dmitry Torokhov -- Tuesday 09 March 2010:
+> I'm adding a few CCs and takinng discussion a bit away from your patch
+> ;)
 
-Hi Greg, 
-
-Please kindly review the attached patch for removed the non-standard
-interface "threeg" in msi-laptop driver.
+Hmm ... I wonder if they'll all be happy about that. But I can't cut them
+off now, either. Sorry.  :-}
 
 
 
-Thank's a lot!
-Joey Lee
+> On Sun, Mar 07, 2010 at 04:55:06PM +0100, Melchior FRANZ wrote:
+> > The Linux kernel creates the HID/"joystick name" from only iManufacturer and
+> > iProduct, ignoring iSerial. That way, JSIOCGNAME returns the same string
+> > for all such devices, making an actual identification impossible.
 
-於 五，2010-03-05 於 06:10 +0000，joeyli(Joey Lee) 提到：
-> Hi Matthew, 
+> This is nicely illustrates one of the reasons why input subsystem is
+> ill-suited for generic data acquisition.
+
+No. It demonstrates that Linux shouldn't drop essential information on
+the floor for no good reason. So, why is iSerial ignored? After all,
+my simple patch solves my problems. Most input devices probably don't
+have iSerial set anyway, so there wouldn't be much change. But those
+devices that *do* set it may have a reason to do so.
+
+
+
+> You may have 2 joysticks and prefer to use one in one game and other
+> in another game.
+
+Sure. And that's still possible, just like before. The difference is,
+that *if* an application actually cares about the name, then it does
+now get an actual identifier, not just a generic product name. And not
+just "some" identifier, but the one that the manufacturer set, which
+includes the serial number. If an application does only want to look
+up the product, rather than the specific devices, then it can simply
+search for the longest match in its db.
+
+
+
+> With default setup you could grab either one and start playing, ABS_X
+> from either mapping on horizontal movements, ABS_Y on vertical... Same
+> with keyboards - you plug an external keyboard into laptop and you just
+> start typing
+
+Yes, and that works no matter if serial is in the name or not. Because
+that's how usb/hid works. But *iff* an application wants to query the
+device's identifier, then it better be specific, no? That's what identifiers
+are about.
+
+
+
+> > The patch below fixed the problem for me. But, certainly, the current
+> > (mis)behaviour wasn't an accident, but intentional. But what was the
+> > intention? What happens if I attach two actual identical joysticks?
+> > What's the purpose of them having the same name on the system under
+> > /dev/input/{js,event}? 
 > 
-> 於 四，2010-03-04 於 17:09 +0000，Matthew Garrett 提到：
-> > On Thu, Mar 04, 2010 at 10:07:53AM -0700, Joey Lee wrote:
-> > > Thank's for your review and suggestion.
-> > > Per discuss for msi-laptop patchset, I will submit a bit patch for the
-> > > following change:
-> > > 	- remove threeg sysfs interface.
-> > > 	- add KEY_RFKILL keymapping to msi-laptop.
-> > 
-> > If the key event comes through the keyboard controller, there's no need 
-> > to add the mapping to msi-laptop. Doing it through udev or hal is fine.
-> > 
-> 
-> Thank's fully undertood, now, will send patch for remove threeg sysfs
-> interface.
-> 
-> 
-> Joey Lee
+> They will have different event nodes.
+
+Sure. Unfortunatly that doesn't buy me anything. Of cousre, I can just
+work around the strange omission and do the USB querying myself. But the
+question still is, why do I have to? Because the kernel dropped information
+that I now have to retrieve again the hard way?  :-)
 
 
---=__PartB59F6542.3__=
-Content-Type: text/plain; name="0006-Removed-non-standard-interface-threeg.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename="0006-Removed-non-standard-interface-threeg.patch"
 
->From c9dc06048fcb0b8fadd510ef26b5af7b466aeab6 Mon Sep 17 00:00:00 =
-2001=0AFrom: Lee, Chun-Yi <jlee@novell.com>=0ADate: Tue, 9 Mar 2010 =
-20:25:42 +0800=0ASubject: [PATCH] Removed non-standard interface =
-"threeg"=0A=0AThere already have standard rfkill wwan interface for 3G =
-device, so, removed=0Anon-standard interface "threeg".=0A=0ASigned-off-by: =
-Lee, Chun-Yi <jlee@novell.com>=0A---=0A drivers/platform/x86/msi-laptop.c =
-|   36 ------------------------------------=0A 1 files changed, 0 =
-insertions(+), 36 deletions(-)=0A=0Adiff --git a/drivers/platform/x86/msi-l=
-aptop.c b/drivers/platform/x86/msi-laptop.c=0Aindex c2b05da..c891522 =
-100644=0A--- a/drivers/platform/x86/msi-laptop.c=0A+++ b/drivers/platform/x=
-86/msi-laptop.c=0A@@ -311,29 +311,6 @@ static ssize_t store_bluetooth(struc=
-t device *dev,=0A 	return set_device_state(buf, count, MSI_STANDARD_EC=
-_BLUETOOTH_MASK);=0A }=0A =0A-static ssize_t show_threeg(struct device =
-*dev,=0A-	struct device_attribute *attr, char *buf)=0A-{=0A-=0A-	=
-int ret;=0A-=0A-	/* old msi ec not support 3G */=0A-	if =
-(old_ec_model)=0A-		return -1;=0A-=0A-	ret =3D get_wireles=
-s_state_ec_standard();=0A-	if (ret < 0)=0A-		return =
-ret;=0A-=0A-	return sprintf(buf, "%i\n", threeg_s);=0A-}=0A-=0A-static =
-ssize_t store_threeg(struct device *dev,=0A-	struct device_attribute =
-*attr, const char *buf, size_t count)=0A-{=0A-	return set_device_state(buf=
-, count, MSI_STANDARD_EC_3G_MASK);=0A-}=0A-=0A static ssize_t show_lcd_leve=
-l(struct device *dev,=0A 	struct device_attribute *attr, char =
-*buf)=0A {=0A@@ -396,7 +373,6 @@ static DEVICE_ATTR(lcd_level, 0644, =
-show_lcd_level, store_lcd_level);=0A static DEVICE_ATTR(auto_brightness, =
-0644, show_auto_brightness, store_auto_brightness);=0A static DEVICE_ATTR(b=
-luetooth, 0444, show_bluetooth, NULL);=0A static DEVICE_ATTR(wlan, 0444, =
-show_wlan, NULL);=0A-static DEVICE_ATTR(threeg, 0444, show_threeg, =
-NULL);=0A =0A static struct attribute *msipf_attributes[] =3D {=0A 	=
-&dev_attr_lcd_level.attr,=0A@@ -635,10 +611,8 @@ static int load_scm_model_=
-init(struct platform_device *sdev)=0A 	/* allow userland write sysfs file =
- */=0A 	dev_attr_bluetooth.store =3D store_bluetooth;=0A 	dev_attr_wl=
-an.store =3D store_wlan;=0A-	dev_attr_threeg.store =3D store_threeg;=0A =
-	dev_attr_bluetooth.attr.mode |=3D S_IWUSR;=0A 	dev_attr_wlan.attr.=
-mode |=3D S_IWUSR;=0A-	dev_attr_threeg.attr.mode |=3D S_IWUSR;=0A =0A 	/* =
-disable hardware control by fn key */=0A 	result =3D ec_read(MSI_STAN=
-DARD_EC_SCM_LOAD_ADDRESS, &data);=0A@@ -715,14 +689,6 @@ static int __init =
-msi_init(void)=0A 	if (ret)=0A 		goto fail_platform_device2;=
-=0A =0A-	if (!old_ec_model) {=0A-		if (threeg_exists)=
-=0A-			ret =3D device_create_file(&msipf_device->dev,=0A-	=
-					&dev_attr_threeg);=0A-		if =
-(ret)=0A-			goto fail_platform_device2;=0A-	}=0A-=0A 	=
-/* Disable automatic brightness control by default because=0A 	 * this =
-module was probably loaded to do brightness control in=0A 	 * =
-software. */=0A@@ -757,8 +723,6 @@ static void __exit msi_cleanup(void)=0A =
-{=0A =0A 	sysfs_remove_group(&msipf_device->dev.kobj, &msipf_attribut=
-e_group);=0A-	if (!old_ec_model && threeg_exists)=0A-		device_remo=
-ve_file(&msipf_device->dev, &dev_attr_threeg);=0A 	platform_device_unr=
-egister(msipf_device);=0A 	platform_driver_unregister(&msipf_driver);=
-=0A 	backlight_device_unregister(msibl_device);=0A-- =0A1.6.0.2=0A=0A
---=__PartB59F6542.3__=--
+> Nevertheless serials are exported in sysfs ('uniq' attribute). Also udev
+> can give persistent names device nodes based on physocal connection,
+> serial numbers, etc.
+
+It's not much fun to use all sorts of additional Linux specific interfaces,
+because the responsible one doesn't do its job.
+
+Anyway, my kernel is "fixed", so it's not about me at all. I just feel a
+bit uncomfortably if I have to hack my kernel. Before the fix I got this
+information from js_demo/JSIOCGNAME:
+
+  Joystick 0: "Leo Bodnar BU0836A Interface"
+  Joystick 1: "Leo Bodnar BU0836A Interface"
+  Joystick 2: "SAITEK CYBORG 3D USB"
+
+and now I get:
+
+  Joystick 0: "Leo Bodnar BU0836A Interface A12107"
+  Joystick 1: "Leo Bodnar BU0836A Interface A12100"
+  Joystick 2: "SAITEK CYBORG 3D USB"
+
+As you see, nothing changed for the Saitek. They don't bother setting
+iSerial, as probably most vendors. (Reminder: These are circuit boards
+and can have very different sensors attached to their inputs, so it's
+essential to identify them safely).
+
+m.
