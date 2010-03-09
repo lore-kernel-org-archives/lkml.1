@@ -1,53 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972Ab0CIUO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 15:14:57 -0500
-Received: from mail-bw0-f211.google.com ([209.85.218.211]:39059 "EHLO
-	mail-bw0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199Ab0CIUO4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 15:14:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kY+R08vVc2mPndP0ppTgNNOes/IfsvyWPBaZ0rUmq97KJcm/L39k8X2/CJ6szrnhfw
-         nWzERkhmNs4YbdNdZ1+8l8aoN73AuULJ6g9/Swgi/UItyXIGJqI5LiMOrTKhF3RXDPmE
-         TFA9FofX9QY+nyJxbKNAEdRDZviHgt6b1RBhM=
+	id S1755572Ab0CIURQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 15:17:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17343 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754812Ab0CIURO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 15:17:14 -0500
+Date: Tue, 9 Mar 2010 15:16:56 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, jens.axboe@oracle.com,
+       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface
+	"weight_device" for IO-Controller
+Message-ID: <20100309201656.GA3013@redhat.com>
+References: <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com> <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com> <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1267592861-26911-2-git-send-email-viresh.kumar@st.com>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-2-git-send-email-viresh.kumar@st.com>
-Date: Tue, 9 Mar 2010 21:14:53 +0100
-Message-ID: <63386a3d1003091214s5251674et99903756f3528e66@mail.gmail.com>
-Subject: Re: [PATCH 01/11] ST SPEAr: Added ARM PrimeXsys System Controller 
-	SP810 header file
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Viresh KUMAR <viresh.kumar@st.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/3 Viresh KUMAR <viresh.kumar@st.com>:
+On Mon, Mar 08, 2010 at 11:39:54AM -0800, Nauman Rafique wrote:
+[..]
+> >> +static int blkio_policy_parse_and_set(char *buf,
+> >> +                                   struct blkio_policy_node *newpn)
+> >> +{
+> >> +     char *s[4], *p, *major_s = NULL, *minor_s = NULL;
+> >> +     int ret;
+> >> +     unsigned long major, minor, temp;
+> >> +     int i = 0;
+> >> +     dev_t dev;
+> >> +
+> >> +     memset(s, 0, sizeof(s));
+> >> +
+> >> +     while ((p = strsep(&buf, " ")) != NULL) {
+> >> +             if (!*p)
+> >> +                     continue;
+> >> +
+> >> +             s[i++] = p;
+> >> +
+> >> +             /* Prevent from inputing too many things */
+> >> +             if (i == 3)
+> >> +                     break;
+> >> +     }
+> >> +
+> >> +     if (i != 2)
+> >> +             return -EINVAL;
+> >> +
+> >> +     p = strsep(&s[0], ":");
+> >> +     if (p != NULL)
+> >> +             major_s = p;
+> >> +     else
+> >> +             return -EINVAL;
+> >> +
+> >> +     minor_s = s[0];
+> >> +     if (!minor_s)
+> >> +             return -EINVAL;
+> >> +
+> >> +     ret = strict_strtoul(major_s, 10, &major);
+> >> +     if (ret)
+> >> +             return -EINVAL;
+> >> +
+> >> +     ret = strict_strtoul(minor_s, 10, &minor);
+> >> +     if (ret)
+> >> +             return -EINVAL;
+> >> +
+> >> +     dev = MKDEV(major, minor);
+> 
+> I am not quite sure if exposing a mojor,minor number is the best
+> interface that can be exposed to user space. How about actual disk
+> names like sda, sdb, .. etc? The only problem I see there is that it
+> seems tricky to get to these disk names from within the block layer.
+> "struct request_queue" has a pointer to backing_dev which has a device
+> from which we can get major,minor. But in order to get to disk name,
+> we would have to call get_gendisk which can hold a semaphore. Is this
+> the reason for us going with major,minor as a user interface to
+> specify a disk? I bet there are good reasons for us not keeping a
+> pointer to "struct gendisk" from "struct request_queue". If we could
+> keep that pointer, our user interface could be very easily modified to
+> be the disk name like sda, sdb, etc.
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@st.com>
-> ---
->  include/linux/sysctl_sp810.h |   59 ++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 59 insertions(+), 0 deletions(-)
->  create mode 100644 include/linux/sysctl_sp810.h
-> (...)
+Hi Nauman,
 
-To the rest of the world this is probably a number of register definitions and
-an obscure inline function, so the entire internal kernel API does not need
-to know about it.
+Do we really store a device name in "struct gendisk"? IIUC, a disk is
+identified by its major and minor number and then there can be multiple
+device files pointing to same disk. 
 
-Move it to arch/arm/include/asm/hardware
+So I have a disk /dev/sdc in my system and I created another alias to
+same disk using mknod and mounted the disk using the alias.
 
-Yours,
-Linus Walleij
+mknod /dev/sdc-alias b 8 32
+mount /dev/sdc-alias /mnt
+
+If that's the case, there is no way gendisk can store the pathname.
+Instead, device file has inode associated with it, and there we store
+major, minor number of disk, and using that we operate on disk/partition.
+
+If that's the case, then major/minor number based interface for blkio
+makes sense. Because we also need to export stats regarding the disk
+time consumed by cgroup on a particular device, the only unique identifier
+of the disk seems to be {major,minor} pair and multiple block device
+files can be pointing to same disk. Because it is many to one mapping, it
+will not be possible to reverse map it.
+
+So I guess we need to continue to handle rules and stats using major/minor
+numbers. One improvement probably we can do and that is allow setting
+rules both by major/minor number and device file path. But internally
+cgroup code will map device file path to major minor numbers and rules
+will be displayed against major/minor number and not original device path.
+
+Thanks
+Vivek
