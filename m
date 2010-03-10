@@ -1,65 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324Ab0CJN0C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:26:02 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53694 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932310Ab0CJNZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:25:57 -0500
-Date: Wed, 10 Mar 2010 13:25:22 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/pebs] perf, x86: Fix the !CONFIG_CPU_SUP_INTEL build
-Message-ID: <tip-caa0142d84ceb0fc83e28f0475d0a7316cb6df77@git.kernel.org>
-Git-Commit-ID: caa0142d84ceb0fc83e28f0475d0a7316cb6df77
-X-Mailer: tip-git-log-daemon
+	id S1756494Ab0CJN1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:27:46 -0500
+Received: from av7-2-sn3.vrr.skanova.net ([81.228.9.182]:34678 "EHLO
+	av7-2-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614Ab0CJN1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 08:27:44 -0500
+Message-ID: <4B979E4B.70001@pelagicore.com>
+Date: Wed, 10 Mar 2010 14:27:39 +0100
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@pelagicore.com>
+Organization: Pelagicore AB
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100121 Iceowl/1.0b1 Icedove/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:25:23 +0000 (UTC)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Wolfram Sang <w.sang@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] max730x: Add license macro
+Content-Type: multipart/mixed;
+ boundary="------------090902090905040902040300"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  caa0142d84ceb0fc83e28f0475d0a7316cb6df77
-Gitweb:     http://git.kernel.org/tip/caa0142d84ceb0fc83e28f0475d0a7316cb6df77
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sat, 6 Jun 2009 13:58:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Mar 2010 13:40:44 +0100
+This is a multi-part message in MIME format.
+--------------090902090905040902040300
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-perf, x86: Fix the !CONFIG_CPU_SUP_INTEL build
+Due to mail client issues, the patch is attached.
 
-Fix typo. But the modularization here is ugly and should be improved.
+According to the header in max730x it is licensed GPLv2.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Add a MODULE_LICENSE to avoid tainting the kernel.
+
+--Richard
+
+--------------090902090905040902040300
+Content-Type: text/x-patch;
+ name="max730x-license.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+ filename="max730x-license.patch"
+
+According to the header in max730x it is licensed GPLv2.
+
+Add a MODULE_LICENSE to avoid getting the kernel tainted.
+
+Signed-off-by: Richard Röjfors <richard.rojfors@pelagicore.com>
 ---
- arch/x86/kernel/cpu/perf_event_intel_ds.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_event_intel_ds.c b/arch/x86/kernel/cpu/perf_event_intel_ds.c
-index 1bfd59b..c59678a 100644
---- a/arch/x86/kernel/cpu/perf_event_intel_ds.c
-+++ b/arch/x86/kernel/cpu/perf_event_intel_ds.c
-@@ -661,7 +661,7 @@ static void intel_ds_init(void)
- 
- #else /* CONFIG_CPU_SUP_INTEL */
- 
--static int reseve_ds_buffers(void)
-+static int reserve_ds_buffers(void)
- {
- 	return 0;
+diff --git a/drivers/gpio/max730x.c b/drivers/gpio/max730x.c
+index c9bced5..6474577 100644
+--- a/drivers/gpio/max730x.c
++++ b/drivers/gpio/max730x.c
+@@ -242,3 +242,5 @@ int __devexit __max730x_remove(struct device *dev)
+ 	return ret;
  }
+ EXPORT_SYMBOL_GPL(__max730x_remove);
++
++MODULE_LICENSE("GPL v2");
+
+--------------090902090905040902040300--
