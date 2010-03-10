@@ -1,60 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691Ab0CJSca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 13:32:30 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59127 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932652Ab0CJSc3 (ORCPT
+	id S932735Ab0CJSdF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 13:33:05 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34261 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932717Ab0CJScx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 13:32:29 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B97E5B0.5070900@s5r6.in-berlin.de>
-Date: Wed, 10 Mar 2010 19:32:16 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       devel <devel@driverdev.osuosl.org>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: Tuxradar patching article and [PATCH] scripts/cvt_kernel_style.pl
-References: <1268177526.1545.62.camel@Joe-Laptop.home>
-In-Reply-To: <1268177526.1545.62.camel@Joe-Laptop.home>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Mar 2010 13:32:53 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] power_supply: Use genirq in wm831x_power
+Date: Wed, 10 Mar 2010 18:27:40 +0000
+Message-Id: <1268245660-19140-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.7.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> There was an article published recently:
-> http://www.tuxradar.com/content/newbies-guide-hacking-linux-kernel
-> that seems to have prompted several new contributors (welcome)
-> to create style reformatting patches.
+Since the WM831x core has been converted to use genirq for the
+interrupt controller there is no longer any need for chip specific
+wrappers for IRQ operations. Convert to use genirq directly.
 
-Uh oh.  How can a newcomer know what good style is?
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/power/wm831x_power.c |   33 ++++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 17 deletions(-)
 
-Please start your career of kernel contributions differently:
-  - Test new kernels.  Report issues and work with the developers to
-    get the issues fixed.
-  - If there is a bug which nags you but there doesn't seem to be
-    an active developer to fix it anytime soon, try to fix it yourself.
-
-Or if you are aware of a small RFE for a subsystem which interests you
-personally, try to implement that small feature.
-
-It doesn't make sense to start kernel development with something which
-you are likely not going to connect with personally.  (Reformat others'
-code?  Better write your own code, i.e. a bug fix or a small feature.)
-
-PS:
-I am also saying this because I repeatedly see "style fixes" posted
-which are questionable at best, or actually degrade style, or even
-introduce bugs.
-
-PPS:
-How can a script know what good style is?
+diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
+index f85e80b..bf2ff41 100644
+--- a/drivers/power/wm831x_power.c
++++ b/drivers/power/wm831x_power.c
+@@ -536,9 +536,9 @@ static __devinit int wm831x_power_probe(struct platform_device *pdev)
+ 		goto err_battery;
+ 
+ 	irq = platform_get_irq_byname(pdev, "SYSLO");
+-	ret = wm831x_request_irq(wm831x, irq, wm831x_syslo_irq,
+-				 IRQF_TRIGGER_RISING, "SYSLO",
+-				 power);
++	ret = request_threaded_irq(irq, NULL, wm831x_syslo_irq,
++				   IRQF_TRIGGER_RISING, "System power low",
++				   power);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "Failed to request SYSLO IRQ %d: %d\n",
+ 			irq, ret);
+@@ -546,9 +546,9 @@ static __devinit int wm831x_power_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	irq = platform_get_irq_byname(pdev, "PWR SRC");
+-	ret = wm831x_request_irq(wm831x, irq, wm831x_pwr_src_irq,
+-				 IRQF_TRIGGER_RISING, "Power source",
+-				 power);
++	ret = request_threaded_irq(irq, NULL, wm831x_pwr_src_irq,
++				   IRQF_TRIGGER_RISING, "Power source",
++				   power);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "Failed to request PWR SRC IRQ %d: %d\n",
+ 			irq, ret);
+@@ -557,10 +557,10 @@ static __devinit int wm831x_power_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+ 		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
+-		ret = wm831x_request_irq(wm831x, irq, wm831x_bat_irq,
+-					 IRQF_TRIGGER_RISING,
+-					 wm831x_bat_irqs[i],
+-					 power);
++		ret = request_threaded_irq(irq, NULL, wm831x_bat_irq,
++					   IRQF_TRIGGER_RISING,
++					   wm831x_bat_irqs[i],
++					   power);
+ 		if (ret != 0) {
+ 			dev_err(&pdev->dev,
+ 				"Failed to request %s IRQ %d: %d\n",
+@@ -574,13 +574,13 @@ static __devinit int wm831x_power_probe(struct platform_device *pdev)
+ err_bat_irq:
+ 	for (; i >= 0; i--) {
+ 		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
+-		wm831x_free_irq(wm831x, irq, power);
++		free_irq(irq, power);
+ 	}
+ 	irq = platform_get_irq_byname(pdev, "PWR SRC");
+-	wm831x_free_irq(wm831x, irq, power);
++	free_irq(irq, power);
+ err_syslo:
+ 	irq = platform_get_irq_byname(pdev, "SYSLO");
+-	wm831x_free_irq(wm831x, irq, power);
++	free_irq(irq, power);
+ err_usb:
+ 	power_supply_unregister(usb);
+ err_battery:
+@@ -595,19 +595,18 @@ err_kmalloc:
+ static __devexit int wm831x_power_remove(struct platform_device *pdev)
+ {
+ 	struct wm831x_power *wm831x_power = platform_get_drvdata(pdev);
+-	struct wm831x *wm831x = wm831x_power->wm831x;
+ 	int irq, i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+ 		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
+-		wm831x_free_irq(wm831x, irq, wm831x_power);
++		free_irq(irq, wm831x_power);
+ 	}
+ 
+ 	irq = platform_get_irq_byname(pdev, "PWR SRC");
+-	wm831x_free_irq(wm831x, irq, wm831x_power);
++	free_irq(irq, wm831x_power);
+ 
+ 	irq = platform_get_irq_byname(pdev, "SYSLO");
+-	wm831x_free_irq(wm831x, irq, wm831x_power);
++	free_irq(irq, wm831x_power);
+ 
+ 	power_supply_unregister(&wm831x_power->battery);
+ 	power_supply_unregister(&wm831x_power->wall);
 -- 
-Stefan Richter
--=====-==-=- --== -=-=-
-http://arcgraph.de/sr/
+1.7.0
+
