@@ -1,64 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167Ab0CJUwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 15:52:32 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:35498 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757120Ab0CJUwa (ORCPT
+	id S1757164Ab0CJU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 15:56:25 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:37154 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036Ab0CJU4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 15:52:30 -0500
-Date: Wed, 10 Mar 2010 21:48:19 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-bluetooth <linux-bluetooth@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Kevin Hayes <kevin@atheros.com>, Dan Tian" <Dan.Tian@atheros.com>
-Subject: Re: Linux Bluetooth Coexistence documentation in general and for
-	ath9k
-Message-ID: <20100310204818.GF1394@ucw.cz>
-References: <43e72e891003031643u353c72dcj23bf429363a16ec8@mail.gmail.com> <1267715451.29510.20.camel@localhost.localdomain>
+	Wed, 10 Mar 2010 15:56:23 -0500
+Date: Wed, 10 Mar 2010 20:56:18 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pauli Nieminen <suokkos@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Luca Tettamanti <kronos.it@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [Q] How to tell we're using the KMS (during suspend/resume)
+	outside the graphics driver
+Message-ID: <20100310205618.GA28628@srcf.ucam.org>
+References: <201003062236.09801.rjw@sisk.pl> <201003091234.59598.rjw@sisk.pl> <alpine.LFD.2.00.1003091613390.30952@casper.infradead.org> <201003092208.28175.rjw@sisk.pl> <20100310055013.GC19518@linux-sh.org> <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267715451.29510.20.camel@localhost.localdomain>
+In-Reply-To: <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+As far as the ACPI video driver goes, acpi_get_physical_pci_device() 
+will give you something to work with. For the console-switching case, I 
+think the most reasonable plan is probably to add a flag to the console 
+drivers to indicate whether or not they support reprogramming the 
+hardware themselves, and then walk all active console drivers. There'd 
+need to be a way for fb drivers to tell fbcon that they can handle it.
 
-> > The question of Bluetooth coexistence pops up here, on IRC and on bug
-> > reports quite too often so I've stuffed what I could onto a page with
-> > a few references / code and about ath9k's schemes for BT coexistence,
-> > feel free to extend or correct:
-> > 
-> > http://wireless.kernel.org/en/users/Documentation/Bluetooth-coexistence
-> > http://wireless.kernel.org/en/users/Drivers/ath9k/btcoex
-> > 
-> > I'm still not sure if "2-wire" and "3-wire" are generic terms and if
-> > someone owns a trademark on them or what, but looking down the road I
-> > think it would be nice to export this information through nl80211, if
-> > a device supports any of these BT-coex schemes and if so, perhaps
-> > display the current signal status of:
-> > 
-> >   * WLAN_ACTIVE
-> >   * BT_PRIORITY
-> >   * BT_STATE
-...
-> the only thing the host has control over is AFH channel map, and even
-> modifying that is not really needed. The Bluetooth controller will do
-> AFH automatically and it is on by default. We never switch that off
-> actually.
-> 
-> Normally the co-ex stuff is hard-wired between the Bluetooth and WiFi
-> and thus out of control to the host OS.
-
-I believe that 'internal wifi, usb bluetooth' is still quite common
-setup...
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Matthew Garrett | mjg59@srcf.ucam.org
