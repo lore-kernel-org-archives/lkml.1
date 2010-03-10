@@ -1,489 +1,254 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756162Ab0CJDmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 22:42:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45372 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756028Ab0CJDmX (ORCPT
+	id S1756169Ab0CJDnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 22:43:40 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:50455 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756028Ab0CJDng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 22:42:23 -0500
-Message-Id: <201003100342.o2A3gKvA022440@imap1.linux-foundation.org>
-Subject: mmotm 2010-03-09-19-15 uploaded
-To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-From: akpm@linux-foundation.org
-Date: Tue, 09 Mar 2010 19:16:03 -0800
+	Tue, 9 Mar 2010 22:43:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=wvQtRxg9SfEYWB4GiEMTkNuvWJrnzIV3LH1PEP2izQpYyuFP2cbZS8QGI3o+RbY3En
+         pxNcv7i3NEdRgpnOzjL2bvGH7vzt7vCFn1en/8liOyWl46vas4w/J3e3eyy7tixggbw6
+         0Zg5IP2pCTCOlPIlGgx2/nG2Gu3PjxF5EZ6Us=
+From: Josiah Humphrey <dontdrinkh2so4@gmail.com>
+To: airlied@linux.ie, bskeggs@redhat.com, currojerez@riseup.net,
+       madman2003@gmail.com, koriakin@0x04.net
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Josiah Humphrey <dontdrinkh2so4@gmail.com>
+Subject: [PATCH] Fixed style issues for various nouveau files. Fix some whitespace and brace issues for the various nouveau files. I found the errors using checkpatch.pl Signed-off-by: Josiah Humphrey <dontdrinkh2so4@gmail.com>
+Date: Tue,  9 Mar 2010 19:42:58 -0800
+Message-Id: <1268192578-28896-1-git-send-email-dontdrinkh2so4@gmail.com>
+X-Mailer: git-send-email 1.6.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mm-of-the-moment snapshot 2010-03-09-19-15 has been uploaded to
+---
+ drivers/gpu/drm/nouveau/nouveau_acpi.c  |    5 ++---
+ drivers/gpu/drm/nouveau/nouveau_bios.c  |   28 +++++++++++++++++-----------
+ drivers/gpu/drm/nouveau/nouveau_gem.c   |    2 +-
+ drivers/gpu/drm/nouveau/nouveau_grctx.h |   10 +++++-----
+ drivers/gpu/drm/nouveau/nouveau_hw.h    |    2 +-
+ drivers/gpu/drm/nouveau/nouveau_reg.h   |   12 ++++++------
+ 6 files changed, 32 insertions(+), 27 deletions(-)
 
-   http://userweb.kernel.org/~akpm/mmotm/
+diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+index 0e0730a..42b0d3a 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
++++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+@@ -151,11 +151,10 @@ static bool nouveau_dsm_pci_probe(struct pci_dev *pdev)
+ 	if (!dhandle)
+ 		return false;
+ 	status = acpi_get_handle(dhandle, "_DSM", &nvidia_handle);
+-	if (ACPI_FAILURE(status)) {
++	if (ACPI_FAILURE(status))
+ 		return false;
+-	}
+ 
+-	ret= nouveau_dsm(nvidia_handle, NOUVEAU_DSM_SUPPORTED,
++	ret = nouveau_dsm(nvidia_handle, NOUVEAU_DSM_SUPPORTED,
+ 			 NOUVEAU_DSM_SUPPORTED_FUNCTIONS, &result);
+ 	if (ret < 0)
+ 		return false;
+diff --git a/drivers/gpu/drm/nouveau/nouveau_bios.c b/drivers/gpu/drm/nouveau/nouveau_bios.c
+index 71247da..bed83f8 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_bios.c
++++ b/drivers/gpu/drm/nouveau/nouveau_bios.c
+@@ -4447,7 +4447,8 @@ static int parse_bit_display_tbl_entry(struct drm_device *dev, struct nvbios *bi
+ 	return 0;
+ }
+ 
+-static int parse_bit_init_tbl_entry(struct drm_device *dev, struct nvbios *bios, struct bit_entry *bitentry)
++static int parse_bit_init_tbl_entry(struct drm_device *dev,
++		struct nvbios *bios, struct bit_entry *bitentry)
+ {
+ 	/*
+ 	 * Parses the init table segment that the bit entry points to.
+@@ -4470,7 +4471,8 @@ static int parse_bit_init_tbl_entry(struct drm_device *dev, struct nvbios *bios,
+ 	return 0;
+ }
+ 
+-static int parse_bit_i_tbl_entry(struct drm_device *dev, struct nvbios *bios, struct bit_entry *bitentry)
++static int parse_bit_i_tbl_entry(struct drm_device *dev,
++		struct nvbios *bios, struct bit_entry *bitentry)
+ {
+ 	/*
+ 	 * BIT 'i' (info?) table
+@@ -4533,7 +4535,8 @@ static int parse_bit_i_tbl_entry(struct drm_device *dev, struct nvbios *bios, st
+ 	return 0;
+ }
+ 
+-static int parse_bit_lvds_tbl_entry(struct drm_device *dev, struct nvbios *bios, struct bit_entry *bitentry)
++static int parse_bit_lvds_tbl_entry(struct drm_device *dev,
++		struct nvbios *bios, struct bit_entry *bitentry)
+ {
+ 	/*
+ 	 * Parses the LVDS table segment that the bit entry points to.
+@@ -4562,9 +4565,9 @@ parse_bit_M_tbl_entry(struct drm_device *dev, struct nvbios *bios,
+ {
+ 	/*
+ 	 * offset + 2  (8  bits): number of options in an
+-	 * 	INIT_RAM_RESTRICT_ZM_REG_GROUP opcode option set
++	 *	INIT_RAM_RESTRICT_ZM_REG_GROUP opcode option set
+ 	 * offset + 3  (16 bits): pointer to strap xlate table for RAM
+-	 * 	restrict option selection
++	 *	restrict option selection
+ 	 *
+ 	 * There's a bunch of bits in this table other than the RAM restrict
+ 	 * stuff that we don't use - their use currently unknown
+@@ -4588,7 +4591,8 @@ parse_bit_M_tbl_entry(struct drm_device *dev, struct nvbios *bios,
+ 	return 0;
+ }
+ 
+-static int parse_bit_tmds_tbl_entry(struct drm_device *dev, struct nvbios *bios, struct bit_entry *bitentry)
++static int parse_bit_tmds_tbl_entry(struct drm_device *dev,
++		struct nvbios *bios, struct bit_entry *bitentry)
+ {
+ 	/*
+ 	 * Parses the pointer to the TMDS table
+@@ -4747,7 +4751,8 @@ parse_bit_structure(struct nvbios *bios, const uint16_t bitoffset)
+ 	return 0;
+ }
+ 
+-static int parse_bmp_structure(struct drm_device *dev, struct nvbios *bios, unsigned int offset)
++static int parse_bmp_structure(struct drm_device *dev,
++		struct nvbios *bios, unsigned int offset)
+ {
+ 	/*
+ 	 * Parses the BMP structure for useful things, but does not act on them
+@@ -4963,7 +4968,8 @@ static uint16_t findstr(uint8_t *data, int n, const uint8_t *str, int len)
+ }
+ 
+ static int
+-read_dcb_i2c_entry(struct drm_device *dev, int dcb_version, uint8_t *i2ctable, int index, struct dcb_i2c_entry *i2c)
++read_dcb_i2c_entry(struct drm_device *dev, int dcb_version,
++		uint8_t *i2ctable, int index, struct dcb_i2c_entry *i2c)
+ {
+ 	uint8_t dcb_i2c_ver = dcb_version, headerlen = 0, entry_len = 4;
+ 	int i2c_entries = DCB_MAX_NUM_I2C_ENTRIES;
+@@ -5203,9 +5209,8 @@ divine_connector_type(struct nvbios *bios, int index)
+ 	if (encoders & (1 << OUTPUT_LVDS)) {
+ 		type = DCB_CONNECTOR_LVDS;
+ 	} else
+-	if (encoders & (1 << OUTPUT_TV)) {
++	if (encoders & (1 << OUTPUT_TV))
+ 		type = DCB_CONNECTOR_TV_0;
+-	}
+ 
+ 	return type;
+ }
+@@ -5818,7 +5823,8 @@ fixup_legacy_i2c(struct nvbios *bios)
+ 	}
+ }
+ 
+-static int load_nv17_hwsq_ucode_entry(struct drm_device *dev, struct nvbios *bios, uint16_t hwsq_offset, int entry)
++static int load_nv17_hwsq_ucode_entry(struct drm_device *dev,
++		struct nvbios *bios, uint16_t hwsq_offset, int entry)
+ {
+ 	/*
+ 	 * The header following the "HWSQ" signature has the number of entries,
+diff --git a/drivers/gpu/drm/nouveau/nouveau_gem.c b/drivers/gpu/drm/nouveau/nouveau_gem.c
+index 0d22f66..c2a1b2c 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_gem.c
++++ b/drivers/gpu/drm/nouveau/nouveau_gem.c
+@@ -717,7 +717,7 @@ nouveau_gem_ioctl_pushbuf(struct drm_device *dev, void *data,
+ 
+ out:
+ 	validate_fini(&op, fence);
+-	nouveau_fence_unref((void**)&fence);
++	nouveau_fence_unref((void **)&fence);
+ 	mutex_unlock(&dev->struct_mutex);
+ 	kfree(bo);
+ 	kfree(push);
+diff --git a/drivers/gpu/drm/nouveau/nouveau_grctx.h b/drivers/gpu/drm/nouveau/nouveau_grctx.h
+index 5d39c4c..40aca2c 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_grctx.h
++++ b/drivers/gpu/drm/nouveau/nouveau_grctx.h
+@@ -87,10 +87,10 @@ _cp_bra(struct nouveau_grctx *ctx, u32 mod, int flag, int state, int name)
+ 	cp_out(ctx, CP_BRA | (mod << 18) | ip | flag |
+ 		    (state ? 0 : CP_BRA_IF_CLEAR));
+ }
+-#define cp_bra(c,f,s,n) _cp_bra((c), 0, CP_FLAG_##f, CP_FLAG_##f##_##s, n)
++#define cp_bra(c, f, s, n) _cp_bra((c), 0, CP_FLAG_##f, CP_FLAG_##f##_##s, n)
+ #ifdef CP_BRA_MOD
+-#define cp_cal(c,f,s,n) _cp_bra((c), 1, CP_FLAG_##f, CP_FLAG_##f##_##s, n)
+-#define cp_ret(c,f,s) _cp_bra((c), 2, CP_FLAG_##f, CP_FLAG_##f##_##s, 0)
++#define cp_cal(c, f, s, n) _cp_bra((c), 1, CP_FLAG_##f, CP_FLAG_##f##_##s, n)
++#define cp_ret(c, f, s) _cp_bra((c), 2, CP_FLAG_##f, CP_FLAG_##f##_##s, 0)
+ #endif
+ 
+ static inline void
+@@ -98,14 +98,14 @@ _cp_wait(struct nouveau_grctx *ctx, int flag, int state)
+ {
+ 	cp_out(ctx, CP_WAIT | flag | (state ? CP_WAIT_SET : 0));
+ }
+-#define cp_wait(c,f,s) _cp_wait((c), CP_FLAG_##f, CP_FLAG_##f##_##s)
++#define cp_wait(c, f, s) _cp_wait((c), CP_FLAG_##f, CP_FLAG_##f##_##s)
+ 
+ static inline void
+ _cp_set(struct nouveau_grctx *ctx, int flag, int state)
+ {
+ 	cp_out(ctx, CP_SET | flag | (state ? CP_SET_1 : 0));
+ }
+-#define cp_set(c,f,s) _cp_set((c), CP_FLAG_##f, CP_FLAG_##f##_##s)
++#define cp_set(c, f, s) _cp_set((c), CP_FLAG_##f, CP_FLAG_##f##_##s)
+ 
+ static inline void
+ cp_pos(struct nouveau_grctx *ctx, int offset)
+diff --git a/drivers/gpu/drm/nouveau/nouveau_hw.h b/drivers/gpu/drm/nouveau/nouveau_hw.h
+index 869130f..19d0ba9 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_hw.h
++++ b/drivers/gpu/drm/nouveau/nouveau_hw.h
+@@ -211,7 +211,7 @@ static inline uint8_t NVReadVgaCrtc(struct drm_device *dev,
+  * 0x03		bit0 set for dual link (LVDS, possibly elsewhere too)
+  * 0x08 or 0x09	pxclk in MHz
+  * 0x0f		laptop panel info -	low nibble for PEXTDEV_BOOT_0 strap
+- * 					high nibble for xlat strap value
++ *					high nibble for xlat strap value
+  */
+ 
+ static inline void
+diff --git a/drivers/gpu/drm/nouveau/nouveau_reg.h b/drivers/gpu/drm/nouveau/nouveau_reg.h
+index aa9b310..9bfd23f 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_reg.h
++++ b/drivers/gpu/drm/nouveau/nouveau_reg.h
+@@ -617,9 +617,9 @@
+ #    define NV50_PCONNECTOR_I2C_PORT_4                      0x0000e240
+ #    define NV50_PCONNECTOR_I2C_PORT_5                      0x0000e258
+ 
+-#define NV50_AUXCH_DATA_OUT(i,n)             ((n) * 4 + (i) * 0x50 + 0x0000e4c0)
++#define NV50_AUXCH_DATA_OUT(i, n)             ((n) * 4 + (i) * 0x50 + 0x0000e4c0)
+ #define NV50_AUXCH_DATA_OUT__SIZE                                             4
+-#define NV50_AUXCH_DATA_IN(i,n)              ((n) * 4 + (i) * 0x50 + 0x0000e4d0)
++#define NV50_AUXCH_DATA_IN(i, n)              ((n) * 4 + (i) * 0x50 + 0x0000e4d0)
+ #define NV50_AUXCH_DATA_IN__SIZE                                              4
+ #define NV50_AUXCH_ADDR(i)                             ((i) * 0x50 + 0x0000e4e0)
+ #define NV50_AUXCH_CTRL(i)                             ((i) * 0x50 + 0x0000e4e4)
+@@ -813,7 +813,7 @@
+ #define NV50_PDISPLAY_SOR_BACKLIGHT                                  0x0061c084
+ #define NV50_PDISPLAY_SOR_BACKLIGHT_ENABLE                           0x80000000
+ #define NV50_PDISPLAY_SOR_BACKLIGHT_LEVEL                            0x00000fff
+-#define NV50_SOR_DP_CTRL(i,l)            (0x0061c10c + (i) * 0x800 + (l) * 0x80)
++#define NV50_SOR_DP_CTRL(i, l)            (0x0061c10c + (i) * 0x800 + (l) * 0x80)
+ #define NV50_SOR_DP_CTRL_ENHANCED_FRAME_ENABLED                      0x00004000
+ #define NV50_SOR_DP_CTRL_LANE_MASK                                   0x001f0000
+ #define NV50_SOR_DP_CTRL_LANE_0_ENABLED                              0x00010000
+@@ -824,9 +824,9 @@
+ #define NV50_SOR_DP_CTRL_TRAINING_PATTERN_DISABLED                   0x00000000
+ #define NV50_SOR_DP_CTRL_TRAINING_PATTERN_1                          0x01000000
+ #define NV50_SOR_DP_CTRL_TRAINING_PATTERN_2                          0x02000000
+-#define NV50_SOR_DP_UNK118(i,l)          (0x0061c118 + (i) * 0x800 + (l) * 0x80)
+-#define NV50_SOR_DP_UNK120(i,l)          (0x0061c120 + (i) * 0x800 + (l) * 0x80)
+-#define NV50_SOR_DP_UNK130(i,l)          (0x0061c130 + (i) * 0x800 + (l) * 0x80)
++#define NV50_SOR_DP_UNK118(i, l)          (0x0061c118 + (i) * 0x800 + (l) * 0x80)
++#define NV50_SOR_DP_UNK120(i, l)          (0x0061c120 + (i) * 0x800 + (l) * 0x80)
++#define NV50_SOR_DP_UNK130(i, l)          (0x0061c130 + (i) * 0x800 + (l) * 0x80)
+ 
+ #define NV50_PDISPLAY_USER(i)                        ((i) * 0x1000 + 0x00640000)
+ #define NV50_PDISPLAY_USER_PUT(i)                    ((i) * 0x1000 + 0x00640000)
+-- 
+1.6.4
 
-and will soon be available at
-
-   git://zen-kernel.org/kernel/mmotm.git
-
-It contains the following patches against 2.6.34-rc1:
-
-fs-ocfs2-cluster-tcpc-remove-use-of-nipquad-use-%pi4.patch
-fs-buffer_head-remove-kmem_cache-constructor-to-reduce-memory-usage-under-slub.patch
-rtc-hctosys-only-claim-the-rtc-provided-the-system-time-if-it-did.patch
-sdio-recognize-io-card-without-powercycle.patch
-maintainers-add-bfin_sdh-driver.patch
-nommu-fix-build-breakage.patch
-mm-do-not-iterate-over-nr_cpus-in-__zone_pcp_update.patch
-drivers-scsi-sesc-eliminate-double-free.patch
-mm-introduce-dump_page-and-print-symbolic-flag-names.patch
-drivers-block-floppyc-convert-some-include-asm-to-include-linux.patch
-drivers-block-floppyc-define-space-and-column-neatening.patch
-drivers-block-floppyc-use-pr_level.patch
-drivers-block-floppyc-remove-unnecessary-braces.patch
-drivers-block-floppyc-remove-used-once-check_ready-macro.patch
-drivers-block-floppyc-hoist-assigns-from-ifs-neatening.patch
-drivers-block-floppyc-remove-last_out-macro.patch
-drivers-block-floppyc-comment-neatening-and-remove-naked.patch
-drivers-block-floppyc-remove-clearstruct-macro-use-memset.patch
-drivers-block-floppyc-indent-a-comment.patch
-drivers-block-floppyc-remove-in-out-macros-indent-switch-case.patch
-drivers-block-floppyc-remove-a-few-spaces-from-function-casts.patch
-drivers-block-floppyc-remove-macro-lock_fdc.patch
-drivers-block-floppyc-add-debug_dcl-macro.patch
-drivers-block-floppyc-remove-clearf-setf-and-testf-macros.patch
-drivers-block-floppyc-remove-most-uses-of-call-and-ecall-macros.patch
-drivers-block-floppyc-remove-copyin-copyout-and-ecall-macros.patch
-drivers-block-floppyc-remove-macros-call-wait-and-iwait.patch
-drivers-block-floppyc-convert-int-1-0-to-bool-true-false.patch
-drivers-block-floppyc-move-leading-and-to-preceding-line.patch
-drivers-block-floppyc-remove-define-device_name-floppy.patch
-drivers-block-floppyc-convert-int-initialising-to-bool-initialized.patch
-drivers-block-floppyc-add-function-is_ready_state.patch
-drivers-block-floppyc-remove-unnecessary-return-and-braces.patch
-drivers-block-floppyc-remove-repeat-macro.patch
-drivers-block-floppyc-unclutter-redo_fd_request-logic.patch
-drivers-block-floppyc-remove-unnecessary-argument-from-reschedule_timeout.patch
-drivers-block-floppyc-remove-define-floppy_sanity_check.patch
-drivers-block-floppyc-dprint-neatening.patch
-drivers-block-floppyc-use-__func__-where-appropriate.patch
-drivers-block-floppyc-use-%pf-in-logging-messages.patch
-drivers-block-floppyc-remove-some-unnecessary-casting.patch
-drivers-block-floppyc-convert-raw_cmd_copyin-from-while1-to-label-goto.patch
-drivers-block-floppyc-add-__func__-to-debugt.patch
-drivers-block-floppyc-remove-obfuscating-code2size-macro.patch
-drivers-block-floppyc-remove-misleading-used-once-fd_ioctl_allowed-macro.patch
-drivers-block-floppyc-remove-unnecessary-casting-in-fd_ioctl.patch
-add-generic-sys_old_select.patch
-add-generic-sys_old_select-fix.patch
-add-generic-sys_old_mmap.patch
-add-generic-sys_ipc-wrapper.patch
-add-generic-sys_ipc-wrapper-fix.patch
-improve-sys_newuname-for-compat-architectures.patch
-add-generic-sys_olduname.patch
-coredump-plug-a-memory-leak-situation-on-dump_seek.patch
-asiliantfb-fix-test-of-unsigned-in-asiliant_calc_dclk2.patch
-fbdev-bf54x-lq043fb-bfin-t350mcqb-fb-drop-custom-mmap-handler.patch
-broadsheetfb-add-multiple-panel-type-support.patch
-viafb-deprecate-private-ioctls.patch
-viafb-remove-dead-code.patch
-viafb-split-global-index-up.patch
-viafb-split-global-index-up-fix.patch
-viafb-remove-the-remaining-via_res_-uses.patch
-viafb-some-dvi-cleanup.patch
-viafb-yet-another-dead-code-removal.patch
-viafb-reorder-initialization-for-dual-framebuffer-mode.patch
-viafb-video-address-setting-revisited.patch
-viafb-make-viafb_set_par-more-dual-framebuffer-compatible.patch
-viafb-introduce-strict-parameter-checking.patch
-viafb-split-color-mode-setting-up.patch
-viafb-remove-dead-code-due-to-iga1_iga2.patch
-viafb-make-some-variables-a-bit-less-global.patch
-viafb-rework-color-checking.patch
-viafb-some-virtual_xres-handling-fixes.patch
-viafb-rework-color-setting.patch
-viafb-support-color-depth-15-and-30.patch
-broadsheetfb-add-mmio-hooks.patch
-broadsheetfb-support-storing-waveform.patch
-broadsheetfb-support-storing-waveform-fix.patch
-intelfb-new-maintainer.patch
-fbdev-remove-obsolete-config_fb_soft_cursor.patch
-nuc900-lcd-controller-driver.patch
-nuc900-lcd-controller-driver-updates.patch
-drivers-video-via-fix-continuation-line-formats.patch
-obsolete-config-in-kernel-source-lwmon5.patch
-video-fix-first-line-of-kernel-doc-for-a-few-functions.patch
-fbdev-bfin-lq035q1-fb-remove-duplicated-include.patch
-devmem-dont-allow-seek-to-last-page.patch
-drivers-char-memc-cleanups.patch
-drivers-char-memc-cleanups-fix.patch
-drivers-char-memc-cleanups-fix-fix.patch
-fs-ufs-recognize-solaris-specific-file-system-state.patch
-ufs-make-solaris-fsck-happy.patch
-documentation-timers-split-txt-and-source-files.patch
-documentation-laptop-split-txt-and-source-files.patch
-documentation-fs-split-txt-and-source-files.patch
-documentation-vm-split-txt-and-source-files.patch
-doc-submitchecklist-add-rule-1.patch
-documentation-remove-obsolete-voyagertxt-file.patch
-scripts-kernel-doc-fix-empty-function-description-section.patch
-documentation-email-clientstxt-update-gmail-information.patch
-cgroup-introduce-cancel_attach.patch
-cgroup-introduce-coalesce-css_get-and-css_put.patch
-cgroups-revamp-subsys-array.patch
-cgroups-subsystem-module-loading-interface.patch
-cgroups-subsystem-module-loading-interface-fix.patch
-cgroups-subsystem-module-unloading.patch
-cgroups-subsystem-module-unloading-fix.patch
-cgroups-net_cls-as-module.patch
-cgroups-fix-contents-in-cgroups-documentation.patch
-cgroups-blkio-subsystem-as-module.patch
-cgroups-clean-up-cgroup_pidlist_find-a-bit.patch
-memcg-add-interface-to-move-charge-at-task-migration.patch
-memcg-move-charges-of-anonymous-page.patch
-memcg-move-charges-of-anonymous-page-cleanup.patch
-memcg-improve-performance-in-moving-charge.patch
-memcg-avoid-oom-during-moving-charge.patch
-memcg-move-charges-of-anonymous-swap.patch
-memcg-move-charges-of-anonymous-swap-fix.patch
-memcg-move-charges-of-anonymous-swap-fix-2.patch
-memcg-move-charges-of-anonymous-swap-fix-3.patch
-memcg-move-charges-of-anonymous-swap-fix-3-fix.patch
-memcg-improve-performance-in-moving-swap-charge.patch
-memcg-improve-performance-in-moving-swap-charge-fix.patch
-cgroup-implement-eventfd-based-generic-api-for-notifications.patch
-cgroup-implement-eventfd-based-generic-api-for-notifications-kconfig-fix.patch
-cgroup-implement-eventfd-based-generic-api-for-notifications-fixes.patch
-cgroup-implement-eventfd-based-generic-api-for-notifications-fixes-fix.patch
-memcg-extract-mem_group_usage-from-mem_cgroup_read.patch
-memcg-rework-usage-of-stats-by-soft-limit.patch
-memcg-implement-memory-thresholds.patch
-memcg-implement-memory-thresholds-checkpatch-fixes.patch
-memcg-implement-memory-thresholds-checkpatch-fixes-fix.patch
-memcg-implement-memory-thresholds-check-if-first-threshold-crossed.patch
-memcg-typo-in-comment-to-mem_cgroup_print_oom_info.patch
-memcg-use-generic-percpu-instead-of-private-implementation.patch
-memcg-update-threshold-and-softlimit-at-commit-v2.patch
-memcg-share-event-counter-rather-than-duplicate-v2.patch
-memcg-update-memcg_testtxt.patch
-memcg-handle-panic_on_oom=always-case-v2.patch
-cgroups-fix-race-between-userspace-and-kernelspace.patch
-cgroups-remove-events-before-destroying-subsystem-state-objects.patch
-cgroups-add-simple-listener-of-cgroup-events-to-documentation.patch
-cgroups-add-simple-listener-of-cgroup-events-to-documentation-fix.patch
-memcg-update-memcg_testtxt-to-describe-memory-thresholds.patch
-memcg-fix-typos-in-memcg_testtxt.patch
-memcg-fix-oom-kill-behavior-v3.patch
-memcg-fix-oom-kill-behavior-v4.patch
-memcg-update-maintainer-list.patch
-cpuset-fix-the-problem-that-cpuset_mem_spread_node-returns-an-offline-node.patch
-nodemask-fix-the-declaration-of-nodemask_alloc.patch
-cpuset-alloc-nodemask_t-at-heap-not-stack.patch
-ptrace-use-ptrace_request-in-the-remaining-architectures.patch
-ptrace-move-user_enable_single_step-co-prototypes-to-linux-ptraceh.patch
-alpha-use-generic-ptrace_resume-code.patch
-arm-use-generic-ptrace_resume-code.patch
-avr32-use-generic-ptrace_resume-code.patch
-h8300-use-generic-ptrace_resume-code.patch
-m68knommu-use-generic-ptrace_resume-code.patch
-microblaze-use-generic-ptrace_resume-code.patch
-mips-use-generic-ptrace_resume-code.patch
-um-use-generic-ptrace_resume-code.patch
-xtensa-use-generic-ptrace_resume-code.patch
-cris-arch-v10-use-generic-ptrace_resume-code.patch
-cris-arch-v32-use-generic-ptrace_resume-code.patch
-m32r-use-generic-ptrace_resume-code.patch
-copy_signal-cleanup-use-zalloc-and-remove-initializations.patch
-copy_signal-cleanup-kill-taskstats_tgid_init-and-acct_init_pacct.patch
-copy_signal-cleanup-clean-thread_group_cputime_init.patch
-copy_signal-cleanup-clean-tty_audit_fork.patch
-ipc-use-rlimit-helpers.patch
-ipmi-add-parameter-to-limit-cpu-usage-in-kipmid.patch
-ipmi-fix-slave_addrs-setting-to-actually-work.patch
-ipmi-remove-ipmi_smih-self-include.patch
-ipmi-add-proper-offset-for-hp-pci-interfaces.patch
-pid_ns-zap_pid_ns_processes-use-send_sig_noinfo-instead-of-force_sig.patch
-nsproxy-remove-init_nsproxy.patch
-edac-mpc85xx-mask-ecc-syndrome-correctly.patch
-edac-mpc85xx-improve-sdram-error-reporting.patch
-edac-mpc85xx-use-resource_size-instead-of-raw-math.patch
-edac-e752x-fsb-ecc.patch
-edac-e752x-add-dram-scrubbing-support.patch
-documentation-dma-apitxt-remove-deprecated-function-descriptions.patch
-dma-apitxt-add-dma_sync_single-sg-api-description.patch
-dma-apitxt-remove-dma_sync_single_range-description.patch
-alpha-remove-dma_sync_single_range.patch
-um-remove-dma_sync_single_range.patch
-pci-dma-add-include-linux-pci-dmah.patch
-pci-dma-x86-use-include-linux-pci-dmah.patch
-pci-dma-alpha-use-include-linux-pci-dmah.patch
-pci-dma-arm-use-include-linux-pci-dmah.patch
-pci-dma-frv-use-include-linux-pci-dmah.patch
-pci-dma-ia64-use-include-linux-pci-dmah.patch
-pci-dma-mips-use-include-linux-pci-dmah.patch
-pci-dma-parisc-use-include-linux-pci-dmah.patch
-pci-dma-powerpc-use-include-linux-pci-dmah.patch
-pci-dma-sh-use-include-linux-pci-dmah.patch
-pci-dma-sparc-use-include-linux-pci-dmah.patch
-pci-dma-xtensa-use-include-linux-pci-dmah.patch
-pci-dma-cris-use-include-linux-pci-dmah.patch
-pci-dma-add-linux-pci-dmah-to-linux-pcih.patch
-dma-mappingh-add-the-dma_unmap-state-api.patch
-dma-mappingh-add-the-dma_unmap-state-api-fix.patch
-dma-mappingh-add-the-dma_unmap-state-api-fix-2.patch
-frv-remove-the-obsolete-and-unnecessary-dma-api-comments.patch
-frv-remove-the-obsolete-and-unnecessary-dma-api-comments-fix.patch
-blackfin-remove-the-obsolete-and-unnecessary-dma-api-comments.patch
-mn10300-remove-the-obsolete-and-unnecessary-dma-api-comments.patch
-mn10300-remove-the-obsolete-and-unnecessary-dma-api-comments-fix.patch
-dma-mapping-sparc-unify-32bit-and-64bit-dma_set_mask.patch
-dma-mapping-alpha-use-include-linux-pci-dma-compath.patch
-dma-mapping-pci-convert-pci_set_dma_mask-to-call-dma_set_mask.patch
-dma-mapping-dma-mappingh-add-dma_set_coherent_mask.patch
-dma-mapping-powerpc-use-generic-pci_set_dma_mask-and-pci_set_consistent_dma_mask.patch
-dma-mapping-arm-use-generic-pci_set_dma_mask-and-pci_set_consistent_dma_mask.patch
-dma-mapping-pci-move-pci_set_dma_mask-and-pci_set_consistent_dma_mask-to-pci-dma-compath.patch
-dma-mapping-pci-move-pci_set_dma_mask-and-pci_set_consistent_dma_mask-to-pci-dma-compath-fix.patch
-documentation-convert-pci-dma-mappingtxt-to-use-the-generic-dma-api.patch
-documentation-convert-pci-dma-mappingtxt-to-use-the-generic-dma-api-fix.patch
-documentation-remove-the-pci-dma-api-description-in-dma-apitxt.patch
-documentation-rename-pci-dma-mappingtxt-to-dma-api-howtotxt.patch
-pps-linuxpps-clients-support.patch
-pps-linuxpps-clients-support-v3.patch
-pps-linuxpps-clients-support-v3-checkpatch-fixes.patch
-ldisc-new-dcd_change-method-for-line-disciplines.patch
-ldisc-n_tty-add-new-method-n_tty_inherit_ops.patch
-ldisc-n_tty-add-new-method-n_tty_inherit_ops-update.patch
-pps-serial-clients-support.patch
-serial-8250-enable-pps-support.patch
-serial-amba-pl010-enable-pps-support.patch
-w1-fix-test-in-ds2482_wait_1wire_idle.patch
-w1-mxc_w1-move-probe-and-remove-to-the-dev-text-area.patch
-drivers-char-mmtimerc-eliminate-useless-code.patch
-sgi-gru-use-for_each_set_bit.patch
-decompress-fix-new-decompressor-for-pic.patch
-zlib-make-new-optimized-inflate-endian-independent.patch
-inflate_fast-sout-is-already-a-short-so-ptr-arith-was-off-by-one.patch
-linux-next.patch
-next-remove-localversion.patch
-i-need-old-gcc.patch
-include-linux-fsh-complete-hexification-of-fmode_-constants.patch
-hardware-latency-detector-remove-default-m.patch
-revert-input-wistron_btns-switch-to-using-sparse-keymap-library.patch
-memory-hotplug-allow-setting-of-phys_device.patch
-memory-hotplug-s390-set-phys_device.patch
-sparsemem-on-no-vmemmap-path-put-mem_map-on-node-high-too.patch
-leds-gpio-fix-default-state-handling-on-of-platforms.patch
-acpica-fix-acpi_ex_release_mutex-comment.patch
-acerhdf-add-new-bios-versions.patch
-arch-x86-kernel-rebootc-add-imac91-to-pci_reboot_dmi_table.patch
-arch-x86-kernel-hpetc-fix-bug-in-rtc-emulation.patch
-agp-amd64-fix-pci-reference-leaks.patch
-bitops-rename-for_each_bit-to-for_each_set_bit-arm.patch
-arm-convert-proc-cpu-aligment-to-seq_file.patch
-arch-arm-plat-pxa-dmac-correct-null-test.patch
-arch-arm-include-asm-elfh-forward-declare-the-task-struct.patch
-arm-convert-arm-to-arch_gettimeoffset.patch
-cpufreq-ondemand-dont-synchronize-sample-rate-unless-mulitple-cpus-present.patch
-cpufreq-unexport-unlock_policy_rwsem-functions.patch
-cpufreq-fix-a-lockdep-warning.patch
-powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned.patch
-drivers-gpu-drm-i915-intel_biosc-fix-continuation-line-formats.patch
-vmwgfx-depends-on-fb.patch
-drm-i915-blacklist-lid-status-sony-vgn-bx196vp-dell-inspiron-700m.patch
-drivers-media-video-cx23885-needs-kfifo-conversion.patch
-drivers-media-video-move-dereference-after-null-test.patch
-v4l-dvb-gspca-sn9c20x-correct-onstack-wait_queue_head-declaration.patch
-dib3000mc-reduce-large-stack-usage.patch
-dib7000p-reduce-large-stack-usage.patch
-drivers-media-video-kconfig-add-video_dev-dependency-as-needed-in-drivers-media-video-kconfig.patch
-fs-fscache-object-listc-fix-warning-on-32-bit.patch
-hpet-use-for_each_set_bit.patch
-intel-iommu-use-for_each_set_bit.patch
-timer-stats-fix-del_timer_sync-and-try_to_del_timer_sync.patch
-posix-cpu-timers-reset-expire-cache-when-no-timer-is-running.patch
-hrtimer-correct-a-few-numbers-in-comments.patch
-clockevents-ensure-taht-min_delta_ns-is-increased-in-error-path.patch
-timers-introduce-the-concept-of-timer-slack-for-legacy-timers.patch
-cpu-timers-simplify-rlimit_cpu-handling.patch
-cpu-timers-cleanup-arm_timer.patch
-cpu-timers-return-correct-previous-timer-reload-value.patch
-cpu-timers-change-sigev_none-timer-implementation.patch
-cpu-timers-assure-to-not-iterate-over-all-threads-in-fastpath_timer_check.patch
-cpu-timers-optimize-run_posix_cpu_timers.patch
-cs5535-clockevt-free-timer-in-irq-setup-error-path.patch
-timer-print-function-name-for-timer-callbacks-modifying-preemption-count.patch
-time-clean-up-warp_clock.patch
-time-clean-up-direct-xtime-usage-in-xen.patch
-input-bcm5974-retract-efi-broken-suspend_resume.patch
-markup_oops-fix-perlcritic-warnings.patch
-headerdep-perlcritic-warning.patch
-led-driver-for-the-soekris-net5501-board.patch
-led-driver-for-the-soekris-net5501-board-checkpatch-fixes.patch
-jffs2-fixup-rb_root-initializations-to-use-rb_root.patch
-bitops-rename-for_each_bit-to-for_each_set_bit-mtd.patch
-ntfs-use-bitmap_weight.patch
-score-fix-dereference-of-null-pointer-in-local_flush_tlb_page.patch
-omap2_mcspic-null-pointer-dereference.patch
-isdn-misplaced-parenthesis-in-pof_handle_data.patch
-i4l-silence-compiler-warnings-for-array-access-in-eicon-diva-isdn-driver.patch
-i4l-change-magic-numbers-in-eicon-diva-isdn-driver-to-symbolic-names.patch
-phonet-use-for_each_set_bit.patch
-atm-use-for_each_set_bit.patch
-ll-temac-driver-add-non-virtex-5-support.patch
-obsolete-config-in-kernel-source-use_internal_timer.patch
-obsolete-config-in-kernel-source-hso_autopm.patch
-3x59x-fix-pci-resource-management.patch
-sunrpc-use-formatting-of-module-name-in-sunrpc.patch
-sunrpc-cache-fix-module-refcnt-leak-in-a-failure-path.patch
-cpm_uart-use-resource_size.patch
-acpiphp-execute-acpi-_reg-method-for-hotadded-devices.patch
-pci-kill-off-pci_register_set_vga_state-symbol-export.patch
-kernel-schedc-suppress-unused-var-warning.patch
-core-kernel-make-sparse-work-with-inline-spinlocks-and-rwlocks.patch
-kernel-irq-procc-expose-the-irq_desc-node-in-proc-irq.patch
-genirq-warn-about-irqf_sharedirqf_disabled-at-the-right-place.patch
-genirq-introduce-irqf_allow_nested-flag-for-request_irq.patch
-rcu-remove-init_rcu_head-rcu_head_init-rcu_head.patch
-scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
-drivers-scsi-fnic-fnic_scsic-clean-up.patch
-drivers-scsi-gdthc-fix-buffer-overflow.patch
-drivers-scsi-lpfc-lpfc_vportc-fix-read-buffer-overflow.patch
-osst-fix-read-buffer-overflow.patch
-gdth-unmap-ccb_phys-when-scsi_add_host-fails-in-gdth_eisa_probe_one.patch
-drivers-scsi-libsas-use-sam_good.patch
-ncr5380-bit-mr_dma_mode-set-twice-in-ncr5380_transfer_dma.patch
-drivers-scsi-remove-unnecessary-null-test.patch
-drivers-message-move-dereference-after-null-test.patch
-scsi-pmcraid-redundant-check-in-pmcraid_check_ioctl_buffer.patch
-mpt-fusion-convert-to-seq_file.patch
-g_ncr5380-remove-misleading-pnp-error-message.patch
-g_ncr5380-fix-broken-mmio-compilation.patch
-g_ncr5380-fix-missing-pnp_device_detach-and-scsi_unregister-on-rmmod.patch
-dc395x-decrease-iteration-for-tag_number-of-max_command-in-start_scsi.patch
-drivers-scsi-correct-the-size-argument-to-kmalloc.patch
-scsi-remove-superfluous-null-pointer-check-from-scsi_kill_request.patch
-mpt2sas-fix-confusion-in-_scsih_sas_device_status_change_event.patch
-scsi-sdc-quiet-all-sparse-noise.patch
-drivers-scsi-bfa-bfad_imc-eliminate-useless-code.patch
-lpfc-positive-error-return-into-negative.patch
-drivers-scsi-qla2xxx-qla_osc-fix-continuation-line-formats.patch
-scsi-bfa-correct-onstack-wait_queue_head-declaration.patch
-mptscsih-fix-first-line-of-kernel-doc-for-a-few-functions.patch
-drivers-scsi-chc-dont-use-vprintk-as-macro.patch
-paride-fix-off-by-one-test.patch
-vfs-improve-writeback_inodes_wb.patch
-documentation-fix-block-biodoctxt-dma-mapping-description.patch
-usb-serial-ftdi-add-contec-vendor-and-product-id.patch
-usb-serial-ftdi-add-contec-vendor-and-product-id-fix.patch
-usb-option-add-support-for-a-variant-of-dlink-dwm-652-u5.patch
-vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
-vfs-improve-comment-describing-fget_light.patch
-ecryptfs-another-lockdep-issue.patch
-vfs-o_-bit-numbers-uniqueness-check.patch
-vfs-introduce-fmode_neg_offset-for-allowing-negative-f_pos.patch
-vfs-clarify-that-nonseekable_open-will-never-fail.patch
-mac80211-give-warning-if-building-w-out-rate-ctrl-algorithm.patch
-xtensa-convert-to-asm-generic-hardirqh.patch
-xtensa-includecheck-fix-vectorss.patch
-xtensa-fix-unnecessary-setting-of-xtime.patch
-modpost-support-objects-with-more-than-64k-sections.patch
-drivers-char-tty_bufferc-fix-min-warnings.patch
-mm.patch
-define-madv_hugepage.patch
-page-allocator-reduce-fragmentation-in-buddy-allocator-by-adding-buddies-that-are-merging-to-the-tail-of-the-free-lists.patch
-page-allocator-reduce-fragmentation-in-buddy-allocator-by-adding-buddies-that-are-merging-to-the-tail-of-the-free-lists-fix.patch
-frv-duplicate-output_buffer-of-e03.patch
-frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
-improve-sys_personality-for-compat-architectures.patch
-mxcmmc-fixed-max_seg_size-value-on-initialization.patch
-hwmon-driver-for-ti-tmp102-temperature-sensor.patch
-add-a-new-vt-mode-which-is-like-vt_process-but-doesnt-require-a-vt_reldisp-ioctl-call-checkpatch-fixes.patch
-gpiolib-introduce-chip-addition-removal-notifier.patch
-of-gpio-add-support-for-two-stage-registration-for-the-of_gpio_chips.patch
-of-gpio-implement-gpiolib-notifier-hooks.patch
-of-gpio-implement-gpiolib-notifier-hooks-fix.patch
-powerpc-mcu_mpc8349emitx-remove-of-gpio-handling-stuff.patch
-gpiolib-cosmetic-improvements-for-error-handling-in-gpiochip_add.patch
-ext3-fixup-rb_root-initializations-to-use-rb_root.patch
-hfsplus-identify-journal-info-block-in-volume-header.patch
-hfsplus-fix-journal-detection.patch
-tracehooks-kill-some-pt_ptraced-checks.patch
-tracehooks-check-pt_ptraced-before-reporting-the-single-step.patch
-ptrace_signal-check-pt_ptraced-before-reporting-a-signal.patch
-export-__ptrace_detach-and-do_notify_parent_cldstop.patch
-reorder-the-code-in-kernel-ptracec.patch
-implement-utrace-ptrace.patch
-utrace-core.patch
-utrace-core-utrace-fix-utrace_maybe_reap-vs-find_matching_engine-race.patch
-rcu-add-rcustring-adt-for-rcu-protected-strings.patch
-add-a-kernel_address-that-works-for-data-too.patch
-sysctl-add-proc_rcu_string-to-manage-sysctls-using-rcu-strings.patch
-sysctl-use-rcu-strings-for-core_pattern-sysctl.patch
-sysctl-add-call_usermodehelper_cleanup.patch
-sysctl-convert-modprobe_path-to-proc_rcu_string.patch
-sysctl-convert-poweroff_command-to-proc_rcu_string.patch
-sysctl-convert-hotplug-helper-string-to-proc_rcu_string.patch
-sysctl-use-rcu-protected-sysctl-for-ocfs-group-add-helper.patch
-sysctl-fix-up-remaining-references-to-uevent_helper.patch
-sysctl-fix-up-remaining-references-to-uevent_helper-fix.patch
-sysctl-clean-up-vm-related-variable-declarations.patch
-sysctl-clean-up-vm-related-variable-declarations-fix.patch
-sysctl-remove-references-to-ctl_unnumbered-which-has-been-removed.patch
-sysctl-extern-cleanup-c_a_d.patch
-sysctl-extern-cleanup-signal.patch
-sysctl-extern-cleanup-binfmts.patch
-sysctl-extern-cleanup-pid.patch
-sysctl-extern-cleanup-mm.patch
-sysctl-extern-cleanup-compat.patch
-sysctl-extern-cleanup-latencytop.patch
-sysctl-extern-cleanup-file-nr.patch
-sysctl-extern-cleanup-rcu.patch
-sysctl-extern-cleanup-block-iopoll.patch
-sysctl-extern-cleanup-module.patch
-sysctl-extern-cleanup-sg.patch
-sysctl-extern-cleanup-acct.patch
-sysctl-extern-cleanup-rtmutex.patch
-sysctl-extern-cleanup-lockdep.patch
-sysctl-extern-cleanup-poll.patch
-kmod-add-init-function-to-usermodehelper.patch
-kmod-add-init-function-to-usermodehelper-fix.patch
-kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
-kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limitcleanup.patch
-delay-accounting-re-implement-c-for-getdelaysc-to-report-information-on-a-target-command.patch
-delay-accounting-re-implement-c-for-getdelaysc-to-report-information-on-a-target-command-checkpatch-fixes.patch
-delayacct-align-to-8-byte-boundary-on-64-bit-systems.patch
-drivers-edac-introduce-missing-kfree.patch
-edac-add-__init-to-i7core_xeon_pci_fixup.patch
-ssb-add-dma_dev-to-ssb_device-structure.patch
-b43legacy-replace-the-ssb_dma-api-with-the-generic-dma-api.patch
-b43-replace-the-ssb_dma-api-with-the-generic-dma-api.patch
-b44-replace-the-ssb_dma-api-with-the-generic-dma-api.patch
-ssb-remove-the-ssb-dma-api.patch
-time-kill-off-config_generic_time.patch
-bitops-remove-temporary-for_each_bit.patch
-vfs-add-super-operation-writeback_inodes.patch
-vfs-take-2add-set_page_dirty_notag.patch
-reiser4-export-remove_from_page_cache.patch
-reiser4-export-remove_from_page_cache-fix.patch
-reiser4-export-find_get_pages.patch
-reiser4.patch
-reiser4-writeback_inodes-implementation.patch
-reiser4-writeback_inodes-implementation-fix.patch
-reiser4-fixup-checkin-checkout-jnodes-for-entd.patch
-reiser4-fixups.patch
-reiser4-broke.patch
-make-sure-nobodys-leaking-resources.patch
-journal_add_journal_head-debug.patch
-releasing-resources-with-children.patch
-make-frame_pointer-default=y.patch
-mutex-subsystem-synchro-test-module.patch
-mutex-subsystem-synchro-test-module-add-missing-header-file.patch
-slab-leaks3-default-y.patch
-put_bh-debug.patch
-add-debugging-aid-for-memory-initialisation-problems.patch
-workaround-for-a-pci-restoring-bug.patch
-prio_tree-debugging-patch.patch
-single_open-seq_release-leak-diagnostics.patch
-add-a-refcount-check-in-dput.patch
-getblk-handle-2tb-devices.patch
-getblk-handle-2tb-devices-fix.patch
-notify_change-callers-must-hold-i_mutex.patch
