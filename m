@@ -1,163 +1,169 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565Ab0CJUW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 15:22:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35347 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752843Ab0CJUWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 15:22:25 -0500
-Date: Wed, 10 Mar 2010 12:21:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: mmotm 2010-03-09-19-15: Lot of scheduling while atomic warnings
- related to RCU
-Message-Id: <20100310122138.a7da6f65.akpm@linux-foundation.org>
-In-Reply-To: <20100310195745.GP4883@csn.ul.ie>
-References: <201003100342.o2A3gKvA022440@imap1.linux-foundation.org>
-	<20100310195745.GP4883@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756391Ab0CJU3N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 15:29:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48277 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753618Ab0CJU3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 15:29:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Shane Wang <shane.wang@intel.com>
+Subject: Re: [PATCH v3] intel_txt: add support for S3 memory integrity protection within Intel(R) TXT launched kernel
+Date: Wed, 10 Mar 2010 21:31:46 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.34-rc1-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+References: <4A9CE0B2.5060608@intel.com> <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com> <4B973DDA.6050902@intel.com>
+In-Reply-To: <4B973DDA.6050902@intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003102131.46743.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010 19:57:46 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
-
-> On Tue, Mar 09, 2010 at 07:16:03PM -0800, akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2010-03-09-19-15 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://zen-kernel.org/kernel/mmotm.git
-> > 
-> > It contains the following patches against 2.6.34-rc1:
-> > 
+On Wednesday 10 March 2010, Shane Wang wrote:
+> <compared with v2, this patch adds a check of array size in tboot.c, and a note 
+> to specify which c/s of tboot supports this kind of MACing in intel_txt.txt>
 > 
-> With preempt and sleeping spinlock debugging on, I'm seeing a lot of warnings
-> about scheduling while atomic. Starts off with messages like
+> v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
+> tboot.
 > 
-> [    0.572278] BUG: scheduling while atomic: swapper/1/0x00000002
-> [    0.576004] 1 lock held by swapper/1:
-> [    0.580002]  #0:  (rcu_read_lock){.+.+.+}, at: [<ffffffff811b6950>] kobject_uevent_env+0x363/0x4d0
-> [    0.600001] Modules linked in:
-> [    0.608003] Pid: 1, comm: swapper Not tainted 2.6.34-rc1-mm1-vanilla #1
-> [    0.612001] Call Trace:
-> [    0.616005]  [<ffffffff810727fe>] ?  __debug_show_held_locks+0x22/0x24
-> [    0.620005]  [<ffffffff810395ed>] __schedule_bug+0x77/0x7c
-> [    0.624004]  [<ffffffff812f4cc5>] schedule+0xcc/0x723
-> [    0.628003]  [<ffffffff812f55b6>] schedule_timeout+0x2d/0x28d
-> [    0.632003]  [<ffffffff8107315d>] ? mark_held_locks+0x4d/0x6b
-> [    0.636004]  [<ffffffff812f81e9>] ? _raw_spin_unlock_irq+0x30/0x5d
-> [    0.640003]  [<ffffffff810733de>] ?  trace_hardirqs_on_caller+0x110/0x134
-> [    0.644003]  [<ffffffff812f4a0f>] wait_for_common+0xdc/0x152
-> [    0.648003]  [<ffffffff8103a43b>] ? default_wake_function+0x0/0x14
-> [    0.652004]  [<ffffffff812f4b28>] wait_for_completion+0x1d/0x1f
-> [    0.656004]  [<ffffffff8105cdf0>] call_usermodehelper_exec+0xad/0xfa
-> [    0.660004]  [<ffffffff81068429>] ?  prepare_usermodehelper_creds+0x136/0x168
-> [    0.664003]  [<ffffffff811b6a37>] kobject_uevent_env+0x44a/0x4d0
-> [    0.668003]  [<ffffffff811b6950>] ? kobject_uevent_env+0x363/0x4d0
-> [    0.672003]  [<ffffffff811b6ac8>] kobject_uevent+0xb/0xd
-> [    0.676002]  [<ffffffff811b5e65>] kset_register+0x37/0x3f
-> [    0.680004]  [<ffffffff8123239a>] bus_register+0x11f/0x2b1
-> [    0.684005]  [<ffffffff8175973e>] platform_bus_init+0x2c/0x44
-> [    0.688003]  [<ffffffff817597b9>] driver_init+0x1d/0x29
-> [    0.692004]  [<ffffffff8172c69b>] kernel_init+0x12e/0x1e3
-> [    0.696003]  [<ffffffff81003be4>] kernel_thread_helper+0x4/0x10
-> [    0.700004]  [<ffffffff812f8794>] ? restore_args+0x0/0x30
-> [    0.704003]  [<ffffffff8172c56d>] ? kernel_init+0x0/0x1e3
-> [    0.708002]  [<ffffffff81003be0>] ? kernel_thread_helper+0x0/0x10
+> This patch adds support for S3 memory integrity protection within an Intel(R)
+> TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
+> kernel and userspace, as indicated by memory ranges of type E820_RAM and
+> E820_RESERVED_KERN in the e820 table, will be integrity protected.
 > 
-> There are a lot of warnings along these lines during boot. This system did
-> boot *eventually* but it was in obvious trouble. The warnings appear to
-> be all around kobject_uevent_env acquiring the RCU lock and then going to
-> sleep. Most likely candidate problem patches in mmotm are
+> The MAINTAINERS file is also updated to reflect the maintainers of the
+> TXT-related code.
 > 
-> sysctl-fix-up-remaining-references-to-uevent_helper
-> sysctl-fix-up-remaining-references-to-uevent_helper-fix
+> Signed-off-by: Shane Wang <shane.wang@intel.com>
+> Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+>   Documentation/intel_txt.txt |   16 +++++++++-------
+>   MAINTAINERS                 |   11 +++++++++++
+>   arch/x86/include/asm/e820.h |    7 ++++++-
+>   arch/x86/kernel/tboot.c     |   20 +++++++++++---------
+>   4 files changed, 37 insertions(+), 17 deletions(-)
 > 
-> But there are also a whole host of other sysctl-related changes around RCU in
-> there. The changelog implies that these patches are part of some long-lived
-> review process so I didn't delve too deeply. The people most likely to be
-> involved based on comments in the changelog are cc'd.
+> diff -r d2911aa1461d Documentation/intel_txt.txt
+> --- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
+> +++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
+> @@ -161,13 +161,15 @@ o  In order to put a system into any of
+>         has been restored, it will restore the TPM PCRs and then
+>         transfer control back to the kernel's S3 resume vector.
+>         In order to preserve system integrity across S3, the kernel
+> -      provides tboot with a set of memory ranges (kernel
+> -      code/data/bss, S3 resume code, and AP trampoline) that tboot
+> -      will calculate a MAC (message authentication code) over and then
+> -      seal with the TPM.  On resume and once the measured environment
+> -      has been re-established, tboot will re-calculate the MAC and
+> -      verify it against the sealed value.  Tboot's policy determines
+> -      what happens if the verification fails.
+> +      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
+> +      in the e820 table, but not any memory that BIOS might alter over
+> +      the S3 transition) that tboot will calculate a MAC (message
+> +      authentication code) over and then seal with the TPM. On resume
+> +      and once the measured environment has been re-established, tboot
+> +      will re-calculate the MAC and verify it against the sealed value.
+> +      Tboot's policy determines what happens if the verification fails.
+> +      Note that the c/s 194 of tboot which has the new MAC code supports
+> +      this.
 > 
-
-Thanks.  It's Neil's
-sysctl-fix-up-remaining-references-to-uevent_helper-fix.patch which does
-
---- a/lib/kobject_uevent.c~sysctl-fix-up-remaining-references-to-uevent_helper-fix
-+++ a/lib/kobject_uevent.c
-@@ -273,10 +273,11 @@ int kobject_uevent_env(struct kobject *k
- #endif
- 
- 	/* call uevent_helper, usually only enabled during early boot */
-+	rcu_read_lock();
- 	helper = rcu_dereference(uevent_helper);
- 	if (helper[0])
- 		retval = uevent_call_helper(subsystem, env);
--
-+	rcu_read_unlock();
- exit:
- 	kfree(devpath);
- 	kfree(env);
-
-
-Ho hum.  I guess all of
-
-#rcu-add-rcustring-adt-for-rcu-protected-strings.patch: TBU
-rcu-add-rcustring-adt-for-rcu-protected-strings.patch
-#add-a-kernel_address-that-works-for-data-too.patch: TBU
-add-a-kernel_address-that-works-for-data-too.patch
-sysctl-add-proc_rcu_string-to-manage-sysctls-using-rcu-strings.patch
-sysctl-use-rcu-strings-for-core_pattern-sysctl.patch
-sysctl-add-call_usermodehelper_cleanup.patch
-sysctl-convert-modprobe_path-to-proc_rcu_string.patch
-sysctl-convert-poweroff_command-to-proc_rcu_string.patch
-#sysctl-convert-hotplug-helper-string-to-proc_rcu_string.patch: jirislaby crash
-sysctl-convert-hotplug-helper-string-to-proc_rcu_string.patch
-#sysctl-use-rcu-protected-sysctl-for-ocfs-group-add-helper.patch: Joel nack
-sysctl-use-rcu-protected-sysctl-for-ocfs-group-add-helper.patch
-#
-sysctl-fix-up-remaining-references-to-uevent_helper.patch
-sysctl-fix-up-remaining-references-to-uevent_helper-fix.patch
-#
-sysctl-clean-up-vm-related-variable-declarations.patch
-sysctl-clean-up-vm-related-variable-declarations-fix.patch
-#
-sysctl-remove-references-to-ctl_unnumbered-which-has-been-removed.patch
-#
-#
-sysctl-extern-cleanup-c_a_d.patch
-sysctl-extern-cleanup-signal.patch
-sysctl-extern-cleanup-binfmts.patch
-sysctl-extern-cleanup-pid.patch
-sysctl-extern-cleanup-mm.patch
-sysctl-extern-cleanup-compat.patch
-sysctl-extern-cleanup-latencytop.patch
-sysctl-extern-cleanup-file-nr.patch
-sysctl-extern-cleanup-rcu.patch
-sysctl-extern-cleanup-block-iopoll.patch
-sysctl-extern-cleanup-module.patch
-sysctl-extern-cleanup-sg.patch
-sysctl-extern-cleanup-acct.patch
-sysctl-extern-cleanup-rtmutex.patch
-sysctl-extern-cleanup-lockdep.patch
-sysctl-extern-cleanup-poll.patch
-#
-kmod-add-init-function-to-usermodehelper.patch
-kmod-add-init-function-to-usermodehelper-fix.patch
-kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
-kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limitcleanup.patch
-
-are not a prospect for 2.6.34.  There are issues in the rcustring
-patches and the others have dependencies.  I suppose I can rebase
-sysctl-extern-cleanup-* though.
+>   That's pretty much it for TXT support.
+> 
+> diff -r d2911aa1461d MAINTAINERS
+> --- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
+> +++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
+> @@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
+>   F:	Documentation/networking/README.ipw2200
+>   F:	drivers/net/wireless/ipw2x00/ipw2200.*
+> 
+> +INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
+> +M:	Joseph Cihula <joseph.cihula@intel.com>
+> +M:	Shane Wang <shane.wang@intel.com>
+> +L:	tboot-devel@lists.sourceforge.net
+> +W:	http://tboot.sourceforge.net
+> +T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
+> +S:	Supported
+> +F:	Documentation/intel_txt.txt
+> +F:	include/linux/tboot.h
+> +F:	arch/x86/kernel/tboot.c
+> +
+>   INTEL WIRELESS WIMAX CONNECTION 2400
+>   M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+>   M:	linux-wimax@intel.com
+> diff -r d2911aa1461d arch/x86/include/asm/e820.h
+> --- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
+> +++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
+> @@ -45,7 +45,12 @@
+>   #define E820_NVS	4
+>   #define E820_UNUSABLE	5
+> 
+> -/* reserved RAM used by kernel itself */
+> +/*
+> + * reserved RAM used by kernel itself
+> + * if CONFIG_INTEL_TXT is enabled, memory of this type will be
+> + * included in the S3 integrity calculation and so should not include
+> + * any memory that BIOS might alter over the S3 transition
+> + */
+>   #define E820_RESERVED_KERN        128
+> 
+>   #ifndef __ASSEMBLY__
+> diff -r d2911aa1461d arch/x86/kernel/tboot.c
+> --- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
+> +++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
+> @@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
+>   	struct tboot_mac_region *mr;
+>   	phys_addr_t end = start + size;
+> 
+> +	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
+> +		panic("tboot: Too many MAC regions\n");
+> +
+>   	if (start && size) {
+>   		mr = &tboot->mac_regions[tboot->num_mac_regions++];
+>   		mr->start = round_down(start, PAGE_SIZE);
+> @@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
+> 
+>   static void __init tboot_setup_sleep(void)
+>   {
+> +	int i;
+> +
+>   	tboot->num_mac_regions = 0;
+> 
+> -	/* S3 resume code */
+> -	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
+> +	for (i = 0; i < e820.nr_map; i++) {
+> +		if ((e820.map[i].type != E820_RAM)
+> +		 && (e820.map[i].type != E820_RESERVED_KERN))
+> +			continue;
+> 
+> -#ifdef CONFIG_X86_TRAMPOLINE
+> -	/* AP trampoline code */
+> -	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
+> -#endif
+> -
+> -	/* kernel code + data + bss */
+> -	add_mac_region(virt_to_phys(_text), _end - _text);
+> +		add_mac_region(e820.map[i].addr, e820.map[i].size);
+> +	}
+> 
+>   	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
+>   }
+> 
+> 
 
