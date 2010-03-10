@@ -1,44 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684Ab0CJOyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:54:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44348 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756665Ab0CJOyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:54:45 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
-References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
-       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       oleg@redhat.com
-Subject: Re: [PATCHSET] workqueue: concurrency managed workqueue, take#4
-Date: Wed, 10 Mar 2010 14:52:51 +0000
-Message-ID: <29029.1268232771@redhat.com>
+	id S1756692Ab0CJPE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:04:26 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:58058 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756034Ab0CJPEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 10:04:25 -0500
+Date: Wed, 10 Mar 2010 10:04:22 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Markus Rechberger <mrechberger@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: USBFS Memory allocation Bug
+In-Reply-To: <d9def9db1003100133wa705618ped71e146cf4c326d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.1003100958250.1516-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Mar 2010, Markus Rechberger wrote:
 
- * queue_work - queue work on a workqueue
- * @wq: workqueue to use
- * @work: work to queue
- *
- * Returns 0 if @work was already on a queue, non-zero otherwise.
- *
- * We queue the work to the CPU on which it was submitted, but if the CPU dies
- * it can be processed by another CPU.
+> > At any rate, clearly the bug, if there is one, lies in the memory
+> > management subsystem and not in usbfs.
+> >
+> 
+> seems like yes, but the final result of this is that mediasrv was not
+> killable anymore.
 
-So when a work item is running on a CPU, any work items it queues (including
-requeueing itself) will be queued upon that CPU for attention only by that CPU
-(assuming that CPU doesn't get pulled out)?
+You should have said so earlier.  That is indeed a serious bug.
 
-David
+> Shouldn't the syscall just fail if this happens?
+
+It _does_ just fail if memory can't be allocated.  Here's the relevant 
+code from proc_do_submiturb():
+
+		as->urb->transfer_buffer = kmalloc(uurb->buffer_length,
+				GFP_KERNEL);
+		if (!as->urb->transfer_buffer) {
+			kfree(isopkt);
+			kfree(dr);
+			free_async(as);
+			return -ENOMEM;
+		}
+
+Where was the mediasrv process hung when you tried to kill it?
+
+Alan Stern
+
