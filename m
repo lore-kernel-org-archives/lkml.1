@@ -1,70 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876Ab0CJAMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 19:12:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40203 "EHLO hera.kernel.org"
+	id S1755363Ab0CJASK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 19:18:10 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34865 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629Ab0CJAMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 19:12:30 -0500
-Message-ID: <4B96E397.1040005@kernel.org>
-Date: Wed, 10 Mar 2010 09:11:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1751565Ab0CJASG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 19:18:06 -0500
+Date: Tue, 9 Mar 2010 16:16:38 -0800
+From: Greg KH <gregkh@suse.de>
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, devel <devel@driverdev.osuosl.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: Tuxradar patching article and [PATCH]
+ scripts/cvt_kernel_style.pl
+Message-ID: <20100310001638.GA10960@suse.de>
+References: <1268177526.1545.62.camel@Joe-Laptop.home>
+ <20100309234152.GA30270@suse.de>
+ <1268179619.1545.95.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-To: Michal Soltys <soltys@ziu.info>
-CC: Mikael Abrahamsson <swmike@swm.pp.se>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <alpine.DEB.1.10.1003090733330.9819@uplift.swm.pp.se> <4B961D8F.3010500@ziu.info>
-In-Reply-To: <4B961D8F.3010500@ziu.info>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 00:11:07 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268179619.1545.95.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Mar 09, 2010 at 04:06:59PM -0800, Joe Perches wrote:
+> On Tue, 2010-03-09 at 15:41 -0800, Greg KH wrote:
+> > On Tue, Mar 09, 2010 at 03:32:06PM -0800, Joe Perches wrote:
+> > > There was an article published recently:
+> > > http://www.tuxradar.com/content/newbies-guide-hacking-linux-kernel
+> > > that seems to have prompted several new contributors (welcome)
+> > > to create style reformatting patches.
+> > > 
+> > > The article recommends running checkpatch and fixing the various
+> > > non-conforming style elements the output produces.
+> > > 
+> > > A better solution might be to enhance checkpatch to rewrite the
+> > > patch or a file with -f, but that's more than I'd like to do.
+> > 
+> > I _really_ dislike automatic source conversions by a tool and do not
+> > recommend doing that at all.
+> 
+> Don't be silly.
+> 
+> You take automatic conversions from tools like coccinelle all
+> the time.
 
-On 03/09/2010 07:06 PM, Michal Soltys wrote:
-> Mikael Abrahamsson wrote:
->> On Mon, 8 Mar 2010, Tejun Heo wrote:
->>
->>>  http://ata.wiki.kernel.org/index.php/ATA_4_KiB_sector_issues
->>
->> Excellent summary.
->>
->>> C-2. Windows XP depends on the traditional partition layout.
->>
->> Is this really true? WD ships their EARS drives with an alignment tool
->> that as far as I can understand, moves the partition so
->> it's aligned to 4KiB:
+Those are sane, as they are tiny and obvious :)
 
-Hmmm... I based that claim on the MS KB page and as you pointed out
-the problem there could probably be issues with specific BIOS
-implementation interacting badly.  I'll update the doc.
+It's the huge "reformat the whole file with indent" type stuff that I
+object to.
 
-> XP SP2 (or later) can boot from any place, including logical partitions
-> (tested that recently). Most important thing is "hidden sectors" (recent
-> chain.c32 can set that automatically through ntldr and/or sethidden
-> options). No idea about pre-SP2 ; Win 2000 will not boot from
-> "misaligned" (with reference to cylinder boundary) partition.
+> What I found poorly written about the article was
+> unfortunately you apparently recommend things like:
+> 
+>         if (error != -ENODEV) {
+>                 foo();
+>                 bar();
+>         } else {
+>         	report_error();
+>         	goto exit;
+>         }
+>         
+> instead of:
+> 
+>         if (error == -ENODEV) {
+>         	report_error();
+>         	goto exit;
+>         }
+>         foo();
+>         bar();
 
-I was thinking about testing XP booting this weekend but really want
-to avoid it, so thanks a lot for the info.  I'll update the doc
-accordingly but can you please enlighten me on how it works and what's
-broken in detail?  So, XP should be fine with any alignment?
+Hey, a job as a copyeditor awaits :)
 
-Thanks.
+> and the brace removal example was unfortunate because
+> it used printk without KERN_<level> without explanation.
+> 
+> I think there wasn't enough emphasis on compiling the new
+> patched file with something like a .o or .lst comparison
+> to the unmodified source to make sure it was OK to send
+> to the list.
 
--- 
-tejun
+One can only do so much in a few thousand words.  I'm sorry you disliked
+the article, I know the magazine is always looking for new authors.
+
+thanks,
+
+greg k-h
