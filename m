@@ -1,53 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803Ab0CJWEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:04:22 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55236
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932769Ab0CJWEV (ORCPT
+	id S932808Ab0CJWFj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:05:39 -0500
+Received: from deliverator4.gatech.edu ([130.207.160.70]:59066 "EHLO
+	deliverator4.gatech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932785Ab0CJWFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:04:21 -0500
-Date: Wed, 10 Mar 2010 14:04:40 -0800 (PST)
-Message-Id: <20100310.140440.246391326.davem@davemloft.net>
-To: yinghai@kernel.org
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [RFC PATCH 6/6] sparc64: use early_res and nobootmem
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1268256267-3769-7-git-send-email-yinghai@kernel.org>
-References: <1268256267-3769-1-git-send-email-yinghai@kernel.org>
-	<1268256267-3769-7-git-send-email-yinghai@kernel.org>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Mar 2010 17:05:37 -0500
+Date: Wed, 10 Mar 2010 17:05:26 -0500
+From: Evan McClain <evan.mcclain@gatech.edu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: rpurdie@rpsys.net, akpm@linux-foundation.org, schwalbe@inf.tu-dresden.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: mbp_nvidia_bl - add five more MacBook
+ variants
+Message-ID: <20100310220526.GA24941@macbook.site>
+References: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
+ <20100310142424.GA21625@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
+Content-Disposition: inline
+In-Reply-To: <20100310142424.GA21625@srcf.ucam.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Wed, 10 Mar 2010 13:24:27 -0800
 
-> use early_res/fw_memmap to replace lmb, so could use early_res replace bootme
-> later.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+--SUOF0GtieIMvvwua
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This doesn't boot, it looks like early_res is not initialized
-early enough, the backtrace is:
+On Wed, Mar 10, 2010 at 02:24:24PM +0000, Matthew Garrett wrote:
+> Acked in principle, but at this point it probably needs to be renamed=20
+> and have the Kconfig entry updated if it's going to be used for other=20
+> hardware. Does it actually work on non-nvidia Macs?
 
-[    0.000000] Remapping the kernel... done.
-[    0.000000] Kernel panic - not syncing: can not find more space for early_res array
-[    0.000000] Call Trace:
-[    0.000000]  [0000000000882c48] __check_and_double_early_res+0xc0/0x1c8
-[    0.000000]  [0000000000882f18] reserve_early+0x10/0x38
-[    0.000000]  [000000000087b894] prom_early_alloc+0x48/0x7c
-[    0.000000]  [000000000087b3e4] get_one_property+0x28/0x50
-[    0.000000]  [000000000087b588] prom_create_node+0x44/0xe8
-[    0.000000]  [000000000087b6d0] prom_build_tree+0x1c/0xac
-[    0.000000]  [000000000087b7b4] prom_build_devicetree+0x54/0x80
-[    0.000000]  [000000000087fd34] paging_init+0x69c/0x1268
-[    0.000000]  [00000000008786f4] start_kernel+0x88/0x374
-[    0.000000]  [000000000070589c] tlb_fixup_done+0x98/0xa0
-[    0.000000]  [0000000000000000] (null)
+I have applied it locally and tested on my MacBook 3,1 for several weeks
+now. The intel X driver requires a small patch to use the mbp_backlight
+class, but I'll let them know once this patch has been applied upstream.
+
+There are several bugreports related to this issue at the ubuntu,
+opensuse, and freedesktop bugzillas (see
+https://bugzilla.novell.com/show_bug.cgi?id=3D581474 with links to the
+other reports as well).
+
+Thanks
+--=20
+Evan McClain
+Aerospace Engineering
+Graduate Student Senator  .
+evan.mcclain@gatech.edu  ..:
+
+--SUOF0GtieIMvvwua
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iHwEABECADwFAkuYF6Y1FIAAAAAAFQAXcGthLWFkZHJlc3NAZ251cGcub3JnZXZh
+bi5tY2NsYWluQGdhdGVjaC5lZHUACgkQvbxY5xzjycBbuQCgzHNXR02R3m2idEQh
+XrfnlemUK3wAmwZBM+YNxRFL4PSgd6JIfLfW9g/H
+=c5Tf
+-----END PGP SIGNATURE-----
+
+--SUOF0GtieIMvvwua--
