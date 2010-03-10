@@ -1,78 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258Ab0CJNqX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:46:23 -0500
-Received: from mail-ew0-f216.google.com ([209.85.219.216]:45694 "EHLO
-	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932218Ab0CJNqV (ORCPT
+	id S932311Ab0CJNrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:47:17 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:56935 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932216Ab0CJNrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:46:21 -0500
+	Wed, 10 Mar 2010 08:47:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=XWh42qvGcFhldGfzvmk9tQ1vgsF/6td3P22cPnphTJXJ+f5GqWaLAUPRXSB15qDRtb
-         oHyQIfUJyT+DUur816Wk9dtm+fdK/k0/xH1v1dTZkQLxVQRvKqxmwiu+jSzOa0g/0Vp7
-         hRlg8m9QDh7gYOrtm+NVeJywg73++ES3o8l2I=
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=PYR1hgYQQW5qkcj3CiBN6Hcg3XRdIsKXk/l5Dyi8eXQH3PJRClM1c8QlReGBvh5b6y
+         5LF5yQVTA3StiFm6idGedNpAqMBw79GllvIT0BkQ/+Ole7vcok2AXFh5k23rJpH4GEL5
+         fa9k0RN1h0GYdWJID8u4LVMkUGFSw9orPuhfA=
+Message-ID: <4B97A2DE.2030901@garzik.org>
+Date: Wed, 10 Mar 2010 08:47:10 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <71cd59b01003100507q79878fdan98e53cb4e705d2c2@mail.gmail.com>
-References: <b637ec0b1003091458j67efc62cg2c975e9e286f4b0b@mail.gmail.com>
-	 <71cd59b01003100507q79878fdan98e53cb4e705d2c2@mail.gmail.com>
-Date: Wed, 10 Mar 2010 14:46:19 +0100
-Message-ID: <b637ec0b1003100546l121f3a54o311aba94c8cabc5e@mail.gmail.com>
-Subject: Re: Possible bug in eeepc-laptop.c - EeePC 900
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Matthew Wilcox <matthew@wil.cx>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       tytso@mit.edu, "H. Peter Anvin" <hpa@zytor.com>,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, knikanth@suse.de, jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <1268031640.4389.11.camel@mulgrave.site> <yq1vdd6bzgz.fsf@sermon.lab.mkp.net> <yq1mxyibz7o.fsf@sermon.lab.mkp.net> <yq1iq96bz22.fsf@sermon.lab.mkp.net> <20100310075334.GA26763@parisc-linux.org>
+In-Reply-To: <20100310075334.GA26763@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Wed, Mar 10, 2010 at 2:07 PM, Corentin Chary
-<corentin.chary@gmail.com> wrote:
-> On Tue, Mar 9, 2010 at 11:58 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
->> Hi.
->> I have an EeePC 900 running 2.6.34-rc1.
->>
->> If I boot it on AC the cpu runs at full speed, 900MHz; if I boot it on
->> battery it runs only at 630Mhz. Plugging / unplugging the AC does not
->> change the cpu frequency. Only a reboot can change the situation.
->>
->> I already tried to echo 0 or 1 to the
->> /sys/devices/platform/eeepc/cpufv file; no effects, even if the file
->> changes its value.
->>
->> This is not a regression from 2.6.33: this behavior is also present in
->> that version.
->>
->> Does this ring any bells? This is really annoying, especially when
->> trying to watch a movie on battery. Also 3D apps show a 30%
->> performance drop, as expected.
+On 03/10/2010 02:53 AM, Matthew Wilcox wrote:
+> On Mon, Mar 08, 2010 at 10:41:57AM -0500, Martin K. Petersen wrote:
+>> What I meant to say was that I know ATA supports 4 KB LBS and that
+>> nobody appears to care about it.
 >
-> Can you change the frequency with cpufreq ?
+> I sent patches to add support ... they were ignored.
 
-No, I can't. Which cpufreq driver am I supposed to use? With only
-cpufreq compiled in, the directory
-/sys/drivers/system/cpu/cpu0/cpufreq is empty.
+Not true, read the rest of the thread.
 
-> Did you try all cpufv values (see cpufv_available file) ?
+	Jeff
 
-Yes, it only shows 0 and 1. I tried both, without success.
 
-> Is you bios up-to-date ?
 
-Yes it is, it's 1006.
-
->
-> --
-> Corentin Chary
-> http://xf.iksaif.net
->
-
-Thanks.
-Fabio
