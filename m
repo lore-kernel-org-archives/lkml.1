@@ -1,56 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756319Ab0CJLB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:01:57 -0500
-Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:57796 "EHLO
-	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755698Ab0CJLB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:01:56 -0500
-X-IronPort-AV: E=Sophos;i="4.49,613,1262559600"; 
-   d="scan'208";a="54342932"
-Date: Wed, 10 Mar 2010 12:01:53 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, lenz@cs.wisc.edu,
-       rpurdie@openedhand.com
-Subject: Re: private field in led_classdev?
-Message-ID: <20100310110153.GA6838@const.bordeaux.inria.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	lenz@cs.wisc.edu, rpurdie@openedhand.com
-References: <20100307143112.GC5203@const.famille.thibault.fr> <20100310025411.GD26642@kroah.com> <20100310094452.GA5702@const.bordeaux.inria.fr>
+	id S1754047Ab0CJLDQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:03:16 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59824 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553Ab0CJLDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 06:03:14 -0500
+Message-ID: <4B977BDB.2090204@cn.fujitsu.com>
+Date: Wed, 10 Mar 2010 19:00:43 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100310094452.GA5702@const.bordeaux.inria.fr>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Avi Kivity <avi@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kvm: cleanup kvm trace
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault, le Wed 10 Mar 2010 10:44:52 +0100, a écrit :
-> Greg KH, le Tue 09 Mar 2010 18:54:11 -0800, a écrit :
-> > On Sun, Mar 07, 2010 at 03:31:12PM +0100, Samuel Thibault wrote:
-> > > Would there be an objection to adding a void *private field to the
-> > > led_classdev struct?  It would be a lot less burden for the input
-> > > key board leds support for finding out the keyboard device from the
-> > > brightness_set callback, as each device may have a long series of leds,
-> > > not just a fixed number of them.
-> > 
-> > What's wrong with using the private pointer in the struct device
-> > instead?
-> 
-> Ah, right. In my case there is a struct device corresponding to the
-> actual input device. I hadn't realized that since registering a led
-> creates a new device, I have another private pointer which I can use.
+This patch does:
 
-One issue, however, is that led_classdev_register() calls
-led_trigger_set_default(), which eventually calls the brightness_set
-hook, but the private field (platform_data) still hasn't been
-initialized, so the brightness_set hook has to abort setting the initial
-state. In my case, after led_classdev_register and setting
-platform_data, I can call the low level function by hand, it's just not
-very pretty...
+ - no need call tracepoint_synchronize_unregister() when kvm module
+   is unloaded since ftrace can handle it
 
-Samuel
+ - cleanup ftrace's macro
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ arch/x86/kvm/mmu.c         |    1 -
+ arch/x86/kvm/mmutrace.h    |    7 +++++--
+ arch/x86/kvm/trace.h       |    7 +++++--
+ arch/x86/kvm/x86.c         |    2 +-
+ include/trace/events/kvm.h |    1 -
+ virt/kvm/kvm_main.c        |    1 -
+ 6 files changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 741373e..d0f5e11 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -147,7 +147,6 @@ module_param(oos_shadow, bool, 0644);
+ 
+ #include <trace/events/kvm.h>
+ 
+-#undef TRACE_INCLUDE_FILE
+ #define CREATE_TRACE_POINTS
+ #include "mmutrace.h"
+ 
+diff --git a/arch/x86/kvm/mmutrace.h b/arch/x86/kvm/mmutrace.h
+index 3e4a5c6..1fe956a 100644
+--- a/arch/x86/kvm/mmutrace.h
++++ b/arch/x86/kvm/mmutrace.h
+@@ -6,8 +6,6 @@
+ 
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM kvmmmu
+-#define TRACE_INCLUDE_PATH .
+-#define TRACE_INCLUDE_FILE mmutrace
+ 
+ #define KVM_MMU_PAGE_FIELDS \
+ 	__field(__u64, gfn) \
+@@ -216,5 +214,10 @@ TRACE_EVENT(
+ 
+ #endif /* _TRACE_KVMMMU_H */
+ 
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE mmutrace
++
+ /* This part must be outside protection */
+ #include <trace/define_trace.h>
+diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+index 6ad30a2..e6e5e54 100644
+--- a/arch/x86/kvm/trace.h
++++ b/arch/x86/kvm/trace.h
+@@ -5,8 +5,6 @@
+ 
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM kvm
+-#define TRACE_INCLUDE_PATH arch/x86/kvm
+-#define TRACE_INCLUDE_FILE trace
+ 
+ /*
+  * Tracepoint for guest mode entry.
+@@ -553,5 +551,10 @@ TRACE_EVENT(kvm_skinit,
+ 
+ #endif /* _TRACE_KVM_H */
+ 
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH arch/x86/kvm
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
+ /* This part must be outside protection */
+ #include <trace/define_trace.h>
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index e46282a..6db6fd2 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -40,7 +40,7 @@
+ #include <linux/user-return-notifier.h>
+ #include <linux/srcu.h>
+ #include <trace/events/kvm.h>
+-#undef TRACE_INCLUDE_FILE
++
+ #define CREATE_TRACE_POINTS
+ #include "trace.h"
+ 
+diff --git a/include/trace/events/kvm.h b/include/trace/events/kvm.h
+index b17d49d..6dd3a51 100644
+--- a/include/trace/events/kvm.h
++++ b/include/trace/events/kvm.h
+@@ -5,7 +5,6 @@
+ 
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM kvm
+-#define TRACE_INCLUDE_FILE kvm
+ 
+ #if defined(__KVM_HAVE_IOAPIC)
+ TRACE_EVENT(kvm_set_irq,
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 548f925..c908096 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2272,7 +2272,6 @@ EXPORT_SYMBOL_GPL(kvm_init);
+ 
+ void kvm_exit(void)
+ {
+-	tracepoint_synchronize_unregister();
+ 	kvm_exit_debug();
+ 	misc_deregister(&kvm_dev);
+ 	kmem_cache_destroy(kvm_vcpu_cache);
+-- 
+1.6.1.2
+
