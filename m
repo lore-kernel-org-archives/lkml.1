@@ -1,92 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439Ab0CJQOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 11:14:36 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:51029 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756785Ab0CJQOf (ORCPT
+	id S1756845Ab0CJQTx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 11:19:53 -0500
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:61985 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755391Ab0CJQTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 11:14:35 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEACZTl0vCTtAn/2dsb2JhbACaU3O9QoR5BA
-Date: Wed, 10 Mar 2010 17:14:30 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
-Message-ID: <20100310161429.GA16799@frolo.macqel>
-References: <20100310123257.GA2899@frolo.macqel> <87d3zc1bjo.fsf@devron.myhome.or.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87d3zc1bjo.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 10 Mar 2010 11:19:51 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1
+X-IronPort-AV: E=Sophos;i="4.49,614,1262559600";   d="scan'208";a="48440209"
+Message-id: <4B97C6A5.4010209@tvk.rwth-aachen.de>
+Date: Wed, 10 Mar 2010 17:19:49 +0100
+From: Damian Lukowski <damian@tvk.rwth-aachen.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100307
+ Thunderbird/3.0.3
+To: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       tytso@mit.edu, "H. Peter Anvin" <hpa@zytor.com>,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, knikanth@suse.de, jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org>
+ <1268031640.4389.11.camel@mulgrave.site> <yq1vdd6bzgz.fsf@sermon.lab.mkp.net>
+ <yq1mxyibz7o.fsf@sermon.lab.mkp.net> <yq1iq96bz22.fsf@sermon.lab.mkp.net>
+ <20100310075334.GA26763@parisc-linux.org> <4B97A2DE.2030901@garzik.org>
+In-reply-to: <4B97A2DE.2030901@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ogawa
-
-Thanks for the quick answer.
-
-On Wed, Mar 10, 2010 at 11:44:27PM +0900, OGAWA Hirofumi wrote:
-> Philippe De Muyter <phdm@macqel.be> writes:
+> S-2. The proper solution.
 > 
-> > --- a/fs/fat/namei_vfat.c	2009-09-10 00:13:59.000000000 +0200
-> > +++ b/fs/fat/namei_vfat.c	2010-02-08 02:28:37.010096903 +0100
-> > @@ -702,9 +702,22 @@
-> >  static int vfat_find(struct inode *dir, struct qstr *qname,
-> >  		     struct fat_slot_info *sinfo)
-> >  {
-> > -	unsigned int len = vfat_striptail_len(qname);
-> > +	int err;
-> > +	unsigned int len;
-> > +
-> > +	/* Some combined ethernet + usb external hard drive do not
-> > +	 * remove the trailing dots when creating entries in ethernet mode.
-> > +	 * (e.g. Iomega Home Network Hard Drive)
-> > +	 * Make accessing those entries possible.
-> > +	 */
-> > +	err = fat_search_long(dir, qname->name, qname->len, sinfo);
-> > +	if (!err)
-> > +		return err;
-> > +	len = vfat_striptail_len(qname);
-> >  	if (len == 0)
-> >  		return -ENOENT;
-> > +	if (len == qname->len)
-> > +		return err;
-> >  	return fat_search_long(dir, qname->name, len, sinfo);
-> >  }
+>   Correct alignments for all partitions can't be achieved by the
+>   firmware alone.  The system utilities should be informed about the
+>   alignment requirements and align partitions accordingly.
 > 
-> This would be bad for both (standard and IO-MEGA hack).
+>   The above firmware workaround complicates the situation because the
+>   two different configurations require different offsets to achieve
+>   the correct alignments.  ATA/ATAPI-8 specifies a way for a drive to
+>   export the physical and logical sector sizes and the LBA offset
+>   which is aligned to the physical sectors.
 > 
-> This introduces unneeded directory-parse to standard one.  And for
-
-No.  There will only be a second parse if someone is looking for a filename
-with a trailing dot, and it is not found (*).  I there is no trailing dot in qname, only the first fat_search_long will be called, because len after vfat_striptail_len would be equal to qname->len.
-
-> IO-MEGA, this wouldn't provide proper filename handling.
-
-For accessing IO-MEGA disk in read mode, this is perfect.  I didn't want
-to replicate IO-MEGA write behaviour here, only fix the read behaviour for
-such simple commands as 'ls', 'find' and all the directory browsers.
-
+>   In Linux, these parameters are exported via the following sysfs
+>   nodes.
 > 
-> If it wants to handle the tailing-dot as a part of filename, it
-> shouldn't be able to access to the stripped-dots filename. (For simple
-> example, I guess you can't do "mv a a." with this patch.)
+>     physical sector size	: /sys/block/sdX/queue/physical_block_size
+>     logical sector size		: /sys/block/sdX/queue/logical_block_size
+>     alignment offset		: /sys/block/sdX/alignment_offset
+> 
+>   Let the physical sector size be PSS, logical sector size LSS and
+>   alignment offset AOFF.  The system software should place partitions
+>   such that the starting LBAs of all partitions are aligned on
+> 
+>     (n * PSS + AOFF) / LSS
+> 
+>   For 4 KiB physical sector offset-by-one drives, PSS is 4096, LSS 512
+>   and AOFF 3584 and with n of 7 the above becomes,
+> 
+>     (7 * 4096 + 3584) / 512 == 63
+> 
+>   making sector 63 an aligned LBA where the first partition can be
+>   put, but without the offset-by-one mapping, AOFF is zero and LBA 63
+>   is not aligned.
+> 
+>   With the above new alignment requirement in place, it becomes
+>   difficult to honor the legacy one - first partition on sector 63 and
+>   all other partitions on cylinder boundary (255 * 63 sectors) - as
+>   the two alignment requirements contradict each other.  This might be
+>   worked around by adjusting how LBA and CHS addresses are mapped but
+>   the disk geometry parameters are hard coded everywhere and there is
+>   no reliable way to communicate custom geometry parameters.
 
-As I explained above, I only fix read-access on IO-MEGA drives, while
-preserving standard behaviour for write mode.
-
-But I'll try your testcase asap.  Which behaviour do you expect ?
-I would expect a no-op, because I did not change the write-behaviour.
+Hello,
+I have practically no knowledge of Linux' block device drivers,
+but is this really a partitioning issue? I think the problem is
+with the filesystems when clustering multiple blocks without
+knowledge of the sector alignment and sector size of the underlying
+block device. Maybe it is a better solution to adapt the filesystem
+buffer routine which reads/writes data from/to the block device?
 
 Best regards
-
-Philippe
-
-(*) This will never happen with 'ls', 'find' and friends who get their name
-list from getdents.  This could only happen if someone tries to open
-a file called 'a.' on his vfat file-system, which of course does not exist
-in his normal vfat file-system.
+ Damian
