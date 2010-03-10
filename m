@@ -1,300 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667Ab0CJGgR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 01:36:17 -0500
-Received: from mga11.intel.com ([192.55.52.93]:61633 "EHLO mga11.intel.com"
+	id S1754801Ab0CJGhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 01:37:01 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57094 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189Ab0CJGgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 01:36:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,612,1262592000"; 
-   d="scan'208";a="547696337"
-Message-ID: <4B973DDA.6050902@intel.com>
-Date: Wed, 10 Mar 2010 14:36:10 +0800
-From: Shane Wang <shane.wang@intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "andi@firstfloor.org" <andi@firstfloor.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>
-Subject: [PATCH v3] intel_txt: add support for S3 memory integrity protection
- within Intel(R) TXT launched kernel
-References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com> <20091004185801.GC1378@ucw.cz>  <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
-In-Reply-To: <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
-Content-Type: multipart/mixed;
- boundary="------------010608010907050303000004"
+	id S1753189Ab0CJGg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 01:36:58 -0500
+Date: Wed, 10 Mar 2010 17:36:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Joel Becker <joel.becker@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus <torvalds@linux-foundation.org>
+Subject: linux-next: build warning after merge of the final tree (in Linus'
+ tree)
+Message-Id: <20100310173650.f0259c95.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Mar_2010_17_36_50_+1100_P6cj2W3vu9U_Olyn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010608010907050303000004
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+--Signature=_Wed__10_Mar_2010_17_36_50_+1100_P6cj2W3vu9U_Olyn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-<compared with v2, this patch adds a check of array size in tboot.c, and a note 
-to specify which c/s of tboot supports this kind of MACing in intel_txt.txt>
+Hi Joel,
 
-v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
-tboot.
+After merging the scsi-post-merge tree, today's linux-next build (powerpc
+allyesconfig) produced this warning:
 
-This patch adds support for S3 memory integrity protection within an Intel(R)
-TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
-kernel and userspace, as indicated by memory ranges of type E820_RAM and
-E820_RESERVED_KERN in the e820 table, will be integrity protected.
+fs/ocfs2/xattr.c: In function 'ocfs2_create_empty_xattr_block':
+fs/ocfs2/xattr.c:6535: warning: 'meta_ac' is used uninitialized in this fun=
+ction
 
-The MAINTAINERS file is also updated to reflect the maintainers of the
-TXT-related code.
+Introduced by commit d3981544d7a4ed276966cdd58fe2f5d6e8a585d9 ("ocfs2:
+Set xattr block entries with ocfs2_xa_set()") which is now in Linus'
+tree.  (Entered linux-next on March 1, 2010 and Linus' tree on March 4).
 
-Signed-off-by: Shane Wang <shane.wang@intel.com>
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+I am pretty certain that this warning indicates a bug.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-  Documentation/intel_txt.txt |   16 +++++++++-------
-  MAINTAINERS                 |   11 +++++++++++
-  arch/x86/include/asm/e820.h |    7 ++++++-
-  arch/x86/kernel/tboot.c     |   20 +++++++++++---------
-  4 files changed, 37 insertions(+), 17 deletions(-)
+--Signature=_Wed__10_Mar_2010_17_36_50_+1100_P6cj2W3vu9U_Olyn
+Content-Type: application/pgp-signature
 
-diff -r d2911aa1461d Documentation/intel_txt.txt
---- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
-+++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
-@@ -161,13 +161,15 @@ o  In order to put a system into any of
-        has been restored, it will restore the TPM PCRs and then
-        transfer control back to the kernel's S3 resume vector.
-        In order to preserve system integrity across S3, the kernel
--      provides tboot with a set of memory ranges (kernel
--      code/data/bss, S3 resume code, and AP trampoline) that tboot
--      will calculate a MAC (message authentication code) over and then
--      seal with the TPM.  On resume and once the measured environment
--      has been re-established, tboot will re-calculate the MAC and
--      verify it against the sealed value.  Tboot's policy determines
--      what happens if the verification fails.
-+      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
-+      in the e820 table, but not any memory that BIOS might alter over
-+      the S3 transition) that tboot will calculate a MAC (message
-+      authentication code) over and then seal with the TPM. On resume
-+      and once the measured environment has been re-established, tboot
-+      will re-calculate the MAC and verify it against the sealed value.
-+      Tboot's policy determines what happens if the verification fails.
-+      Note that the c/s 194 of tboot which has the new MAC code supports
-+      this.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-  That's pretty much it for TXT support.
+iEYEARECAAYFAkuXPgIACgkQjjKRsyhoI8xLhwCcDzNrz0DlJALCpmqrrbCz3rzJ
+RsYAn3rap4FqFAlCilJU1Yk2mvZD/79k
+=Bh7i
+-----END PGP SIGNATURE-----
 
-diff -r d2911aa1461d MAINTAINERS
---- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
-+++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
-@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
-  F:	Documentation/networking/README.ipw2200
-  F:	drivers/net/wireless/ipw2x00/ipw2200.*
-
-+INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
-+M:	Joseph Cihula <joseph.cihula@intel.com>
-+M:	Shane Wang <shane.wang@intel.com>
-+L:	tboot-devel@lists.sourceforge.net
-+W:	http://tboot.sourceforge.net
-+T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
-+S:	Supported
-+F:	Documentation/intel_txt.txt
-+F:	include/linux/tboot.h
-+F:	arch/x86/kernel/tboot.c
-+
-  INTEL WIRELESS WIMAX CONNECTION 2400
-  M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
-  M:	linux-wimax@intel.com
-diff -r d2911aa1461d arch/x86/include/asm/e820.h
---- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
-@@ -45,7 +45,12 @@
-  #define E820_NVS	4
-  #define E820_UNUSABLE	5
-
--/* reserved RAM used by kernel itself */
-+/*
-+ * reserved RAM used by kernel itself
-+ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
-+ * included in the S3 integrity calculation and so should not include
-+ * any memory that BIOS might alter over the S3 transition
-+ */
-  #define E820_RESERVED_KERN        128
-
-  #ifndef __ASSEMBLY__
-diff -r d2911aa1461d arch/x86/kernel/tboot.c
---- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
-@@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
-  	struct tboot_mac_region *mr;
-  	phys_addr_t end = start + size;
-
-+	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
-+		panic("tboot: Too many MAC regions\n");
-+
-  	if (start && size) {
-  		mr = &tboot->mac_regions[tboot->num_mac_regions++];
-  		mr->start = round_down(start, PAGE_SIZE);
-@@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
-
-  static void __init tboot_setup_sleep(void)
-  {
-+	int i;
-+
-  	tboot->num_mac_regions = 0;
-
--	/* S3 resume code */
--	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
-+	for (i = 0; i < e820.nr_map; i++) {
-+		if ((e820.map[i].type != E820_RAM)
-+		 && (e820.map[i].type != E820_RESERVED_KERN))
-+			continue;
-
--#ifdef CONFIG_X86_TRAMPOLINE
--	/* AP trampoline code */
--	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
--#endif
--
--	/* kernel code + data + bss */
--	add_mac_region(virt_to_phys(_text), _end - _text);
-+		add_mac_region(e820.map[i].addr, e820.map[i].size);
-+	}
-
-  	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
-  }
-
-
---------------010608010907050303000004
-Content-Type: text/plain;
- name="s3_memory_integrity.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="s3_memory_integrity.patch"
-
-v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
-tboot.
-
-This patch adds support for S3 memory integrity protection within an Intel(R)
-TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
-kernel and userspace, as indicated by memory ranges of type E820_RAM and
-E820_RESERVED_KERN in the e820 table, will be integrity protected.
-
-The MAINTAINERS file is also updated to reflect the maintainers of the
-TXT-related code.
-
-Signed-off-by: Shane Wang <shane.wang@intel.com>
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
-
-diff -r d2911aa1461d Documentation/intel_txt.txt
---- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
-+++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
-@@ -161,13 +161,15 @@ o  In order to put a system into any of 
-       has been restored, it will restore the TPM PCRs and then
-       transfer control back to the kernel's S3 resume vector.
-       In order to preserve system integrity across S3, the kernel
--      provides tboot with a set of memory ranges (kernel
--      code/data/bss, S3 resume code, and AP trampoline) that tboot
--      will calculate a MAC (message authentication code) over and then
--      seal with the TPM.  On resume and once the measured environment
--      has been re-established, tboot will re-calculate the MAC and
--      verify it against the sealed value.  Tboot's policy determines
--      what happens if the verification fails.
-+      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
-+      in the e820 table, but not any memory that BIOS might alter over
-+      the S3 transition) that tboot will calculate a MAC (message
-+      authentication code) over and then seal with the TPM. On resume
-+      and once the measured environment has been re-established, tboot
-+      will re-calculate the MAC and verify it against the sealed value.
-+      Tboot's policy determines what happens if the verification fails.
-+      Note that the c/s 194 of tboot which has the new MAC code supports
-+      this.
- 
- That's pretty much it for TXT support.
- 
-diff -r d2911aa1461d MAINTAINERS
---- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
-+++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
-@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
- F:	Documentation/networking/README.ipw2200
- F:	drivers/net/wireless/ipw2x00/ipw2200.*
- 
-+INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
-+M:	Joseph Cihula <joseph.cihula@intel.com>
-+M:	Shane Wang <shane.wang@intel.com>
-+L:	tboot-devel@lists.sourceforge.net
-+W:	http://tboot.sourceforge.net
-+T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
-+S:	Supported
-+F:	Documentation/intel_txt.txt
-+F:	include/linux/tboot.h
-+F:	arch/x86/kernel/tboot.c
-+
- INTEL WIRELESS WIMAX CONNECTION 2400
- M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
- M:	linux-wimax@intel.com
-diff -r d2911aa1461d arch/x86/include/asm/e820.h
---- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
-@@ -45,7 +45,12 @@
- #define E820_NVS	4
- #define E820_UNUSABLE	5
- 
--/* reserved RAM used by kernel itself */
-+/*
-+ * reserved RAM used by kernel itself
-+ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
-+ * included in the S3 integrity calculation and so should not include
-+ * any memory that BIOS might alter over the S3 transition
-+ */
- #define E820_RESERVED_KERN        128
- 
- #ifndef __ASSEMBLY__
-diff -r d2911aa1461d arch/x86/kernel/tboot.c
---- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
-+++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
-@@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
- 	struct tboot_mac_region *mr;
- 	phys_addr_t end = start + size;
- 
-+	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
-+		panic("tboot: Too many MAC regions\n");
-+
- 	if (start && size) {
- 		mr = &tboot->mac_regions[tboot->num_mac_regions++];
- 		mr->start = round_down(start, PAGE_SIZE);
-@@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
- 
- static void __init tboot_setup_sleep(void)
- {
-+	int i;
-+
- 	tboot->num_mac_regions = 0;
- 
--	/* S3 resume code */
--	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
-+	for (i = 0; i < e820.nr_map; i++) {
-+		if ((e820.map[i].type != E820_RAM)
-+		 && (e820.map[i].type != E820_RESERVED_KERN))
-+			continue;
- 
--#ifdef CONFIG_X86_TRAMPOLINE
--	/* AP trampoline code */
--	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
--#endif
--
--	/* kernel code + data + bss */
--	add_mac_region(virt_to_phys(_text), _end - _text);
-+		add_mac_region(e820.map[i].addr, e820.map[i].size);
-+	}
- 
- 	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
- }
-
---------------010608010907050303000004--
+--Signature=_Wed__10_Mar_2010_17_36_50_+1100_P6cj2W3vu9U_Olyn--
