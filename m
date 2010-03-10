@@ -1,109 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339Ab0CJOCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:02:37 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:48105 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932254Ab0CJOCf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:02:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:message-id:x-mailer;
-        b=MTuo94PiWagnqmURkx04ldElSFY1AfejFeR66K7UPJX9ffPZ/ZVTF5U7RinL6RG1XE
-         l7HIRh0bpKRTKmaNnaxPAi+oVo4c6ylf2mCC6LnH11iUcf/FJuocHzC2yTv8OfwWBHWy
-         LyTqeQVw9nn2G5Wh3kjCfRkXexfPqyAhMpDAw=
-From: Maurice Dawson <mauricedawson2699@googlemail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 15/15] Staging: comedi: fix macro coding style issue in adl_pci9111.c
-Date: Wed, 10 Mar 2010 14:02:15 +0000
-Message-Id: <1268229735-5387-1-git-send-email-mauricedawson2699@googlemail.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S932368Ab0CJOFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:05:36 -0500
+Received: from tundra.namei.org ([65.99.196.166]:42487 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932198Ab0CJOFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 09:05:34 -0500
+Date: Thu, 11 Mar 2010 01:04:52 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
+       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
+       a.gruenbacher@computer.org
+Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted'
+ xattrs
+In-Reply-To: <20100310114035.GA32219@infradead.org>
+Message-ID: <alpine.LRH.2.00.1003110104090.29956@tundra.namei.org>
+References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <20100310114035.GA32219@infradead.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch to the adl_pci9111.c file that fixes, ERROR: Macros with multiple statements should be enclosed in a do - while block, found by the checkpatch.pl tool
+On Wed, 10 Mar 2010, Christoph Hellwig wrote:
 
-Signed-off-by: Maurice Dawson <mauricedawson2699@googlemail.com>
----
- drivers/staging/comedi/drivers/adl_pci9111.c |   44 +++++++++++++++++--------
- 1 files changed, 30 insertions(+), 14 deletions(-)
+> Now that everyone felt the consensus is that we need the check I look
+> into adding it into XFS, but it seems like we already have that check
+> in xfs_xattr_put_listent:
+> 
+> 	/*
+>          * Only show root namespace entries if we are actually allowed to
+> 	 * see them.
+> 	 */
+> 	if ((flags & XFS_ATTR_ROOT) && !capable(CAP_SYS_ADMIN))
+> 		return 0;
+> 
 
-diff --git a/drivers/staging/comedi/drivers/adl_pci9111.c b/drivers/staging/comedi/drivers/adl_pci9111.c
-index 5e6f72f..5171176 100755
---- a/drivers/staging/comedi/drivers/adl_pci9111.c
-+++ b/drivers/staging/comedi/drivers/adl_pci9111.c
-@@ -207,12 +207,14 @@ Add external multiplexer support.
-   outb(0, PCI9111_IO_BASE+PCI9111_REGISTER_SOFTWARE_TRIGGER)
- 
- #define pci9111_fifo_reset() \
--  outb(PCI9111_FFEN_SET_FIFO_ENABLE, \
--    PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
--  outb(PCI9111_FFEN_SET_FIFO_DISABLE, \
--    PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
--  outb(PCI9111_FFEN_SET_FIFO_ENABLE, \
--    PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL)
-+	do { \
-+		outb(PCI9111_FFEN_SET_FIFO_ENABLE, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
-+		outb(PCI9111_FFEN_SET_FIFO_DISABLE, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
-+		outb(PCI9111_FFEN_SET_FIFO_ENABLE, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
-+	} while (0);
- 
- #define pci9111_is_fifo_full() \
-   ((inb(PCI9111_IO_BASE+PCI9111_REGISTER_RANGE_STATUS_READBACK)& \
-@@ -264,16 +266,28 @@ Add external multiplexer support.
-   outb(flags, PCI9111_IO_BASE+PCI9111_REGISTER_8254_CONTROL)
- 
- #define pci9111_8254_counter_0_set(data) \
--  outb(data & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0); \
--  outb((data >> 8) & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0)
-+	do { \
-+		outb(data & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0); \
-+		outb((data >> 8) & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0); \
-+	} while (0);
- 
- #define pci9111_8254_counter_1_set(data) \
--  outb(data & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1); \
--  outb((data >> 8) & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1)
-+	do { \
-+		outb(data & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1); \
-+		outb((data >> 8) & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1); \
-+	} while (0);
- 
- #define pci9111_8254_counter_2_set(data) \
--  outb(data & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2); \
--  outb((data >> 8) & 0xFF, PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2)
-+	do { \
-+		outb(data & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2); \
-+		outb((data >> 8) & 0xFF, \
-+			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2); \
-+	} while (0);
- 
- /*  Function prototypes */
- 
-@@ -564,8 +578,10 @@ static int pci9111_ai_cancel(struct comedi_device *dev,
- /*  Test analog input command */
- 
- #define pci9111_check_trigger_src(src, flags) \
--  tmp = src; \
--  src &= flags; if (!src || tmp != src) error++
-+	do { \
-+		tmp = src; \
-+		src &= flags; if (!src || tmp != src) error++; \
-+	} while (0);
- 
- static int
- pci9111_ai_do_cmd_test(struct comedi_device *dev,
+Looks like I didn't understand what the XFS code was doing.
+
+
+- James
 -- 
-1.6.3.3
-
+James Morris
+<jmorris@namei.org>
