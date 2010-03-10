@@ -1,58 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445Ab0CIX7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 18:59:32 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:44843 "EHLO e5.ny.us.ibm.com"
+	id S1755701Ab0CJAAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 19:00:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42455 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753592Ab0CIX73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 18:59:29 -0500
-Subject: Re: [PATCH 09/14] blackfin: Convert blackfin to use
- read/update_persistent_clock
-From: john stultz <johnstul@us.ibm.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <8bd0f97a1003091553j1f88ef69m748bf1ef54371c2f@mail.gmail.com>
-References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-4-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-5-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-6-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-7-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-8-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-9-git-send-email-johnstul@us.ibm.com>
-	 <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
-	 <8bd0f97a1003091553j1f88ef69m748bf1ef54371c2f@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 15:59:24 -0800
-Message-ID: <1268179164.3339.2.camel@localhost.localdomain>
+	id S1751326Ab0CJAAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 19:00:22 -0500
+Date: Wed, 10 Mar 2010 11:00:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond@netapp.com>
+Subject: Re: linux-next: fetch of nfsd tree failed
+Message-Id: <20100310110014.f7db7e79.sfr@canb.auug.org.au>
+In-Reply-To: <20100309233041.GC29261@fieldses.org>
+References: <20100310100911.930ab78f.sfr@canb.auug.org.au>
+	<20100309233041.GC29261@fieldses.org>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Mar_2010_11_00_14_+1100_A69hbIu7Jw+A5kFp"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 18:53 -0500, Mike Frysinger wrote:
-> On Wed, Mar 3, 2010 at 22:57, John Stultz wrote:
-> > This patch converts the blackfin architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
-> >
-> > I have not built or tested this patch, so help from arch maintainers would be appreciated.
-> 
-> Blackfin builds & boots with generic clockevents and w/out
-> Acked-by: Mike Frysinger <vapier@gentoo.org>
+--Signature=_Wed__10_Mar_2010_11_00_14_+1100_A69hbIu7Jw+A5kFp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cool!
+Hi Bruce,
 
-> did you want me to merge it for 2.6.35 or should it go through with
-> your patchset ?
+On Tue, 9 Mar 2010 18:30:41 -0500 "J. Bruce Fields" <bfields@fieldses.org> =
+wrote:
+>
+> linux-nfs.org is having trouble; investigating....
 
-I'd say go ahead and merge it. 
+Thanks, looks good now.  I have fetched and will use the updated tree
+today.
 
-thanks
--john
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__10_Mar_2010_11_00_14_+1100_A69hbIu7Jw+A5kFp
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkuW4Q4ACgkQjjKRsyhoI8yONQCgigcFnS/BI7/pztHXoZl+npno
+G/0AoJAZY6HgkApKvAZA0b+6oVCYZ1i7
+=DY2i
+-----END PGP SIGNATURE-----
 
+--Signature=_Wed__10_Mar_2010_11_00_14_+1100_A69hbIu7Jw+A5kFp--
