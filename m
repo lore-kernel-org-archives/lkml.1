@@ -1,62 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860Ab0CJKO7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:14:59 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:52177 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823Ab0CJKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:14:56 -0500
-Date: Wed, 10 Mar 2010 11:14:53 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Dan Carpenter <error27@gmail.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: smatch_scripts/whitespace_only.sh
-In-Reply-To: <20100310101224.GC6321@bicker>
-Message-ID: <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk>
-References: <20100310101224.GC6321@bicker>
+	id S1753126Ab0CJKU4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:20:56 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41611 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987Ab0CJKUw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 05:20:52 -0500
+Message-ID: <4B977282.40505@cs.helsinki.fi>
+Date: Wed, 10 Mar 2010 12:20:50 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "=?UTF-8?B?QW3DqXJpY28gV2FuZw==?=" <xiyou.wangcong@gmail.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       mingo@elte.hu, akpm@linux-foundation.org, roland@redhat.com,
+       peterz@infradead.org
+Subject: Re: 2.6.34-rc1: kernel BUG at mm/slab.c:2989!
+References: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>
+In-Reply-To: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Dan Carpenter wrote:
+Américo Wang kirjoitti:
+> Hello, mm experts,
+> 
+> I triggered an mm bug today, the full backtrace is here:
+> 
+> http://pastebin.ca/1831436
+> 
+> I am using yesterday's Linus tree.
+> 
+> It's not easy to reproduce this, I got this very randomly.
+> 
+> Some related config's are:
+> 
+> CONFIG_SLAB=y
+> CONFIG_SLABINFO=y
+> # CONFIG_DEBUG_SLAB is not set
+> 
+> Please let me know if you need more info.
 
-> I wrote a script to check that a patch only changes white space.
-> It compiles the files before and after the patch is applied and 
-> verifies that they are the same.
-> 
-> You'll need to compile smatch:
-> 	git pull git://repo.or.cz/smatch.git
-> 	make
-> 	cd /path/to/kernel/src/
-> 	/path/to/smatch_scripts/whitespace_only.sh <patch>
-> 
-> Adding or removing parenthesis and curly braces counts as a code 
-> change.  Changes to comments, #if 0, white space changes do not.
-> 
-> You can fix a lot of style violations if you limit yourself to 
-> adding and removing tabs, spaces and new lines.  Then the next 
-> patch could remove unneeded parenthesis.  It would be easier to
-> audit that way instead of everything mixed together.
-> 
-> regards,
-> dan carpenter
-> 
-> PS.  I feel really bad slagging the newbies trying to help.  
-> Could we fix checkpatch.pl to not complain about line lengths?
+Looks like regular SLAB corruption bug to me. Can you trigget it with SLUB?
 
-I hope not...  Are newbies really put off by having to add a newline here 
-and there?
+Anyway, it seems very unlikely that it's caused by the SLAB changes in 
+-rc1 so I'm CC'ing scheduler and fs folks in case the oops rings a bell.
 
-julia
-
-> Also could we tell them to stay in staging where no one cares
-> about git blame?
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+			Pekka
