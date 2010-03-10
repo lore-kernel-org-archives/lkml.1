@@ -1,47 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932826Ab0CJWfq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:35:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60998
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757370Ab0CJWfm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:35:42 -0500
-Date: Wed, 10 Mar 2010 14:36:02 -0800 (PST)
-Message-Id: <20100310.143602.266086944.davem@davemloft.net>
-To: yinghai@kernel.org
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [RFC PATCH 6/6] sparc64: use early_res and nobootmem
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B981DBD.2060303@kernel.org>
-References: <4B9818CE.7090809@kernel.org>
-	<20100310.141757.95833226.davem@davemloft.net>
-	<4B981DBD.2060303@kernel.org>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1757401Ab0CJWsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:48:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:60250 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757387Ab0CJWsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 17:48:53 -0500
+Date: Wed, 10 Mar 2010 22:48:34 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] sysfs: Initialised pci bus legacy_mem field before use
+Message-ID: <20100310224834.GB14715@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Wed, 10 Mar 2010 14:31:25 -0800
+PPC64 is failing to boot the latest mmotm due to an uninitialised pointer in
+pci_create_legacy_files(). The surprise is that machines boot at all and it
+would appear to affect current mainline as well.  This patch fixes the problem.
 
-> they are array based.
-> 
-> 1. memmap is not changed after get it from firmware, <could be modified via mem= or memmap=>
-> 2. early_res at first is static array, later it will be relocated to another position if the array is not big enough.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ drivers/pci/pci-sysfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-LMB could do this too with minor modifications.
-
-Simply make the lmb.memory and lmb.reserved be pointers, and initially
-they point into the static array(s).
-
-Later the pointers can be repositioned to point to dynamically
-allocated memory.
-
-So please, for the third time, please show me how LMB with some minor
-modifications is not able to satisfy your needs.
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index de29645..9976685 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -655,8 +655,8 @@ void pci_create_legacy_files(struct pci_bus *b)
+ 		goto legacy_io_err;
+ 
+ 	/* Allocated above after the legacy_io struct */
+-	sysfs_bin_attr_init(b->legacy_mem);
+ 	b->legacy_mem = b->legacy_io + 1;
++	sysfs_bin_attr_init(b->legacy_mem);
+ 	b->legacy_mem->attr.name = "legacy_mem";
+ 	b->legacy_mem->size = 1024*1024;
+ 	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
