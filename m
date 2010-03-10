@@ -1,64 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139Ab0CJMnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 07:43:50 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:23771 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753422Ab0CJMnr (ORCPT
+	id S1754317Ab0CJMvX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 07:51:23 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:52023 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753728Ab0CJMvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 07:43:47 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
-Date: Wed, 10 Mar 2010 14:42:47 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nhorman@tuxdriver.com,
-       eric.dumazet@gmail.com
-References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com> <m1vddbdhmo.fsf@fess.ebiederm.org> <4B976503.4050702@redhat.com>
-In-Reply-To: <4B976503.4050702@redhat.com>
+	Wed, 10 Mar 2010 07:51:20 -0500
+X-IronPort-AV: E=Sophos;i="4.49,614,1262581200"; 
+   d="scan'208";a="87468991"
+Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
+ irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, "x86@kernel.org" <x86@kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
+References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+	 <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+	 <86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Wed, 10 Mar 2010 12:51:13 +0000
+Message-ID: <1268225473.11737.69196.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003101442.47192.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 10 Mar 2010 12:42:47.0306 (UTC) FILETIME=[2FF5AEA0:01CAC04F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 March 2010 11:23:15 you wrote:
-> Eric W. Biederman wrote:
-> > I would add the restriction that the values in the list of ranges
-> > always must be increasing, and in general restrict the set of accepted
-> > values as much as possible.  If we don't accept it now we don't have
-> > to worry about some userspace application relying on some unitended
-> > side effect a few years into the future.
+On Wed, 2010-03-10 at 12:06 +0000, Yinghai Lu wrote:
+> On Wed, Mar 10, 2010 at 2:55 AM,  <ijc@hellion.org.uk> wrote:
+> > From: Ian Campbell <ian.campbell@citrix.com>
+> >
+> > Move arch_init_copy_chip_data and arch_free_chip_data into function
+> > pointers in struct irq_chip since they operate on irq_desc->chip_data.
+> >
+> > arch_init_chip_data cannot be moved into struct irq_chip at this time
+> > because irq_desc->chip is not known at the time the irq_desc is
+> > setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
+> > PowerPC, the only other user, whose usage better matches the new name)
+> > and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
+> > call this whenever the IO APIC code allocates a new IRQ.
+> >
+> > I've retained the chip_data behaviour for uv_irq although it isn't
+> > clear to me if these interrupt types support migration or how closely
+> > related to the APIC modes they really are. If it weren't for this the
+> > ioapic_{init,copy,free}_chip_data functions could be static to
+> > io_apic.c.
+> >
+> > I've tested by booting on a 64 bit system, but it's not clear to me
+> > what actions I need to take to actually exercise some of these code
+> > paths.
+> >
 > 
-> I don't think this is good.
+> can you just add another pointer field in irq_desc?
 > 
-> Suppose that when I just want to add one port into the list and keep the
-> original ones, I want to do this:
-> 
-> orig=$(cat ip_local_reserved_ports)
-> new_list="$orig, $new_one"
-> echo "$new_list" > ip_local_reserved_ports
-> 
-> If we add this restriction, the above could be failed if the new port
-> is lower than the original ones. This will be not convenient.
-> 
-> > I think it is a serious bug that you clear the destination bitmap
-> > in the middle of parsing it.  That will either open or close all
-> > ports in the middle of parsing, and I can't see how that would
-> > ever be a good thing.
-> 
-> Agreed.
-> 
-> By the way, Octavian, any new updates?
-> 
+> some kind of *irq_info etc.
 
-Sorry, didn't got time to work on this lately, but I will submit a new version 
-I hope end of this week to address Eric's comments.
+I think I don't understand what you are suggesting.
+
+There is already a pointer for irq_chip specific use i.e.
+irq_desc->chip_data. This patchset is just about ensuring that the field
+really is available to any chip implementation rather than just assuming
+it is always used for the acpi chip types (on x86 at least).
+
+Does adding a second pointer with the same (intended?) semantics as the
+existing one buy us anything?
+
+Ian.
 
