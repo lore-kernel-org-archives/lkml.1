@@ -1,53 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932580Ab0CJRik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:38:40 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:38422 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932566Ab0CJRih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S932570Ab0CJRih (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 10 Mar 2010 12:38:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=ULtE1KfqeO2IC52CTI/dImLFR7+ZemX48wW4IUzKfOJCg3HPmJezpk11FABlALpeM
-	Y0t9HAX940HKP6O5A5sWg==
+Received: from qw-out-2122.google.com ([74.125.92.25]:40643 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932490Ab0CJRif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 12:38:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=mIXjGuPL6qksLPdOKiSjTaQ2uZ/f4zATne44gJ1djPbfblM7+HS5ePpvRAkuMg4uqn
+         cVytkRKRZGM6akEjBCPTyejBrDJKkM+oX1Xj5dxmxAlHnzs21Wwe9mzN98PDMRo59sEp
+         PlYgxhJfJR9xHVBM5741+w1cpc3iUkxqeKKwY=
 MIME-Version: 1.0
-In-Reply-To: <20100310153032.GB10738@redhat.com>
-References: <4B8F27BD.2020704@cn.fujitsu.com>
-	 <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com>
-	 <20100305141300.GA3296@redhat.com>
-	 <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
-	 <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com>
-	 <20100309190340.GD8663@redhat.com> <4B96E8CC.9080803@cn.fujitsu.com>
-	 <20100310153032.GB10738@redhat.com>
-Date: Wed, 10 Mar 2010 09:38:35 -0800
-Message-ID: <1786ab031003100938x19e7c054ieba6c34ebd939ad6@mail.gmail.com>
-Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface "weight_device" 
-	for IO-Controller
-From: Chad Talbott <ctalbott@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Nauman Rafique <nauman@google.com>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>
+In-Reply-To: <20100310125456.GA18509@localhost>
+References: <s5htyswpb18.wl%tiwai@suse.de> <s5hvddcnlr6.wl%tiwai@suse.de>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD558@HKMAIL01.nvidia.com>
+	 <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>
+	 <20100308044614.GA29026@localhost>
+	 <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>
+	 <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>
+	 <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>
+	 <20100310125456.GA18509@localhost>
+Date: Wed, 10 Mar 2010 09:38:33 -0800
+Message-ID: <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+From: VDR User <user.vdr@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jaroslav Kysela <perex@perex.cz>, Wei Ni <wni@nvidia.com>,
+       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
+       Jaroslav Kysela <jkysela@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
 Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 7:30 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> This still leaves the issue of reaching a gendisk object from request
-> queue. Looking into it.
+Ok, I'm not sure what I'm supposed to be looking for so I'll paste
+some lines that include everything I see:
 
-It looks like we have that pairing way back in blk_register_queue()
-which takes a gendisk.  Is there any reason we don't hold onto the
-gendisk there?  Eyeballing add_disk() and unlink_gendisk() seems to
-confirm that gendisk lifetime spans request_queue.
+pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
+[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22652] ioctl(18, 0xc0104652 <unfinished ...>
+[pid 22649] ioctl(10, 0xc0104652 <unfinished ...>
+[pid 22652] <... ioctl resumed> , 0xb37b2590) = 0
+[pid 22649] <... ioctl resumed> , 0xb547df00) = 0
+[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
+[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22649] ioctl(4, 0xc020462a, 0xb547e030) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
+[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
+[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22649] ioctl(10, 0xc0104652 <unfinished ...>
+[pid 22652] ioctl(18, 0xc0104652 <unfinished ...>
+[pid 22649] <... ioctl resumed> , 0xb547df00) = 0
+[pid 22652] <... ioctl resumed> , 0xb37b2590) = 0
+[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
+[pid 22649] ioctl(4, 0xc020462a, 0xb547e030) = 0
+[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
 
-Nauman and I were also wondering why blkio_group and blkio_policy_node
-store a dev_t, rather than a direct pointer to gendisk.  dev_t seems
-more like a userspace<->kernel interface than an inside-the-kernel
-interface.
+This is with starting xine with:
+strace -f -e trace=open,ioctl xine -A alsa -V vdpau --post vdr_video
+--post vdr_audio vdr://tmp/vdr-xine/stream#demux:mpeg_pes --verbose=2
+--fullscreen --no-gui --no-mouse --deinterlace --no-logo --no-splash &
 
-Chad
+Hopefully this helps!..(?)
+
+Best regards,
+Derek
