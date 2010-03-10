@@ -1,104 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757107Ab0CJUqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 15:46:17 -0500
-Received: from mail.perches.com ([173.55.12.10]:1621 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757045Ab0CJUqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 15:46:16 -0500
-Subject: [PATCH trivial] MAINTAINERS: Use tab not spaces for delimiter
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	id S1757125Ab0CJUrG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 15:47:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54095 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757005Ab0CJUrE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 15:47:04 -0500
+Subject: Re: [RFC PATCH] perf: Store relevant events in a hlist
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+In-Reply-To: <20100310203338.GA9737@nowhere>
+References: <1267772426-5944-1-git-send-regression-fweisbec@gmail.com>
+	 <1267772426-5944-2-git-send-regression-fweisbec@gmail.com>
+	 <1267781969.16716.55.camel@laptop> <20100308183545.GA5038@nowhere>
+	 <1268249692.5279.138.camel@twins>  <20100310203338.GA9737@nowhere>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Mar 2010 12:46:14 -0800
-Message-ID: <1268253974.24209.14.camel@Joe-Laptop.home>
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 10 Mar 2010 21:46:40 +0100
+Message-ID: <1268254000.5279.167.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keeps MAINTAINERS a bit more consistent.
-done via sed -r -i -e 's/^([A-Z]):[ \t]+/\1:\t/g' MAINTAINERS
+On Wed, 2010-03-10 at 21:33 +0100, Frederic Weisbecker wrote:
+> On Wed, Mar 10, 2010 at 08:34:52PM +0100, Peter Zijlstra wrote:
+> > I'm not quite sure why you need the node thing, you already have a
+> > hash-bucket to iterate, simply stick all events into the one bucket and
+> > walk through it with a filter and process all events that match.
+> 
+> 
+> This inter level of indirection was one of my heaviest hesitations.
+> In case we have a hash collision, I just wanted to ensure we keep
+> an amortized O(n) in any case, that at the cost of this level of
+> indirection. Plus that removed the config:id check in every events,
+> as the check is made only once.
+> 
+> That said I guess we can indeed remove that and have the events
+> directly in the hash bucket. Assuming we deal well to avoid
+> collisions, it should be fine.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- MAINTAINERS |   40 ++++++++++++++++++++--------------------
- 1 files changed, 20 insertions(+), 20 deletions(-)
+Right, lets start simple and go from there.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c8a8b1f..93798bf 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -791,12 +791,12 @@ M:	Michael Petchkovsky <mkpetch@internode.on.net>
- S:	Maintained
- 
- ARM/NOMADIK ARCHITECTURE
--M:     Alessandro Rubini <rubini@unipv.it>
--M:     STEricsson <STEricsson_nomadik_linux@list.st.com>
--L:     linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
--S:     Maintained
--F:     arch/arm/mach-nomadik/
--F:     arch/arm/plat-nomadik/
-+M:	Alessandro Rubini <rubini@unipv.it>
-+M:	STEricsson <STEricsson_nomadik_linux@list.st.com>
-+L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-+S:	Maintained
-+F:	arch/arm/mach-nomadik/
-+F:	arch/arm/plat-nomadik/
- 
- ARM/OPENMOKO NEO FREERUNNER (GTA02) MACHINE SUPPORT
- M:	Nelson Castillo <arhuaco@freaks-unidos.net>
-@@ -1884,17 +1884,17 @@ F:	drivers/scsi/dpt*
- F:	drivers/scsi/dpt/
- 
- DRBD DRIVER
--P:     Philipp Reisner
--P:     Lars Ellenberg
--M:     drbd-dev@lists.linbit.com
--L:     drbd-user@lists.linbit.com
--W:     http://www.drbd.org
--T:     git git://git.drbd.org/linux-2.6-drbd.git drbd
--T:     git git://git.drbd.org/drbd-8.3.git
--S:     Supported
--F:     drivers/block/drbd/
--F:     lib/lru_cache.c
--F:     Documentation/blockdev/drbd/
-+P:	Philipp Reisner
-+P:	Lars Ellenberg
-+M:	drbd-dev@lists.linbit.com
-+L:	drbd-user@lists.linbit.com
-+W:	http://www.drbd.org
-+T:	git git://git.drbd.org/linux-2.6-drbd.git drbd
-+T:	git git://git.drbd.org/drbd-8.3.git
-+S:	Supported
-+F:	drivers/block/drbd/
-+F:	lib/lru_cache.c
-+F:	Documentation/blockdev/drbd/
- 
- DRIVER CORE, KOBJECTS, AND SYSFS
- M:	Greg Kroah-Hartman <gregkh@suse.de>
-@@ -3475,8 +3475,8 @@ F:	drivers/scsi/sym53c8xx_2/
- LTP (Linux Test Project)
- M:	Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
- M:	Garrett Cooper <yanegomi@gmail.com>
--M:     Mike Frysinger <vapier@gentoo.org>
--M:     Subrata Modak <subrata@linux.vnet.ibm.com>
-+M:	Mike Frysinger <vapier@gentoo.org>
-+M:	Subrata Modak <subrata@linux.vnet.ibm.com>
- L:	ltp-list@lists.sourceforge.net (subscribers-only)
- W:	http://ltp.sourceforge.net/
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/galak/ltp.git
-@@ -6135,7 +6135,7 @@ F:	arch/x86/
- X86 PLATFORM DRIVERS
- M:	Matthew Garrett <mjg@redhat.com>
- L:	platform-driver-x86@vger.kernel.org
--T:      git git://git.kernel.org/pub/scm/linux/kernel/git/mjg59/platform-drivers-x86.git
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mjg59/platform-drivers-x86.git
- S:	Maintained
- F:	drivers/platform/x86
- 
+> > As to all those for_each_online_cpu() thingies, it might make sense to
+> > also have a global hash-table for events active on all cpus,... hmm was
+> > that the reason for the node thing, one event cannot be in multiple
+> > buckets?
+> 
+> 
+> There are several reasons I've made it per cpu.
+> Assuming we have a global hash table for wide events, it means we'll
+> have some cache dance each time an event is disabled/enabled (which
+> is quite often as wide events are per task, even worst if the initial task
+> has numerous threads that have this event duplicated). Also, as wide
+> events mean per task, the event will always be active in one cpu at
+> a time, it would be wasteful to check it on other cpus.
 
+Thing is, most events generated by perf are per cpu, even the per task
+ones, if they are machine wide the hash table bounces aren't the biggest
+problem.
 
+But yeah..
