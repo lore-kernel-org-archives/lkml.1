@@ -1,81 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283Ab0CJKyz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:54:55 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:23030 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223Ab0CJKyu convert rfc822-to-8bit (ORCPT
+	id S932158Ab0CJKzu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:55:50 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:3851 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755199Ab0CJKzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:54:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qrAT1sk0GANJG99TnracgZw2SJVXfRj55d1RplZlLgqDUEO6SKdl5ThaluhstpVepW
-         QF5IXRjnSSo78TkMXd9y6vsNI0aeMZAoNSRlum6SvBmxq+JdjJ82drmy1dXvFnjgKweL
-         +QeqzKMqrTK/k6zORPLWls5COYtk1QQqz5MF8=
-MIME-Version: 1.0
-In-Reply-To: <20100310055013.GC19518@linux-sh.org>
-References: <201003062236.09801.rjw@sisk.pl> <201003091234.59598.rjw@sisk.pl>
-	 <alpine.LFD.2.00.1003091613390.30952@casper.infradead.org>
-	 <201003092208.28175.rjw@sisk.pl> <20100310055013.GC19518@linux-sh.org>
-Date: Wed, 10 Mar 2010 12:54:46 +0200
-Message-ID: <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com>
-Subject: Re: [Q] How to tell we're using the KMS (during suspend/resume) 
-	outside the graphics driver
-From: Pauli Nieminen <suokkos@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Luca Tettamanti <kronos.it@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 10 Mar 2010 05:55:46 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <m1iq9fvh40.fsf@fess.ebiederm.org>
+References: <20100207210250.GB8256@jenkins.home.ifup.org>
+	 <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
+	 <4B881097.1050505@kernel.org>
+	 <1267442545.11737.20718.camel@zakaz.uk.xensource.com>
+	 <m1d3zn7uwl.fsf@fess.ebiederm.org>
+	 <1267479860.2785.843.camel@localhost.localdomain>
+	 <m1iq9fvh40.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Mar 2010 10:55:24 +0000
+Message-ID: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add
+ arch_probe_nr_irqs() again
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.1 cv=ZtHxNT4mZm3rCuM0SmWmgWxeBwJsziC8EqOrwwVkrhA= c=1 sm=0 a=xE1qpWtd3IAA:10 a=IkcTkHD0fZMA:10 a=SEF7xSSsAAAA:8 a=FPzxDkUJ6XviQSuB8vAA:9 a=TJA9zMuJW9Fo3rLJ-IAWz4FfW_wA:4 a=QEXdDO2ut3YA:10 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 7:50 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Tue, Mar 09, 2010 at 10:08:28PM +0100, Rafael J. Wysocki wrote:
->> On Tuesday 09 March 2010, James Simmons wrote:
->> >
->> > > > > Second, in the KMS case, we'd be able to skip the kernel VT switch, because
->> > > > > the KMS driver uses its own framebuffer anyway.
->> > > > >
->> > > > > So, is there any reasonable way to check that from the outside of the graphics
->> > > > > driver?  It should be general enough to cover the cases when there are two
->> > > > > graphics adapters with different drivers in the system and so forth.
->> > > >
->> > > > Inside the kernel? If you have a struct pci_dev you can get the
->> > > > associated struct drm_device with pci_get_drvdata and then check the
->> > > > KMS feature: drm_core_check_feature(dev, DRIVER_MODESET).
->> > >
->> > > Yeah, I know that.
->> > >
->> > > > I'm note sure how to check that a device is graphic card though :|
->> > >
->> > > Well, that's the "outside of the graphics driver" part of my question. :-)
->> >
->> > if ((pdev->class >> 8) == PCI_CLASS_DISPLAY_VGA)
->> >     ....
->>
->> I'm not sure if searching through all PCI devices really is an option.
->>
-> Why not? The VGA arbitration code tracks a list of VGA class devices, so
-> could easily be queried. It looks like it might need a bit more work for
-> PCI hotplug, but it should already have all of the infrastructure you
-> need for getting at the pdev for the suspend/resume case.
->
->
+On Mon, 2010-03-01 at 13:58 -0800, Eric W. Biederman wrote:
+> 
+> >> - Xen has an array irq_info[NR_IRQS] one of the last static arrays
+> >>   sized at NR_IRQs in the entire kernel.
+> >
+> > Hopefully the same info as is in that array could (and indeed
+> should) be
+> > instead stored in irq_desc->chip_data. Would you object to
+> > arch_init_copy_chip_data and arch_free_chip_data becoming function
+> > pointers within the struct irq_chip?
+> 
+> No objections.  Now that I see those methods it looks like they always
+> should have been in irq_chip. 
 
-It would be better to add interface that can be used to query if a
-graphic device supports KMS. This should support multi-gpu setups at
-least. I don't think anything prevents running mixed system where
-secundary gpu is driven by UMS code in X.
+The following changes since commit c0a2d57e753717cc893b4b38bfb351c7f19469c3:
+  Ingo Molnar (1):
+        Merge branch 'perf/urgent'
 
-Are you sure that all vga class devices have private device data that
-matches private drm_device structure?
+are available in the git repository at:
+
+  git://xenbits.xensource.com/people/ianc/linux-2.6.git for-x86/irq
+
+Ian Campbell (3):
+      x86: namespace some I/O APIC related structures and functions.
+      irq: move some interrupt arch_* functions into struct irq_chip.
+      x86: irq_desc->chip_data is always correct whether or not SPARSE_IRQ is enabled.
+
+ arch/powerpc/kernel/irq.c      |    2 +-
+ arch/x86/include/asm/hw_irq.h  |   25 +++--
+ arch/x86/kernel/apic/io_apic.c |  233 ++++++++++++++++++++++++---------------
+ arch/x86/kernel/uv_irq.c       |   19 ++--
+ include/linux/interrupt.h      |    2 +-
+ include/linux/irq.h            |   12 ++-
+ kernel/irq/handle.c            |    2 +-
+ kernel/irq/numa_migrate.c      |   12 ++-
+ kernel/softirq.c               |    3 +-
+ 9 files changed, 195 insertions(+), 115 deletions(-)
+
+
+-- 
+Ian Campbell
+Current Noise: Mistress - Lord Worm
+
+Nothing is easier than to denounce the evildoer; nothing is more difficult
+than to understand him.
+		-- Fyodor Dostoevski
+
