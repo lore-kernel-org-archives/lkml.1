@@ -1,96 +1,192 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087Ab0CJTQP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 14:16:15 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:42534 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183Ab0CJTQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 14:16:13 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, "x86\@kernel.org" <x86@kernel.org>,
-       "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct irq_chip.
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-	<86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
-	<1268225473.11737.69196.camel@zakaz.uk.xensource.com>
-	<4B97EC00.6030300@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 10 Mar 2010 11:15:58 -0800
-In-Reply-To: <4B97EC00.6030300@kernel.org> (Yinghai Lu's message of "Wed\, 10 Mar 2010 10\:59\:12 -0800")
-Message-ID: <m1k4tkf0nl.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1752929Ab0CJTQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 14:16:49 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:47149 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751155Ab0CJTQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 14:16:47 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: yinghai@kernel.org, linuxppc-dev@ozlabs.org, x86@kernel.org, paulus@samba.org, benh@kernel.crashing.org, jeremy@goop.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, Ian.Campbell@citrix.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
+Message-ID: <19351.61461.545790.609086@pilspetsen.it.uu.se>
+Date: Wed, 10 Mar 2010 20:16:37 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, mikpe@it.uu.se, netdev@vger.kernel.org,
+       grundler@parisc-linux.org, kyle@mcmartin.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net/tulip/eeprom.c: fix bogus "(null)" in tulip
+ init messages
+In-Reply-To: <1268242457.1545.347.camel@Joe-Laptop.home>
+References: <19351.48072.777754.465084@pilspetsen.it.uu.se>
+	<20100310.084104.201710892.davem@davemloft.net>
+	<1268242457.1545.347.camel@Joe-Laptop.home>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+Joe Perches writes:
+ > On Wed, 2010-03-10 at 08:41 -0800, David Miller wrote:
+ > > From: Mikael Pettersson <mikpe@it.uu.se>
+ > > Date: Wed, 10 Mar 2010 16:33:28 +0100
+ > > > Booting 2.6.34-rc1 on a machine with a tulip nic I see
+ > > > a number of kernel messages that include "(null)" where
+ > > > previous kernels included the string "tulip0":
+ > > CC:'ing the guilty party :-)  It's one of the following
+ > > commits:
+ > 
+ > Thanks Mikael.
+ > 
+ > Anonymity has some good attributes.
+ > Blame avoidance is one of them.
+ > 
+ > I've broad shoulders.  It's me, then Dwight Howard...
+ > 
+ > There might be another few of these where ->name or ->dev
+ > was used before struct device or net_device was registered.
+ > I'll go back and check.
+ > 
+ > tulip_core has:
+ > 
+ > 	if (tp->flags & HAS_MEDIA_TABLE) {
+ > 		sprintf(dev->name, DRV_NAME "%d", board_idx);	/* hack */
+ > 		tulip_parse_eeprom(dev);
+ > 		strcpy(dev->name, "eth%d");			/* un-hack */
+ > 	}
+ > 
+ > So I don't feel _too_ bad.
+ > 
+ > tulip_parse_eeprom is done before register_netdev so the logging
+ > there can not use netdev_<level> or dev_<level>(&dev->dev
+ > 
+ > Signed-off-by: Joe Perches <joe@perches.com>
+ >  drivers/net/tulip/eeprom.c |   54 ++++++++++++++++++++++++-------------------
+ >  1 files changed, 30 insertions(+), 24 deletions(-)
 
-> On 03/10/2010 04:51 AM, Ian Campbell wrote:
->> On Wed, 2010-03-10 at 12:06 +0000, Yinghai Lu wrote:
->>> On Wed, Mar 10, 2010 at 2:55 AM,  <ijc@hellion.org.uk> wrote:
->>>> From: Ian Campbell <ian.campbell@citrix.com>
->>>>
->>>> Move arch_init_copy_chip_data and arch_free_chip_data into function
->>>> pointers in struct irq_chip since they operate on irq_desc->chip_data.
->>>>
->>>> arch_init_chip_data cannot be moved into struct irq_chip at this time
->>>> because irq_desc->chip is not known at the time the irq_desc is
->>>> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
->>>> PowerPC, the only other user, whose usage better matches the new name)
->>>> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
->>>> call this whenever the IO APIC code allocates a new IRQ.
->>>>
->>>> I've retained the chip_data behaviour for uv_irq although it isn't
->>>> clear to me if these interrupt types support migration or how closely
->>>> related to the APIC modes they really are. If it weren't for this the
->>>> ioapic_{init,copy,free}_chip_data functions could be static to
->>>> io_apic.c.
->>>>
->>>> I've tested by booting on a 64 bit system, but it's not clear to me
->>>> what actions I need to take to actually exercise some of these code
->>>> paths.
->>>>
->>>
->>> can you just add another pointer field in irq_desc?
->>>
->>> some kind of *irq_info etc.
->> 
->> I think I don't understand what you are suggesting.
->> 
->> There is already a pointer for irq_chip specific use i.e.
->> irq_desc->chip_data. This patchset is just about ensuring that the field
->> really is available to any chip implementation rather than just assuming
->> it is always used for the acpi chip types (on x86 at least).
->> 
->> Does adding a second pointer with the same (intended?) semantics as the
->> existing one buy us anything?
->
->
-> #ifdef CONFIG_INTR_REMAP
->         struct irq_2_iommu      *irq_2_iommu;
-> #endif
->         struct irq_chip         *chip;
->         struct msi_desc         *msi_desc;
->
-> we already have that for irq_2_iommu and msi_desc
+Thanks, that fixed it:
 
-Those are at different levels of the hierarchy.  Adding another pointer
-for Xen is like having a different iommu and so adding another pointer
-to handle that kind of iommu.
+tulip 0000:00:0f.0: enabling device (0014 -> 0017)
+tulip0: EEPROM default media type Autosense
+tulip0: Index #0 - Media 10baseT (#0) described by a 21142 Serial PHY (2) block
+tulip0: Index #1 - Media 10baseT-FDX (#4) described by a 21142 Serial PHY (2) block
+tulip0: Index #2 - Media 100baseTx (#3) described by a 21143 SYM PHY (4) block
+tulip0: Index #3 - Media 100baseTx-FDX (#5) described by a 21143 SYM PHY (4) block
+tulip0: Index #4 - Media 100baseTx (#3) described by a 21143 reset method (5) block
+net eth0: Digital DS21142/43 Tulip rev 48 at Port 0x800, 00:00:c5:50:f9:51, IRQ 25
 
-Eric
+Tested-by: Mikael Pettersson <mikpe@it.uu.se>
 
+ > ---
+ > diff --git a/drivers/net/tulip/eeprom.c b/drivers/net/tulip/eeprom.c
+ > index 93f4e83..49f05d1 100644
+ > --- a/drivers/net/tulip/eeprom.c
+ > +++ b/drivers/net/tulip/eeprom.c
+ > @@ -143,6 +143,12 @@ static void __devinit tulip_build_fake_mediatable(struct tulip_private *tp)
+ >  
+ >  void __devinit tulip_parse_eeprom(struct net_device *dev)
+ >  {
+ > +	/*
+ > +	  dev is not registered at this point, so logging messages can't
+ > +	  use dev_<level> or netdev_<level> but dev->name is good via a
+ > +	  hack in the caller
+ > +	*/
+ > +
+ >  	/* The last media info list parsed, for multiport boards.  */
+ >  	static struct mediatable *last_mediatable;
+ >  	static unsigned char *last_ee_data;
+ > @@ -161,15 +167,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
+ >  		if (ee_data[0] == 0xff) {
+ >  			if (last_mediatable) {
+ >  				controller_index++;
+ > -				dev_info(&dev->dev,
+ > -					 "Controller %d of multiport board\n",
+ > -					 controller_index);
+ > +				pr_info("%s: Controller %d of multiport board\n",
+ > +					dev->name, controller_index);
+ >  				tp->mtable = last_mediatable;
+ >  				ee_data = last_ee_data;
+ >  				goto subsequent_board;
+ >  			} else
+ > -				dev_info(&dev->dev,
+ > -					 "Missing EEPROM, this interface may not work correctly!\n");
+ > +				pr_info("%s: Missing EEPROM, this interface may not work correctly!\n",
+ > +					dev->name);
+ >  			return;
+ >  		}
+ >  	  /* Do a fix-up based on the vendor half of the station address prefix. */
+ > @@ -181,15 +186,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
+ >  			  i++;			/* An Accton EN1207, not an outlaw Maxtech. */
+ >  		  memcpy(ee_data + 26, eeprom_fixups[i].newtable,
+ >  				 sizeof(eeprom_fixups[i].newtable));
+ > -		  dev_info(&dev->dev,
+ > -			   "Old format EEPROM on '%s' board.  Using substitute media control info\n",
+ > -			   eeprom_fixups[i].name);
+ > +		  pr_info("%s: Old format EEPROM on '%s' board.  Using substitute media control info\n",
+ > +			  dev->name, eeprom_fixups[i].name);
+ >  		  break;
+ >  		}
+ >  	  }
+ >  	  if (eeprom_fixups[i].name == NULL) { /* No fixup found. */
+ > -		  dev_info(&dev->dev,
+ > -			   "Old style EEPROM with no media selection information\n");
+ > +		  pr_info("%s: Old style EEPROM with no media selection information\n",
+ > +			  dev->name);
+ >  		return;
+ >  	  }
+ >  	}
+ > @@ -217,8 +221,8 @@ subsequent_board:
+ >  	        /* there is no phy information, don't even try to build mtable */
+ >  	        if (count == 0) {
+ >  			if (tulip_debug > 0)
+ > -				dev_warn(&dev->dev,
+ > -					 "no phy info, aborting mtable build\n");
+ > +				pr_warning("%s: no phy info, aborting mtable build\n",
+ > +					   dev->name);
+ >  		        return;
+ >  		}
+ >  
+ > @@ -234,8 +238,10 @@ subsequent_board:
+ >  		mtable->has_nonmii = mtable->has_mii = mtable->has_reset = 0;
+ >  		mtable->csr15dir = mtable->csr15val = 0;
+ >  
+ > -		dev_info(&dev->dev, "EEPROM default media type %s\n",
+ > -			 media & 0x0800 ? "Autosense" : medianame[media & MEDIA_MASK]);
+ > +		pr_info("%s: EEPROM default media type %s\n",
+ > +			dev->name,
+ > +			media & 0x0800 ? "Autosense"
+ > +				       : medianame[media & MEDIA_MASK]);
+ >  		for (i = 0; i < count; i++) {
+ >  			struct medialeaf *leaf = &mtable->mleaf[i];
+ >  
+ > @@ -298,17 +304,17 @@ subsequent_board:
+ >  			}
+ >  			if (tulip_debug > 1  &&  leaf->media == 11) {
+ >  				unsigned char *bp = leaf->leafdata;
+ > -				dev_info(&dev->dev,
+ > -					 "MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
+ > -					 bp[0], bp[1], bp[2 + bp[1]*2],
+ > -					 bp[5 + bp[2 + bp[1]*2]*2],
+ > -					 bp[4 + bp[2 + bp[1]*2]*2]);
+ > +				pr_info("%s: MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
+ > +					dev->name,
+ > +					bp[0], bp[1], bp[2 + bp[1]*2],
+ > +					bp[5 + bp[2 + bp[1]*2]*2],
+ > +					bp[4 + bp[2 + bp[1]*2]*2]);
+ >  			}
+ > -			dev_info(&dev->dev,
+ > -				 "Index #%d - Media %s (#%d) described by a %s (%d) block\n",
+ > -				 i, medianame[leaf->media & 15], leaf->media,
+ > -				 leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
+ > -				 leaf->type);
+ > +			pr_info("%s: Index #%d - Media %s (#%d) described by a %s (%d) block\n",
+ > +				dev->name,
+ > +				i, medianame[leaf->media & 15], leaf->media,
+ > +				leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
+ > +				leaf->type);
+ >  		}
+ >  		if (new_advertise)
+ >  			tp->sym_advertise = new_advertise;
+ > 
+ > 
