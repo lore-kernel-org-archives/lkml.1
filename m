@@ -1,107 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932575Ab0CJRm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:42:26 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:50338 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932065Ab0CJRmY (ORCPT
+	id S932567Ab0CJRnp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:43:45 -0500
+Received: from mail-ew0-f216.google.com ([209.85.219.216]:60466 "EHLO
+	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065Ab0CJRno convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:42:24 -0500
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, "x86\@kernel.org" <x86@kernel.org>,
-       "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct irq_chip.
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-	<86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
-	<1268225473.11737.69196.camel@zakaz.uk.xensource.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 10 Mar 2010 09:42:08 -0800
-In-Reply-To: <1268225473.11737.69196.camel@zakaz.uk.xensource.com> (Ian Campbell's message of "Wed\, 10 Mar 2010 12\:51\:13 +0000")
-Message-ID: <m1iq94gjkf.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 10 Mar 2010 12:43:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jWq9UChutrwgZUDvKbOXHPIiaqY7O2EjijbNAuYevaoNSSGcE0/DmQkg948r5e+qPN
+         yieYZ0g0No8K5GytramVbj2Me39LqQLY07AyXx/wjShfS01rgq2BJv4fpV/EbsHkjq3r
+         aNMfcsLW2L95UwW4M9C2vPAmP/FERey2y4Q/c=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: Ian.Campbell@citrix.com, linuxppc-dev@ozlabs.org, x86@kernel.org, paulus@samba.org, benh@kernel.crashing.org, jeremy@goop.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, yinghai@kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+In-Reply-To: <4B97C93B.9050002@garzik.org>
+References: <40a4ed591003100208v67b61ca5sd7a3ab8da99e975e@mail.gmail.com>
+	 <4B97AD5B.5080802@garzik.org>
+	 <40a4ed591003100741i3f62c180k99fc85b2c57ab210@mail.gmail.com>
+	 <4B97C93B.9050002@garzik.org>
+Date: Wed, 10 Mar 2010 18:43:42 +0100
+Message-ID: <40a4ed591003100943s74db8c55v610c6f9d822e9f77@mail.gmail.com>
+Subject: Re: ata1 timeouts on 2.6.34-rc1
+From: Zeno Davatz <zdavatz@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell <Ian.Campbell@citrix.com> writes:
+On Wed, Mar 10, 2010 at 5:30 PM, Jeff Garzik <jeff@garzik.org> wrote:
+> On 03/10/2010 10:41 AM, Zeno Davatz wrote:
+>>
+>> Mar 10 13:30:01 zenogentoo cron[12528]: (root) CMD (test -x
+>> /usr/sbin/run-crons&&  /usr/sbin/run-crons )
+>> Mar 10 13:33:32 zenogentoo sudo:     zeno : TTY=pts/0 ; PWD=/home/zeno
+>> ; USER=root ; COMMAND=/usr/bin/emerge --sync
+>> Mar 10 13:33:48 zenogentoo ata1: clearing spurious IRQ
+>> Mar 10 13:34:19 zenogentoo ata1: lost interrupt (Status 0x50)
+>> Mar 10 13:34:19 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+>> 0x0 action 0x6 frozen
+>> Mar 10 13:34:19 zenogentoo ata1.00: failed command: READ DMA
+>> Mar 10 13:34:19 zenogentoo ata1.00: cmd
+>> c8/00:08:d5:20:cb/00:00:00:00:00/e9 tag 0 dma 4096 in
+>> Mar 10 13:34:19 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+>> Emask 0x4 (timeout)
+>> Mar 10 13:34:19 zenogentoo ata1.00: status: { DRDY }
+>> Mar 10 13:34:19 zenogentoo ata1: soft resetting link
+>> Mar 10 13:34:19 zenogentoo ata1.00: configured for UDMA/133
+>> Mar 10 13:34:19 zenogentoo ata1.00: device reported invalid CHS sector 0
+>> Mar 10 13:34:19 zenogentoo ata1: EH complete
+>> Mar 10 13:35:55 zenogentoo ata1: clearing spurious IRQ
+>> Mar 10 13:36:26 zenogentoo ata1: lost interrupt (Status 0x50)
+>> Mar 10 13:36:26 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+>> 0x0 action 0x6 frozen
+>> Mar 10 13:36:26 zenogentoo ata1.00: failed command: WRITE DMA
+>> Mar 10 13:36:26 zenogentoo ata1.00: cmd
+>> ca/00:10:1d:ad:52/00:00:00:00:00/e6 tag 0 dma 8192 out
+>> Mar 10 13:36:26 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+>> Emask 0x4 (timeout)
+>> Mar 10 13:36:26 zenogentoo ata1.00: status: { DRDY }
+>> Mar 10 13:36:26 zenogentoo ata1: soft resetting link
+>> Mar 10 13:36:26 zenogentoo ata1.00: configured for UDMA/133
+>> Mar 10 13:36:26 zenogentoo ata1.00: device reported invalid CHS sector 0
+>> Mar 10 13:36:26 zenogentoo ata1: EH complete
+>> Mar 10 13:40:01 zenogentoo cron[12707]: (root) CMD (test -x
+>> /usr/sbin/run-crons&&  /usr/sbin/run-crons )
+>> Mar 10 13:48:05 zenogentoo sudo:     zeno : TTY=pts/0 ; PWD=/home/zeno
+>> ; USER=root ; COMMAND=/usr/bin/emerge portage
+>> Mar 10 13:49:22 zenogentoo ata1: clearing spurious IRQ
+>> Mar 10 13:49:53 zenogentoo ata1: lost interrupt (Status 0x50)
+>> Mar 10 13:49:53 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+>> 0x0 action 0x6 frozen
+>> Mar 10 13:49:53 zenogentoo ata1.00: failed command: WRITE DMA
+>> Mar 10 13:49:53 zenogentoo ata1.00: cmd
+>> ca/00:08:05:21:df/00:00:00:00:00/ef tag 0 dma 4096 out
+>> Mar 10 13:49:53 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+>> Emask 0x4 (timeout)
+>> Mar 10 13:49:53 zenogentoo ata1.00: status: { DRDY }
+>> Mar 10 13:49:53 zenogentoo ata1: soft resetting link
+>> Mar 10 13:49:53 zenogentoo ata1.00: configured for UDMA/133
+>> Mar 10 13:49:53 zenogentoo ata1.00: device reported invalid CHS sector 0
+>> Mar 10 13:49:53 zenogentoo ata1: EH complete
+>>
+>> Let me know if I can supply you with anymore information. Also see
+>> attached lspci-v file.
+>>
+> need full dmesg from boot, not just error snippet.
 
-> On Wed, 2010-03-10 at 12:06 +0000, Yinghai Lu wrote:
->> On Wed, Mar 10, 2010 at 2:55 AM,  <ijc@hellion.org.uk> wrote:
->> > From: Ian Campbell <ian.campbell@citrix.com>
->> >
->> > Move arch_init_copy_chip_data and arch_free_chip_data into function
->> > pointers in struct irq_chip since they operate on irq_desc->chip_data.
->> >
->> > arch_init_chip_data cannot be moved into struct irq_chip at this time
->> > because irq_desc->chip is not known at the time the irq_desc is
->> > setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
->> > PowerPC, the only other user, whose usage better matches the new name)
->> > and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
->> > call this whenever the IO APIC code allocates a new IRQ.
->> >
->> > I've retained the chip_data behaviour for uv_irq although it isn't
->> > clear to me if these interrupt types support migration or how closely
->> > related to the APIC modes they really are. If it weren't for this the
->> > ioapic_{init,copy,free}_chip_data functions could be static to
->> > io_apic.c.
->> >
->> > I've tested by booting on a 64 bit system, but it's not clear to me
->> > what actions I need to take to actually exercise some of these code
->> > paths.
->> >
->> 
->> can you just add another pointer field in irq_desc?
->> 
->> some kind of *irq_info etc.
->
-> I think I don't understand what you are suggesting.
+This is the first message I get after boot that concerns ata:
 
-YH another field doesn't make much sense.  Xen is a bizarre subarch
-with an incompatible irq model.  Xen simply needs the ability to
-handle the entire lifetime of an irq_chip.
+Mar 10 08:11:13 zenogentoo ata1: clearing spurious IRQ
+Mar 10 08:11:44 zenogentoo ata1: lost interrupt (Status 0x50)
+Mar 10 08:11:44 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+0x0 action 0x6 frozen
+Mar 10 08:11:44 zenogentoo ata1.00: failed command: WRITE DMA
+Mar 10 08:11:44 zenogentoo ata1.00: cmd
+ca/00:08:75:98:89/00:00:00:00:00/e3 tag 0 dma 4096 out
+Mar 10 08:11:44 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+Emask 0x4 (timeout)
+Mar 10 08:11:44 zenogentoo ata1.00: status: { DRDY }
+Mar 10 08:11:44 zenogentoo ata1: soft resetting link
+Mar 10 08:11:44 zenogentoo ata1.00: configured for UDMA/133
+Mar 10 08:11:44 zenogentoo ata1.00: device reported invalid CHS sector 0
+Mar 10 08:11:44 zenogentoo ata1: EH complete
 
-All we need between the Xen and the rest of x86 is a convention
-so that we never manage the same irqs.   At least for domU we are
-in an either/or situation so I don't see even that being a problem.
+and then it continues with:
 
-> There is already a pointer for irq_chip specific use i.e.
-> irq_desc->chip_data. This patchset is just about ensuring that the field
-> really is available to any chip implementation rather than just assuming
-> it is always used for the acpi chip types (on x86 at least).
+Mar 10 08:26:14 zenogentoo ata1: clearing spurious IRQ
+Mar 10 08:26:44 zenogentoo ata1: lost interrupt (Status 0x50)
+Mar 10 08:26:44 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+0x0 action 0x6 frozen
+Mar 10 08:26:44 zenogentoo ata1.00: failed command: READ DMA
+Mar 10 08:26:44 zenogentoo ata1.00: cmd
+c8/00:00:5d:ba:7b/00:00:00:00:00/e4 tag 0 dma 131072 in
+Mar 10 08:26:44 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+Emask 0x4 (timeout)
+Mar 10 08:26:44 zenogentoo ata1.00: status: { DRDY }
+Mar 10 08:26:44 zenogentoo ata1: soft resetting link
+Mar 10 08:26:44 zenogentoo ata1.00: configured for UDMA/133
+Mar 10 08:26:44 zenogentoo ata1.00: device reported invalid CHS sector 0
+Mar 10 08:26:44 zenogentoo ata1: EH complete
 
-Ian Xen in this sense is simply not x86.  irq_cfg is not acpi or ioapic
-or anything but x86 specific.  It has everything to do with having a per
-cpu vector table of 256 entries and architecturally receiving a vector
-number when an interrupt is fired.
+and so on:
 
-It totally makes sense for Xen to do something different because
-architecturally it has a completely different irq subsystem.
+Mar 10 09:35:56 zenogentoo ata1: clearing spurious IRQ
+Mar 10 09:36:27 zenogentoo ata1: lost interrupt (Status 0x50)
+Mar 10 09:36:27 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
+0x0 action 0x6 frozen
+Mar 10 09:36:27 zenogentoo ata1.00: failed command: READ DMA
+Mar 10 09:36:27 zenogentoo ata1.00: cmd
+c8/00:00:7d:7b:7d/00:00:00:00:00/e4 tag 0 dma 131072 in
+Mar 10 09:36:27 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
+Emask 0x4 (timeout)
+Mar 10 09:36:27 zenogentoo ata1.00: status: { DRDY }
+Mar 10 09:36:27 zenogentoo ata1: soft resetting link
+Mar 10 09:36:27 zenogentoo ata1.00: configured for UDMA/133
+Mar 10 09:36:27 zenogentoo ata1.00: device reported invalid CHS sector 0
+Mar 10 09:36:27 zenogentoo ata1: EH complete
 
-At the same time let's not pretend that the reason for this is anything
-except that Xen has a completely different notion of interrupt delivery
-than the rest of x86 and so it is it's own bizarre subarch.
+I can send you my complete /var/log/messages file if you want.
 
-This is not a case where you simply need a driver because something is
-a bit different but fits into the existing model.
-
-So the best solution here seems to be a parameter that we pass into
-irq_to_desc_alloc_node that does what is needed.  The second best
-would be to have arch_init_chip_data to call something like
-platfrom_init_chip_data().    But I think we can avoid that in
-this case.
-
-Eric
-
+Best
+Zeno
