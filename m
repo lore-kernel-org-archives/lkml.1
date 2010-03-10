@@ -1,89 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570Ab0CJRih (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:38:37 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:40643 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932490Ab0CJRif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:38:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=mIXjGuPL6qksLPdOKiSjTaQ2uZ/f4zATne44gJ1djPbfblM7+HS5ePpvRAkuMg4uqn
-         cVytkRKRZGM6akEjBCPTyejBrDJKkM+oX1Xj5dxmxAlHnzs21Wwe9mzN98PDMRo59sEp
-         PlYgxhJfJR9xHVBM5741+w1cpc3iUkxqeKKwY=
+	id S932551Ab0CJRl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:41:57 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:27157 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932065Ab0CJRl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 12:41:56 -0500
+X-IronPort-AV: E=Sophos;i="4.49,615,1262581200"; 
+   d="scan'208";a="7511638"
+Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
+ irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, "x86@kernel.org" <x86@kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <m1r5nsjdsh.fsf@fess.ebiederm.org>
+References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+	 <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+	 <1268218832.11737.68575.camel@zakaz.uk.xensource.com>
+	 <m1r5nsjdsh.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Wed, 10 Mar 2010 17:41:52 +0000
+Message-ID: <1268242912.11737.70762.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-In-Reply-To: <20100310125456.GA18509@localhost>
-References: <s5htyswpb18.wl%tiwai@suse.de> <s5hvddcnlr6.wl%tiwai@suse.de>
-	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD558@HKMAIL01.nvidia.com>
-	 <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>
-	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>
-	 <20100308044614.GA29026@localhost>
-	 <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>
-	 <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>
-	 <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>
-	 <20100310125456.GA18509@localhost>
-Date: Wed, 10 Mar 2010 09:38:33 -0800
-Message-ID: <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-From: VDR User <user.vdr@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jaroslav Kysela <perex@perex.cz>, Wei Ni <wni@nvidia.com>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
-       Jaroslav Kysela <jkysela@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, I'm not sure what I'm supposed to be looking for so I'll paste
-some lines that include everything I see:
+On Wed, 2010-03-10 at 17:18 +0000, Eric W. Biederman wrote:
+> Ian Campbell <Ian.Campbell@citrix.com> writes:
+> 
+> > On Wed, 2010-03-10 at 10:55 +0000, ijc@hellion.org.uk wrote:
+> >> 
+> >> arch_init_chip_data cannot be moved into struct irq_chip at this time
+> >> because irq_desc->chip is not known at the time the irq_desc is
+> >> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
+> >> PowerPC, the only other user, whose usage better matches the new name)
+> >> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
+> >> call this whenever the IO APIC code allocates a new IRQ.
+> >
+> > One idea I had to improve this was to add a struct irq_chip * as a
+> > parameter to irq_to_desc_alloc_node. The new parameter potentially could
+> > be NULL for current behaviour. Does that sound like a reasonable
+> > approach?
+> 
+> I don't follow why we have the restriction that irq_to_desc_alloc_node
+> must call arch_init_chip_data.  Assuming that requirement to call arch_init_chip_data
+> is valid, passing something into init_one_irq_desc seems appropriate.
 
-pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
-[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
-[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22652] ioctl(18, 0xc0104652 <unfinished ...>
-[pid 22649] ioctl(10, 0xc0104652 <unfinished ...>
-[pid 22652] <... ioctl resumed> , 0xb37b2590) = 0
-[pid 22649] <... ioctl resumed> , 0xb547df00) = 0
-[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
-pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
-[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
-[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22649] ioctl(4, 0xc020462a, 0xb547e030) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
-pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
-[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
-[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
-pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
-[pid 22651] ioctl(21, 0x806c4120, 0xb439d230) = 0
-[pid 22651] ioctl(21, 0x400c4150, 0xb439d1a4) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22649] ioctl(10, 0xc0104652 <unfinished ...>
-[pid 22652] ioctl(18, 0xc0104652 <unfinished ...>
-[pid 22649] <... ioctl resumed> , 0xb547df00) = 0
-[pid 22652] <... ioctl resumed> , 0xb37b2590) = 0
-[pid 22652] ioctl(18, 0xc0104652, 0xb37b2590) = 0
-[pid 22649] ioctl(4, 0xc020462a, 0xb547e030) = 0
-[pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+Yes, I suspect that could also be made to work.
 
-This is with starting xine with:
-strace -f -e trace=open,ioctl xine -A alsa -V vdpau --post vdr_video
---post vdr_audio vdr://tmp/vdr-xine/stream#demux:mpeg_pes --verbose=2
---fullscreen --no-gui --no-mouse --deinterlace --no-logo --no-splash &
+The lifecycle of the irq_desc and chip_data isn't really clear to me --
+I guess once allocated an irq_desc never gets freed (at least
+currently)? The associated chip_data can be freed on migrate and
+replaced with a new one, but is not freed otherwise.
 
-Hopefully this helps!..(?)
+My concern is that if the caller asks for an IRQ which already exists
+(is that valid?) then you will get that existing irq_desc back,
+including its existing chip_data, which potentially leaks the new one
+which was passed in. Or is it the case that the only way this could
+happen would be for legacy IRQs? In which case perhaps it is simply
+invalid to pass a new chip data in for such an IRQ.
 
-Best regards,
-Derek
+Ian.
+
