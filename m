@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932261Ab0CJNYt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:24:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53627 "EHLO hera.kernel.org"
+	id S932278Ab0CJNY7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:24:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53633 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932230Ab0CJNYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:24:37 -0500
-Date: Wed, 10 Mar 2010 13:23:58 GMT
+	id S932252Ab0CJNYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 08:24:48 -0500
+Date: Wed, 10 Mar 2010 13:24:15 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        acme@infradead.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
@@ -17,33 +17,29 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/pebs] perf, x86: Don't reset the LBR as frequently
-Message-ID: <tip-b83a46e7da4a948cc852ba7805dfb1a392dec861@git.kernel.org>
-Git-Commit-ID: b83a46e7da4a948cc852ba7805dfb1a392dec861
+Subject: [tip:perf/pebs] perf, x86: Remove checking_{wr,rd}msr() usage
+Message-ID: <tip-7645a24cbd01cbf4865d1273d5ddaa8d8c2ccb3a@git.kernel.org>
+Git-Commit-ID: 7645a24cbd01cbf4865d1273d5ddaa8d8c2ccb3a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:23:59 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:24:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b83a46e7da4a948cc852ba7805dfb1a392dec861
-Gitweb:     http://git.kernel.org/tip/b83a46e7da4a948cc852ba7805dfb1a392dec861
+Commit-ID:  7645a24cbd01cbf4865d1273d5ddaa8d8c2ccb3a
+Gitweb:     http://git.kernel.org/tip/7645a24cbd01cbf4865d1273d5ddaa8d8c2ccb3a
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 8 Mar 2010 13:51:12 +0100
+AuthorDate: Mon, 8 Mar 2010 13:51:31 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Mar 2010 13:23:38 +0100
+CommitDate: Wed, 10 Mar 2010 13:23:39 +0100
 
-perf, x86: Don't reset the LBR as frequently
+perf, x86: Remove checking_{wr,rd}msr() usage
 
-If we reset the LBR on each first counter, simple counter rotation which
-first deschedules all counters and then reschedules the new ones will
-lead to LBR reset, even though we're still in the same task context.
-
-Reduce this by not flushing on the first counter but only flushing on
-different task contexts.
+We don't need checking_{wr,rd}msr() calls, since we should know what cpu
+we're running on and not use blindly poke at msrs.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Arnaldo Carvalho de Melo <acme@infradead.org>
@@ -54,35 +50,106 @@ Cc: fweisbec@gmail.com
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/cpu/perf_event_intel_lbr.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c       |   24 ++++++++++++++++++------
+ arch/x86/kernel/cpu/perf_event_intel.c |    5 ++---
+ 2 files changed, 20 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event_intel_lbr.c b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-index 0145f99..f278136 100644
---- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-+++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-@@ -72,12 +72,11 @@ static void intel_pmu_lbr_enable(struct perf_event *event)
- 	WARN_ON_ONCE(cpuc->enabled);
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index 335ee1d..e24f637 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -29,6 +29,17 @@
+ #include <asm/stacktrace.h>
+ #include <asm/nmi.h>
+ 
++#if 0
++#undef wrmsrl
++#define wrmsrl(msr, val) 					\
++do {								\
++	trace_printk("wrmsrl(%lx, %lx)\n", (unsigned long)(msr),\
++			(unsigned long)(val));			\
++	native_write_msr((msr), (u32)((u64)(val)), 		\
++			(u32)((u64)(val) >> 32));		\
++} while (0)
++#endif
++
+ /*
+  * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
+  */
+@@ -821,14 +832,15 @@ void hw_perf_enable(void)
+ 
+ static inline void __x86_pmu_enable_event(struct hw_perf_event *hwc)
+ {
+-	(void)checking_wrmsrl(hwc->config_base + hwc->idx,
++	wrmsrl(hwc->config_base + hwc->idx,
+ 			      hwc->config | ARCH_PERFMON_EVENTSEL_ENABLE);
+ }
+ 
+ static inline void x86_pmu_disable_event(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+-	(void)checking_wrmsrl(hwc->config_base + hwc->idx, hwc->config);
++
++	wrmsrl(hwc->config_base + hwc->idx, hwc->config);
+ }
+ 
+ static DEFINE_PER_CPU(u64 [X86_PMC_IDX_MAX], pmc_prev_left);
+@@ -843,7 +855,7 @@ x86_perf_event_set_period(struct perf_event *event)
+ 	struct hw_perf_event *hwc = &event->hw;
+ 	s64 left = atomic64_read(&hwc->period_left);
+ 	s64 period = hwc->sample_period;
+-	int err, ret = 0, idx = hwc->idx;
++	int ret = 0, idx = hwc->idx;
+ 
+ 	if (idx == X86_PMC_IDX_FIXED_BTS)
+ 		return 0;
+@@ -881,8 +893,8 @@ x86_perf_event_set_period(struct perf_event *event)
+ 	 */
+ 	atomic64_set(&hwc->prev_count, (u64)-left);
+ 
+-	err = checking_wrmsrl(hwc->event_base + idx,
+-			     (u64)(-left) & x86_pmu.event_mask);
++	wrmsrl(hwc->event_base + idx,
++			(u64)(-left) & x86_pmu.event_mask);
+ 
+ 	perf_event_update_userpage(event);
+ 
+@@ -987,7 +999,7 @@ void perf_event_print_debug(void)
+ 		pr_info("CPU#%d: fixed:      %016llx\n", cpu, fixed);
+ 		pr_info("CPU#%d: pebs:       %016llx\n", cpu, pebs);
+ 	}
+-	pr_info("CPU#%d: active:       %016llx\n", cpu, *(u64 *)cpuc->active_mask);
++	pr_info("CPU#%d: active:     %016llx\n", cpu, *(u64 *)cpuc->active_mask);
+ 
+ 	for (idx = 0; idx < x86_pmu.num_events; idx++) {
+ 		rdmsrl(x86_pmu.eventsel + idx, pmc_ctrl);
+diff --git a/arch/x86/kernel/cpu/perf_event_intel.c b/arch/x86/kernel/cpu/perf_event_intel.c
+index d3e2424..971dc6e 100644
+--- a/arch/x86/kernel/cpu/perf_event_intel.c
++++ b/arch/x86/kernel/cpu/perf_event_intel.c
+@@ -525,7 +525,7 @@ static void intel_pmu_disable_fixed(struct hw_perf_event *hwc)
+ 
+ 	rdmsrl(hwc->config_base, ctrl_val);
+ 	ctrl_val &= ~mask;
+-	(void)checking_wrmsrl(hwc->config_base, ctrl_val);
++	wrmsrl(hwc->config_base, ctrl_val);
+ }
+ 
+ static void intel_pmu_disable_event(struct perf_event *event)
+@@ -553,7 +553,6 @@ static void intel_pmu_enable_fixed(struct hw_perf_event *hwc)
+ {
+ 	int idx = hwc->idx - X86_PMC_IDX_FIXED;
+ 	u64 ctrl_val, bits, mask;
+-	int err;
  
  	/*
--	 * Reset the LBR stack if this is the first LBR user or
--	 * we changed task context so as to avoid data leaks.
-+	 * Reset the LBR stack if we changed task context to
-+	 * avoid data leaks.
- 	 */
+ 	 * Enable IRQ generation (0x8),
+@@ -578,7 +577,7 @@ static void intel_pmu_enable_fixed(struct hw_perf_event *hwc)
+ 	rdmsrl(hwc->config_base, ctrl_val);
+ 	ctrl_val &= ~mask;
+ 	ctrl_val |= bits;
+-	err = checking_wrmsrl(hwc->config_base, ctrl_val);
++	wrmsrl(hwc->config_base, ctrl_val);
+ }
  
--	if (!cpuc->lbr_users ||
--	    (event->ctx->task && cpuc->lbr_context != event->ctx)) {
-+	if (event->ctx->task && cpuc->lbr_context != event->ctx) {
- 		intel_pmu_lbr_reset();
- 		cpuc->lbr_context = event->ctx;
- 	}
-@@ -93,7 +92,7 @@ static void intel_pmu_lbr_disable(struct perf_event *event)
- 		return;
- 
- 	cpuc->lbr_users--;
--	BUG_ON(cpuc->lbr_users < 0);
-+	WARN_ON_ONCE(cpuc->lbr_users < 0);
- 
- 	if (cpuc->enabled && !cpuc->lbr_users)
- 		__intel_pmu_lbr_disable();
+ static void intel_pmu_enable_event(struct perf_event *event)
