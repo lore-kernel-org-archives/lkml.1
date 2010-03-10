@@ -1,134 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116Ab0CJNOG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:14:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43067 "EHLO hera.kernel.org"
+	id S1755370Ab0CJNOz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:14:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43126 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755476Ab0CJNOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:14:00 -0500
-Date: Wed, 10 Mar 2010 13:13:29 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       acme@infradead.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, acme@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
+	id S1751276Ab0CJNOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 08:14:52 -0500
+Date: Wed, 10 Mar 2010 13:14:18 GMT
+From: tip-bot for Eric B Munson <ebmunson@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       ebmunson@us.ibm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, ebmunson@us.ibm.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1267804269-22660-2-git-send-email-acme@infradead.org>
+References: <1267804269-22660-2-git-send-email-acme@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf: Provide better condition for event rotation
-Message-ID: <tip-d4944a06666054707d23e11888e480af239e5abf@git.kernel.org>
-Git-Commit-ID: d4944a06666054707d23e11888e480af239e5abf
+Subject: [tip:perf/urgent] perf record: Add ID and to recorded event data when recording multiple events
+Message-ID: <tip-8907fd607b66e36636469a2de9833db643869db8@git.kernel.org>
+Git-Commit-ID: 8907fd607b66e36636469a2de9833db643869db8
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:13:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:14:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d4944a06666054707d23e11888e480af239e5abf
-Gitweb:     http://git.kernel.org/tip/d4944a06666054707d23e11888e480af239e5abf
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 8 Mar 2010 13:51:20 +0100
+Commit-ID:  8907fd607b66e36636469a2de9833db643869db8
+Gitweb:     http://git.kernel.org/tip/8907fd607b66e36636469a2de9833db643869db8
+Author:     Eric B Munson <ebmunson@us.ibm.com>
+AuthorDate: Fri, 5 Mar 2010 12:51:05 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Mar 2010 13:22:36 +0100
+CommitDate: Wed, 10 Mar 2010 13:53:46 +0100
 
-perf: Provide better condition for event rotation
+perf record: Add ID and to recorded event data when recording multiple events
 
-Try to avoid useless rotation and PMU disables.
+Currently perf record does not write the ID or the to disk for
+events. This doesn't allow report to tell if an event stream
+contains one or more types of events.  This patch adds this
+entry to the list of data that record will write to disk if more
+than one event was requested.
 
-[ Could be improved by keeping a nr_runnable count to better account
-  for the < PERF_STAT_INACTIVE counters ]
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: paulus@samba.org
-Cc: eranian@google.com
-Cc: robert.richter@amd.com
-Cc: fweisbec@gmail.com
-LKML-Reference: <new-submission>
+Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <1267804269-22660-2-git-send-email-acme@infradead.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/perf_event.c |   21 +++++++++++++++------
- 1 files changed, 15 insertions(+), 6 deletions(-)
+ tools/perf/builtin-record.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index d810846..52c69a3 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1524,12 +1524,15 @@ static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
- 		 */
- 		if (interrupts == MAX_INTERRUPTS) {
- 			perf_log_throttle(event, 1);
-+			perf_disable();
- 			event->pmu->unthrottle(event);
-+			perf_enable();
- 		}
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 771533c..f573bbb 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -244,6 +244,9 @@ static void create_counter(int counter, int cpu, pid_t pid)
  
- 		if (!event->attr.freq || !event->attr.sample_freq)
- 			continue;
+ 	attr->sample_type	|= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
  
-+		perf_disable();
- 		event->pmu->read(event);
- 		now = atomic64_read(&event->count);
- 		delta = now - hwc->freq_count_stamp;
-@@ -1537,6 +1540,7 @@ static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
- 
- 		if (delta > 0)
- 			perf_adjust_period(event, TICK_NSEC, delta);
-+		perf_enable();
- 	}
- 	raw_spin_unlock(&ctx->lock);
- }
-@@ -1546,9 +1550,6 @@ static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
-  */
- static void rotate_ctx(struct perf_event_context *ctx)
- {
--	if (!ctx->nr_events)
--		return;
--
- 	raw_spin_lock(&ctx->lock);
- 
- 	/* Rotate the first entry last of non-pinned groups */
-@@ -1561,19 +1562,28 @@ void perf_event_task_tick(struct task_struct *curr)
- {
- 	struct perf_cpu_context *cpuctx;
- 	struct perf_event_context *ctx;
-+	int rotate = 0;
- 
- 	if (!atomic_read(&nr_events))
- 		return;
- 
- 	cpuctx = &__get_cpu_var(perf_cpu_context);
--	ctx = curr->perf_event_ctxp;
-+	if (cpuctx->ctx.nr_events &&
-+	    cpuctx->ctx.nr_events != cpuctx->ctx.nr_active)
-+		rotate = 1;
- 
--	perf_disable();
-+	ctx = curr->perf_event_ctxp;
-+	if (ctx && ctx->nr_events && ctx->nr_events != ctx->nr_active)
-+		rotate = 1;
- 
- 	perf_ctx_adjust_freq(&cpuctx->ctx);
- 	if (ctx)
- 		perf_ctx_adjust_freq(ctx);
- 
-+	if (!rotate)
-+		return;
++	if (nr_counters > 1)
++		attr->sample_type |= PERF_SAMPLE_ID;
 +
-+	perf_disable();
- 	cpu_ctx_sched_out(cpuctx, EVENT_FLEXIBLE);
- 	if (ctx)
- 		task_ctx_sched_out(ctx, EVENT_FLEXIBLE);
-@@ -1585,7 +1595,6 @@ void perf_event_task_tick(struct task_struct *curr)
- 	cpu_ctx_sched_in(cpuctx, EVENT_FLEXIBLE);
- 	if (ctx)
- 		task_ctx_sched_in(curr, EVENT_FLEXIBLE);
--
- 	perf_enable();
- }
- 
+ 	if (freq) {
+ 		attr->sample_type	|= PERF_SAMPLE_PERIOD;
+ 		attr->freq		= 1;
