@@ -1,245 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308Ab0CJVZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:25:28 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:62731 "EHLO
+	id S1757318Ab0CJVZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:25:30 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:62727 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753027Ab0CJVZX (ORCPT
+	with ESMTP id S1751834Ab0CJVZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Mar 2010 16:25:23 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Mar 2010 13:24:23 -0800
+Date: Wed, 10 Mar 2010 13:24:21 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 2/4] x86: make e820 to be static
-In-reply-to: <1268256267-3769-1-git-send-email-yinghai@kernel.org>
+Subject: [PATCH -v2 0/6] early_res: fw_memmap.c
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1268256267-3769-3-git-send-email-yinghai@kernel.org>
+Message-id: <1268256267-3769-1-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
-References: <1268256267-3769-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-make sanitize_e820_map() not take e820.map directly.
+use wake_system_ram_range instead if needed.
 
-and could change e820_saved to initdata
+-v2: move common memmap fo fw_memmap.c
+     convert for sparc64
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Thanks
 
----
- arch/x86/include/asm/e820.h |    7 ++-----
- arch/x86/kernel/e820.c      |   28 +++++++++++++++++++---------
- arch/x86/kernel/efi.c       |    2 +-
- arch/x86/kernel/setup.c     |   10 +++++-----
- arch/x86/xen/setup.c        |    4 +---
- 5 files changed, 28 insertions(+), 23 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -34,8 +34,8 @@
-  * user can e.g. boot the original kernel with mem=1G while still booting the
-  * next kernel with full memory.
-  */
--struct e820map e820;
--struct e820map e820_saved;
-+static struct e820map e820;
-+static struct e820map __initdata e820_saved;
- 
- /* For PCI or other memory-mapped resources */
- unsigned long pci_mem_start = 0xaeedbabe;
-@@ -224,7 +224,7 @@ void __init e820_print_map(char *who)
-  *	   ______________________4_
-  */
- 
--int __init sanitize_e820_map(struct e820entry *biosmap, int max_nr_map,
-+static int __init __sanitize_e820_map(struct e820entry *biosmap, int max_nr_map,
- 			     u32 *pnr_map)
- {
- 	struct change_member {
-@@ -383,6 +383,11 @@ int __init sanitize_e820_map(struct e820
- 	return 0;
- }
- 
-+int __init sanitize_e820_map(void)
-+{
-+	return __sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+}
-+
- static int __init __append_e820_map(struct e820entry *biosmap, int nr_map)
- {
- 	while (nr_map) {
-@@ -555,7 +560,7 @@ void __init update_e820(void)
- 	u32 nr_map;
- 
- 	nr_map = e820.nr_map;
--	if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr_map))
-+	if (__sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr_map))
- 		return;
- 	e820.nr_map = nr_map;
- 	printk(KERN_INFO "modified physical RAM map:\n");
-@@ -566,7 +571,7 @@ static void __init update_e820_saved(voi
- 	u32 nr_map;
- 
- 	nr_map = e820_saved.nr_map;
--	if (sanitize_e820_map(e820_saved.map, ARRAY_SIZE(e820_saved.map), &nr_map))
-+	if (__sanitize_e820_map(e820_saved.map, ARRAY_SIZE(e820_saved.map), &nr_map))
- 		return;
- 	e820_saved.nr_map = nr_map;
- }
-@@ -661,7 +666,7 @@ void __init parse_e820_ext(struct setup_
- 		sdata = early_ioremap(pa_data, map_len);
- 	extmap = (struct e820entry *)(sdata->data);
- 	__append_e820_map(extmap, entries);
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+	sanitize_e820_map();
- 	if (map_len > PAGE_SIZE)
- 		early_iounmap(sdata, map_len);
- 	printk(KERN_INFO "extended physical RAM map:\n");
-@@ -1028,7 +1033,7 @@ void __init finish_e820_parsing(void)
- 	if (userdef) {
- 		u32 nr = e820.nr_map;
- 
--		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
-+		if (__sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
- 			early_panic("Invalid user supplied memory map");
- 		e820.nr_map = nr;
- 
-@@ -1158,7 +1163,7 @@ char *__init default_machine_specific_me
- 	 * the next section from 1mb->appropriate_mem_k
- 	 */
- 	new_nr = boot_params.e820_entries;
--	sanitize_e820_map(boot_params.e820_map,
-+	__sanitize_e820_map(boot_params.e820_map,
- 			ARRAY_SIZE(boot_params.e820_map),
- 			&new_nr);
- 	boot_params.e820_entries = new_nr;
-@@ -1185,12 +1190,17 @@ char *__init default_machine_specific_me
- 	return who;
- }
- 
-+void __init save_e820_map(void)
-+{
-+	memcpy(&e820_saved, &e820, sizeof(struct e820map));
-+}
-+
- void __init setup_memory_map(void)
- {
- 	char *who;
- 
- 	who = x86_init.resources.memory_setup();
--	memcpy(&e820_saved, &e820, sizeof(struct e820map));
-+	save_e820_map();
- 	printk(KERN_INFO "BIOS-provided physical RAM map:\n");
- 	e820_print_map(who);
- }
-Index: linux-2.6/arch/x86/kernel/efi.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/efi.c
-+++ linux-2.6/arch/x86/kernel/efi.c
-@@ -272,7 +272,7 @@ static void __init do_add_efi_memmap(voi
- 		}
- 		e820_add_region(start, size, e820_type);
- 	}
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+	sanitize_e820_map();
- }
- 
- void __init efi_reserve_early(void)
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -461,8 +461,8 @@ static void __init e820_reserve_setup_da
- 	if (!found)
- 		return;
- 
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
--	memcpy(&e820_saved, &e820, sizeof(struct e820map));
-+	sanitize_e820_map();
-+	save_e820_map();
- 	printk(KERN_INFO "extended physical RAM map:\n");
- 	e820_print_map("reserve setup_data");
- }
-@@ -614,7 +614,7 @@ static int __init dmi_low_memory_corrupt
- 		d->ident);
- 
- 	e820_update_range(0, 0x10000, E820_RAM, E820_RESERVED);
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+	sanitize_e820_map();
- 
- 	return 0;
- }
-@@ -683,7 +683,7 @@ static void __init trim_bios_range(void)
- 	 * take them out.
- 	 */
- 	e820_remove_range(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_RAM, 1);
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+	sanitize_e820_map();
- }
- 
- /*
-@@ -854,7 +854,7 @@ void __init setup_arch(char **cmdline_p)
- 	if (ppro_with_ram_bug()) {
- 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
- 				  E820_RESERVED);
--		sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+		sanitize_e820_map();
- 		printk(KERN_INFO "fixed physical RAM map:\n");
- 		e820_print_map("bad_ppro");
- 	}
-Index: linux-2.6/arch/x86/xen/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/xen/setup.c
-+++ linux-2.6/arch/x86/xen/setup.c
-@@ -43,8 +43,6 @@ char * __init xen_memory_setup(void)
- 
- 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
- 
--	e820.nr_map = 0;
--
- 	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
- 
- 	/*
-@@ -65,7 +63,7 @@ char * __init xen_memory_setup(void)
- 		      __pa(xen_start_info->pt_base),
- 			"XEN START INFO");
- 
--	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+	sanitize_e820_map();
- 
- 	return "Xen";
- }
-Index: linux-2.6/arch/x86/include/asm/e820.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/e820.h
-+++ linux-2.6/arch/x86/include/asm/e820.h
-@@ -68,9 +68,6 @@ struct e820map {
- #define BIOS_END		0x00100000
- 
- #ifdef __KERNEL__
--/* see comment in arch/x86/kernel/e820.c */
--extern struct e820map e820;
--extern struct e820map e820_saved;
- 
- #ifdef CONFIG_X86_OOSTORE
- extern int centaur_ram_top;
-@@ -86,8 +83,8 @@ extern int e820_any_mapped(u64 start, u6
- extern int e820_all_mapped(u64 start, u64 end, unsigned type);
- extern void e820_add_region(u64 start, u64 size, int type);
- extern void e820_print_map(char *who);
--extern int
--sanitize_e820_map(struct e820entry *biosmap, int max_nr_map, u32 *pnr_map);
-+int sanitize_e820_map(void);
-+void save_e820_map(void);
- extern u64 e820_update_range(u64 start, u64 size, unsigned old_type,
- 			       unsigned new_type);
- extern u64 e820_remove_range(u64 start, u64 size, unsigned old_type,
+Yinghai
