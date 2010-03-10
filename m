@@ -1,37 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917Ab0CJJBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 04:01:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56017 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689Ab0CJJBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 04:01:48 -0500
-Date: Wed, 10 Mar 2010 04:01:42 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: Re: Nick's vfs-scalability patches ported to 2.6.33-rt
-Message-ID: <20100310090142.GA9529@infradead.org>
-References: <1267163608.2002.9.camel@work-vm> <20100226060109.GH9738@laptop> <1267659090.4317.67.camel@localhost.localdomain> <20100304033312.GO8653@laptop> <1267675511.4317.78.camel@localhost.localdomain> <1268189462.3339.12.camel@localhost.localdomain>
+	id S1755961Ab0CJJHA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 04:07:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36574 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755808Ab0CJJG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 04:06:57 -0500
+Message-ID: <4B9761FF.70808@redhat.com>
+Date: Wed, 10 Mar 2010 17:10:23 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268189462.3339.12.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: =?UTF-8?B?QW5kcsOpIEdvZGRhcmQgUm9zYQ==?= <andre.goddard@gmail.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Roland McGrath <roland@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] coredump: plug a memory leak situation on dump_seek()
+References: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
+In-Reply-To: <fe97698815cd081b5ab33a8c25c8b69cd0371a99.1267785456.git.andre.goddard@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 06:51:02PM -0800, john stultz wrote:
-> So this all means that with Nick's patch set, we're no longer getting
-> bogged down in the vfs (at least at 8-way) at all. All the contention is
-> in the actual filesystem (ext2 in group_adjust_blocks, and ext3 in the
-> journal and block allocation code).
+André Goddard Rosa wrote:
+> After having started writing the coredump, if filesystem reports an error
+> anytime while writing part of the core file, we would leak a memory page
+> when bailing out.
+> 
+> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Can you check if you're running into any fs scaling limit with xfs?
+Looks good for me too!
 
+Thanks.
