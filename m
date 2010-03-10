@@ -1,61 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596Ab0CJKkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:40:15 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:47573 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755080Ab0CJKkO (ORCPT
+	id S1755351Ab0CJKp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:45:28 -0500
+Received: from mail-ew0-f216.google.com ([209.85.219.216]:60351 "EHLO
+	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753782Ab0CJKpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:40:14 -0500
-Date: Wed, 10 Mar 2010 05:38:32 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: most popular kernel cleanup scripts now posted
-Message-ID: <alpine.LFD.2.00.1003100535120.4271@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 10 Mar 2010 05:45:12 -0500
+Message-ID: <4B977815.4000703@ru.mvista.com>
+Date: Wed, 10 Mar 2010 13:44:37 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+CC: Ralf Baechle <ralf@linux-mips.org>, Greg KH <gregkh@suse.de>,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Loongson-2F: Flush the branch target history such
+ as BTB and RAS
+References: <cover.1268153722.git.wuzhangjin@gmail.com> <d513f16856e499e82f0b4e428c97fe06afb5a426.1268153722.git.wuzhangjin@gmail.com>
+In-Reply-To: <d513f16856e499e82f0b4e428c97fe06afb5a426.1268153722.git.wuzhangjin@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-  http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup_scripts
+Wu Zhangjin wrote:
 
-* unused CONFIG variables:  variables defined in a Kconfig* file
-somewhere that don't appear to be subsequently used/tested
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
+>
+> As the Chapter 15: "Errata: Issue of Out-of-order in loongson"[1] shows, to
+> workaround the Issue of Loongson-2F，We need to do:
+>
+> "When switching from user model to kernel model, you should flush the branch
+> target history such as BTB and RAS."
+>
+> This patch did clear BTB(branch target buffer), forbid RAS(row address strobe)
+> via Loongson-2F's 64bit diagnostic register.
+>
+> [1] Chinese Version: http://www.loongson.cn/uploadfile/file/200808211
+> [2] English Version of Chapter 15:
+> http://groups.google.com.hk/group/loongson-dev/msg/e0d2e220958f10a6?dmode=source
+>
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+> ---
+>  arch/mips/include/asm/stackframe.h |   19 +++++++++++++++++++
+>  1 files changed, 19 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/mips/include/asm/stackframe.h b/arch/mips/include/asm/stackframe.h
+> index 3b6da33..b84cfda 100644
+> --- a/arch/mips/include/asm/stackframe.h
+> +++ b/arch/mips/include/asm/stackframe.h
+> @@ -121,6 +121,25 @@
+>  		.endm
+>  #else
+>  		.macro	get_saved_sp	/* Uniprocessor variation */
+> +#ifdef CONFIG_CPU_LOONGSON2F
+> +		/*
+> +		 * Clear BTB(branch target buffer), forbid RAS(row address
+> +		 * strobe)
 
-* badref CONFIG variables:  variables used/tested in kernel source
-that don't appear to be defined in any Kconfig file
+   No spaces before the left paren...
 
-* badref CONFIG variables in Makefile:  special case of above, for
-variables strictly in Makefiles
+>  to workaround the Out-of-oder Issue in Loongson2F
+> +		 * via it's diagnostic register.
+>   
 
-* badref "select" directives:  Kconfig select directives to
-non-existent CONFIG variables
+   Only "its".
 
-* badref linux header files:  inclusions of header files of the form
-<linux/whatever.h> where said file does not appear to exist.
+> +		 */
+> +		move k0, ra
+>   
 
-  please don't make fun of my code.  it's very sensitive about that.
+   Operands misalined...
 
-rday
---
+WBR, Sergei
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
