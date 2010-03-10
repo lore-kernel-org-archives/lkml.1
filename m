@@ -1,69 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085Ab0CJMLY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 07:11:24 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:61478 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322Ab0CJMLW (ORCPT
+	id S1752324Ab0CJMPb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 07:15:31 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:51989 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090Ab0CJMP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 07:11:22 -0500
+	Wed, 10 Mar 2010 07:15:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=dTeJJK2ATPY4XYwSNr89txqwd15jw+INDG4YCPH8VLV8anzNEPkEbpFEd+sd9AUBSQ
-         DAB2uQGw2sO1YXkyCVr9kHmmsaEmrqC7B8cKiHD1TjnJikbfIukxhysKmqO84IGxbYsU
-         RR1pmJ0E+45prm1xN7jAbRuBeMFKx3toYbgZ0=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=lovU7QDj3F82KH7RExZZC4NO2MxOicu5Kf5ROsLVzRuQe2iKW6Wv3gDQCCIgR8x9+y
+         91ZFpss2tTGF7tOq+PMyM9KRPcts2kzYEBLFjGUpyRM/uq61Oa9d+ipbPZupJTdBCU8/
+         oBTNIkLSTqmEfp/mJ3Mq06T2D8EMkGH36zdNM=
 MIME-Version: 1.0
-In-Reply-To: <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-	 <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-Date: Wed, 10 Mar 2010 04:06:14 -0800
-X-Google-Sender-Auth: b01c87ed5d6065b1
-Message-ID: <86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct 
-	irq_chip.
-From: Yinghai Lu <yinghai@kernel.org>
-To: ijc@hellion.org.uk
-Cc: linux-kernel@vger.kernel.org, Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, x86@kernel.org,
-       linuxppc-dev@ozlabs.org
+In-Reply-To: <21eaeb5a1003100120x6cd3f69ak598954af3c9fe955@mail.gmail.com>
+References: <4B968834.3040609@gmail.com>
+	 <21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
+	 <2ea1731b1003100002w104633ffy1ae46ef3d245e5b5@mail.gmail.com>
+	 <21eaeb5a1003100120x6cd3f69ak598954af3c9fe955@mail.gmail.com>
+Date: Wed, 10 Mar 2010 13:15:25 +0100
+Message-ID: <2ea1731b1003100415i46dd8fcem85b85f49fb1a479@mail.gmail.com>
+Subject: Re: [PATCH v2] char drivers: Ram oops/panic logger
+From: Marco Stornelli <marco.stornelli@gmail.com>
+To: Yuasa Yoichi <yuasa@linux-mips.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 2:55 AM,  <ijc@hellion.org.uk> wrote:
-> From: Ian Campbell <ian.campbell@citrix.com>
+2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
+> 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
+>> 2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
+>>> Hi,
+>>>
+>>> 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
+>>>> Ramoops, like mtdoops, can log oops/panic information but in RAM.
+>>>
+>>> What is different from mtdoops + mtd-ram?
+>>>
+>>> Yoichi
+>>>
+>>
+>> It can be used in a very easy way with persistent RAM for systems
+>> without flash support. For this systems, with this driver, it's no
+>> more needed add to the kernel the mtd subsystem with advantage in
+>> footprint as I said in the description.
 >
-> Move arch_init_copy_chip_data and arch_free_chip_data into function
-> pointers in struct irq_chip since they operate on irq_desc->chip_data.
+> right.
+> But,
 >
-> arch_init_chip_data cannot be moved into struct irq_chip at this time
-> because irq_desc->chip is not known at the time the irq_desc is
-> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
-> PowerPC, the only other user, whose usage better matches the new name)
-> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
-> call this whenever the IO APIC code allocates a new IRQ.
+>> In addition, you can save
+>> flash space and store this information only in RAM. I think it's very
+>> useful for embedded systems.
 >
-> I've retained the chip_data behaviour for uv_irq although it isn't
-> clear to me if these interrupt types support migration or how closely
-> related to the APIC modes they really are. If it weren't for this the
-> ioapic_{init,copy,free}_chip_data functions could be static to
-> io_apic.c.
->
-> I've tested by booting on a 64 bit system, but it's not clear to me
-> what actions I need to take to actually exercise some of these code
-> paths.
+> CONFIG_MTD_RAM uses only RAM.
+> I think there's no big difference about this point.
 >
 
-can you just add another pointer field in irq_desc?
+I meant with the "classic" use of mtdoops, therefore with a flash
+partition without use MTD_RAM. Using MTD_RAM, it's more or less the
+same thing, with the exception of "where" you want deploy the log. For
+example: if in your system you have got a nvram you can use it without
+problem, you need to specify the address of the nvram to the module.
+Very simple. I  think it's a small driver but very useful, feedback
+from other embedded guys are welcome.
 
-some kind of *irq_info etc.
-
-YH
+Marco
