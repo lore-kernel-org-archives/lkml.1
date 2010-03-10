@@ -1,45 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433Ab0CJKah (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:30:37 -0500
-Received: from borg.medozas.de ([188.40.89.202]:36507 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752825Ab0CJKaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:30:35 -0500
-Date: Wed, 10 Mar 2010 11:30:32 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: suresh.b.siddha@intel.com, hpa@zytor.com
-Subject: Re: page_to_nid not linked in on PAE
-In-Reply-To: <alpine.LSU.2.01.1003091210230.10157@obet.zrqbmnf.qr>
-Message-ID: <alpine.LSU.2.01.1003101128340.9318@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1003091210230.10157@obet.zrqbmnf.qr>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	id S1754791Ab0CJKa6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:30:58 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:57200 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752825Ab0CJKay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 05:30:54 -0500
+Date: Wed, 10 Mar 2010 18:30:52 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH -v2] Speed testing support for ghash
+Message-ID: <20100310103052.GB23398@gondor.apana.org.au>
+References: <1267586296.1640.205.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267586296.1640.205.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 2010-03-09 13:32, Jan Engelhardt wrote:
->
->I have here a compile error with 2.6.33 related to some change in
->page flags. The offending commit, according to bisect, is
->
->commit 46cf98cdaef5471926010b5bddf84c44ec177fdd
->
->    x86, pat: Generalize the use of page flag PG_uncached
->    
->$ make ARCH=i386 vmlinux
-> ...
->  LD      .tmp_vmlinux1
->arch/x86/built-in.o: In function `dma_generic_alloc_coherent':
->(.text+0x42b2): undefined reference to `page_to_nid'
-...
+On Wed, Mar 03, 2010 at 11:18:16AM +0800, Huang Ying wrote:
+> Because ghash needs setkey, the setkey and keysize template support
+> for test_hash_speed is added.
+> 
+> v2:
+> 
+>  - Move klen into struct hash_speed.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Due to the addition of page flags (like in the commit above),
-there are less bits to encode the node.
-In other words, reducing CONFIG_NODES_SHIFT works around the problem.
-But that can't really be a terminal solution.
-
->CONFIG_NODES_SHIFT=7
+Also applied.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
