@@ -1,616 +1,686 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756425Ab0CJNaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:30:10 -0500
-Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:53451
-	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755935Ab0CJNaH (ORCPT
+	id S1756529Ab0CJNcg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:32:36 -0500
+Received: from bunsen.bytemark.co.uk ([80.68.81.6]:59024 "EHLO
+	bunsen.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756260Ab0CJNce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:30:07 -0500
-X-IronPort-AV: E=Sophos;i="4.49,614,1262559600"; 
-   d="scan'208";a="58505701"
-Date: Wed, 10 Mar 2010 14:30:04 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, mgarski@post.pl, linux-input@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>, Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] Route kbd LEDs through the generic LEDs layer (5th version)
-Message-ID: <20100310133004.GM5127@const.bordeaux.inria.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	mgarski@post.pl, linux-input@vger.kernel.org,
-	Vojtech Pavlik <vojtech@suse.cz>,
-	Richard Purdie <rpurdie@rpsys.net>
-References: <20100307200250.GA9340@const.famille.thibault.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100307200250.GA9340@const.famille.thibault.fr>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 10 Mar 2010 08:32:34 -0500
+From: Mike Sheldon <mike@mikeasoft.com>
+To: greg@kroah.com, pavel@suse.cz
+Cc: mike@mikeasoft.com, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Staging: winbond: Replace C99 comments with C89.
+Date: Wed, 10 Mar 2010 13:32:01 +0000
+Message-Id: <1268227921-2687-1-git-send-email-mike@mikeasoft.com>
+X-Mailer: git-send-email 1.7.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Route keyboard LEDs through the generic LEDs layer.
+This patches mds.c to replace all the C99 style comments (//) with C89 style (/* ... */), as reported by checkpatch.pl.
 
-This permits to reassign keyboard LEDs to something else than keyboard "leds"
-state, by adding keyboard led and modifier triggers connected to a series
-of global input LEDs, themselves connected to global input triggers, which
-per-input device LEDs use by default.  Userland can thus easily change the LED
-behavior of (a priori) all input devices, or of particular input devices.
-
-This also permits to fix #7063 from userland by using a modifier to implement
-proper CapsLock behavior and have the keyboard caps lock led show that modifier
-state.
-
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Signed-off-by: Mike Sheldon <mike@mikeasoft.com>
 ---
+ drivers/staging/winbond/mds.c |  310 ++++++++++++++++++++--------------------
+ 1 files changed, 155 insertions(+), 155 deletions(-)
 
-Hello,
-
-Here is a fifth version
-
-Differences from the fourth version:
-- use the platform_data field of the device struct instead of adding a
-  private field to struct led_classdev.
-- fix using input led triggers for non-input leds.
-
-Difference from the third version:
-- creates LEDs for each input device.
-- creates a global LED trigger connected to the global LED, that
-  per-device LEDs use by default.
-- properly initializes LED state on trigger and input device connection.
-
-Difference between third and second:
-- only input LEDs actually available on devices are registered.
-
-Difference between second and first:
-- rebase on 2.6.33, fix locking issues.
-
-Samuel
-
-diff -ur linux-2.6.33-orig/Documentation/leds-class.txt linux-2.6.33-perso/Documentation/leds-class.txt
---- linux-2.6.33-orig/Documentation/leds-class.txt	2009-12-03 13:41:42.000000000 +0100
-+++ linux-2.6.33-perso/Documentation/leds-class.txt	2010-02-25 01:45:28.000000000 +0100
-@@ -2,9 +2,6 @@
- LED handling under Linux
- ========================
+diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+index 37e0c18..65063c3 100644
+--- a/drivers/staging/winbond/mds.c
++++ b/drivers/staging/winbond/mds.c
+@@ -43,53 +43,53 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 	pT01 = (PT01_DESCRIPTOR)(buffer+4);
+ 	pNextT00 = (PT00_DESCRIPTOR)(buffer+OffsetSize);
  
--If you're reading this and thinking about keyboard leds, these are
--handled by the input subsystem and the led class is *not* needed.
--
- In its simplest form, the LED class just allows control of LEDs from
- userspace. LEDs appear in /sys/class/leds/. The maximum brightness of the
- LED is defined in max_brightness file. The brightness file will set the brightness
-diff -ur linux-2.6.33-orig/drivers/char/keyboard.c linux-2.6.33-perso/drivers/char/keyboard.c
---- linux-2.6.33-orig/drivers/char/keyboard.c	2010-02-25 01:41:19.000000000 +0100
-+++ linux-2.6.33-perso/drivers/char/keyboard.c	2010-03-07 20:03:37.000000000 +0100
-@@ -34,6 +34,7 @@
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/irq.h>
-+#include <linux/leds.h>
+-	if( buffer[ DOT_11_DA_OFFSET+8 ] & 0x1 ) // +8 for USB hdr
++	if( buffer[ DOT_11_DA_OFFSET+8 ] & 0x1 ) /* +8 for USB hdr */
+ 		boGroupAddr = true;
  
- #include <linux/kbd_kern.h>
- #include <linux/kbd_diacr.h>
-@@ -139,6 +140,9 @@
- static char rep;					/* flag telling character repeat */
- 
- static unsigned char ledstate = 0xff;			/* undefined */
-+#ifdef CONFIG_LEDS_INPUT
-+static unsigned char lockstate = 0xff;			/* undefined */
-+#endif
- static unsigned char ledioctl;
- 
- static struct ledptr {
-@@ -971,6 +975,35 @@
- 	}
- }
- 
-+#ifdef CONFIG_LEDS_INPUT
-+/* When input-based leds are enabled, we route keyboard "leds" through triggers
-+ */
-+static void kbd_ledstate_trigger_activate(struct led_classdev *cdev);
-+static struct led_trigger ledtrig_ledstate[] = {
-+#define DEFINE_LEDSTATE_TRIGGER(kbd_led, nam) \
-+	[kbd_led] = { .name = nam, .activate = kbd_ledstate_trigger_activate, }
-+	DEFINE_LEDSTATE_TRIGGER(VC_SCROLLOCK, "scrollock"),
-+	DEFINE_LEDSTATE_TRIGGER(VC_NUMLOCK,   "numlock"),
-+	DEFINE_LEDSTATE_TRIGGER(VC_CAPSLOCK,  "capslock"),
-+	DEFINE_LEDSTATE_TRIGGER(VC_KANALOCK,  "kanalock"),
-+#undef DEFINE_LEDSTATE_TRIGGER
-+};
-+static void kbd_lockstate_trigger_activate(struct led_classdev *cdev);
-+static struct led_trigger ledtrig_lockstate[] = {
-+#define DEFINE_LOCKSTATE_TRIGGER(kbd_led, nam) \
-+	[kbd_led] = { .name = nam, .activate = kbd_lockstate_trigger_activate, }
-+	DEFINE_LOCKSTATE_TRIGGER(VC_SHIFTLOCK,  "shiftlock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_ALTGRLOCK,  "altgrlock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_CTRLLOCK,   "ctrllock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_ALTLOCK,    "altlock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_SHIFTLLOCK, "shiftllock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_SHIFTRLOCK, "shiftrlock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_CTRLLLOCK,  "ctrlllock"),
-+	DEFINE_LOCKSTATE_TRIGGER(VC_CTRLRLOCK,  "ctrlrlock"),
-+#undef DEFINE_LOCKSTATE_TRIGGER
-+};
-+#endif
-+
- /*
-  * The leds display either (i) the status of NumLock, CapsLock, ScrollLock,
-  * or (ii) whatever pattern of lights people want to show using KDSETLED,
-@@ -1014,19 +1047,44 @@
- 	return leds;
- }
- 
-+#ifdef CONFIG_LEDS_INPUT
-+/* Called on trigger connection, to set initial state */
-+static void kbd_ledstate_trigger_activate(struct led_classdev *cdev)
-+{
-+	struct led_trigger *trigger = cdev->trigger;
-+	int led = trigger - ledtrig_ledstate;
-+
-+	tasklet_disable(&keyboard_tasklet);
-+	led_trigger_event(trigger, ledstate & (1 << led) ? INT_MAX : LED_OFF);
-+	tasklet_enable(&keyboard_tasklet);
-+}
-+static void kbd_lockstate_trigger_activate(struct led_classdev *cdev)
-+{
-+	struct led_trigger *trigger = cdev->trigger;
-+	int led = trigger - ledtrig_lockstate;
-+
-+	tasklet_disable(&keyboard_tasklet);
-+	led_trigger_event(trigger, lockstate & (1 << led) ? INT_MAX : LED_OFF);
-+	tasklet_enable(&keyboard_tasklet);
-+}
-+#else
- static int kbd_update_leds_helper(struct input_handle *handle, void *data)
- {
- 	unsigned char leds = *(unsigned char *)data;
- 
- 	if (test_bit(EV_LED, handle->dev->evbit)) {
--		input_inject_event(handle, EV_LED, LED_SCROLLL, !!(leds & 0x01));
--		input_inject_event(handle, EV_LED, LED_NUML,    !!(leds & 0x02));
--		input_inject_event(handle, EV_LED, LED_CAPSL,   !!(leds & 0x04));
-+		input_inject_event(handle, EV_LED, LED_SCROLLL,
-+				!!(leds & VC_SCROLLOCK));
-+		input_inject_event(handle, EV_LED, LED_NUML,
-+				!!(leds & VC_NUMLOCK));
-+		input_inject_event(handle, EV_LED, LED_CAPSL,
-+				!!(leds & VC_CAPSLOCK));
- 		input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
- 	}
- 
- 	return 0;
- }
-+#endif
- 
- /*
-  * This is the tasklet that updates LED state on all keyboards
-@@ -1040,10 +1098,31 @@
- 	unsigned char leds = getleds();
- 
- 	if (leds != ledstate) {
-+#ifdef CONFIG_LEDS_INPUT
-+		int i;
-+		for (i = 0; i < ARRAY_SIZE(ledtrig_ledstate); i++)
-+			if ((leds ^ ledstate) & (1 << i))
-+				led_trigger_event(&ledtrig_ledstate[i],
-+						leds & (1 << i)
-+						? INT_MAX : LED_OFF);
-+#else
- 		input_handler_for_each_handle(&kbd_handler, &leds,
- 					      kbd_update_leds_helper);
-+#endif
- 		ledstate = leds;
- 	}
-+
-+#ifdef CONFIG_LEDS_INPUT
-+	if (kbd->lockstate != lockstate) {
-+		int i;
-+		for (i = 0; i < ARRAY_SIZE(ledtrig_lockstate); i++)
-+			if ((kbd->lockstate ^ lockstate) & (1 << i))
-+				led_trigger_event(&ledtrig_lockstate[i],
-+						kbd->lockstate & (1 << i)
-+						? INT_MAX : LED_OFF);
-+		lockstate = kbd->lockstate;
-+	}
-+#endif
- }
- 
- DECLARE_TASKLET_DISABLED(keyboard_tasklet, kbd_bh, 0);
-@@ -1380,6 +1459,7 @@
- 	kfree(handle);
- }
- 
-+#ifndef CONFIG_LEDS_INPUT
- /*
-  * Start keyboard handler on the new keyboard by refreshing LED state to
-  * match the rest of the system.
-@@ -1393,6 +1473,7 @@
- 
- 	tasklet_enable(&keyboard_tasklet);
- }
-+#endif
- 
- static const struct input_device_id kbd_ids[] = {
+-	//========================================
+-	// Set RTS/CTS mechanism
+-	//========================================
++	/******************************************
++	 * Set RTS/CTS mechanism
++	 ******************************************/
+ 	if (!boGroupAddr)
  	{
-@@ -1414,7 +1495,9 @@
- 	.event		= kbd_event,
- 	.connect	= kbd_connect,
- 	.disconnect	= kbd_disconnect,
-+#ifndef CONFIG_LEDS_INPUT
- 	.start		= kbd_start,
-+#endif
- 	.name		= "kbd",
- 	.id_table	= kbd_ids,
- };
-@@ -1441,5 +1524,12 @@
- 	tasklet_enable(&keyboard_tasklet);
- 	tasklet_schedule(&keyboard_tasklet);
+-		//NOTE : If the protection mode is enabled and the MSDU will be fragmented,
+-		//		 the tx rates of MPDUs will all be DSSS rates. So it will not use
+-		//		 CTS-to-self in this case. CTS-To-self will only be used when without
+-		//		 fragmentation. -- 20050112
+-		BodyLen = (u16)pT00->T00_frame_length;	//include 802.11 header
+-		BodyLen += 4;	//CRC
++		/* NOTE : If the protection mode is enabled and the MSDU will be fragmented,
++		 *		 the tx rates of MPDUs will all be DSSS rates. So it will not use
++		 *		 CTS-to-self in this case. CTS-To-self will only be used when without
++		 *		 fragmentation. -- 20050112 */
++		BodyLen = (u16)pT00->T00_frame_length;	/* include 802.11 header */
++		BodyLen += 4;	/* CRC */
  
-+#ifdef CONFIG_LEDS_INPUT
-+	for (i = 0; i < ARRAY_SIZE(ledtrig_ledstate); i++)
-+		led_trigger_register(&ledtrig_ledstate[i]);
-+	for (i = 0; i < ARRAY_SIZE(ledtrig_lockstate); i++)
-+		led_trigger_register(&ledtrig_lockstate[i]);
-+#endif
-+
- 	return 0;
+ 		if( BodyLen >= CURRENT_RTS_THRESHOLD )
+-			RTS_on = true; // Using RTS
++			RTS_on = true; /* Using RTS */
+ 		else
+ 		{
+-			if( pT01->T01_modulation_type ) // Is using OFDM
++			if( pT01->T01_modulation_type ) /* Is using OFDM */
+ 			{
+-				if( CURRENT_PROTECT_MECHANISM ) // Is using protect
+-					CTS_on = true; // Using CTS
++				if( CURRENT_PROTECT_MECHANISM ) /* Is using protect */
++					CTS_on = true; /* Using CTS */
+ 			}
+ 		}
+ 	}
+ 
+ 	if( RTS_on || CTS_on )
+ 	{
+-		if( pT01->T01_modulation_type) // Is using OFDM
++		if( pT01->T01_modulation_type) /* Is using OFDM */
+ 		{
+-			//CTS duration
+-			// 2 SIFS + DATA transmit time + 1 ACK
+-			// ACK Rate : 24 Mega bps
+-			// ACK frame length = 14 bytes
++			/* CTS duration 
++			 *  2 SIFS + DATA transmit time + 1 ACK
++			 *  ACK Rate : 24 Mega bps
++			 *  ACK frame length = 14 bytes */
+ 			Duration = 2*DEFAULT_SIFSTIME +
+ 					   2*PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+ 					   ((BodyLen*8 + 22 + Rate*4 - 1)/(Rate*4))*Tsym +
+ 					   ((112 + 22 + 95)/96)*Tsym;
+ 		}
+-		else	//DSSS
++		else	/* DSSS */
+ 		{
+-			//CTS duration
+-			// 2 SIFS + DATA transmit time + 1 ACK
+-			// Rate : ?? Mega bps
+-			// ACK frame length = 14 bytes
+-			if( pT01->T01_plcp_header_length ) //long preamble
++			/* CTS duration
++			 *  2 SIFS + DATA transmit time + 1 ACK
++			 *  Rate : ?? Mega bps
++			 *  ACK frame length = 14 bytes */
++			if( pT01->T01_plcp_header_length ) /* long preamble */
+ 				Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+ 			else
+ 				Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+@@ -100,21 +100,21 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 
+ 		if( RTS_on )
+ 		{
+-			if( pT01->T01_modulation_type ) // Is using OFDM
++			if( pT01->T01_modulation_type ) /* Is using OFDM */
+ 			{
+-				//CTS + 1 SIFS + CTS duration
+-				//CTS Rate : 24 Mega bps
+-				//CTS frame length = 14 bytes
++				/* CTS + 1 SIFS + CTS duration
++				 * CTS Rate : 24 Mega bps
++				 * CTS frame length = 14 bytes */
+ 				Duration += (DEFAULT_SIFSTIME +
+ 								PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+ 								((112 + 22 + 95)/96)*Tsym);
+ 			}
+ 			else
+ 			{
+-				//CTS + 1 SIFS + CTS duration
+-				//CTS Rate : ?? Mega bps
+-				//CTS frame length = 14 bytes
+-				if( pT01->T01_plcp_header_length ) //long preamble
++				/* CTS + 1 SIFS + CTS duration
++				 * CTS Rate : ?? Mega bps
++				 * CTS frame length = 14 bytes */
++				if( pT01->T01_plcp_header_length ) /* long preamble */
+ 					Duration += LONG_PREAMBLE_PLUS_PLCPHEADER_TIME;
+ 				else
+ 					Duration += SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME;
+@@ -123,15 +123,15 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 			}
+ 		}
+ 
+-		// Set the value into USB descriptor
++		/* Set the value into USB descriptor */
+ 		pT01->T01_add_rts = RTS_on ? 1 : 0;
+ 		pT01->T01_add_cts = CTS_on ? 1 : 0;
+ 		pT01->T01_rts_cts_duration = Duration;
+ 	}
+ 
+-	//=====================================
+-	// Fill the more fragment descriptor
+-	//=====================================
++	/******************************************
++	 * Fill the more fragment descriptor
++	 ******************************************/
+ 	if( boGroupAddr )
+ 		Duration = 0;
+ 	else
+@@ -139,14 +139,14 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 		for( i=pDes->FragmentCount-1; i>0; i-- )
+ 		{
+ 			NextBodyLen = (u16)pNextT00->T00_frame_length;
+-			NextBodyLen += 4;	//CRC
++			NextBodyLen += 4;	/* CRC */
+ 
+ 			if( pT01->T01_modulation_type )
+ 			{
+-				//OFDM
+-				// data transmit time + 3 SIFS + 2 ACK
+-				// Rate : ??Mega bps
+-				// ACK frame length = 14 bytes, tx rate = 24M
++				/* OFDM
++				 *  data transmit time + 3 SIFS + 2 ACK
++				 *  Rate : ??Mega bps
++				 *  ACK frame length = 14 bytes, tx rate = 24M */
+ 				Duration = PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION * 3;
+ 				Duration += (((NextBodyLen*8 + 22 + Rate*4 - 1)/(Rate*4)) * Tsym +
+ 							(((2*14)*8 + 22 + 95)/96)*Tsym +
+@@ -154,12 +154,12 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 			}
+ 			else
+ 			{
+-				//DSSS
+-				// data transmit time + 2 ACK + 3 SIFS
+-				// Rate : ??Mega bps
+-				// ACK frame length = 14 bytes
+-				//TODO :
+-				if( pT01->T01_plcp_header_length ) //long preamble
++				/* DSSS
++				 *  data transmit time + 2 ACK + 3 SIFS
++				 *  Rate : ??Mega bps
++				 *  ACK frame length = 14 bytes
++				 * TODO : */
++				if( pT01->T01_plcp_header_length ) /* long preamble */
+ 					Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME*3;
+ 				else
+ 					Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME*3;
+@@ -168,39 +168,39 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 							DEFAULT_SIFSTIME*3 );
+ 			}
+ 
+-			((u16 *)buffer)[5] = cpu_to_le16(Duration);// 4 USHOR for skip 8B USB, 2USHORT=FC + Duration
++			((u16 *)buffer)[5] = cpu_to_le16(Duration); /* 4 USHOR for skip 8B USB, 2USHORT=FC + Duration */
+ 
+-			//----20061009 add by anson's endian
++			/* ----20061009 add by anson's endian */
+ 			pNextT00->value = cpu_to_le32(pNextT00->value);
+ 			pT01->value = cpu_to_le32( pT01->value );
+-			//----end 20061009 add by anson's endian
++			/* ----end 20061009 add by anson's endian */
+ 
+ 			buffer += OffsetSize;
+ 			pT01 = (PT01_DESCRIPTOR)(buffer+4);
+-			if (i != 1)	//The last fragment will not have the next fragment
++			if (i != 1)	/* The last fragment will not have the next fragment */
+ 				pNextT00 = (PT00_DESCRIPTOR)(buffer+OffsetSize);
+ 		}
+ 
+-		//=====================================
+-		// Fill the last fragment descriptor
+-		//=====================================
++		/*******************************************
++		 * Fill the last fragment descriptor
++		 *******************************************/
+ 		if( pT01->T01_modulation_type )
+ 		{
+-			//OFDM
+-			// 1 SIFS + 1 ACK
+-			// Rate : 24 Mega bps
+-			// ACK frame length = 14 bytes
++			/* OFDM
++			 *  1 SIFS + 1 ACK
++			 *  Rate : 24 Mega bps
++			 * ACK frame length = 14 bytes */
+ 			Duration = PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION;
+-			//The Tx rate of ACK use 24M
++			/* The Tx rate of ACK use 24M */
+ 			Duration += (((112 + 22 + 95)/96)*Tsym + DEFAULT_SIFSTIME );
+ 		}
+ 		else
+ 		{
+-			// DSSS
+-			// 1 ACK + 1 SIFS
+-			// Rate : ?? Mega bps
+-			// ACK frame length = 14 bytes(112 bits)
+-			if( pT01->T01_plcp_header_length ) //long preamble
++			/* DSSS
++			 * 1 ACK + 1 SIFS
++			 * Rate : ?? Mega bps
++			 * ACK frame length = 14 bytes(112 bits) */
++			if( pT01->T01_plcp_header_length ) /* long preamble */
+ 				Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME;
+ 			else
+ 				Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME;
+@@ -209,14 +209,14 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+ 		}
+ 	}
+ 
+-	((u16 *)buffer)[5] = cpu_to_le16(Duration);// 4 USHOR for skip 8B USB, 2USHORT=FC + Duration
++	((u16 *)buffer)[5] = cpu_to_le16(Duration); /* 4 USHOR for skip 8B USB, 2USHORT=FC + Duration */
+ 	pT00->value = cpu_to_le32(pT00->value);
+ 	pT01->value = cpu_to_le32(pT01->value);
+-	//--end 20061009 add
++	/* --end 20061009 add */
+ 
  }
-diff -ur linux-2.6.33-orig/drivers/leds/Kconfig linux-2.6.33-perso/drivers/leds/Kconfig
---- linux-2.6.33-orig/drivers/leds/Kconfig	2010-02-25 01:41:27.000000000 +0100
-+++ linux-2.6.33-perso/drivers/leds/Kconfig	2010-03-07 15:38:11.000000000 +0100
-@@ -4,9 +4,6 @@
- 	  Say Y to enable Linux LED support.  This allows control of supported
- 	  LEDs from both userspace and optionally, by kernel events (triggers).
  
--	  This is not related to standard keyboard LEDs which are controlled
--	  via the input system.
--
- if NEW_LEDS
+-// The function return the 4n size of usb pk
++/* The function return the 4n size of usb pk */
+ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDes, u8 *TargetBuffer)
+ {
+ 	PT00_DESCRIPTOR	pT00;
+@@ -229,8 +229,8 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+ 	u8	buf_index, FragmentCount = 0;
  
- config LEDS_CLASS
-@@ -17,6 +14,14 @@
  
- comment "LED drivers"
+-	// Copy fragment body
+-	buffer = TargetBuffer; // shift 8B usb + 24B 802.11
++	/* Copy fragment body */
++	buffer = TargetBuffer; /* shift 8B usb + 24B 802.11 */
+ 	SizeLeft = pDes->buffer_total_size;
+ 	buf_index = pDes->buffer_start_index;
  
-+config LEDS_INPUT
-+	tristate "LED Support using input keyboards"
-+	depends on LEDS_CLASS
-+	select LEDS_TRIGGERS
-+	help
-+	  This option enables support for the LEDs on keyboard managed
-+	  by the input layer.
-+
- config LEDS_ATMEL_PWM
- 	tristate "LED Support using Atmel PWM outputs"
- 	depends on LEDS_CLASS && ATMEL_PWM
-diff -ur linux-2.6.33-orig/drivers/leds/leds-input.c linux-2.6.33-perso/drivers/leds/leds-input.c
---- linux-2.6.33-orig/drivers/leds/leds-input.c	2010-02-21 04:13:41.000000000 +0100
-+++ linux-2.6.33-perso/drivers/leds/leds-input.c	2010-03-10 11:59:12.000000000 +0100
-@@ -0,0 +1,307 @@
-+/*
-+ * LED support for the input layer
-+ *
-+ * Copyright 2010 Samuel Thibault <samuel.thibault@ens-lyon.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/leds.h>
-+#include <linux/input.h>
-+
-+#include "leds.h"
-+
-+/*
-+ * Keyboard LEDs are propagated by default like the following example:
-+ *
-+ * keyboard numlock trigger
-+ * -> input::numl global input LED
-+ * -> input-numl global input trigger
-+ * -> per-device <device>-input::numl LED
-+ *
-+ * Userland can however choose the trigger for the input::numl LED, or
-+ * independently choose the trigger for any input-<device>::numl LED.
-+ */
-+
-+/* Global LED classes and triggers are registered on-demand according to
-+ * existing devices */
-+
-+/* Handler for global input LEDs, just triggers the corresponding global input
-+ * trigger. */
-+static void input_led_set(struct led_classdev *cdev,
-+			  enum led_brightness brightness);
-+static struct led_classdev input_leds[LED_CNT] = {
-+#define DEFINE_INPUT_LED(input_led, nam, deftrig) \
-+	[input_led] = { \
-+		.name = "input::"nam, \
-+		.max_brightness = 1, \
-+		.brightness_set = input_led_set, \
-+		.default_trigger = deftrig, \
-+	}
-+/* Default triggers for the global input LEDs just correspond to the legacy
-+ * usage. */
-+	DEFINE_INPUT_LED(LED_NUML, "numl", "numlock"),
-+	DEFINE_INPUT_LED(LED_CAPSL, "capsl", "capslock"),
-+	DEFINE_INPUT_LED(LED_SCROLLL, "scrolll", "scrollock"),
-+	DEFINE_INPUT_LED(LED_COMPOSE, "compose", NULL),
-+	DEFINE_INPUT_LED(LED_KANA, "kana", "kanalock"),
-+	DEFINE_INPUT_LED(LED_SLEEP, "sleep", NULL),
-+	DEFINE_INPUT_LED(LED_SUSPEND, "suspend", NULL),
-+	DEFINE_INPUT_LED(LED_MUTE, "mute", NULL),
-+	DEFINE_INPUT_LED(LED_MISC, "misc", NULL),
-+	DEFINE_INPUT_LED(LED_MAIL, "mail", NULL),
-+	DEFINE_INPUT_LED(LED_CHARGING, "charging", NULL),
-+};
-+static const char *const input_led_names[LED_CNT] = {
-+	[LED_NUML] = "numl",
-+	[LED_CAPSL] = "capsl",
-+	[LED_SCROLLL] = "scrolll",
-+	[LED_COMPOSE] = "compose",
-+	[LED_KANA] = "kana",
-+	[LED_SLEEP] = "sleep",
-+	[LED_SUSPEND] = "suspend",
-+	[LED_MUTE] = "mute",
-+	[LED_MISC] = "misc",
-+	[LED_MAIL] = "mail",
-+	[LED_CHARGING] = "charging",
-+};
-+/* Handler for hotplug initialization */
-+static void input_led_trigger_activate(struct led_classdev *cdev);
-+/* Global input triggers */
-+static struct led_trigger input_led_triggers[LED_CNT] = {
-+#define DEFINE_INPUT_LED_TRIGGER(input_led, nam) \
-+	[input_led] = { \
-+		.name = "input-"nam, \
-+		.activate = input_led_trigger_activate, \
-+	}
-+	DEFINE_INPUT_LED_TRIGGER(LED_NUML, "numl"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_CAPSL, "capsl"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_SCROLLL, "scrolll"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_COMPOSE, "compose"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_KANA, "kana"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_SLEEP, "sleep"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_SUSPEND, "suspend"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_MUTE, "mute"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_MISC, "misc"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_MAIL, "mail"),
-+	DEFINE_INPUT_LED_TRIGGER(LED_CHARGING, "charging"),
-+};
-+/* Lock for registration coherency */
-+static DEFINE_SPINLOCK(input_led_registered_lock);
-+/* Which global LED classes and triggers are registered */
-+static unsigned long input_led_registered[BITS_TO_LONGS(LED_CNT)];
-+
-+/* Our input handler to catch connect/disconnect */
-+static struct input_handler input_led_handler;
-+
-+/* Global input LED state change, tell the global input trigger.  */
-+static void input_led_set(struct led_classdev *cdev,
-+			  enum led_brightness brightness)
-+{
-+	int led = cdev - input_leds;
-+
-+	led_trigger_event(&input_led_triggers[led], !!brightness);
-+}
-+
-+/* LED state change for some keyboard, notify that keyboard.  */
-+static void perdevice_input_led_set(struct led_classdev *cdev,
-+			  enum led_brightness brightness)
-+{
-+	struct input_handle *handle;
-+	struct led_classdev *leds;
-+	int led;
-+
-+	handle = cdev->dev->platform_data;
-+	if (!handle)
-+		/* Still initializing */
-+		return;
-+	leds = handle->private;
-+	led = cdev - leds;
-+
-+	input_inject_event(handle, EV_LED, led, !!brightness);
-+	input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
-+}
-+
-+/* Keyboard hotplug, initialize its LED status */
-+static void input_led_trigger_activate(struct led_classdev *cdev)
-+{
-+	struct led_trigger *trigger = cdev->trigger;
-+	int led = trigger - input_led_triggers;
-+
-+	if (cdev->brightness_set)
-+		cdev->brightness_set(cdev, input_leds[led].brightness);
-+}
-+
-+/* Free an input handle, used at abortion and disconnection.  */
-+static void input_led_delete_handle(struct input_handle *handle)
-+{
-+	if (handle) {
-+		struct led_classdev *leds = handle->private;
-+		if (leds) {
-+			int i;
-+			for (i = 0; i < LED_CNT; i++)
-+				kfree(leds[i].name);
-+			kfree(leds);
-+		}
-+		kfree(handle);
-+	}
-+}
-+
-+/* A new input device with potential LEDs to connect.  */
-+static int input_led_connect(struct input_handler *handler,
-+			      struct input_dev *dev,
-+			      const struct input_device_id *id)
-+{
-+	struct input_handle *handle;
-+	int i, error = 0;
-+	unsigned long flags;
-+	struct led_classdev *leds;
-+
-+	if (!test_bit(EV_LED, dev->keybit))
-+		return -ENODEV;
-+
-+	handle = kzalloc(sizeof(*handle), GFP_KERNEL);
-+	if (!handle) {
-+		error = -ENOMEM;
-+		goto err;
-+	}
-+
-+	handle->private = leds = kzalloc(sizeof(*leds) * LED_CNT,
-+						GFP_KERNEL);
-+	if (!handle->private) {
-+		error = -ENOMEM;
-+		goto err;
-+	}
-+
-+	handle->dev = dev;
-+	handle->handler = handler;
-+	handle->name = "input leds";
-+
-+	error = input_register_handle(handle);
-+	if (error)
-+		goto err;
-+
-+	/* lazily register missing global input LEDs */
-+	spin_lock_irqsave(&input_led_registered_lock, flags);
-+	for (i = 0; i < LED_CNT; i++)
-+		if (input_leds[i].name
-+				&& !test_bit(i, input_led_registered)
-+				&& test_bit(i, dev->ledbit)) {
-+			led_trigger_register(&input_led_triggers[i]);
-+			/* This keyboard has led i, try to register it */
-+			if (!led_classdev_register(NULL, &input_leds[i]))
-+				set_bit(i, input_led_registered);
-+			else
-+				led_trigger_unregister(&input_led_triggers[i]);
-+		}
-+	spin_unlock_irqrestore(&input_led_registered_lock, flags);
-+
-+	/* and register this device's LEDs */
-+	for (i = 0; i < LED_CNT; i++)
-+		if (input_leds[i].name && test_bit(i, dev->ledbit)) {
-+			leds[i].name = kasprintf(GFP_KERNEL, "%s::%s",
-+						dev_name(&dev->dev),
-+						input_led_names[i]);
-+			if (!leds[i].name) {
-+				error = -ENOMEM;
-+				goto err_handler;
-+			}
-+			leds[i].max_brightness = 1;
-+			leds[i].brightness_set = perdevice_input_led_set;
-+			leds[i].default_trigger = input_led_triggers[i].name;
-+		}
-+
-+	/* No issue so far, we can register for real.  */
-+	for (i = 0; i < LED_CNT; i++)
-+		if (leds[i].name) {
-+			led_classdev_register(&dev->dev, &leds[i]);
-+			leds[i].dev->platform_data = handle;
-+			perdevice_input_led_set(&leds[i],
-+					input_leds[i].brightness);
-+		}
-+
-+	return 0;
-+
-+err_handler:
-+	input_unregister_handler(&input_led_handler);
-+err:
-+	input_led_delete_handle(handle);
-+	return error;
-+}
-+
-+/* Disconnected input device. Clean it, and deregister now-useless global LEDs
-+ * and triggers.  */
-+static void input_led_disconnect(struct input_handle *handle)
-+{
-+	int unregister, i;
-+	unsigned long flags;
-+	struct led_classdev *leds = handle->private;
-+
-+	for (i = 0; i < LED_CNT; i++)
-+		if (leds[i].name)
-+			led_classdev_unregister(&leds[i]);
-+
-+	input_unregister_handle(handle);
-+	input_led_delete_handle(handle);
-+
-+	spin_lock_irqsave(&input_led_registered_lock, flags);
-+	for (i = 0; i < LED_CNT; i++) {
-+		if (!test_bit(i, input_led_registered))
-+			continue;
-+
-+		unregister = 1;
-+		list_for_each_entry(handle, &input_led_handler.h_list, h_node) {
-+			if (test_bit(i, handle->dev->ledbit)) {
-+				unregister = 0;
-+				break;
-+			}
-+		}
-+		if (!unregister)
-+			continue;
-+
-+		led_classdev_unregister(&input_leds[i]);
-+		led_trigger_unregister(&input_led_triggers[i]);
-+		clear_bit(i, input_led_registered);
-+	}
-+	spin_unlock_irqrestore(&input_led_registered_lock, flags);
-+}
-+
-+/* Only handle input devices which have LEDs */
-+static const struct input_device_id input_led_ids[] = {
-+	{
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
-+		.evbit = { BIT_MASK(EV_LED) },
-+	},
-+
-+	{ },	/* Terminating entry */
-+};
-+
-+static struct input_handler input_led_handler = {
-+	.connect	= input_led_connect,
-+	.disconnect	= input_led_disconnect,
-+	.name		= "input leds",
-+	.id_table	= input_led_ids,
-+};
-+
-+static int __init input_led_init(void)
-+{
-+	return input_register_handler(&input_led_handler);
-+}
-+
-+static void __exit input_led_exit(void)
-+{
-+	/* This also disconnects all devices and thus unregisters LEDs and
-+	 * triggers */
-+	input_unregister_handler(&input_led_handler);
-+}
-+
-+module_init(input_led_init);
-+module_exit(input_led_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("User LED support for input layer");
-+MODULE_AUTHOR("Samuel Thibault <samuel.thibault@ens-lyon.org>");
-diff -ur linux-2.6.33-orig/drivers/leds/Makefile linux-2.6.33-perso/drivers/leds/Makefile
---- linux-2.6.33-orig/drivers/leds/Makefile	2010-02-25 01:41:27.000000000 +0100
-+++ linux-2.6.33-perso/drivers/leds/Makefile	2010-02-25 01:45:28.000000000 +0100
-@@ -5,6 +5,7 @@
- obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
+@@ -240,35 +240,35 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+ 		CopySize = SizeLeft;
+ 		if (SizeLeft > pDes->FragmentThreshold) {
+ 			CopySize = pDes->FragmentThreshold;
+-			pT00->T00_frame_length = 24 + CopySize;//Set USB length
++			pT00->T00_frame_length = 24 + CopySize; /* Set USB length */
+ 		} else
+-			pT00->T00_frame_length = 24 + SizeLeft;//Set USB length
++			pT00->T00_frame_length = 24 + SizeLeft; /* Set USB length */
  
- # LED Platform Drivers
-+obj-$(CONFIG_LEDS_INPUT)		+= leds-input.o
- obj-$(CONFIG_LEDS_ATMEL_PWM)		+= leds-atmel-pwm.o
- obj-$(CONFIG_LEDS_BD2802)		+= leds-bd2802.o
- obj-$(CONFIG_LEDS_LOCOMO)		+= leds-locomo.o
+ 		SizeLeft -= CopySize;
+ 
+-		// 1 Byte operation
++		/* 1 Byte operation */
+ 		pctmp = (u8 *)( buffer + 8 + DOT_11_SEQUENCE_OFFSET );
+ 		*pctmp &= 0xf0;
+-		*pctmp |= FragmentCount;//931130.5.m
++		*pctmp |= FragmentCount; /* 931130.5.m */
+ 		if( !FragmentCount )
+ 			pT00->T00_first_mpdu = 1;
+ 
+-		buffer += 32; // 8B usb + 24B 802.11 header
++		buffer += 32; /* 8B usb + 24B 802.11 header */
+ 		Size += 32;
+ 
+-		// Copy into buffer
++		/* Copy into buffer */
+ 		stmp = CopySize + 3;
+-		stmp &= ~0x03;//4n Alignment
+-		Size += stmp;// Current 4n offset of mpdu
++		stmp &= ~0x03; /* 4n Alignment */
++		Size += stmp; /* Current 4n offset of mpdu */
+ 
+ 		while (CopySize) {
+-			// Copy body
++			/* Copy body */
+ 			src_buffer = pDes->buffer_address[buf_index];
+ 			CopyLeft = CopySize;
+ 			if (CopySize >= pDes->buffer_size[buf_index]) {
+ 				CopyLeft = pDes->buffer_size[buf_index];
+ 
+-				// Get the next buffer of descriptor
++				/* Get the next buffer of descriptor */
+ 				buf_index++;
+ 				buf_index %= MAX_DESCRIPTOR_BUFFER_INDEX;
+ 			} else {
+@@ -283,14 +283,14 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+ 			CopySize -= CopyLeft;
+ 		}
+ 
+-		// 931130.5.n
++		/* 931130.5.n */
+ 		if (pMds->MicAdd) {
+ 			if (!SizeLeft) {
+ 				pMds->MicWriteAddress[ pMds->MicWriteIndex ] = buffer - pMds->MicAdd;
+ 				pMds->MicWriteSize[ pMds->MicWriteIndex ] = pMds->MicAdd;
+ 				pMds->MicAdd = 0;
+ 			}
+-			else if( SizeLeft < 8 ) //931130.5.p
++			else if( SizeLeft < 8 ) /* 931130.5.p */
+ 			{
+ 				pMds->MicAdd = SizeLeft;
+ 				pMds->MicWriteAddress[ pMds->MicWriteIndex ] = buffer - ( 8 - SizeLeft );
+@@ -299,10 +299,10 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+ 			}
+ 		}
+ 
+-		// Does it need to generate the new header for next mpdu?
++		/* Does it need to generate the new header for next mpdu? */
+ 		if (SizeLeft) {
+-			buffer = TargetBuffer + Size; // Get the next 4n start address
+-			memcpy( buffer, TargetBuffer, 32 );//Copy 8B USB +24B 802.11
++			buffer = TargetBuffer + Size; /* Get the next 4n start address */
++			memcpy( buffer, TargetBuffer, 32 ); /* Copy 8B USB +24B 802.11 */
+ 			pT00 = (PT00_DESCRIPTOR)buffer;
+ 			pT00->T00_first_mpdu = 0;
+ 		}
+@@ -312,16 +312,16 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+ 
+ 	pT00->T00_last_mpdu = 1;
+ 	pT00->T00_IsLastMpdu = 1;
+-	buffer = (u8 *)pT00 + 8; // +8 for USB hdr
+-	buffer[1] &= ~0x04; // Clear more frag bit of 802.11 frame control
+-	pDes->FragmentCount = FragmentCount; // Update the correct fragment number
++	buffer = (u8 *)pT00 + 8; /* +8 for USB hdr */
++	buffer[1] &= ~0x04; /* Clear more frag bit of 802.11 frame control */
++	pDes->FragmentCount = FragmentCount; /* Update the correct fragment number */
+ 	return Size;
+ }
+ 
+ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor *pDes, u8 *TargetBuffer)
+ {
+ 	struct wb35_mds *pMds = &adapter->Mds;
+-	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
++	u8	*src_buffer = pDes->buffer_address[0]; /* 931130.5.g */
+ 	PT00_DESCRIPTOR	pT00;
+ 	PT01_DESCRIPTOR	pT01;
+ 	u16	stmp;
+@@ -330,44 +330,44 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
+ 
+ 
+ 	stmp = pDes->buffer_total_size;
+-	//
+-	// Set USB header 8 byte
+-	//
++	/*
++	 * Set USB header 8 byte
++	 */
+ 	pT00 = (PT00_DESCRIPTOR)TargetBuffer;
+ 	TargetBuffer += 4;
+ 	pT01 = (PT01_DESCRIPTOR)TargetBuffer;
+ 	TargetBuffer += 4;
+ 
+-	pT00->value = 0;// Clear
+-	pT01->value = 0;// Clear
++	pT00->value = 0; /* Clear */
++	pT01->value = 0; /* Clear */
+ 
+-	pT00->T00_tx_packet_id = pDes->Descriptor_ID;// Set packet ID
+-	pT00->T00_header_length = 24;// Set header length
+-	pT01->T01_retry_abort_ebable = 1;//921013 931130.5.h
++	pT00->T00_tx_packet_id = pDes->Descriptor_ID; /* Set packet ID */
++	pT00->T00_header_length = 24; /* Set header length */
++	pT01->T01_retry_abort_ebable = 1; /* 921013 931130.5.h */
+ 
+-	// Key ID setup
++	/* Key ID setup */
+ 	pT01->T01_wep_id = 0;
+ 
+-	FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;	//Do not fragment
+-	// Copy full data, the 1'st buffer contain all the data 931130.5.j
+-	memcpy( TargetBuffer, src_buffer, DOT_11_MAC_HEADER_SIZE );// Copy header
++	FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;	/* Do not fragment */
++	/* Copy full data, the 1'st buffer contain all the data 931130.5.j */
++	memcpy( TargetBuffer, src_buffer, DOT_11_MAC_HEADER_SIZE ); /* Copy header */
+ 	pDes->buffer_address[0] = src_buffer + DOT_11_MAC_HEADER_SIZE;
+ 	pDes->buffer_total_size -= DOT_11_MAC_HEADER_SIZE;
+ 	pDes->buffer_size[0] = pDes->buffer_total_size;
+ 
+-	// Set fragment threshold
++	/* Set fragment threshold */
+ 	FragmentThreshold -= (DOT_11_MAC_HEADER_SIZE + 4);
+ 	pDes->FragmentThreshold = FragmentThreshold;
+ 
+-	// Set more frag bit
+-	TargetBuffer[1] |= 0x04;// Set more frag bit
++	/* Set more frag bit */
++	TargetBuffer[1] |= 0x04; /* Set more frag bit */
+ 
+-	//
+-	// Set tx rate
+-	//
+-	stmp = *(u16 *)(TargetBuffer+30); // 2n alignment address
++	/*
++	 * Set tx rate
++	 */
++	stmp = *(u16 *)(TargetBuffer+30); /* 2n alignment address */
+ 
+-	//Use basic rate
++	/* Use basic rate */
+ 	ctmp1 = ctmpf = CURRENT_TX_RATE_FOR_MNG;
+ 
+ 	pDes->TxRate = ctmp1;
+@@ -381,10 +381,10 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
+ 		if( i == 1 )
+ 			ctmp1 = ctmpf;
+ 
+-		pMds->TxRate[pDes->Descriptor_ID][i] = ctmp1; // backup the ta rate and fall back rate
++		pMds->TxRate[pDes->Descriptor_ID][i] = ctmp1; /* backup the ta rate and fall back rate */
+ 
+ 		if( ctmp1 == 108) ctmp2 = 7;
+-		else if( ctmp1 == 96 ) ctmp2 = 6; // Rate convert for USB
++		else if( ctmp1 == 96 ) ctmp2 = 6; /* Rate convert for USB */
+ 		else if( ctmp1 == 72 ) ctmp2 = 5;
+ 		else if( ctmp1 == 48 ) ctmp2 = 4;
+ 		else if( ctmp1 == 36 ) ctmp2 = 3;
+@@ -394,7 +394,7 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
+ 		else if( ctmp1 == 22 ) ctmp2 = 3;
+ 		else if( ctmp1 == 11 ) ctmp2 = 2;
+ 		else if( ctmp1 == 4  ) ctmp2 = 1;
+-		else ctmp2 = 0; // if( ctmp1 == 2  ) or default
++		else ctmp2 = 0; /* if( ctmp1 == 2  ) or default */
+ 
+ 		if( i == 0 )
+ 			pT01->T01_transmit_rate = ctmp2;
+@@ -402,14 +402,14 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
+ 			pT01->T01_fall_back_rate = ctmp2;
+ 	}
+ 
+-	//
+-	// Set preamble type
+-	//
+-	if ((pT01->T01_modulation_type == 0) && (pT01->T01_transmit_rate == 0))	// RATE_1M
++	/*
++	 * Set preamble type
++	 */
++	if ((pT01->T01_modulation_type == 0) && (pT01->T01_transmit_rate == 0))	/* RATE_1M */
+ 		pDes->PreambleMode =  WLAN_PREAMBLE_TYPE_LONG;
+ 	else
+ 		pDes->PreambleMode =  CURRENT_PREAMBLE_MODE;
+-	pT01->T01_plcp_header_length = pDes->PreambleMode;	// Set preamble
++	pT01->T01_plcp_header_length = pDes->PreambleMode;	/* Set preamble */
+ 
+ }
+ 
+@@ -431,21 +431,21 @@ Mds_Tx(struct wbsoft_priv * adapter)
+ 	if (!hal_driver_init_OK(pHwData))
+ 		return;
+ 
+-	//Only one thread can be run here
++	/* Only one thread can be run here */
+ 	if (atomic_inc_return(&pMds->TxThreadCount) != 1)
+ 		goto cleanup;
+ 
+-	// Start to fill the data
++	/* Start to fill the data */
+ 	do {
+ 		FillIndex = pMds->TxFillIndex;
+-		if (pMds->TxOwner[FillIndex]) { // Is owned by software 0:Yes 1:No
++		if (pMds->TxOwner[FillIndex]) { /* Is owned by software 0:Yes 1:No */
+ #ifdef _PE_TX_DUMP_
+ 			printk("[Mds_Tx] Tx Owner is H/W.\n");
+ #endif
+ 			break;
+ 		}
+ 
+-		XmitBufAddress = pMds->pTxBuffer + (MAX_USB_TX_BUFFER * FillIndex); //Get buffer
++		XmitBufAddress = pMds->pTxBuffer + (MAX_USB_TX_BUFFER * FillIndex); /* Get buffer */
+ 		XmitBufSize = 0;
+ 		FillCount = 0;
+ 		do {
+@@ -453,37 +453,37 @@ Mds_Tx(struct wbsoft_priv * adapter)
+ 			if (!PacketSize)
+ 				break;
+ 
+-			//For Check the buffer resource
++			/* For Check the buffer resource */
+ 			FragmentThreshold = CURRENT_FRAGMENT_THRESHOLD;
+-			//931130.5.b
++			/* 931130.5.b */
+ 			FragmentCount = PacketSize/FragmentThreshold + 1;
+-			stmp = PacketSize + FragmentCount*32 + 8;//931130.5.c 8:MIC
++			stmp = PacketSize + FragmentCount*32 + 8; /* 931130.5.c 8:MIC */
+ 			if ((XmitBufSize + stmp) >= MAX_USB_TX_BUFFER) {
+ 				printk("[Mds_Tx] Excess max tx buffer.\n");
+-				break; // buffer is not enough
++				break; /* buffer is not enough */
+ 			}
+ 
+ 
+-			//
+-			// Start transmitting
+-			//
++			/*
++			 * Start transmitting
++			 */
+ 			BufferFilled = true;
+ 
+ 			/* Leaves first u8 intact */
+ 			memset((u8 *)pTxDes + 1, 0, sizeof(struct wb35_descriptor) - 1);
+ 
+-			TxDesIndex = pMds->TxDesIndex;//Get the current ID
++			TxDesIndex = pMds->TxDesIndex; /* Get the current ID */
+ 			pTxDes->Descriptor_ID = TxDesIndex;
+-			pMds->TxDesFrom[ TxDesIndex ] = 2;//Storing the information of source comming from
++			pMds->TxDesFrom[ TxDesIndex ] = 2; /* Storing the information of source comming from */
+ 			pMds->TxDesIndex++;
+ 			pMds->TxDesIndex %= MAX_USB_TX_DESCRIPTOR;
+ 
+ 			MLME_GetNextPacket( adapter, pTxDes );
+ 
+-			// Copy header. 8byte USB + 24byte 802.11Hdr. Set TxRate, Preamble type
++			/* Copy header. 8byte USB + 24byte 802.11Hdr. Set TxRate, Preamble type */
+ 			Mds_HeaderCopy( adapter, pTxDes, XmitBufAddress );
+ 
+-			// For speed up Key setting
++			/* For speed up Key setting */
+ 			if (pTxDes->EapFix) {
+ #ifdef _PE_TX_DUMP_
+ 				printk("35: EPA 4th frame detected. Size = %d\n", PacketSize);
+@@ -491,41 +491,41 @@ Mds_Tx(struct wbsoft_priv * adapter)
+ 				pHwData->IsKeyPreSet = 1;
+ 			}
+ 
+-			// Copy (fragment) frame body, and set USB, 802.11 hdr flag
++			/* Copy (fragment) frame body, and set USB, 802.11 hdr flag */
+ 			CurrentSize = Mds_BodyCopy(adapter, pTxDes, XmitBufAddress);
+ 
+-			// Set RTS/CTS and Normal duration field into buffer
++			/* Set RTS/CTS and Normal duration field into buffer */
+ 			Mds_DurationSet(adapter, pTxDes, XmitBufAddress);
+ 
+-			//Shift to the next address
++			/* Shift to the next address */
+ 			XmitBufSize += CurrentSize;
+ 			XmitBufAddress += CurrentSize;
+ 
+ #ifdef _IBSS_BEACON_SEQ_STICK_
+-			if ((XmitBufAddress[ DOT_11_DA_OFFSET+8 ] & 0xfc) != MAC_SUBTYPE_MNGMNT_PROBE_REQUEST) // +8 for USB hdr
++			if ((XmitBufAddress[ DOT_11_DA_OFFSET+8 ] & 0xfc) != MAC_SUBTYPE_MNGMNT_PROBE_REQUEST) /* +8 for USB hdr */
+ #endif
+ 				pMds->TxToggle = true;
+ 
+-			// Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data
++			/* Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data */
+ 			MLME_SendComplete(adapter, 0, true);
+ 
+-			// Software TSC count 20060214
++			/* Software TSC count 20060214 */
+ 			pMds->TxTsc++;
+ 			if (pMds->TxTsc == 0)
+ 				pMds->TxTsc_2++;
+ 
+-			FillCount++; // 20060928
+-		} while (HAL_USB_MODE_BURST(pHwData)); // End of multiple MSDU copy loop. false = single true = multiple sending
++			FillCount++; /* 20060928 */
++		} while (HAL_USB_MODE_BURST(pHwData)); /* End of multiple MSDU copy loop. false = single true = multiple sending  */
+ 
+-		// Move to the next one, if necessary
++		/* Move to the next one, if necessary */
+ 		if (BufferFilled) {
+-			// size setting
++			/* size setting */
+ 			pMds->TxBufferSize[ FillIndex ] = XmitBufSize;
+ 
+-			// 20060928 set Tx count
++			/* 20060928 set Tx count */
+ 			pMds->TxCountInBuffer[FillIndex] = FillCount;
+ 
+-			// Set owner flag
++			/* Set owner flag */
+ 			pMds->TxOwner[FillIndex] = 1;
+ 
+ 			pMds->TxFillIndex++;
+@@ -534,14 +534,14 @@ Mds_Tx(struct wbsoft_priv * adapter)
+ 		} else
+ 			break;
+ 
+-		if (!PacketSize) // No more pk for transmitting
++		if (!PacketSize) /* No more pk for transmitting */
+ 			break;
+ 
+ 	} while(true);
+ 
+-	//
+-	// Start to send by lower module
+-	//
++	/*
++	 * Start to send by lower module
++	 */
+ 	if (!pHwData->IsKeyPreSet)
+ 		Wb35Tx_start(adapter);
+ 
+@@ -558,20 +558,20 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+ 	unsigned char	SendOK = true;
+ 	u8	RetryCount, TxRate;
+ 
+-	if (pT02->T02_IgnoreResult) // Don't care the result
++	if (pT02->T02_IgnoreResult) /* Don't care the result */
+ 		return;
+ 	if (pT02->T02_IsLastMpdu) {
+-		//TODO: DTO -- get the retry count and fragment count
+-		// Tx rate
++		/* TODO: DTO -- get the retry count and fragment count */
++		/* Tx rate */
+ 		TxRate = pMds->TxRate[ PacketId ][ 0 ];
+ 		RetryCount = (u8)pT02->T02_MPDU_Cnt;
+ 		if (pT02->value & FLAG_ERROR_TX_MASK) {
+ 			SendOK = false;
+ 
+ 			if (pT02->T02_transmit_abort || pT02->T02_out_of_MaxTxMSDULiftTime) {
+-				//retry error
++				/* retry error */
+ 				pHwData->dto_tx_retry_count += (RetryCount+1);
+-				//[for tx debug]
++				/* [for tx debug] */
+ 				if (RetryCount<7)
+ 					pHwData->tx_retry_count[RetryCount] += RetryCount;
+ 				else
+@@ -583,7 +583,7 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+ 			}
+ 			pHwData->dto_tx_frag_count += (RetryCount+1);
+ 
+-			//[for tx debug]
++			/* [for tx debug] */
+ 			if (pT02->T02_transmit_abort_due_to_TBTT)
+ 				pHwData->tx_TBTT_start_count++;
+ 			if (pT02->T02_transmit_without_encryption_due_to_wep_on_false)
+@@ -596,7 +596,7 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+ 			MTO_SetTxCount(adapter, TxRate, RetryCount);
+ 		}
+ 
+-		// Clear send result buffer
++		/* Clear send result buffer */
+ 		pMds->TxResult[ PacketId ] = 0;
+ 	} else
+ 		pMds->TxResult[ PacketId ] |= ((u16)(pT02->value & 0x0ffff));
+-- 
+1.7.0
+
