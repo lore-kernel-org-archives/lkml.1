@@ -1,110 +1,160 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258Ab0CJERH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 23:17:07 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:35095 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756244Ab0CJERE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 23:17:04 -0500
-Date: Tue, 9 Mar 2010 23:16:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, Chris Friesen <cfriesen@nortel.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100310041658.GA11667@Krystal>
-References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu> <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain> <20100304202304.GA13718@elte.hu> <alpine.LFD.2.00.1003061135160.31447@localhost.localdomain> <20100309065957.GY8653@laptop>
+	id S1756251Ab0CJE1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 23:27:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46756 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756202Ab0CJE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 23:26:56 -0500
+Message-ID: <4B971F83.4030505@kernel.org>
+Date: Wed, 10 Mar 2010 13:26:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100309065957.GY8653@laptop>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 21:42:28 up 46 days,  5:19,  4 users,  load average: 1.72, 1.31,
-	1.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Garzik <jeff@garzik.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata updates for 2.6.34
+References: <20100301202330.GA14977@havoc.gtf.org> <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org> <4B96C7B2.3080008@garzik.org>
+In-Reply-To: <4B96C7B2.3080008@garzik.org>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 04:26:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (npiggin@suse.de) wrote:
-[...]
-> The library is librcu, which I suspect will become quite important for
-> parallel programming in future (maybe I hope for too much).
+Hello, Linus, Jeff.
+
+On 03/10/2010 07:12 AM, Jeff Garzik wrote:
+> Coincedentally, it looks like someone else just reported the same
+> problem, with 2.6.34-rc1.
 > 
-> But maybe it's better to not merge _any_ librcu special case until
-> we see results from programs using it. More general speedups or features
-> (that also help librcu) is a different story.
+> It definitely sounds like a race.  READ DMA is a DMA command as the name
+> implies, so that eliminates the possibility of polling-related paths in
+> ata_sff_interrupt (libata-sff.c).
 > 
+> I'll flip some of my machines to the icky slow boring piix mode, rather
+> than sexy AHCI mode :) to see if I can reproduce.  I have had a feeling
+> that we needed a more sophisticated IRQ handling setup, this may be what
+> was needed.  Lost interrupt recovery should occur faster than 30 seconds
+> in any case, and should not require a hard reset if the hardware
+> functions just fine outside of the lost-interrupt / race that just
+> occurred.
 
-Hi Nick,
+Yeap, there is a race condition with clearing which I don't think we
+can solve completely but with some modification I think we can at
+least cover known failure cases.
 
-So, about the current state of liburcu and its users:
+For longer term, I don't think we can solve this by diddling with the
+SFF registers.  The interface is just way too ancient and horrid to
+build anything reliable on top of.  I'm planning on implementing
+smarter IRQ storm handling and stepped timeouts for ATA commands.
 
-It is currently packaged in Debian, Ubuntu, Gentoo, and it is also being
-packaged for Fedora. It is already being used by a few programs/libraries, and
-given it's wide availability, we can expect more in a near future.
+Linus, can you please test whether the following patch resolves the
+problem?
 
-The first user of this library is the UST (Userspace Tracing) library; a port of
-LTTng to a userspace.
+Thanks.
 
-  http://lttng.org/ust
-
-Modulo a few changes to port it to userspace, the kernel and user-space LTTng
-should be expected to have similar performance, because they use essentially the
-same lockless buffering scheme, described in chapter 5 of my thesis:
-
-http://www.lttng.org/pub/thesis/desnoyers-dissertation-2009-12.pdf
-
-Here is the impact of two additional memory barriers on the LTTng tracer fast
-path:
-
-Intel Core Xeon 2.0 GHz
-LTTng probe writing 16-byte worth of data to the trace (+4 byte event header)
-(execution of 200000 loops, therefore trace buffers are cache-hot)
-
-119 ns per event
-
-adding 2 memory barriers, one before and one after the tracepoint:
-
-155 ns per event
-
-So we have a 25% slowdown on the tracer fast path, which is quite significant
-when it comes to trace heavy workloads. The slowdown ratio may change slightly
-for non cache-hot scenarios, but I expect it to stay in the same range. Section
-8.4 of my thesis discusses the overhead of cache-cold buffers (around 333 ns per
-event rather than 119 ns). I expect the cost of the memory barriers to increase
-too in a cache-cold scenario.
-
-If you want to have an insight on the class of applications that can be improved
-with the userspace RCU library, you can have a look at Section 6.3 "User-Space
-RCU Usage Scenarios" of my dissertation.
-
-If you still wonder "who is using/contributing to LTTng ?", see section 9.2 of
-my thesis. Or here is a quick list, taken from our website:
-
-Google, IBM, Ericsson, Autodesk, Wind River, Fujitsu, Monta Vista, ST
-Microelectronics, C2 Microsystems, Sony, Siemens, Nokia, Defence Research and
-Development Canada.
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 02441fd..5de4cf3 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1667,6 +1667,7 @@ unsigned int ata_sff_host_intr(struct ata_port *ap,
+ {
+ 	struct ata_eh_info *ehi = &ap->link.eh_info;
+ 	u8 status, host_stat = 0;
++	bool bmdma_stopped = false;
+ 
+ 	VPRINTK("ata%u: protocol %d task_state %d\n",
+ 		ap->print_id, qc->tf.protocol, ap->hsm_task_state);
+@@ -1699,6 +1700,7 @@ unsigned int ata_sff_host_intr(struct ata_port *ap,
+ 
+ 			/* before we do anything else, clear DMA-Start bit */
+ 			ap->ops->bmdma_stop(qc);
++			bmdma_stopped = true;
+ 
+ 			if (unlikely(host_stat & ATA_DMA_ERR)) {
+ 				/* error when transfering data to/from memory */
+@@ -1716,8 +1718,14 @@ unsigned int ata_sff_host_intr(struct ata_port *ap,
+ 
+ 	/* check main status, clearing INTRQ if needed */
+ 	status = ata_sff_irq_status(ap);
+-	if (status & ATA_BUSY)
+-		goto idle_irq;
++	if (status & ATA_BUSY) {
++		if (bmdma_stopped) {
++			/* BMDMA engine is already stopped, we're screwed */
++			qc->err_mask |= AC_ERR_HSM;
++			ap->hsm_task_state = HSM_ST_ERR;
++		} else
++			goto idle_irq;
++	}
+ 
+ 	/* ack bmdma irq events */
+ 	ap->ops->sff_irq_clear(ap);
+@@ -1762,13 +1770,15 @@ EXPORT_SYMBOL_GPL(ata_sff_host_intr);
+ irqreturn_t ata_sff_interrupt(int irq, void *dev_instance)
+ {
+ 	struct ata_host *host = dev_instance;
++	bool retried = false;
+ 	unsigned int i;
+-	unsigned int handled = 0, polling = 0;
++	unsigned int handled, idle, polling;
+ 	unsigned long flags;
+ 
+ 	/* TODO: make _irqsave conditional on x86 PCI IDE legacy mode */
+ 	spin_lock_irqsave(&host->lock, flags);
+-
++retry:
++	handled = idle = polling = 0;
+ 	for (i = 0; i < host->n_ports; i++) {
+ 		struct ata_port *ap = host->ports[i];
+ 		struct ata_queued_cmd *qc;
+@@ -1782,7 +1792,8 @@ irqreturn_t ata_sff_interrupt(int irq, void *dev_instance)
+ 				handled |= ata_sff_host_intr(ap, qc);
+ 			else
+ 				polling |= 1 << i;
+-		}
++		} else
++			idle |= 1 << i;
+ 	}
+ 
+ 	/*
+@@ -1790,7 +1801,9 @@ irqreturn_t ata_sff_interrupt(int irq, void *dev_instance)
+ 	 * asserting IRQ line, nobody cared will ensue.  Check IRQ
+ 	 * pending status if available and clear spurious IRQ.
+ 	 */
+-	if (!handled) {
++	if (!handled && !retried) {
++		bool retry = false;
++
+ 		for (i = 0; i < host->n_ports; i++) {
+ 			struct ata_port *ap = host->ports[i];
+ 
+@@ -1805,8 +1818,22 @@ irqreturn_t ata_sff_interrupt(int irq, void *dev_instance)
+ 				ata_port_printk(ap, KERN_INFO,
+ 						"clearing spurious IRQ\n");
+ 
+-			ap->ops->sff_check_status(ap);
+-			ap->ops->sff_irq_clear(ap);
++			if (idle & (1 << i)) {
++				ap->ops->sff_check_status(ap);
++				ap->ops->sff_irq_clear(ap);
++			} else {
++				/* clear INTRQ and check if BUSY cleared */
++				if (!(ap->ops->sff_check_status(ap) & ATA_BUSY))
++					retry |= true;
++				/*
++				 * With command in flight, we can't do
++				 * sff_irq_clear() w/o racing with completion.
++				 */
++			}
++		}
++		if (retry) {
++			retried = true;
++			goto retry;
+ 		}
+ 	}
