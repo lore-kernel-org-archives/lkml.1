@@ -1,93 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843Ab0CJO2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:28:20 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:36299 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763Ab0CJO2R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:28:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=xtER4DwrGAJZ4T8Fq1FmCSpgdX7gka2goZ2FBhj2m8mlrMyX6R9umLDMjtjClm3TLb
-         fqXjBnH6q9LH/GhCKQMEXgkyfRaAk2DewS2QaYJuXja/u4GLzzlh8qYSCCQrmh01Q1RE
-         dj/RR7yKCvr+lBCtv4+KrGVPsHsNs6ceJ+taQ=
-Date: Wed, 10 Mar 2010 17:27:59 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: smatch_scripts/whitespace_only.sh
-Message-ID: <20100310142759.GG6321@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Julia Lawall <julia@diku.dk>, linux-kernel@vger.kernel.org,
-	gregkh@suse.de, kernel-janitors@vger.kernel.org,
-	devel@driverdev.osuosl.org
-References: <20100310101224.GC6321@bicker> <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk>
+	id S1756324Ab0CJO2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:28:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40643 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755938Ab0CJO2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 09:28:41 -0500
+Date: Wed, 10 Mar 2010 15:28:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [GIT PULL] perf updates
+Message-ID: <20100310142826.GA7848@elte.hu>
+References: <1267826147-6613-1-git-send-regression-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1267826147-6613-1-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 11:14:53AM +0100, Julia Lawall wrote:
-> On Wed, 10 Mar 2010, Dan Carpenter wrote:
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Ingo,
 > 
-> > I wrote a script to check that a patch only changes white space.
-> > It compiles the files before and after the patch is applied and 
-> > verifies that they are the same.
-> > 
-> > You'll need to compile smatch:
-> > 	git pull git://repo.or.cz/smatch.git
-> > 	make
-> > 	cd /path/to/kernel/src/
-> > 	/path/to/smatch_scripts/whitespace_only.sh <patch>
-> > 
-> > Adding or removing parenthesis and curly braces counts as a code 
-> > change.  Changes to comments, #if 0, white space changes do not.
-> > 
-> > You can fix a lot of style violations if you limit yourself to 
-> > adding and removing tabs, spaces and new lines.  Then the next 
-> > patch could remove unneeded parenthesis.  It would be easier to
-> > audit that way instead of everything mixed together.
-> > 
-> > regards,
-> > dan carpenter
-> > 
-> > PS.  I feel really bad slagging the newbies trying to help.  
-> > Could we fix checkpatch.pl to not complain about line lengths?
+> Please pull the perf/core branch that can be found at:
 > 
-> I hope not...  Are newbies really put off by having to add a newline here 
-> and there?
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	perf/core
 > 
-> julia
+> - Lock events seem to be usable now with perf
+> - Better performances in x86-64 stacktraces
+> - Trace events now have correct callchains
+> - Cleanups
 > 
+> 
+> Other patches still in discussion are not in the branch.
+> 
+> Thanks,
+> 	Frederic
+> ---
+> 
+> Frederic Weisbecker (5):
+>       lockdep: Move lock events under lockdep recursion protection
+>       perf/x86-64: Use frame pointer to walk on irq and process stacks
+>       perf: Introduce new perf_fetch_caller_regs() for hot regs snapshot
+>       perf: Take a hot regs snapshot for trace events
+>       perf: Drop the obsolete profile naming for trace events
+> 
+> 
+>  arch/x86/kernel/cpu/perf_event.c   |   12 +++
+>  arch/x86/kernel/dumpstack.h        |   15 +++
+>  arch/x86/kernel/dumpstack_64.c     |    4 +-
+>  include/linux/ftrace_event.h       |   23 +++--
+>  include/linux/perf_event.h         |   42 +++++++++-
+>  include/linux/syscalls.h           |   24 +++---
+>  include/trace/ftrace.h             |   44 +++++-----
+>  include/trace/syscall.h            |    8 +-
+>  kernel/lockdep.c                   |    9 +--
+>  kernel/perf_event.c                |   18 ++--
+>  kernel/trace/Makefile              |    2 +-
+>  kernel/trace/trace_event_perf.c    |  165 ++++++++++++++++++++++++++++++++++++
+>  kernel/trace/trace_event_profile.c |  164 -----------------------------------
+>  kernel/trace/trace_events.c        |    2 +-
+>  kernel/trace/trace_kprobe.c        |   29 +++---
+>  kernel/trace/trace_syscalls.c      |   72 ++++++++--------
+>  16 files changed, 353 insertions(+), 280 deletions(-)
 
-The problem is that newbies are only too happy to chop lines up into smaller 
-and smaller bits.  :P  I've seen situations where the actual author of the code
-broke up _his own_ perfectly reasonable code into tiny chunks just to satisfy 
-checkpatch.pl.
+Pulled, thanks a lot Frederic!
 
-				printk("blah blah blah blah"
-						"blah blah"
-						"blah");
-
-It would be great if people dealt with checkpatch warnings by breaking
-things out into separate functions and eliminating indent levels but 
-that never happens.
-
-regards,
-dan carpenter
-
-ps: Emacs starts with an 80 character window by default.  On my login
-I have a ~/bin/emacs shell script that invoke real emacs as full screen.
-
-#!/bin/sh
-/usr/bin/emacs -fh -fw --no-splash $@
-
+	Ingo
