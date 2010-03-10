@@ -1,52 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755788Ab0CJAeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 19:34:21 -0500
-Received: from mail.perches.com ([173.55.12.10]:1577 "EHLO mail.perches.com"
+	id S1756068Ab0CJAe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 19:34:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50963 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755340Ab0CJAeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 19:34:19 -0500
-Subject: Re: Tuxradar patching article and [PATCH]
- scripts/cvt_kernel_style.pl
-From: Joe Perches <joe@perches.com>
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, devel <devel@driverdev.osuosl.org>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20100310001638.GA10960@suse.de>
-References: <1268177526.1545.62.camel@Joe-Laptop.home>
-	 <20100309234152.GA30270@suse.de> <1268179619.1545.95.camel@Joe-Laptop.home>
-	 <20100310001638.GA10960@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 16:34:17 -0800
-Message-ID: <1268181257.1545.107.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+	id S1755790Ab0CJAeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 19:34:21 -0500
+Message-ID: <4B96E884.6050305@zytor.com>
+Date: Tue, 09 Mar 2010 16:32:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Greg Freemyer <greg.freemyer@gmail.com>
+CC: James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de, mkp@mkp.net
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org>	 <1268031640.4389.11.camel@mulgrave.site> <4B94ACE8.4060400@zytor.com> <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com>
+In-Reply-To: <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 15:41 -0800, Greg KH wrote:
-> I _really_ dislike automatic source conversions by a tool and do not
-> recommend doing that at all.
- 
-On Tue, 2010-03-09 at 16:16 -0800, Greg KH wrote:
-> > You take automatic conversions from tools like coccinelle all
-> > the time.
-> Those are sane, as they are tiny and obvious :)
+On 03/09/2010 02:46 PM, Greg Freemyer wrote:
+> <snip>
+>>
+>> As far as partitioning... I believe we should be using GPT partition tables
+>> where possible.  Even on non-EFI systems, it's simply a much better
+>> partition table format.
+>>
+>>         -hpa
+>
+> GPT can not be used for boot disks in non-EFI systems, right?
+>
 
-You contradict yourself.
+It can.  The BIOS doesn't care about the partition table at all -- all 
+it does is load the MBR.
 
-> It's the huge "reformat the whole file with indent" type stuff
-> that I object to.
-
-Which is sensible and not what you lead with.
-
-Any conversion done an automatic tool should be limited to
-a specific type of change and should not be done wholesale.
-
-Scripts like what I posted are easy to limit to specific
-types of conversion.  Tools like Lindent are not.
-
-cheers, Joe
-
+	-hpa
