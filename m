@@ -1,93 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206Ab0CJVEu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:04:50 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:60569 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757088Ab0CJVEs (ORCPT
+	id S932184Ab0CJVGh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:06:37 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:49338 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757130Ab0CJVGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 16:04:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p/vcuj4DBn41vZtzelvcPWj+Zjs0wbIkz4nsqMN5p0WCBjhFEvD/s5bqqmgxdVXwcM
-         7sFY1pKc38I6WfL/Ov/B6B+9TU43njyIF9zSRZwvBtPpwAxShOtQFbqQULDBl2GBsdMl
-         hVYGYqtdfgFVPgqnW13OVHmpORMJBEgagIiIo=
-Date: Wed, 10 Mar 2010 22:04:42 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH] perf: Store relevant events in a hlist
-Message-ID: <20100310210440.GB9737@nowhere>
-References: <1267772426-5944-1-git-send-regression-fweisbec@gmail.com> <1267772426-5944-2-git-send-regression-fweisbec@gmail.com> <1267781969.16716.55.camel@laptop> <20100308183545.GA5038@nowhere> <1268249692.5279.138.camel@twins> <20100310203338.GA9737@nowhere> <1268254000.5279.167.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268254000.5279.167.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Mar 2010 16:06:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:to:cc:subject:date:message-id:x-mailer;
+	b=KcqPGBqIESEEiTWzmJMqc78EE0f0CRd3KVTnEeiwe2ZlyY0SLw5R07gU57JGAWmfQ
+	sGg+e0T1//SyK0CrhB1fQ==
+From: Greg Thelen <gthelen@google.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Greg Thelen <gthelen@google.com>
+Subject: [PATCH] mm: fix typo in refill_stock() comment
+Date: Wed, 10 Mar 2010 13:05:17 -0800
+Message-Id: <1268255117-3280-1-git-send-email-gthelen@google.com>
+X-Mailer: git-send-email 1.7.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 09:46:40PM +0100, Peter Zijlstra wrote:
-> On Wed, 2010-03-10 at 21:33 +0100, Frederic Weisbecker wrote:
-> > On Wed, Mar 10, 2010 at 08:34:52PM +0100, Peter Zijlstra wrote:
-> > > I'm not quite sure why you need the node thing, you already have a
-> > > hash-bucket to iterate, simply stick all events into the one bucket and
-> > > walk through it with a filter and process all events that match.
-> > 
-> > 
-> > This inter level of indirection was one of my heaviest hesitations.
-> > In case we have a hash collision, I just wanted to ensure we keep
-> > an amortized O(n) in any case, that at the cost of this level of
-> > indirection. Plus that removed the config:id check in every events,
-> > as the check is made only once.
-> > 
-> > That said I guess we can indeed remove that and have the events
-> > directly in the hash bucket. Assuming we deal well to avoid
-> > collisions, it should be fine.
-> 
-> Right, lets start simple and go from there.
+Change refill_stock() comment: s/consumt_stock()/consume_stock()/
 
+Signed-off-by: Greg Thelen <gthelen@google.com>
+---
+ mm/memcontrol.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Agreed.
-
-
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index d813823..0576de1 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1330,7 +1330,7 @@ static void drain_local_stock(struct work_struct *dummy)
  
-> > > As to all those for_each_online_cpu() thingies, it might make sense to
-> > > also have a global hash-table for events active on all cpus,... hmm was
-> > > that the reason for the node thing, one event cannot be in multiple
-> > > buckets?
-> > 
-> > 
-> > There are several reasons I've made it per cpu.
-> > Assuming we have a global hash table for wide events, it means we'll
-> > have some cache dance each time an event is disabled/enabled (which
-> > is quite often as wide events are per task, even worst if the initial task
-> > has numerous threads that have this event duplicated). Also, as wide
-> > events mean per task, the event will always be active in one cpu at
-> > a time, it would be wasteful to check it on other cpus.
-> 
-> Thing is, most events generated by perf are per cpu, even the per task
-> ones, if they are machine wide the hash table bounces aren't the biggest
-> problem.
-
-
-Indeed. But it also means a global hlist is going to be wasteful as
-we would double walk for each per task events.
-
-It is also uninteresting if people use wide per task event for the
-bouncing problems we talked about.
-
-Plus I guess we don't want to maintain a per cpu hlist and a global
-one.
-
-I understand you worries about complexity but this is a true win in
-any case.
-
-Thanks.
+ /*
+  * Cache charges(val) which is from res_counter, to local per_cpu area.
+- * This will be consumed by consumt_stock() function, later.
++ * This will be consumed by consume_stock() function, later.
+  */
+ static void refill_stock(struct mem_cgroup *mem, int val)
+ {
+-- 
+1.7.0.1
 
