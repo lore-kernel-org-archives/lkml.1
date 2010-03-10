@@ -1,63 +1,258 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867Ab0CJQgf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 11:36:35 -0500
-Received: from www.tglx.de ([62.245.132.106]:49609 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932456Ab0CJQgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 11:36:33 -0500
-Date: Wed, 10 Mar 2010 17:36:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Viresh KUMAR <viresh.kumar@st.com>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
-Subject: Re: [PATCH 04/11] ST SPEAr: Added basic header files for SPEAr
- platform
-In-Reply-To: <20100310141645.GB22729@linux-sh.org>
-Message-ID: <alpine.LFD.2.00.1003101732010.22855@localhost.localdomain>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com> <1267592861-26911-2-git-send-email-viresh.kumar@st.com> <1267592861-26911-3-git-send-email-viresh.kumar@st.com> <1267592861-26911-4-git-send-email-viresh.kumar@st.com>
- <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com> <4B973CF6.4030009@st.com> <63386a3d1003100131v7027e44cu5031c9ee3bf6ec73@mail.gmail.com> <4B977067.3050108@st.com>
- <20100310141645.GB22729@linux-sh.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756880Ab0CJQkp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 11:40:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41640
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756853Ab0CJQko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 11:40:44 -0500
+Date: Wed, 10 Mar 2010 08:41:04 -0800 (PST)
+Message-Id: <20100310.084104.201710892.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: netdev@vger.kernel.org, grundler@parisc-linux.org, kyle@mcmartin.ca,
+       linux-kernel@vger.kernel.org, joe@perches.com
+Subject: Re: [BUG 2.6.34-rc1] bogus "(null)" in tulip init messages
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <19351.48072.777754.465084@pilspetsen.it.uu.se>
+References: <19351.48072.777754.465084@pilspetsen.it.uu.se>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Paul Mundt wrote:
-> On Wed, Mar 10, 2010 at 03:41:51PM +0530, Viresh KUMAR wrote:
-> > As you may have seen in spear.h files in mach folders, we have multiple hardware
-> > timers in our design (3 in spear3xx, 4 in spear6xx and each timer have two
-> > independent channels. That doubles the timers count, so it is 6 and 8).
-> > One timer (or two channels) are used by clock event and clock source, but rest of
-> > the timers are still available. So we need some way to export this functionality
-> > of our hardware. It can be considered simply as a driver for GPT.
-> > 
-> > What do you say?
-> > 
-> This is hardly a unique situation for your platform, this is true for
-> most platforms. There's no reason why clockevents couldn't just be
-> extended and drivers could then just grab unused clockevents and pin them
-> accordingly. Most of the infrastructure is already in place for something
-> like that, without really having to do anything special.
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Wed, 10 Mar 2010 16:33:28 +0100
+
+> Booting 2.6.34-rc1 on a machine with a tulip nic I see
+> a number of kernel messages that include "(null)" where
+> previous kernels included the string "tulip0":
+
+CC:'ing the guilty party :-)  It's one of the following
+commits:
+
+commit 44298ec0f20c45b9be96e181976aef1152d373b2
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:29 2010 +0000
+
+    tulip/xircom_cb.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+    Remove DRV_NAME and xircom_cb from pr_<level>
+    Convert embedded function names in logging messages to %s, __func__
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit a1e37bc5e2d0ff8d025221e27c2bfff762072311
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:28 2010 +0000
+
+    tulip/winbond-840.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    Convert %d.%d.%d.%d to %pI4
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit e02fb7aa0714ca9357571bb15ef0fe278a150cc7
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:27 2010 +0000
+
+    tulip/uli526x.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+    Remove DRV_NAME from logging messages
+    Add do {} while(0) to ULI526X_DBUG macro
+    Make SHOW_MEDIA_TYPE macro more readable
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 27146c43c4dbb727c4a211541af46577de2984af
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:26 2010 +0000
+
+    tulip/timer.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 22086a1172b69b9f6200e169dc99a252a204affb
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:25 2010 +0000
+
+    tulip/pnic2.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 1df8bbd1420705277cd382b1386cda724d61a678
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:24 2010 +0000
+
+    tulip/pnic.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit fa0b9a4c41490d550ebd3bd418f4551c989fec5d
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:23 2010 +0000
+
+    tulip/media.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit abe02af8263ae17e201994a1be7fc5eac6642acf
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:22 2010 +0000
+
+    tulip/interrupt.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit e9cd1cbcda5e21706b03b543b1b73600b07f323f
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:21 2010 +0000
+
+    tulip/eeprom.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit dde7c8ef167996689bc464eb65d2b09ef05263c2
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:20 2010 +0000
+
+    tulip/dmfe.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+    Remove 'DRV_NAME ": ' from logging messages
+    Convert commented out printks to pr_debug
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit f639dc7dadcbd97f1d666d5ffe00eab1ea3c0f6d
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:19 2010 +0000
+
+    tulip/de2104x.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 985a63ed3faf0faaba840d806f5ca4d360d13ad3
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:18 2010 +0000
+
+    tulip/21142.c: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where a dev is available
+    Convert printks to pr_<level> where not
+    Coalesce format strings
+    Change print formats with %d.dx to %0dx
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit d60bec4eb7076acfc940cca3f9f219e7653a1466
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Jan 28 20:59:17 2010 +0000
+
+    tulip_core: Use dev_<level> and pr_<level>
+    
+    Convert printks to dev_<level> where appropriate
+    Convert printks to pr_<level>
+    Change print formats with %d.dx to %0dx
+    Coalesce long formats
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+
+> --- dmesg-2.6.33	2010-02-26 12:58:32.000000000 +0100
+> +++ dmesg-2.6.34-rc1	2010-03-10 16:17:06.000000000 +0100
+> ...
+>  Linux Tulip driver version 1.1.15 (Feb 27, 2007)
+>  tulip 0000:00:0f.0: enabling device (0014 -> 0017)
+> -tulip0:  EEPROM default media type Autosense.
+> -tulip0:  Index #0 - Media 10baseT (#0) described by a 21142 Serial PHY (2) block.
+> -tulip0:  Index #1 - Media 10baseT-FDX (#4) described by a 21142 Serial PHY (2) block.
+> -tulip0:  Index #2 - Media 100baseTx (#3) described by a 21143 SYM PHY (4) block.
+> -tulip0:  Index #3 - Media 100baseTx-FDX (#5) described by a 21143 SYM PHY (4) block.
+> -tulip0:  Index #4 - Media 100baseTx (#3) described by a 21143 reset method (5) block.
+> -eth0: Digital DS21142/43 Tulip rev 48 at Port 0x800, 00:00:c5:50:f9:51, IRQ 25.
+> + (null): EEPROM default media type Autosense
+> + (null): Index #0 - Media 10baseT (#0) described by a 21142 Serial PHY (2) block
+> + (null): Index #1 - Media 10baseT-FDX (#4) described by a 21142 Serial PHY (2) block
+> + (null): Index #2 - Media 100baseTx (#3) described by a 21143 SYM PHY (4) block
+> + (null): Index #3 - Media 100baseTx-FDX (#5) described by a 21143 SYM PHY (4) block
+> + (null): Index #4 - Media 100baseTx (#3) described by a 21143 reset method (5) block
+> +net eth0: Digital DS21142/43 Tulip rev 48 at Port 0x800, 00:00:c5:50:f9:51, IRQ 25
 > 
-> Having said that, most drivers have pretty lame reasons for trying to get
-> at fixed timer channels, and most of the time they can easily get by with
-> an hrtimer instead. There's also the issue that you're effectively
-> bypassing nohz by having some timer channel off on the side doing who
-> knows what. You would need a pretty compelling reason for why you are
-> sidestepping all of the existing infrastructure anyways.
-
-Right, and that's exactly the reason why we did not add the few
-missing bits to make clock events directly usable from drivers.
-
-Thanks,
-
-	tglx
-
-
+> Apart from this the tulip driver seems to work in 2.6.34-rc1.
+> 
+> /Mikael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
