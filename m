@@ -1,99 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123Ab0CJLiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:38:55 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:53982 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755842Ab0CJLiy (ORCPT
+	id S932185Ab0CJLkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:40:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55403 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755842Ab0CJLki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:38:54 -0500
-Date: Wed, 10 Mar 2010 06:37:11 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: trivial@kernel.org
-Subject: [PATCH] Documentation:  Update "struct bus_type" definition.
-Message-ID: <alpine.LFD.2.00.1003100634400.5419@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 10 Mar 2010 06:40:38 -0500
+Date: Wed, 10 Mar 2010 06:40:35 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: James Morris <jmorris@namei.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
+       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
+       a.gruenbacher@computer.org
+Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted'
+	xattrs
+Message-ID: <20100310114035.GA32219@infradead.org>
+References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 02, 2010 at 07:01:05PM +1100, James Morris wrote:
+> I audited the kernel for users of the trusted xattr namespace, and found 
+> the following filesystems not checking for CAP_SYS_ADMIN:
+> 
+>   - jffs2
+>   - ocfs2
+>   - btrfs
+>   - xfs
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Now that everyone felt the consensus is that we need the check I look
+into adding it into XFS, but it seems like we already have that check
+in xfs_xattr_put_listent:
 
----
+	/*
+         * Only show root namespace entries if we are actually allowed to
+	 * see them.
+	 */
+	if ((flags & XFS_ATTR_ROOT) && !capable(CAP_SYS_ADMIN))
+		return 0;
 
-  not sure if the rest of this doc file needs updating as well but, at
-the very least, the defintion of "struct bus_type" should be updated
-to no longer refer to kset-related content or the obsolete "struct
-subsystem."
+Can you send me the testcases where XFs shows trusted attributes?
 
-diff --git a/Documentation/driver-model/bus.txt b/Documentation/driver-model/bus.txt
-index 5001b75..32650be 100644
---- a/Documentation/driver-model/bus.txt
-+++ b/Documentation/driver-model/bus.txt
-@@ -5,24 +5,27 @@ Definition
- ~~~~~~~~~~
-
- struct bus_type {
--	char			* name;
-+        const char              *name;
-+        struct bus_attribute    *bus_attrs;
-+        struct device_attribute *dev_attrs;
-+        struct driver_attribute *drv_attrs;
-
--	struct subsystem	subsys;
--	struct kset		drivers;
--	struct kset		devices;
-+        int (*match)(struct device *dev, struct device_driver *drv);
-+        int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
-+        int (*probe)(struct device *dev);
-+        int (*remove)(struct device *dev);
-+        void (*shutdown)(struct device *dev);
-
--	struct bus_attribute	* bus_attrs;
--	struct device_attribute	* dev_attrs;
--	struct driver_attribute	* drv_attrs;
-+        int (*suspend)(struct device *dev, pm_message_t state);
-+        int (*resume)(struct device *dev);
-
--	int		(*match)(struct device * dev, struct device_driver * drv);
--	int		(*hotplug) (struct device *dev, char **envp,
--				    int num_envp, char *buffer, int buffer_size);
--	int		(*suspend)(struct device * dev, pm_message_t state);
--	int		(*resume)(struct device * dev);
-+        const struct dev_pm_ops *pm;
-+
-+        struct bus_type_private *p;
- };
-
--int bus_register(struct bus_type * bus);
-+extern int __must_check bus_register(struct bus_type *bus);
-+extern void bus_unregister(struct bus_type *bus);
-
-
- Declaration
-
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
