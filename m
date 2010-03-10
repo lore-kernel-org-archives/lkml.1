@@ -1,56 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560Ab0CJRiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:38:17 -0500
-Received: from ml.kn.E-Technik.Uni-Dortmund.DE ([129.217.186.234]:39488 "HELO
-	ml.kn.e-technik.uni-dortmund.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932490Ab0CJRiP (ORCPT
+	id S932580Ab0CJRik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:38:40 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:38422 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932566Ab0CJRih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:38:15 -0500
-X-Greylist: delayed 2441 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 12:38:15 EST
-From: Thomas Klute <thomas2.klute@uni-dortmund.de>
-To: gregkh@suse.de
-Cc: sjakub@gmail.com, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Thomas Klute <thomas2.klute@uni-dortmund.de>
-Subject: [PATCH] asus_oled: whitespace cleanup
-Date: Wed, 10 Mar 2010 17:57:23 +0100
-Message-Id: <1268240243-14519-1-git-send-email-thomas2.klute@uni-dortmund.de>
-X-Mailer: git-send-email 1.6.4.4
+	Wed, 10 Mar 2010 12:38:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=ULtE1KfqeO2IC52CTI/dImLFR7+ZemX48wW4IUzKfOJCg3HPmJezpk11FABlALpeM
+	Y0t9HAX940HKP6O5A5sWg==
+MIME-Version: 1.0
+In-Reply-To: <20100310153032.GB10738@redhat.com>
+References: <4B8F27BD.2020704@cn.fujitsu.com>
+	 <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com>
+	 <20100305141300.GA3296@redhat.com>
+	 <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
+	 <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com>
+	 <20100309190340.GD8663@redhat.com> <4B96E8CC.9080803@cn.fujitsu.com>
+	 <20100310153032.GB10738@redhat.com>
+Date: Wed, 10 Mar 2010 09:38:35 -0800
+Message-ID: <1786ab031003100938x19e7c054ieba6c34ebd939ad6@mail.gmail.com>
+Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface "weight_device" 
+	for IO-Controller
+From: Chad Talbott <ctalbott@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Nauman Rafique <nauman@google.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove space in indentation to make checkpatch.pl happy.
+On Wed, Mar 10, 2010 at 7:30 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> This still leaves the issue of reaching a gendisk object from request
+> queue. Looking into it.
 
-Signed-off-by: Thomas Klute <thomas2.klute@uni-dortmund.de>
----
- drivers/staging/asus_oled/TODO        |    1 -
- drivers/staging/asus_oled/asus_oled.c |    2 +-
- 2 files changed, 1 insertions(+), 2 deletions(-)
+It looks like we have that pairing way back in blk_register_queue()
+which takes a gendisk.  Is there any reason we don't hold onto the
+gendisk there?  Eyeballing add_disk() and unlink_gendisk() seems to
+confirm that gendisk lifetime spans request_queue.
 
-diff --git a/drivers/staging/asus_oled/TODO b/drivers/staging/asus_oled/TODO
-index 2514131..1daf2a5 100644
---- a/drivers/staging/asus_oled/TODO
-+++ b/drivers/staging/asus_oled/TODO
-@@ -1,5 +1,4 @@
- TODO:
--	- checkpatch.pl cleanups
- 	- sparse fixes
- 	- audit the userspace interface
- 		- sysfs vs. char?
-diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
-index 7ebecc9..5b279fb 100644
---- a/drivers/staging/asus_oled/asus_oled.c
-+++ b/drivers/staging/asus_oled/asus_oled.c
-@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
- };
- 
- static CLASS_ATTR_STRING(version, S_IRUGO,
--		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
-+			ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
- 
- static int __init asus_oled_init(void)
- {
--- 
-1.6.4.4
+Nauman and I were also wondering why blkio_group and blkio_policy_node
+store a dev_t, rather than a direct pointer to gendisk.  dev_t seems
+more like a userspace<->kernel interface than an inside-the-kernel
+interface.
 
+Chad
