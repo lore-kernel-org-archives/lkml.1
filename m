@@ -1,54 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071Ab0CJFla (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 00:41:30 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:34162 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689Ab0CJFl2 (ORCPT
+	id S1754392Ab0CJFrv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 00:47:51 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:57363 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862Ab0CJFrs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 00:41:28 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=WHo9tb+VWIY5uSwLcAhzzM4TyCb0IpDhCmONWvSKr1960fGacIoE83wJDkHyIq+H/
-	y3V/lCwGQd3hSWzPo+X/A==
+	Wed, 10 Mar 2010 00:47:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=n6/VxZMXjDSoDxfoVnQbUFWDoNMHgLDaOK8p0T2XDC8B/g6ltQbABSC1IE4SbQ6vgx
+         4kOymIPsT6G5szqTz3/mF2VxJU0Albo8nRwEivID/We47E0+V0iXY8iFp3ZlSlt1Ba0a
+         HQkn5C5UV3bHVHAxazDlKoAMhuz6pIvxxA3HQ=
 MIME-Version: 1.0
-In-Reply-To: <4B96E8CC.9080803@cn.fujitsu.com>
-References: <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com>
-	 <4B8F62B7.3080401@cn.fujitsu.com> <20100304152400.GB18786@redhat.com>
-	 <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com>
-	 <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
-	 <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com>
-	 <20100309190340.GD8663@redhat.com> <4B96E8CC.9080803@cn.fujitsu.com>
-Date: Tue, 9 Mar 2010 21:41:23 -0800
-Message-ID: <1786ab031003092141j48599b09vc80741f35a34d71c@mail.gmail.com>
-Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface "weight_device" 
-	for IO-Controller
-From: Chad Talbott <ctalbott@google.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       Li Zefan <lizf@cn.fujitsu.com>
+In-Reply-To: <20100308044614.GA29026@localhost>
+References: <s5h1vg0qrrr.wl%tiwai@suse.de> <s5hwrxspblg.wl%tiwai@suse.de>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD556@HKMAIL01.nvidia.com>
+	 <s5htyswpb18.wl%tiwai@suse.de>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD557@HKMAIL01.nvidia.com>
+	 <s5hvddcnlr6.wl%tiwai@suse.de>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD558@HKMAIL01.nvidia.com>
+	 <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>
+	 <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>
+	 <20100308044614.GA29026@localhost>
+Date: Tue, 9 Mar 2010 21:42:05 -0800
+Message-ID: <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+From: VDR User <user.vdr@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Wei Ni <wni@nvidia.com>, Takashi Iwai <tiwai@suse.de>,
+       akpm <akpm@linux-foundation.org>,
+       alsa-devel <alsa-devel@alsa-project.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Hofman <pavel.hofman@insite.cz>,
+       Jaroslav Kysela <jkysela@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 9, 2010 at 4:33 PM, Gui Jianfeng <guijianfeng@cn.fujitsu.com> wrote:
-> Vivek Goyal wrote:
->> On Tue, Mar 09, 2010 at 09:52:06AM +0800, Gui Jianfeng wrote:
->> I am not very sure but device name/path interface might turn out to be
->> more intutive.
+On Sun, Mar 7, 2010 at 8:46 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> CC Jaroslav, maybe he has some idea on
 >
-> I don't think using an inode path name as interface is a good idea. Because, one
-> can create new file to point to the same device. Also, pathname could be removed
-> or renamed by user.
-> So, i think device number is a better choice.
+>        pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+>
+> On Mon, Mar 08, 2010 at 12:35:37PM +0800, Wei Ni wrote:
+>> Hi,
+>> Because I don't have GT220 card on hand, I didn't test it yet.
+>> So I didn't add this card to the patch file. I think you could add it after
+>> you test it.
+>>
+>> About the warning messages, I don't know why.
+>> May be some others can answer.
+>>
+>> Thanks
+>> Wei.
+>> nvpublic
+>>
+>> -----Original Message-----
+>> From: VDR User [mailto:user.vdr@gmail.com]
+>> Sent: Monday, March 08, 2010 3:22 AM
+>> To: Wei Ni
+>> Cc: Takashi Iwai; akpm; alsa-devel; Wu Fengguang; linux-kernel; Pavel Hofman
+>> Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+>>
+>> I think this may be relevant to this subject, if not then my apologies.
+>>
+>> I've just installed a GT220 card and was able to get audio-over-hdmi
+>> working by compiling the snapshot drivers from 20100307 which contain
+>> Wei's new code.  I further had to patch the driver to recognize my
+>> card with:
+>>
+>> --- alsa-driver-orig/alsa-kernel/pci/hda/patch_nvhdmi.c 2010-03-06
+>> 18:00:12.000000000 -0800
+>> +++ alsa-driver/alsa-kernel/pci/hda/patch_nvhdmi.c      2010-03-06
+>> 18:02:00.000000000 -0800
+>> @@ -1335,6 +1335,8 @@ static struct hda_codec_preset snd_hda_p
+>>           .patch = patch_nvhdmi_8ch_89 },
+>>         { .id = 0x10de000b, .name = "GT21x HDMI",
+>>           .patch = patch_nvhdmi_8ch_89 },
+>> +       { .id = 0x10de000a, .name = "GT220 HDMI",
+>> +         .patch = patch_nvhdmi_8ch_89 },
+>>         { .id = 0x10de000d, .name = "GT240 HDMI",
+>>           .patch = patch_nvhdmi_8ch_89 },
+>>         {} /* terminator */
+>> @@ -1347,6 +1349,7 @@ MODULE_ALIAS("snd-hda-codec-id:10de0006"
+>>  MODULE_ALIAS("snd-hda-codec-id:10de0007");
+>>  MODULE_ALIAS("snd-hda-codec-id:10de0067");
+>>  MODULE_ALIAS("snd-hda-codec-id:10de8001");
+>> +MODULE_ALIAS("snd-hda-codec-id:10de000a");
+>>  MODULE_ALIAS("snd-hda-codec-id:10de000c");
+>>  MODULE_ALIAS("snd-hda-codec-id:10de000b");
+>>  MODULE_ALIAS("snd-hda-codec-id:10de000d");
+>>
+>> This seems to work fine when running VDR but if I do anything else
+>> like upgrade packages, compile something, or maybe create a bz2, then
+>> I start to see _a lot_ of the following in my xine log:
+>>
+>> pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+>>
+>> With the old code this didn't happen.  However, my setup was an 8400gs
+>> using SPDIF OUT from my mainboard to SPDIF IN on the card.  Then using
+>> a dvi->hdmi cable into the tv.
+>>
+>> Again, I apologize if I'm posting this in the wrong place.
+>>
+>> Best regards.
 
-Sorry to butt in, but I don't think anyone is suggesting trying to
-remember names from device nodes.  I think the idea is to use the
-names derived from the subsystem - such as 'sda' which is reflected in
-/sys and dmesg.
+So nobody has any ideas at all?  This is turning out to be a big
+problem and I've discovered it will occur even without anything else
+happening on the system.  (originally I thought you needed to do some
+other activity.)  I've checked with some other devs I know and
+everyone has said the problem is with alsa so it would seem there is a
+serious bug somewhere since eventually those errors will happen and
+the audio will start skipping like crazy.
 
-Chad
+Please let me know if there's anything I can do within my ability to help.
+
+Best regards,
+Derek
