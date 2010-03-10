@@ -1,107 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932841Ab0CJWKE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:10:04 -0500
+	id S932850Ab0CJWKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:10:08 -0500
 Received: from mail-bw0-f209.google.com ([209.85.218.209]:47759 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785Ab0CJWKA (ORCPT
+	with ESMTP id S932838Ab0CJWKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:10:00 -0500
+	Wed, 10 Mar 2010 17:10:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=AK8lpHTeP/1oemA6ES8fdIq1qN35IlA20GOxSCJCLg6tSt7id1HGkw4Ne37JdctG6K
-         lLQ+wQwUaU8ZTH0ZeAmOxvLtioE0gEF09jRlJWq4gsCXrimsJPbzn1d2w0fs5n+EXTbQ
-         oftHmso/rXi9xy5waF1s4ed7JYqJxwx4Sy2D4=
-Subject: [PATCH] intel-agp.c: Fix crash when accessing nonexistent GTT
- entries in i915
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Mar 2010 23:09:54 +0100
-Message-ID: <1268258994.2183.14.camel@carter>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=W9JfHGatsUHL24Yb2Y0dPqzJS8k07eCyzk7xGUH2moRWo5wIraKhxKHQxwr1cwdCZ4
+         uSsk8K76sYsBaQ+lA5j+i+1Hyl0SrpPPOg51h4C98SQbUMKbF4r8S2tjhLDPaDHXj2Xe
+         aVm+j6B9N9okn4QEclf06tVebuyfsCq8BzAxo=
+From: =?UTF-8?q?=C3=93lafur=20Jens=20Sigur=C3=B0sson?= <ojsbug@gmail.com>
+To: gregkh@suse.de, andrew@lunn.ch, lindner_marek@yahoo.de,
+       siwu@hrz.tu-chemnitz.de, sdietrich@novell.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       =?UTF-8?q?=C3=93lafur=20Jens=20=C5=9Aigur=C3=B0sson?= 
+	<ojsbug@gmail.com>
+Subject: [PATCH] =?UTF-8?q?Staging:=20batman-adv:=20Fix=20coding=20style=20in=20device.c
+Date: Wed, 10 Mar 2010 22:09:35 +0000
+Message-Id: <1268258975-4161-1-git-send-email-ojsbug@gmail.com>
+X-Mailer: git-send-email 1.7.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Ólafur Jens Śigurðsson <ojsbug@gmail.com>
 
-The commit 5877960869333e42ebeb733e8d9d5630ff96d350 (included since 2.6.32.4) crashes (locks up) the 82915G/GV/910GL Controller when intel-agp.c tries to access nonexistent GTT entries at:
-
--		for (i = intel_private.gtt_entries; i < current_size->num_entries; i++) {
-+		for (i = intel_private.gtt_entries; i < intel_private.gtt_total_size; i++) {
-
-Rationale: I915 (gma900) has 128 MB of video memory (maximum), as per intel.com ( http://www.intel.com/support/graphics/intel915g/sb/CS-012579.htm ) and lscpi:
-
-00:02.0 VGA compatible controller: Intel Corporation 82915G/GV/910GL Integrated Graphics Controller (rev 04) (prog-if 00 [VGA controller])
-        Subsystem: Intel Corporation Device 4147
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 11
-        Region 0: Memory at ff480000 (32-bit, non-prefetchable) [size=512K]
-        Region 1: I/O ports at ec00 [size=8]
-        Region 2: Memory at d8000000 (32-bit, prefetchable) [size=128M]
-        Region 3: Memory at ff440000 (32-bit, non-prefetchable) [size=256K]
-        Capabilities: <access denied>
-
-
-AFAIK, that implies that its gtt_total_size (in pages) should be 32K (as num_entries showed before the commit) instead of 64K.
-
-Note: The IS_I915 macro includes 945; however, only GMA900 (I915) had 128 MB as the maximum AFAIK. Therefore, I divided the IS_I915 macro. I do not know about the "E7221" (please check).
-
-How to reproduce: Access kernel.org in iceweasel (Debian Lenny) and the X server will crash. Sometimes, the kernel freezes.
- 
-Please review. The fix should be applied to stable series, as well as 2.6.33 and 2.6.34-rc1.
-
-Signed-off-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 ---
---- linux-2.6.32.stable/drivers/char/agp/intel-agp.c.old	2010-03-10 15:32:36.000000000 +0100
-+++ linux-2.6.32.stable/drivers/char/agp/intel-agp.c	2010-03-10 22:38:23.000000000 +0100
-@@ -65,11 +65,11 @@
- #define PCI_DEVICE_ID_INTEL_IGDNG_MC2_HB    0x006a
- #define PCI_DEVICE_ID_INTEL_IGDNG_M_IG	    0x0046
- 
--/* cover 915 and 945 variants */
- #define IS_I915 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_E7221_HB || \
- 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB || \
--		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB || \
--		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB || \
-+		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB)
-+
-+#define IS_I945 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB || \
- 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB || \
- 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB)
- 
-@@ -724,14 +724,14 @@ static void intel_i830_init_gtt_entries(
- 			break;
- 		case I915_GMCH_GMS_STOLEN_48M:
- 			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
-+			if (IS_I915 || IS_I945 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries = MB(48) - KB(size);
- 			else
- 				gtt_entries = 0;
- 			break;
- 		case I915_GMCH_GMS_STOLEN_64M:
- 			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
-+			if (IS_I915 || IS_I945 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries = MB(64) - KB(size);
- 			else
- 				gtt_entries = 0;
-@@ -1305,6 +1305,8 @@ static int intel_i915_create_gatt_table(
- 
- 	if (IS_G33)
- 	    gtt_map_size = 1024 * 1024; /* 1M on G33 */
-+	else if (IS_I915)
-+	    gtt_map_size = 128 * 1024; /* 128K on I915 */
- 	intel_private.gtt = ioremap(temp2, gtt_map_size);
- 	if (!intel_private.gtt)
- 		return -ENOMEM;
+ drivers/staging/batman-adv/device.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+index e7f4421..6edc2f2 100644
+--- a/drivers/staging/batman-adv/device.c
++++ b/drivers/staging/batman-adv/device.c
+@@ -67,7 +67,7 @@ int bat_device_setup(void)
+ 	batman_class = class_create(THIS_MODULE, "batman-adv");
+ 
+ 	if (IS_ERR(batman_class)) {
+-		printk(KERN_ERR "batman-adv:Could not register class 'batman-adv' \n");
++		printk(KERN_ERR "batman-adv:Could not register class 'batman-adv'\n");
+ 		return 0;
+ 	}
+ 
+@@ -110,7 +110,7 @@ int bat_device_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	if (device_client_hash[i] != device_client) {
+-		printk(KERN_ERR "batman-adv:Error - can't add another packet client: maximum number of clients reached \n");
++		printk(KERN_ERR "batman-adv:Error - can't add another packet client: maximum number of clients reached\n");
+ 		kfree(device_client);
+ 		return -EXFULL;
+ 	}
+@@ -211,7 +211,8 @@ ssize_t bat_device_write(struct file *file, const char __user *buff,
+ 	unsigned long flags;
+ 
+ 	if (len < sizeof(struct icmp_packet)) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from char device: invalid packet size\n");
++		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from "
++					"char device: invalid packet size\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -222,12 +223,16 @@ ssize_t bat_device_write(struct file *file, const char __user *buff,
+ 		return -EFAULT;
+ 
+ 	if (icmp_packet.packet_type != BAT_ICMP) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from char device: got bogus packet type (expected: BAT_ICMP)\n");
++		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from "
++					"char device: got bogus packet type "
++					"(expected: BAT_ICMP)\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (icmp_packet.msg_type != ECHO_REQUEST) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from char device: got bogus message type (expected: ECHO_REQUEST)\n");
++		bat_dbg(DBG_BATMAN, "batman-adv:Error - can't send packet from "
++					"char device: got bogus message type "
++					"(expected: ECHO_REQUEST)\n");
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+1.6.6.2
 
