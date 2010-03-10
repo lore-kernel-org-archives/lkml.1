@@ -1,148 +1,175 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932531Ab0CJReN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:34:13 -0500
-Received: from zmc.proxad.net ([212.27.53.206]:42881 "EHLO zmc.proxad.net"
+	id S932546Ab0CJReV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:34:21 -0500
+Received: from mail.perches.com ([173.55.12.10]:1599 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932065Ab0CJReL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:34:11 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -3.798
-From: Florian Fainelli <ffainelli@freebox.fr>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] LEDS: fix race between LED device uevent and actual attributes creation
-Date: Wed, 10 Mar 2010 18:32:52 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-20-server; KDE/4.3.2; x86_64; ; )
-Cc: Richard Purdie <rpurdie@rpsys.net>
-References: <201003101511.44770.ffainelli@freebox.fr>
-In-Reply-To: <201003101511.44770.ffainelli@freebox.fr>
-Organization: Freebox
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S932533Ab0CJReS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 12:34:18 -0500
+Subject: [PATCH] drivers/net/tulip/eeprom.c: fix bogus "(null)" in tulip
+ init messages
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: mikpe@it.uu.se, netdev@vger.kernel.org, grundler@parisc-linux.org,
+       kyle@mcmartin.ca, linux-kernel@vger.kernel.org
+In-Reply-To: <20100310.084104.201710892.davem@davemloft.net>
+References: <19351.48072.777754.465084@pilspetsen.it.uu.se>
+	 <20100310.084104.201710892.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Mar 2010 09:34:17 -0800
+Message-ID: <1268242457.1545.347.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003101832.52324.ffainelli@freebox.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
+On Wed, 2010-03-10 at 08:41 -0800, David Miller wrote:
+> From: Mikael Pettersson <mikpe@it.uu.se>
+> Date: Wed, 10 Mar 2010 16:33:28 +0100
+> > Booting 2.6.34-rc1 on a machine with a tulip nic I see
+> > a number of kernel messages that include "(null)" where
+> > previous kernels included the string "tulip0":
+> CC:'ing the guilty party :-)  It's one of the following
+> commits:
 
-For some reason, this version appears to work, while it actually should not 
-because device_add_attributes has no mean to stop iterating over 
-leds_class_attrs members.
+Thanks Mikael.
 
-Also, a LED device removal would have made the device attributes be really 
-removed in led_classdev_unregister, and then tried to be removed a second time 
-by device_remove_attr. Since we never check the return value of 
-device_remove_file and the underlying calls which are made to the syfs 
-functions, no error is produced, but this is actually wrong.
+Anonymity has some good attributes.
+Blame avoidance is one of them.
 
-I just resent a new version which really fix the issue and is cleaner. Sorry 
-for the noise.
+I've broad shoulders.  It's me, then Dwight Howard...
 
-On Wednesday 10 March 2010 15:11:44  Fainelli wrote:
-> If we were to dynamically register/unregister leds and have udev or other
-> daemons handle the leds class uevents, we would be notified of the adding
->  of a new LED and if the daemon immediately tries to open one of the
->  attributes of the led device, it would fail with a "no such file or
->  directory" error since the attributes are not yet created. Fix this by
->  switching attributes to be class-wide, such that the driver core will
->  register these attributes with device_add_attrs and then emit the
->  kobject_uevent ADD signal.
-> 
-> Signed-off-by: Florian Fainelli <ffainelli@freebox.fr>
-> CC: stable@kernel.org
-> ---
-> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-> index 782f958..0be0310 100644
-> --- a/drivers/leds/led-class.c
-> +++ b/drivers/leds/led-class.c
-> @@ -78,6 +78,14 @@ static DEVICE_ATTR(max_brightness, 0444,
->  led_max_brightness_show, NULL); static DEVICE_ATTR(trigger, 0644,
->  led_trigger_show, led_trigger_store); #endif
-> 
-> +static struct device_attribute *leds_class_attrs[] = {
-> +	&dev_attr_brightness,
-> +	&dev_attr_max_brightness,
-> +#ifdef CONFIG_LEDS_TRIGGERS
-> +	&dev_attr_trigger,
-> +#endif
-> +};
-> +
->  /**
->   * led_classdev_suspend - suspend an led_classdev.
->   * @led_cdev: the led_classdev to suspend.
-> @@ -127,18 +135,11 @@ static int led_resume(struct device *dev)
->   */
->  int led_classdev_register(struct device *parent, struct led_classdev
->  *led_cdev) {
-> -	int rc;
-> -
->  	led_cdev->dev = device_create(leds_class, parent, 0, led_cdev,
->  				      "%s", led_cdev->name);
->  	if (IS_ERR(led_cdev->dev))
->  		return PTR_ERR(led_cdev->dev);
-> 
-> -	/* register the attributes */
-> -	rc = device_create_file(led_cdev->dev, &dev_attr_brightness);
-> -	if (rc)
-> -		goto err_out;
-> -
->  #ifdef CONFIG_LEDS_TRIGGERS
->  	init_rwsem(&led_cdev->trigger_lock);
->  #endif
-> @@ -150,17 +151,9 @@ int led_classdev_register(struct device *parent,
->  struct led_classdev *led_cdev) if (!led_cdev->max_brightness)
->  		led_cdev->max_brightness = LED_FULL;
-> 
-> -	rc = device_create_file(led_cdev->dev, &dev_attr_max_brightness);
-> -	if (rc)
-> -		goto err_out_attr_max;
-> -
->  	led_update_brightness(led_cdev);
-> 
->  #ifdef CONFIG_LEDS_TRIGGERS
-> -	rc = device_create_file(led_cdev->dev, &dev_attr_trigger);
-> -	if (rc)
-> -		goto err_out_led_list;
-> -
->  	led_trigger_set_default(led_cdev);
->  #endif
-> 
-> @@ -168,18 +161,8 @@ int led_classdev_register(struct device *parent,
->  struct led_classdev *led_cdev) led_cdev->name);
-> 
->  	return 0;
-> -
-> -#ifdef CONFIG_LEDS_TRIGGERS
-> -err_out_led_list:
-> -	device_remove_file(led_cdev->dev, &dev_attr_max_brightness);
-> -#endif
-> -err_out_attr_max:
-> -	device_remove_file(led_cdev->dev, &dev_attr_brightness);
-> -	list_del(&led_cdev->node);
-> -err_out:
-> -	device_unregister(led_cdev->dev);
-> -	return rc;
->  }
-> +
->  EXPORT_SYMBOL_GPL(led_classdev_register);
-> 
->  /**
-> @@ -215,6 +198,7 @@ static int __init leds_init(void)
->  		return PTR_ERR(leds_class);
->  	leds_class->suspend = led_suspend;
->  	leds_class->resume = led_resume;
-> +	leds_class->dev_attrs = *leds_class_attrs;
->  	return 0;
->  }
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+There might be another few of these where ->name or ->dev
+was used before struct device or net_device was registered.
+I'll go back and check.
+
+tulip_core has:
+
+	if (tp->flags & HAS_MEDIA_TABLE) {
+		sprintf(dev->name, DRV_NAME "%d", board_idx);	/* hack */
+		tulip_parse_eeprom(dev);
+		strcpy(dev->name, "eth%d");			/* un-hack */
+	}
+
+So I don't feel _too_ bad.
+
+tulip_parse_eeprom is done before register_netdev so the logging
+there can not use netdev_<level> or dev_<level>(&dev->dev
+
+Signed-off-by: Joe Perches <joe@perches.com>
+ drivers/net/tulip/eeprom.c |   54 ++++++++++++++++++++++++-------------------
+ 1 files changed, 30 insertions(+), 24 deletions(-)
+---
+diff --git a/drivers/net/tulip/eeprom.c b/drivers/net/tulip/eeprom.c
+index 93f4e83..49f05d1 100644
+--- a/drivers/net/tulip/eeprom.c
++++ b/drivers/net/tulip/eeprom.c
+@@ -143,6 +143,12 @@ static void __devinit tulip_build_fake_mediatable(struct tulip_private *tp)
+ 
+ void __devinit tulip_parse_eeprom(struct net_device *dev)
+ {
++	/*
++	  dev is not registered at this point, so logging messages can't
++	  use dev_<level> or netdev_<level> but dev->name is good via a
++	  hack in the caller
++	*/
++
+ 	/* The last media info list parsed, for multiport boards.  */
+ 	static struct mediatable *last_mediatable;
+ 	static unsigned char *last_ee_data;
+@@ -161,15 +167,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
+ 		if (ee_data[0] == 0xff) {
+ 			if (last_mediatable) {
+ 				controller_index++;
+-				dev_info(&dev->dev,
+-					 "Controller %d of multiport board\n",
+-					 controller_index);
++				pr_info("%s: Controller %d of multiport board\n",
++					dev->name, controller_index);
+ 				tp->mtable = last_mediatable;
+ 				ee_data = last_ee_data;
+ 				goto subsequent_board;
+ 			} else
+-				dev_info(&dev->dev,
+-					 "Missing EEPROM, this interface may not work correctly!\n");
++				pr_info("%s: Missing EEPROM, this interface may not work correctly!\n",
++					dev->name);
+ 			return;
+ 		}
+ 	  /* Do a fix-up based on the vendor half of the station address prefix. */
+@@ -181,15 +186,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
+ 			  i++;			/* An Accton EN1207, not an outlaw Maxtech. */
+ 		  memcpy(ee_data + 26, eeprom_fixups[i].newtable,
+ 				 sizeof(eeprom_fixups[i].newtable));
+-		  dev_info(&dev->dev,
+-			   "Old format EEPROM on '%s' board.  Using substitute media control info\n",
+-			   eeprom_fixups[i].name);
++		  pr_info("%s: Old format EEPROM on '%s' board.  Using substitute media control info\n",
++			  dev->name, eeprom_fixups[i].name);
+ 		  break;
+ 		}
+ 	  }
+ 	  if (eeprom_fixups[i].name == NULL) { /* No fixup found. */
+-		  dev_info(&dev->dev,
+-			   "Old style EEPROM with no media selection information\n");
++		  pr_info("%s: Old style EEPROM with no media selection information\n",
++			  dev->name);
+ 		return;
+ 	  }
+ 	}
+@@ -217,8 +221,8 @@ subsequent_board:
+ 	        /* there is no phy information, don't even try to build mtable */
+ 	        if (count == 0) {
+ 			if (tulip_debug > 0)
+-				dev_warn(&dev->dev,
+-					 "no phy info, aborting mtable build\n");
++				pr_warning("%s: no phy info, aborting mtable build\n",
++					   dev->name);
+ 		        return;
+ 		}
+ 
+@@ -234,8 +238,10 @@ subsequent_board:
+ 		mtable->has_nonmii = mtable->has_mii = mtable->has_reset = 0;
+ 		mtable->csr15dir = mtable->csr15val = 0;
+ 
+-		dev_info(&dev->dev, "EEPROM default media type %s\n",
+-			 media & 0x0800 ? "Autosense" : medianame[media & MEDIA_MASK]);
++		pr_info("%s: EEPROM default media type %s\n",
++			dev->name,
++			media & 0x0800 ? "Autosense"
++				       : medianame[media & MEDIA_MASK]);
+ 		for (i = 0; i < count; i++) {
+ 			struct medialeaf *leaf = &mtable->mleaf[i];
+ 
+@@ -298,17 +304,17 @@ subsequent_board:
+ 			}
+ 			if (tulip_debug > 1  &&  leaf->media == 11) {
+ 				unsigned char *bp = leaf->leafdata;
+-				dev_info(&dev->dev,
+-					 "MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
+-					 bp[0], bp[1], bp[2 + bp[1]*2],
+-					 bp[5 + bp[2 + bp[1]*2]*2],
+-					 bp[4 + bp[2 + bp[1]*2]*2]);
++				pr_info("%s: MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
++					dev->name,
++					bp[0], bp[1], bp[2 + bp[1]*2],
++					bp[5 + bp[2 + bp[1]*2]*2],
++					bp[4 + bp[2 + bp[1]*2]*2]);
+ 			}
+-			dev_info(&dev->dev,
+-				 "Index #%d - Media %s (#%d) described by a %s (%d) block\n",
+-				 i, medianame[leaf->media & 15], leaf->media,
+-				 leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
+-				 leaf->type);
++			pr_info("%s: Index #%d - Media %s (#%d) described by a %s (%d) block\n",
++				dev->name,
++				i, medianame[leaf->media & 15], leaf->media,
++				leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
++				leaf->type);
+ 		}
+ 		if (new_advertise)
+ 			tp->sym_advertise = new_advertise;
+
 
