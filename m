@@ -1,50 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368Ab0CJOFg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:05:36 -0500
-Received: from tundra.namei.org ([65.99.196.166]:42487 "EHLO tundra.namei.org"
+	id S932383Ab0CJOFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:05:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9708 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932198Ab0CJOFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:05:34 -0500
-Date: Thu, 11 Mar 2010 01:04:52 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted'
- xattrs
-In-Reply-To: <20100310114035.GA32219@infradead.org>
-Message-ID: <alpine.LRH.2.00.1003110104090.29956@tundra.namei.org>
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <20100310114035.GA32219@infradead.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932198Ab0CJOFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 09:05:37 -0500
+Date: Wed, 10 Mar 2010 09:05:35 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, yinghai@kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20100310140535.16273.90102.sendpatchset@prarit.bos.redhat.com>
+Subject: [PATCH]: cleanup debug message in init_kstat_irqs()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Christoph Hellwig wrote:
+Cleanup a debug message in init_kstat_irqs().
 
-> Now that everyone felt the consensus is that we need the check I look
-> into adding it into XFS, but it seems like we already have that check
-> in xfs_xattr_put_listent:
-> 
-> 	/*
->          * Only show root namespace entries if we are actually allowed to
-> 	 * see them.
-> 	 */
-> 	if ((flags & XFS_ATTR_ROOT) && !capable(CAP_SYS_ADMIN))
-> 		return 0;
-> 
+This debug message can result in valid output like
 
-Looks like I didn't understand what the XFS code was doing.
+	alloc kstat_irqs on node -1
 
+which looks alot like an error message.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+This debug statement has been in the kernel for over a year, so I think it is
+safe to remove it and report the node in only the error case instead.
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 76d5a67..e7fb871 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -94,10 +94,10 @@ void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
+ 	 * don't overwite if can not get new one
+ 	 * init_copy_kstat_irqs() could still use old one
+ 	 */
+-	if (ptr) {
+-		printk(KERN_DEBUG "  alloc kstat_irqs on node %d\n", node);
++	if (ptr)
+ 		desc->kstat_irqs = ptr;
+-	}
++	else
++		printk(KERN_ERR "  alloc kstat_irqs on node %d failed\n", node);
+ }
+ 
