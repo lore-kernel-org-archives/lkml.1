@@ -1,91 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312Ab0CJLGI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:06:08 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:22222 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753120Ab0CJLFn (ORCPT
+	id S1754325Ab0CJLRE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:17:04 -0500
+Received: from cordova.acsalaska.net ([209.112.173.243]:20946 "EHLO
+	cordova.acsalaska.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619Ab0CJLQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:05:43 -0500
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 06:05:41 EST
-X-IronPort-AV: E=Sophos;i="4.49,613,1262581200"; 
-   d="scan'208";a="87456559"
-From: ijc@hellion.org.uk
+	Wed, 10 Mar 2010 06:16:59 -0500
+X-Greylist: delayed 2569 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 06:16:59 EST
+Date: Wed, 10 Mar 2010 01:34:09 -0900
+From: rogerx@sdf.org
 To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yinghai@kernel.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       x86@kernel.org
-Subject: [PATCH] x86: irq_desc->chip_data is always correct whether or not SPARSE_IRQ is enabled.
-Date: Wed, 10 Mar 2010 10:55:59 +0000
-Message-Id: <1268218559-26784-3-git-send-email-ijc@hellion.org.uk>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-X-OriginalArrivalTime: 10 Mar 2010 10:56:12.0082 (UTC) FILETIME=[4C1BF120:01CAC040]
+Subject: 'struct uart_port' has no member named 'info
+Message-ID: <20100310103409.GA7451@localhost2.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0.1 (cordova.acsalaska.net [209.112.168.121]); Wed, 10 Mar 2010 01:34:10 -0900 (AKST)
+X-ACS-Spam-Status: no
+X-ACS-Scanned-By: MD 2.64; SA 3.2.5; spamdefang 1.122
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+Upgraded from kernel-2.6.32 to kernel-2.6.33, and now get the following
+error when compiling ltmodem.
 
-arch_early_irq_init ensures that in the non-SPARSE_IRQ case that
-chip_data is only set for irq < NR_IRQS.
+I checked for changes within drivers/serial/serial_core.c, but couldn't
+find the specific change.  (I did verify ltmodem compiles fine without
+error under 2.6.32.)
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/x86/kernel/apic/io_apic.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c: In
+function 'receive_chars':
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c:181:
+error: 'struct uart_port' has no member named 'info'
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c: In
+function 'transmit_chars':
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c:243:
+error: 'struct uart_port' has no member named 'info'
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c: In
+function 'check_modem_status':
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c:284:
+error: 'struct uart_port' has no member named 'info'
+/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.c:294:
+error: 'struct uart_port' has no member named 'info'
+make[2]: ***
+[/var/tmp/portage/net-dialup/ltmodem-20090420/work/ltmodem/v8250.o]
+Error 1
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 74d5d96..64a93c8 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -178,7 +178,6 @@ int __init arch_early_irq_init(void)
- 	return 0;
- }
- 
--#ifdef CONFIG_SPARSE_IRQ
- struct ioapic_irq_cfg *ioapic_irq_cfg(unsigned int irq)
- {
- 	struct ioapic_irq_cfg *cfg = NULL;
-@@ -191,6 +190,8 @@ struct ioapic_irq_cfg *ioapic_irq_cfg(unsigned int irq)
- 	return cfg;
- }
- 
-+#ifdef CONFIG_SPARSE_IRQ
-+
- static struct ioapic_irq_cfg *get_one_free_irq_cfg(int node)
- {
- 	struct ioapic_irq_cfg *cfg;
-@@ -333,16 +334,10 @@ void ioapic_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
- /* end for move_irq_desc */
- 
- #else
--struct ioapic_irq_cfg *ioapic_irq_cfg(unsigned int irq)
--{
--	return irq < nr_irqs ? irq_cfgx + irq : NULL;
--}
--
- int ioapic_init_chip_data(struct irq_desc *desc, int node)
- {
- 	return 0;
- }
--
- #endif
- 
- struct io_apic {
+
 -- 
-1.5.6.5
-
+Roger
+http://rogerx.freeshell.org/
