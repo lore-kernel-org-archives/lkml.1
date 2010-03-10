@@ -1,71 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932595Ab0CJRve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:51:34 -0500
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:17884 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932564Ab0CJRvd (ORCPT
+	id S932605Ab0CJSBY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 13:01:24 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50839 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932578Ab0CJSBX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:51:33 -0500
-X-IronPort-AV: E=Sophos;i="4.49,615,1262563200"; 
-   d="scan'208";a="9883042"
-Date: Wed, 10 Mar 2010 17:55:40 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: =?ISO-8859-15?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
-CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 0 of 5] PV on HVM Xen
-In-Reply-To: <20100310173339.GO1878@reaktio.net>
-Message-ID: <alpine.DEB.2.00.1003101739480.28412@kaball-desktop>
-References: <alpine.DEB.2.00.1003101457100.28412@kaball-desktop> <20100310173339.GO1878@reaktio.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="8323329-1488125926-1268243740=:28412"
+	Wed, 10 Mar 2010 13:01:23 -0500
+Subject: Re: Q: select_fallback_rq() && cpuset_lock()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100310173018.GA1294@redhat.com>
+References: <20100309180615.GA11681@redhat.com>
+	 <1268239242.5279.46.camel@twins>  <20100310173018.GA1294@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 10 Mar 2010 19:01:15 +0100
+Message-ID: <1268244075.5279.53.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---8323329-1488125926-1268243740=:28412
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 10 Mar 2010, Pasi Kärkkäinen wrote:
-> On Wed, Mar 10, 2010 at 03:46:54PM +0000, Stefano Stabellini wrote:
-> > Hi all,
-> > this is a reduced and rebased version of the patch series I sent
-> > yesterday "enhanced PV on HVM": this series is based on Linux 2.5.32 and
-> > can be applied now, it includes everything but the pirq remapping
-> > related functions that are not ready to be upstreamed at the moment.
-> > 
-> > Therefore it just achieves the goal of enabling PV devices in Linux
-> > running in a Xen HVM domain, it doesn't allow event channels delivery in
-> > place of interrupts.
-> > 
-> > The patch series consists of 5 patches, each patch comes with a detailed
-> > description.
-> > In order for this to work we also need a patch for Xen, that is being
-> > worked on as we speak.
+On Wed, 2010-03-10 at 18:30 +0100, Oleg Nesterov wrote:
+> On 03/10, Peter Zijlstra wrote:
 > >
+> > On Tue, 2010-03-09 at 19:06 +0100, Oleg Nesterov wrote:
+> > > In particular, see http://marc.info/?l=linux-kernel&m=125261083613103
+> >
+> > /me puts it on the to-review stack.
 > 
-> Hmm.. is it possible to get PV-on-HVM drivers working on older Xen versions,
-> that don't have additional patches? 
+> Great, thanks. In fact, you already acked it before ;)
 > 
-> Just like the unmodified_drivers works for 2.6.18 and 2.6.27.
+> > > But now I have another question. Since 5da9a0fb673a0ea0a093862f95f6b89b3390c31e
+> > > cpuset_cpus_allowed_locked() is called without callback_mutex held by
+> > > try_to_wake_up().
+> > >
+> > > And, without callback_mutex held, isn't it possible to race with, say,
+> > > update_cpumask() which changes cpuset->cpus_allowed? Yes, update_tasks_cpumask()
+> > > should fixup task->cpus_allowed later. But isn't it possible (at least
+> > > in theory) that try_to_wake_up() gets, say, all-zeroes in task->cpus_allowed
+> > > after select_fallback_rq()->cpuset_cpus_allowed_locked() if we race with
+> > > update_cpumask()->cpumask_copy() ?
+> >
+> > Hurmm,.. good point,.. yes I think that might be possible.
+> > p->cpus_allowed is synchronized properly, but cs->cpus_allowed is not,
+> > bugger.
+> >
+> > I guess the quick fix is to really bail and always use cpu_online_mask
+> > in select_fallback_rq().
 > 
+> Yes, but this breaks cpusets.
 
-The problem is that the old unmodified_drivers use a normal interrupt
-from the xen pci platform device to receive event channels, and this
-doesn't play well with the idea of remapping all the interrupts with
-event channels, that is one if the main goals of the previous "enhanced"
-patch series.
-For this reason the new PV on HVM patch series sets up a new vector
-based callback mechanism.
+Arguably, so, but you can also argue that binding a task to a cpu and
+then unplugging that cpu without first fixing up the affinity is a 'you
+get to keep both pieces' situation.
 
-However it might be still possible to provide an additional, backward
-compatible, delivery mechanism in case the new one fails.
-I'll try to explore this option.
+> Peter, please see the attached mbox with the last discussion and patches.
+> Of course, the changes in sched.c need the trivial fixups. I'll resend
+> if you think these changes make sense.
 
---8323329-1488125926-1268243740=:28412--
+Ah, right.. Damn I must be getting old, there wasn't even a spark of
+recollection.
+
+Right, so if you refresh these patches, I'll feed them to mingo and they
+should eventually end up in -linus, how's that? :-)
