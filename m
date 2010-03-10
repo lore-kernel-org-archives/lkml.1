@@ -1,52 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266Ab0CJVRN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:17:13 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:52874 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581Ab0CJVRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 16:17:08 -0500
-Date: Wed, 10 Mar 2010 21:17:04 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pauli Nieminen <suokkos@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Luca Tettamanti <kronos.it@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [Q] How to tell we're using the KMS (during suspend/resume)
-	outside the graphics driver
-Message-ID: <20100310211704.GA29201@srcf.ucam.org>
-References: <201003062236.09801.rjw@sisk.pl> <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com> <20100310205618.GA28628@srcf.ucam.org> <201003102215.26232.rjw@sisk.pl>
+	id S1757276Ab0CJVRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:17:36 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:46874 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581Ab0CJVRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 16:17:31 -0500
+Date: Wed, 10 Mar 2010 22:17:28 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 6/6] drivers/char/ppdev.c: Use kasprintf
+Message-ID: <Pine.LNX.4.64.1003102216510.1672@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003102215.26232.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 10:15:26PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 10 March 2010, Matthew Garrett wrote:
-> > As far as the ACPI video driver goes, acpi_get_physical_pci_device() 
-> > will give you something to work with.
-> 
-> Hmm.  Did you mean acpi_get_physical_device()?
+From: Julia Lawall <julia@diku.dk>
 
-Ah, no, acpi_get_pci_dev.
+kasprintf combines kmalloc and sprintf, and takes care of the size
+calculation itself.
 
-> Which acpi_device should I call that for?
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-The video one. acpi_video_bus_check does something very similar to check 
-whether the device actually exists.
+// <smpl>
+@@
+expression a,flag;
+expression list args;
+statement S;
+@@
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+  a =
+-  \(kmalloc\|kzalloc\)(...,flag)
++  kasprintf(flag,args)
+  <... when != a
+  if (a == NULL || ...) S
+  ...>
+- sprintf(a,args);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/char/ppdev.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff -u -p a/drivers/char/ppdev.c b/drivers/char/ppdev.c
+--- a/drivers/char/ppdev.c
++++ b/drivers/char/ppdev.c
+@@ -286,12 +286,10 @@ static int register_device (int minor, s
+ 	char *name;
+ 	int fl;
+ 
+-	name = kmalloc (strlen (CHRDEV) + 3, GFP_KERNEL);
++	name = kasprintf(GFP_KERNEL, CHRDEV "%x", minor);
+ 	if (name == NULL)
+ 		return -ENOMEM;
+ 
+-	sprintf (name, CHRDEV "%x", minor);
+-
+ 	port = parport_find_number (minor);
+ 	if (!port) {
+ 		printk (KERN_WARNING "%s: no associated port!\n", name);
