@@ -1,126 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932830Ab0CJWJn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:09:43 -0500
-Received: from mail-ew0-f216.google.com ([209.85.219.216]:51902 "EHLO
-	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785Ab0CJWJm (ORCPT
+	id S932841Ab0CJWKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:10:04 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:47759 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932785Ab0CJWKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:09:42 -0500
+	Wed, 10 Mar 2010 17:10:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=DbUfL5MqJ7BO4FXnyidKszOc6U9ebvAiYtVQ3jjCQhsDnzBwdAS+RO4CQD+kZUsUhJ
-         mu6BiCey7gbzWytdSY8IvvIWSFNIAw/V1LLI9WarRBF2LTXnBtWLCdhvYsKY4lvcmjeH
-         m3bZgwf4PBdpA2GSxMEQv+mJIxbPXjSn+HNCg=
-MIME-Version: 1.0
-In-Reply-To: <b637ec0b1003100546l121f3a54o311aba94c8cabc5e@mail.gmail.com>
-References: <b637ec0b1003091458j67efc62cg2c975e9e286f4b0b@mail.gmail.com>
-	 <71cd59b01003100507q79878fdan98e53cb4e705d2c2@mail.gmail.com>
-	 <b637ec0b1003100546l121f3a54o311aba94c8cabc5e@mail.gmail.com>
-Date: Wed, 10 Mar 2010 23:09:40 +0100
-Message-ID: <b637ec0b1003101409j6b03e219m5ac587b96bf5e26b@mail.gmail.com>
-Subject: Re: Possible bug in eeepc-laptop.c - EeePC 900
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Corentin Chary <corentin.chary@gmail.com>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=AK8lpHTeP/1oemA6ES8fdIq1qN35IlA20GOxSCJCLg6tSt7id1HGkw4Ne37JdctG6K
+         lLQ+wQwUaU8ZTH0ZeAmOxvLtioE0gEF09jRlJWq4gsCXrimsJPbzn1d2w0fs5n+EXTbQ
+         oftHmso/rXi9xy5waF1s4ed7JYqJxwx4Sy2D4=
+Subject: [PATCH] intel-agp.c: Fix crash when accessing nonexistent GTT
+ entries in i915
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Mar 2010 23:09:54 +0100
+Message-ID: <1268258994.2183.14.camel@carter>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI again.
+Hi,
 
-On Wed, Mar 10, 2010 at 2:46 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> Hi.
->
-> On Wed, Mar 10, 2010 at 2:07 PM, Corentin Chary
-> <corentin.chary@gmail.com> wrote:
->> On Tue, Mar 9, 2010 at 11:58 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
->>> Hi.
->>> I have an EeePC 900 running 2.6.34-rc1.
->>>
->>> If I boot it on AC the cpu runs at full speed, 900MHz; if I boot it on
->>> battery it runs only at 630Mhz. Plugging / unplugging the AC does not
->>> change the cpu frequency. Only a reboot can change the situation.
->>>
->>> I already tried to echo 0 or 1 to the
->>> /sys/devices/platform/eeepc/cpufv file; no effects, even if the file
->>> changes its value.
->>>
->>> This is not a regression from 2.6.33: this behavior is also present in
->>> that version.
->>>
->>> Does this ring any bells? This is really annoying, especially when
->>> trying to watch a movie on battery. Also 3D apps show a 30%
->>> performance drop, as expected.
->>
->> Can you change the frequency with cpufreq ?
->
-> No, I can't. Which cpufreq driver am I supposed to use? With only
-> cpufreq compiled in, the directory
-> /sys/drivers/system/cpu/cpu0/cpufreq is empty.
+The commit 5877960869333e42ebeb733e8d9d5630ff96d350 (included since 2.6.32.4) crashes (locks up) the 82915G/GV/910GL Controller when intel-agp.c tries to access nonexistent GTT entries at:
 
-OK, there's something really wrong here.
-I tried every possible cpufreq driver and the only one that loads is
-p4-clockmod (the others say "no such device"). But...
+-		for (i = intel_private.gtt_entries; i < current_size->num_entries; i++) {
++		for (i = intel_private.gtt_entries; i < intel_private.gtt_total_size; i++) {
 
-The result is really unexpected, at least to me. The system switches
-immediately to full speed, 900MHz (while running on battery). The
-motivation is probably this:
+Rationale: I915 (gma900) has 128 MB of video memory (maximum), as per intel.com ( http://www.intel.com/support/graphics/intel915g/sb/CS-012579.htm ) and lscpi:
 
-[    3.698307] conservative governor failed, too long transition
-latency of HW, fallback to performance governor
-[    3.698334] p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation available
+00:02.0 VGA compatible controller: Intel Corporation 82915G/GV/910GL Integrated Graphics Controller (rev 04) (prog-if 00 [VGA controller])
+        Subsystem: Intel Corporation Device 4147
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 11
+        Region 0: Memory at ff480000 (32-bit, non-prefetchable) [size=512K]
+        Region 1: I/O ports at ec00 [size=8]
+        Region 2: Memory at d8000000 (32-bit, prefetchable) [size=128M]
+        Region 3: Memory at ff440000 (32-bit, non-prefetchable) [size=256K]
+        Capabilities: <access denied>
 
-The cause of this is probably that this driver thinks that my eeepc is
-capable of many intermediate cpu frequency values:
 
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-112500 225000 337500 450000 562500 675000 787500 900000
+AFAIK, that implies that its gtt_total_size (in pages) should be 32K (as num_entries showed before the commit) instead of 64K.
 
-but the machine is only capable of 630 and 900MHz.
+Note: The IS_I915 macro includes 945; however, only GMA900 (I915) had 128 MB as the maximum AFAIK. Therefore, I divided the IS_I915 macro. I do not know about the "E7221" (please check).
 
-So, for me this is a really useful workaround: I compiled p4-clockmod
-statically and so just a few seconds after boot I have my system
-running at full speed :-)
+How to reproduce: Access kernel.org in iceweasel (Debian Lenny) and the X server will crash. Sometimes, the kernel freezes.
+ 
+Please review. The fix should be applied to stable series, as well as 2.6.33 and 2.6.34-rc1.
 
-To summarize:
+Signed-off-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+---
+--- linux-2.6.32.stable/drivers/char/agp/intel-agp.c.old	2010-03-10 15:32:36.000000000 +0100
++++ linux-2.6.32.stable/drivers/char/agp/intel-agp.c	2010-03-10 22:38:23.000000000 +0100
+@@ -65,11 +65,11 @@
+ #define PCI_DEVICE_ID_INTEL_IGDNG_MC2_HB    0x006a
+ #define PCI_DEVICE_ID_INTEL_IGDNG_M_IG	    0x0046
+ 
+-/* cover 915 and 945 variants */
+ #define IS_I915 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_E7221_HB || \
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB || \
+-		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB || \
+-		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB || \
++		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB)
++
++#define IS_I945 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB || \
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB || \
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB)
+ 
+@@ -724,14 +724,14 @@ static void intel_i830_init_gtt_entries(
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_48M:
+ 			/* Check it's really I915G */
+-			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
++			if (IS_I915 || IS_I945 || IS_I965 || IS_G33 || IS_G4X)
+ 				gtt_entries = MB(48) - KB(size);
+ 			else
+ 				gtt_entries = 0;
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_64M:
+ 			/* Check it's really I915G */
+-			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
++			if (IS_I915 || IS_I945 || IS_I965 || IS_G33 || IS_G4X)
+ 				gtt_entries = MB(64) - KB(size);
+ 			else
+ 				gtt_entries = 0;
+@@ -1305,6 +1305,8 @@ static int intel_i915_create_gatt_table(
+ 
+ 	if (IS_G33)
+ 	    gtt_map_size = 1024 * 1024; /* 1M on G33 */
++	else if (IS_I915)
++	    gtt_map_size = 128 * 1024; /* 128K on I915 */
+ 	intel_private.gtt = ioremap(temp2, gtt_map_size);
+ 	if (!intel_private.gtt)
+ 		return -ENOMEM;
 
------Without p4-clockmod
-* the eeepc-laptop cpufv interface doesn't work at all on my eeepc900
-* this happens at least with 2.6.33 and 2.6.34-rc1
-* if the system boots on AC power it stays forever at 900MHz
-* if it boots on battery it stays forever at 630MHz
 
----With p4-clockmod
-* the system boots at 630MHz if on battery
-* as soon that p4-clockmod is loaded it switches to 900MHz
-* p4-clockmod has a frequency table which is totally meaningless on the eeepc900
-
-What a mess....
-
-Regards,
-Fabio
-
->
->> Did you try all cpufv values (see cpufv_available file) ?
->
-> Yes, it only shows 0 and 1. I tried both, without success.
->
->> Is you bios up-to-date ?
->
-> Yes it is, it's 1006.
->
->>
->> --
->> Corentin Chary
->> http://xf.iksaif.net
->>
->
-> Thanks.
-> Fabio
->
