@@ -1,46 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756296Ab0CJJxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 04:53:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:47769 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001Ab0CJJxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 04:53:04 -0500
-Date: Wed, 10 Mar 2010 20:52:59 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       linux-kernel@vger.kernel.org, anton@samba.org
-Subject: [GIT PULL] Please pull my perf.git urgent branch
-Message-ID: <20100310095259.GB3959@brick.ozlabs.ibm.com>
+	id S932106Ab0CJJyz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 04:54:55 -0500
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:64475
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756279Ab0CJJyv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 04:54:51 -0500
+X-Greylist: delayed 594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 04:54:51 EST
+X-IronPort-AV: E=Sophos;i="4.49,613,1262559600"; 
+   d="scan'208";a="58491695"
+Date: Wed, 10 Mar 2010 10:44:52 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, lenz@cs.wisc.edu, rpurdie@openedhand.com
+Subject: Re: private field in led_classdev?
+Message-ID: <20100310094452.GA5702@const.bordeaux.inria.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	lenz@cs.wisc.edu, rpurdie@openedhand.com
+References: <20100307143112.GC5203@const.famille.thibault.fr> <20100310025411.GD26642@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100310025411.GD26642@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Greg KH, le Tue 09 Mar 2010 18:54:11 -0800, a écrit :
+> On Sun, Mar 07, 2010 at 03:31:12PM +0100, Samuel Thibault wrote:
+> > Would there be an objection to adding a void *private field to the
+> > led_classdev struct?  It would be a lot less burden for the input
+> > key board leds support for finding out the keyboard device from the
+> > brightness_set callback, as each device may have a long series of leds,
+> > not just a fixed number of them.
+> 
+> What's wrong with using the private pointer in the struct device
+> instead?
 
-My fix for the oops Anton was seeing was acked by Peter Z and
-attracted no other comments, so please pull it and send it on to
-Linus with the next batch of urgent fixes.
+Ah, right. In my case there is a struct device corresponding to the
+actual input device. I hadn't realized that since registering a led
+creates a new device, I have another private pointer which I can use.
 
-Thanks,
-Paul.
-
-The following changes since commit 548b84166917d6f5e2296123b85ad24aecd3801d:
-  Ingo Molnar (1):
-        Merge commit 'v2.6.34-rc1' into perf/urgent
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git urgent
-
-Paul Mackerras (1):
-      perf_event: Fix oops triggered by cpu offline/online
-
- kernel/perf_event.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+Samuel
