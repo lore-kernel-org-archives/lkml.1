@@ -1,199 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329Ab0CJEqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 23:46:32 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:61776 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756280Ab0CJEqa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 23:46:30 -0500
+	id S1756351Ab0CJEyY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 23:54:24 -0500
+Received: from tundra.namei.org ([65.99.196.166]:48375 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756207Ab0CJEyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 23:54:22 -0500
+Date: Wed, 10 Mar 2010 15:53:56 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       torvalds@linux-foundation.org, sds@tycho.nsa.gov,
+       viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH] anon_inodes: mark the anon inode private
+In-Reply-To: <1268191381-26950-1-git-send-email-eparis@redhat.com>
+Message-ID: <alpine.LRH.2.00.1003101553400.23261@tundra.namei.org>
+References: <1268191381-26950-1-git-send-email-eparis@redhat.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 9 Mar 2010 21:46:10 -0700
-X-Google-Sender-Auth: 8cbe1ba7a5083c03
-Message-ID: <fa686aa41003092046m725c8376x64958366b715187@mail.gmail.com>
-Subject: Re: [PATCH] Macintosh: fix brace and trailing statement coding style 
-	issues in adb-iop.c This is a patch to the adb-iop.c file that cleans up 
-	brace and trailing statement warnings found by the checkpatch.pl tool. 
-	Signed-off-by: Michael Beardsworth <m
-To: Michael Beardsworth <mbeards2@uoregon.edu>
-Cc: benh@kernel.crashing.or, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Michael Beardsworth <mbeards@mbeards-mbp.lulzzzzzzz.info>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+On Tue, 9 Mar 2010, Eric Paris wrote:
 
-Thanks for the patch.  However, whitespace changes like this usually
-aren't worth bothering with.  Yeah, sure, they are technically
-violations to the coding style, but they aren't egregious and aren't a
-serious impediment to readability.  In general I don't want to see
-purely minor coding style cleanup patches unless they are part of a
-larger effort to tighten up and fix bugs in a driver.  Otherwise it is
-just churn for little or no return on effort.
+> Inotify was switched to use anon_inode instead of its own private filesystem
+> which only had one inode in commit c44dcc56d2b5c7 "switch inotify_user to
+> anon_inode"
+> 
+> The problem with this is that now the inotify inode is not a distinct inode
+> which can be managed by LSMs.  userspace tools which use inotify were allowed
+> to use the inotify inode but may not have had permission to do read/write type
+> operations on the anon_inode.  After looking at the anon_inode and its users
+> it looks like the best solution is to just mark the anon_inode as S_PRIVATE
+> so the security system will ignore it.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-A good place to go looking for really bad code that needs cleaning
-effort is in the staging/ directory.
+Acked-by: James Morris <jmorris@namei.org>
 
-Cheers,
-g.
-
-On Tue, Mar 9, 2010 at 2:46 PM, Michael Beardsworth
-<mbeards2@uoregon.edu> wrote:
-> From: Michael Beardsworth <mbeards@mbeards-mbp.lulzzzzzzz.info>
->
 > ---
->  drivers/macintosh/adb-iop.c |   41 +++++++++++++++++++++++------------------
->  1 files changed, 23 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
-> index 4446966..e813589 100644
-> --- a/drivers/macintosh/adb-iop.c
-> +++ b/drivers/macintosh/adb-iop.c
-> @@ -19,13 +19,13 @@
->  #include <linux/init.h>
->  #include <linux/proc_fs.h>
->
-> -#include <asm/macintosh.h>
-> -#include <asm/macints.h>
-> +#include <asm/macintosh.h>
-> +#include <asm/macints.h>
->  #include <asm/mac_iop.h>
->  #include <asm/mac_oss.h>
->  #include <asm/adb_iop.h>
->
-> -#include <linux/adb.h>
-> +#include <linux/adb.h>
->
->  /*#define DEBUG_ADB_IOP*/
->
-> @@ -67,7 +67,8 @@ static void adb_iop_end_req(struct adb_request *req, int state)
->  {
->        req->complete = 1;
->        current_req = req->next;
-> -       if (req->done) (*req->done)(req);
-> +       if (req->done)
-> +               (*req->done)(req);
->        adb_iop_state = state;
->  }
->
-> @@ -85,9 +86,8 @@ static void adb_iop_complete(struct iop_msg *msg)
->        local_irq_save(flags);
->
->        req = current_req;
-> -       if ((adb_iop_state == sending) && req && req->reply_expected) {
-> +       if ((adb_iop_state == sending) && req && req->reply_expected)
->                adb_iop_state = awaiting_reply;
-> -       }
->
->        local_irq_restore(flags);
->  }
-> @@ -113,8 +113,8 @@ static void adb_iop_listen(struct iop_msg *msg)
->        req = current_req;
->
->  #ifdef DEBUG_ADB_IOP
-> -       printk("adb_iop_listen %p: rcvd packet, %d bytes: %02X %02X", req,
-> -               (uint) amsg->count + 2, (uint) amsg->flags, (uint) amsg->cmd);
-> +       printk(KERN_WARNING "adb_iop_listen %p: rcvd packet, %d bytes: %02X %02X",
-> +               req, (uint) amsg->count + 2, (uint) amsg->flags, (uint) amsg->cmd);
->        for (i = 0; i < amsg->count; i++)
->                printk(" %02X", (uint) amsg->data[i]);
->        printk("\n");
-> @@ -130,9 +130,8 @@ static void adb_iop_listen(struct iop_msg *msg)
->                msg->reply[0] = ADB_IOP_TIMEOUT | ADB_IOP_AUTOPOLL;
->                msg->reply[1] = 0;
->                msg->reply[2] = 0;
-> -               if (req && (adb_iop_state != idle)) {
-> +               if (req && (adb_iop_state != idle))
->                        adb_iop_end_req(req, idle);
-> -               }
->        } else {
->                /* TODO: is it possible for more than one chunk of data  */
->                /*       to arrive before the timeout? If so we need to */
-> @@ -169,12 +168,13 @@ static void adb_iop_start(void)
->
->        /* get the packet to send */
->        req = current_req;
-> -       if (!req) return;
-> +       if (!req)
-> +               return;
->
->        local_irq_save(flags);
->
->  #ifdef DEBUG_ADB_IOP
-> -       printk("adb_iop_start %p: sending packet, %d bytes:", req, req->nbytes);
-> +       printk(KERN_WARNING "adb_iop_start %p: sending packet, %d bytes:", req, req->nbytes);
->        for (i = 0 ; i < req->nbytes ; i++)
->                printk(" %02X", (uint) req->data[i]);
->        printk("\n");
-> @@ -203,13 +203,14 @@ static void adb_iop_start(void)
->
->  int adb_iop_probe(void)
->  {
-> -       if (!iop_ism_present) return -ENODEV;
-> +       if (!iop_ism_present)
-> +               return -ENODEV;
->        return 0;
->  }
->
->  int adb_iop_init(void)
->  {
-> -       printk("adb: IOP ISM driver v0.4 for Unified ADB.\n");
-> +       printk(KERN_MESSAGE "adb: IOP ISM driver v0.4 for Unified ADB.\n");
->        iop_listen(ADB_IOP, ADB_CHAN, adb_iop_listen, "ADB");
->        return 0;
->  }
-> @@ -219,10 +220,12 @@ int adb_iop_send_request(struct adb_request *req, int sync)
->        int err;
->
->        err = adb_iop_write(req);
-> -       if (err) return err;
-> +       if (err)
-> +               return err;
->
->        if (sync) {
-> -               while (!req->complete) adb_iop_poll();
-> +               while (!req->complete)
-> +                       adb_iop_poll();
->        }
->        return 0;
->  }
-> @@ -252,7 +255,8 @@ static int adb_iop_write(struct adb_request *req)
->        }
->
->        local_irq_restore(flags);
-> -       if (adb_iop_state == idle) adb_iop_start();
-> +       if (adb_iop_state == idle)
-> +               adb_iop_start();
->        return 0;
->  }
->
-> @@ -264,7 +268,8 @@ int adb_iop_autopoll(int devs)
->
->  void adb_iop_poll(void)
->  {
-> -       if (adb_iop_state == idle) adb_iop_start();
-> +       if (adb_iop_state == idle)
-> +               adb_iop_start();
->        iop_ism_irq(0, (void *) ADB_IOP);
->  }
->
-> --
-> 1.6.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
+>  fs/anon_inodes.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+> index 9f0bf13..2de0095 100644
+> --- a/fs/anon_inodes.c
+> +++ b/fs/anon_inodes.c
+> @@ -209,6 +209,7 @@ static struct inode *anon_inode_mkinode(void)
+>  	inode->i_mode = S_IRUSR | S_IWUSR;
+>  	inode->i_uid = current_fsuid();
+>  	inode->i_gid = current_fsgid();
+> +	inode->i_flags |= S_PRIVATE;
+>  	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+>  	return inode;
+>  }
+> -- 
+> 1.6.5.3
+> 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+James Morris
+<jmorris@namei.org>
