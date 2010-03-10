@@ -1,76 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300Ab0CJWVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:21:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58236 "EHLO hera.kernel.org"
+	id S1757344Ab0CJW0h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:26:37 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13441 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800Ab0CJWVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:21:17 -0500
-Message-ID: <4B981B22.5080103@kernel.org>
-Date: Wed, 10 Mar 2010 14:20:18 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
+	id S1757285Ab0CJW0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 17:26:36 -0500
+Date: Wed, 10 Mar 2010 17:23:39 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 4/5] memcg: dirty pages accounting and limiting
+	infrastructure
+Message-ID: <20100310222338.GB3009@redhat.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com> <1268175636-4673-5-git-send-email-arighi@develer.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [RFC PATCH 6/6] sparc64: use early_res and nobootmem
-References: <1268256267-3769-1-git-send-email-yinghai@kernel.org>	<1268256267-3769-7-git-send-email-yinghai@kernel.org> <20100310.140440.246391326.davem@davemloft.net>
-In-Reply-To: <20100310.140440.246391326.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1268175636-4673-5-git-send-email-arighi@develer.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10/2010 02:04 PM, David Miller wrote:
-> From: Yinghai Lu <yinghai@kernel.org>
-> Date: Wed, 10 Mar 2010 13:24:27 -0800
-> 
->> use early_res/fw_memmap to replace lmb, so could use early_res replace bootme
->> later.
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> This doesn't boot, it looks like early_res is not initialized
-> early enough, the backtrace is:
-> 
-> [    0.000000] Remapping the kernel... done.
-> [    0.000000] Kernel panic - not syncing: can not find more space for early_res array
-> [    0.000000] Call Trace:
-> [    0.000000]  [0000000000882c48] __check_and_double_early_res+0xc0/0x1c8
-> [    0.000000]  [0000000000882f18] reserve_early+0x10/0x38
-> [    0.000000]  [000000000087b894] prom_early_alloc+0x48/0x7c
-> [    0.000000]  [000000000087b3e4] get_one_property+0x28/0x50
-> [    0.000000]  [000000000087b588] prom_create_node+0x44/0xe8
-> [    0.000000]  [000000000087b6d0] prom_build_tree+0x1c/0xac
-> [    0.000000]  [000000000087b7b4] prom_build_devicetree+0x54/0x80
-> [    0.000000]  [000000000087fd34] paging_init+0x69c/0x1268
-> [    0.000000]  [00000000008786f4] start_kernel+0x88/0x374
-> [    0.000000]  [000000000070589c] tlb_fixup_done+0x98/0xa0
-> [    0.000000]  [0000000000000000] (null)
+On Wed, Mar 10, 2010 at 12:00:35AM +0100, Andrea Righi wrote:
 
-looks like we need to increase MAX_EARLY_RES_X in kernel/early_res.c
+[..]
 
-/*
- * need to make sure this one is bigger enough before
- * find_fw_memmap_area could be used
- */
-#define MAX_EARLY_RES_X 32
+> - * Currently used to update mapped file statistics, but the routine can be
+> - * generalized to update other statistics as well.
+> + * mem_cgroup_update_page_stat() - update memcg file cache's accounting
+> + * @page:	the page involved in a file cache operation.
+> + * @idx:	the particular file cache statistic.
+> + * @charge:	true to increment, false to decrement the statistic specified
+> + *		by @idx.
+> + *
+> + * Update memory cgroup file cache's accounting.
+>   */
+> -void mem_cgroup_update_file_mapped(struct page *page, int val)
+> +void mem_cgroup_update_page_stat(struct page *page,
+> +			enum mem_cgroup_write_page_stat_item idx, bool charge)
+>  {
+> -	struct mem_cgroup *mem;
+>  	struct page_cgroup *pc;
+>  	unsigned long flags;
+>  
+> +	if (mem_cgroup_disabled())
+> +		return;
+>  	pc = lookup_page_cgroup(page);
+> -	if (unlikely(!pc))
+> +	if (unlikely(!pc) || !PageCgroupUsed(pc))
+>  		return;
+> -
+>  	lock_page_cgroup(pc, flags);
+> -	mem = pc->mem_cgroup;
+> -	if (!mem)
+> -		goto done;
+> -
+> -	if (!PageCgroupUsed(pc))
+> -		goto done;
+> -
+> -	/*
+> -	 * Preemption is already disabled. We can use __this_cpu_xxx
+> -	 */
+> -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+> -
+> -done:
+> +	__mem_cgroup_update_page_stat(pc, idx, charge);
+>  	unlock_page_cgroup(pc, flags);
+>  }
+> +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_unlocked);
 
-struct early_res {
-        u64 start, end;
-        char name[15];
-        char overlap_ok;
-};
-static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata;
+  CC      mm/memcontrol.o
+mm/memcontrol.c:1600: error: ‘mem_cgroup_update_page_stat_unlocked’
+undeclared here (not in a function)
+mm/memcontrol.c:1600: warning: type defaults to ‘int’ in declaration of
+‘mem_cgroup_update_page_stat_unlocked’
+make[1]: *** [mm/memcontrol.o] Error 1
+make: *** [mm] Error 2
 
-static int max_early_res __initdata = MAX_EARLY_RES_X;
-
-
-or can you check if setup_memory_map() can be moved that early?
-(try to use early_param for mem=, so need to move that earlier)...
-
-YH
-
+Thanks
+Vivek
