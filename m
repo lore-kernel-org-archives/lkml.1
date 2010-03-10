@@ -1,63 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180Ab0CJNKd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:10:33 -0500
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:24979
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754837Ab0CJNKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:10:31 -0500
-X-SpamScore: -9
-X-BigFish: VPS-9(zz1432Rzz1202hzzz32i6bh2a8h43h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KZ2HWS-02-7N5-02
-X-M-MSG: 
-Date: Wed, 10 Mar 2010 14:10:30 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: fetch of edac-amd tree failed
-Message-ID: <20100310131030.GB10679@aftab>
-References: <20100310095013.2766db19.sfr@canb.auug.org.au>
+	id S1755412Ab0CJNK4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:10:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59003 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755202Ab0CJNKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 08:10:53 -0500
+Date: Wed, 10 Mar 2010 13:10:20 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       acme@infradead.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, acme@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf: Optimize perf_disable
+Message-ID: <tip-32975a4f114be52286f9a5bf6c230dbb8c0e1903@git.kernel.org>
+Git-Commit-ID: 32975a4f114be52286f9a5bf6c230dbb8c0e1903
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100310095013.2766db19.sfr@canb.auug.org.au>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 10 Mar 2010 13:10:03.0403 (UTC) FILETIME=[FF2645B0:01CAC052]
-X-Reverse-DNS: unknown
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:10:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, Mar 10, 2010 at 09:50:13AM +1100
+Commit-ID:  32975a4f114be52286f9a5bf6c230dbb8c0e1903
+Gitweb:     http://git.kernel.org/tip/32975a4f114be52286f9a5bf6c230dbb8c0e1903
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Sat, 6 Mar 2010 19:49:19 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 10 Mar 2010 13:22:25 +0100
 
-> Hi Borislav,
-> 
-> The linux-next fetch of the edac-amd tree has been failing like this for
-> a few days:
-> 
-> fatal: Couldn't find remote ref refs/heads/for-next
-> 
-> I am still using the version from next-20100212 (which has been merged
-> into Linus' tree).
+perf: Optimize perf_disable
 
-Hi Stephen,
+Currently we always call hw_perf_disable(), even if its already disabled,
+this seems superflous, esp. since it cannot be made NMI safe (see further
+patches).
 
-sorry about that. It should be fixed now, thanks.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: paulus@samba.org
+Cc: eranian@google.com
+Cc: robert.richter@amd.com
+Cc: fweisbec@gmail.com
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/perf_event.c |   16 +++-------------
+ 1 files changed, 3 insertions(+), 13 deletions(-)
 
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
-
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 73329de..d810846 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -93,25 +93,15 @@ void __weak perf_event_print_debug(void)	{ }
+ 
+ static DEFINE_PER_CPU(int, perf_disable_count);
+ 
+-void __perf_disable(void)
+-{
+-	__get_cpu_var(perf_disable_count)++;
+-}
+-
+-bool __perf_enable(void)
+-{
+-	return !--__get_cpu_var(perf_disable_count);
+-}
+-
+ void perf_disable(void)
+ {
+-	__perf_disable();
+-	hw_perf_disable();
++	if (!__get_cpu_var(perf_disable_count)++)
++		hw_perf_disable();
+ }
+ 
+ void perf_enable(void)
+ {
+-	if (__perf_enable())
++	if (!--__get_cpu_var(perf_disable_count))
+ 		hw_perf_enable();
+ }
+ 
