@@ -1,54 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371Ab0CJE7C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 23:59:02 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:33211 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756296Ab0CJE67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 23:58:59 -0500
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Mike Snitzer <snitzer@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>,
-       "linux-ide\@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, Karel Zak <kzak@redhat.com>,
-       Jim Meyering <jim@meyering.net>, Neil Brown <neilb@suse.de>
-Subject: Re: ATA 4 KiB sector issues.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B947393.2050002@kernel.org> <yq1zl2ic058.fsf@sermon.lab.mkp.net>
-	<170fa0d21003081134g491034e5v4aad4d43853e48ec@mail.gmail.com>
-	<4B95F071.3070400@msgid.tls.msk.ru>
-Date: Tue, 09 Mar 2010 23:57:21 -0500
-In-Reply-To: <4B95F071.3070400@msgid.tls.msk.ru> (Michael Tokarev's message of
-	"Tue, 09 Mar 2010 09:53:37 +0300")
-Message-ID: <yq1mxyg7ozy.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	id S1751039Ab0CJFAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 00:00:49 -0500
+Received: from tundra.namei.org ([65.99.196.166]:34439 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724Ab0CJFAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 00:00:47 -0500
+Date: Wed, 10 Mar 2010 16:00:46 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-security-module@vger.kernel.org" 
+	<linux-security-module@vger.kernel.org>,
+       "zohar@us.ibm.com" <zohar@us.ibm.com>
+Subject: Re: [PATCH] security/ima: replace gcc specific __FUNCTION__ with
+ __func__
+In-Reply-To: <0D753D10438DA54287A00B027084269763682CE03C@AUSP01VMBX24.collaborationhost.net>
+Message-ID: <alpine.LRH.2.00.1003101600330.23261@tundra.namei.org>
+References: <0D753D10438DA54287A00B027084269763682CE03C@AUSP01VMBX24.collaborationhost.net>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B9726E7.0010:SCFMA4539814,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Michael" == Michael Tokarev <mjt@tls.msk.ru> writes:
+On Tue, 9 Mar 2010, H Hartley Sweeten wrote:
 
-[MD I/O topology support]
+> As noted by checkpatch.pl, __func__ should be used instead of gcc
+> specific __FUNCTION__.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: Mimi Zohar <zohar@us.ibm.com>
+> Cc: James Morris <jmorris@namei.org>
 
-Michael> But apparently it does not implement anything of this sort.
-Michael> Adding Neilb to the Cc list.......
 
-git show 8f6c2e4b
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+James Morris
+<jmorris@namei.org>
