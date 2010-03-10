@@ -1,68 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952Ab0CJIA0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 03:00:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60446 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751446Ab0CJIAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 03:00:24 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+rKnkIOEKrjlnzY7jh454UAiLxNb8rj4hFsI8eLp
-	xd8n8pO8GpNPtx
-Date: Wed, 10 Mar 2010 09:00:24 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Peter H?we <PeterHuewe@gmx.de>, Magnus Damm <damm@igel.co.jp>,
-       linux-kernel@vger.kernel.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] serial/sh_sci: Fix build failure for non-sh architectures
-In-Reply-To: <20100310025301.GA17693@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.1003100854320.4618@axis700.grange>
-References: <201003092118.26274.PeterHuewe@gmx.de> <20100310025301.GA17693@linux-sh.org>
+	id S1754710Ab0CJICK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 03:02:10 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:33148 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446Ab0CJICI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 03:02:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=RvyEtbzOAf6bAunrKTnbDqvvz6P5J5TCBG4KrYIVcLeqMz2PGJxtM5WzWGcKL8cm1P
+         9SgL2NnMvJn+RZ71Nh+QJOilr7WcMI/erlHjx2VGkCSU5tck0wLwqrjKYtRBZSK1JuXY
+         f8VyBZH2T53erCGKnpDNtzBcEcJa6CWZe3Zh4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.56999999999999995
+In-Reply-To: <21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
+References: <4B968834.3040609@gmail.com>
+	 <21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
+Date: Wed, 10 Mar 2010 09:02:06 +0100
+Message-ID: <2ea1731b1003100002w104633ffy1ae46ef3d245e5b5@mail.gmail.com>
+Subject: Re: [PATCH v2] char drivers: Ram oops/panic logger
+From: Marco Stornelli <marco.stornelli@gmail.com>
+To: Yuasa Yoichi <yuasa@linux-mips.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Paul Mundt wrote:
+2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
+> Hi,
+>
+> 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
+>> Ramoops, like mtdoops, can log oops/panic information but in RAM.
+>
+> What is different from mtdoops + mtd-ram?
+>
+> Yoichi
+>
 
-> On Tue, Mar 09, 2010 at 09:18:25PM +0100, Peter H?we wrote:
-> > From: Peter Huewe <peterhuewe@gmx.de>
-> > 
-> > This patch fixes a build failure for various arm based defconfigs
-> > [1][2][3] and maybe other architectures/configs.
-> > 
-> > The build failure was introduced by the sh specific patch [4]
-> > "serial: sh-sci: Add DMA support"
-> > by Guennadi Liakhovetski
-> > 
-> > Patch against linux-next of 20100309
-> 
-> Please Cc linux-sh@vger.kernel.org so these things make it in to
-> patchwork in the future.
+It can be used in a very easy way with persistent RAM for systems
+without flash support. For this systems, with this driver, it's no
+more needed add to the kernel the mtd subsystem with advantage in
+footprint as I said in the description. In addition, you can save
+flash space and store this information only in RAM. I think it's very
+useful for embedded systems.
 
-Ok, I understand, this breakage is only in linux-next, and only for 
-shmobile targets, which wasn't there as I was preparing the patch. 
-However, what I did oversee is the H8300 arch, which also uses the 
-sh-sci.c, and they are, probably, also broken in the mainline now. So, can 
-we, please, also schedule this for 34-rc2?
-
-> > References:
-> > [1] http://kisskb.ellerman.id.au/kisskb/buildresult/2248992/
-> > [2] http://kisskb.ellerman.id.au/kisskb/buildresult/2248996/
-> > [3] http://kisskb.ellerman.id.au/kisskb/buildresult/2248998/
-> > [4] http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=73a19e4c0301908ce6346715fd08a74308451f5a
-> > 
-> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Applied, thanks.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Marco
