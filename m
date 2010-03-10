@@ -1,175 +1,273 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546Ab0CJReV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:34:21 -0500
-Received: from mail.perches.com ([173.55.12.10]:1599 "EHLO mail.perches.com"
+	id S932541Ab0CJRg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:36:57 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56743 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932533Ab0CJReS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:34:18 -0500
-Subject: [PATCH] drivers/net/tulip/eeprom.c: fix bogus "(null)" in tulip
- init messages
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: mikpe@it.uu.se, netdev@vger.kernel.org, grundler@parisc-linux.org,
-       kyle@mcmartin.ca, linux-kernel@vger.kernel.org
-In-Reply-To: <20100310.084104.201710892.davem@davemloft.net>
-References: <19351.48072.777754.465084@pilspetsen.it.uu.se>
-	 <20100310.084104.201710892.davem@davemloft.net>
+	id S932318Ab0CJRgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 12:36:55 -0500
+Subject: [GIT PULL] final scsi updates for 2.6.34-rc1
+From: James Bottomley <James.Bottomley@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Mar 2010 09:34:17 -0800
-Message-ID: <1268242457.1545.347.camel@Joe-Laptop.home>
+Date: Wed, 10 Mar 2010 12:36:44 -0500
+Message-ID: <1268242604.22601.25.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-10 at 08:41 -0800, David Miller wrote:
-> From: Mikael Pettersson <mikpe@it.uu.se>
-> Date: Wed, 10 Mar 2010 16:33:28 +0100
-> > Booting 2.6.34-rc1 on a machine with a tulip nic I see
-> > a number of kernel messages that include "(null)" where
-> > previous kernels included the string "tulip0":
-> CC:'ing the guilty party :-)  It's one of the following
-> commits:
+OK, I know this is a bit late, but no-one told me the merge window was
+going to close early, but even if they had I'd have been unable to do
+anything about it, since I've been in transit from India all this week
+so far (don't ask ...).
 
-Thanks Mikael.
+The only commit added on Monday is a bug fix (vport sync issue), so I
+plead this tree was ready to roll on Sunday.  The tree contains five
+driver updates (lpfc, bfa, ipr, hpsa and be2iscsi) plus an assortment of
+bug fixes.
 
-Anonymity has some good attributes.
-Blame avoidance is one of them.
+The tree is available here:
 
-I've broad shoulders.  It's me, then Dwight Howard...
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-There might be another few of these where ->name or ->dev
-was used before struct device or net_device was registered.
-I'll go back and check.
+The short changelog is:
 
-tulip_core has:
+Boaz Harrosh (1):
+      libosd: Fix unchecked err return found by smatch
 
-	if (tp->flags & HAS_MEDIA_TABLE) {
-		sprintf(dev->name, DRV_NAME "%d", board_idx);	/* hack */
-		tulip_parse_eeprom(dev);
-		strcpy(dev->name, "eth%d");			/* un-hack */
-	}
+Brian King (2):
+      ibmvfc: Add suspend/resume support
+      ibmvscsi: Add suspend/resume support
 
-So I don't feel _too_ bad.
+Gal Rosen (1):
+      scsi_transport_fc: Fix synchronization issue while deleting vport
 
-tulip_parse_eeprom is done before register_netdev so the logging
-there can not use netdev_<level> or dev_<level>(&dev->dev
+Hannes Reinecke (1):
+      scsi_dh_emc: fix mode select request setup
 
-Signed-off-by: Joe Perches <joe@perches.com>
- drivers/net/tulip/eeprom.c |   54 ++++++++++++++++++++++++-------------------
- 1 files changed, 30 insertions(+), 24 deletions(-)
----
-diff --git a/drivers/net/tulip/eeprom.c b/drivers/net/tulip/eeprom.c
-index 93f4e83..49f05d1 100644
---- a/drivers/net/tulip/eeprom.c
-+++ b/drivers/net/tulip/eeprom.c
-@@ -143,6 +143,12 @@ static void __devinit tulip_build_fake_mediatable(struct tulip_private *tp)
- 
- void __devinit tulip_parse_eeprom(struct net_device *dev)
- {
-+	/*
-+	  dev is not registered at this point, so logging messages can't
-+	  use dev_<level> or netdev_<level> but dev->name is good via a
-+	  hack in the caller
-+	*/
-+
- 	/* The last media info list parsed, for multiport boards.  */
- 	static struct mediatable *last_mediatable;
- 	static unsigned char *last_ee_data;
-@@ -161,15 +167,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
- 		if (ee_data[0] == 0xff) {
- 			if (last_mediatable) {
- 				controller_index++;
--				dev_info(&dev->dev,
--					 "Controller %d of multiport board\n",
--					 controller_index);
-+				pr_info("%s: Controller %d of multiport board\n",
-+					dev->name, controller_index);
- 				tp->mtable = last_mediatable;
- 				ee_data = last_ee_data;
- 				goto subsequent_board;
- 			} else
--				dev_info(&dev->dev,
--					 "Missing EEPROM, this interface may not work correctly!\n");
-+				pr_info("%s: Missing EEPROM, this interface may not work correctly!\n",
-+					dev->name);
- 			return;
- 		}
- 	  /* Do a fix-up based on the vendor half of the station address prefix. */
-@@ -181,15 +186,14 @@ void __devinit tulip_parse_eeprom(struct net_device *dev)
- 			  i++;			/* An Accton EN1207, not an outlaw Maxtech. */
- 		  memcpy(ee_data + 26, eeprom_fixups[i].newtable,
- 				 sizeof(eeprom_fixups[i].newtable));
--		  dev_info(&dev->dev,
--			   "Old format EEPROM on '%s' board.  Using substitute media control info\n",
--			   eeprom_fixups[i].name);
-+		  pr_info("%s: Old format EEPROM on '%s' board.  Using substitute media control info\n",
-+			  dev->name, eeprom_fixups[i].name);
- 		  break;
- 		}
- 	  }
- 	  if (eeprom_fixups[i].name == NULL) { /* No fixup found. */
--		  dev_info(&dev->dev,
--			   "Old style EEPROM with no media selection information\n");
-+		  pr_info("%s: Old style EEPROM with no media selection information\n",
-+			  dev->name);
- 		return;
- 	  }
- 	}
-@@ -217,8 +221,8 @@ subsequent_board:
- 	        /* there is no phy information, don't even try to build mtable */
- 	        if (count == 0) {
- 			if (tulip_debug > 0)
--				dev_warn(&dev->dev,
--					 "no phy info, aborting mtable build\n");
-+				pr_warning("%s: no phy info, aborting mtable build\n",
-+					   dev->name);
- 		        return;
- 		}
- 
-@@ -234,8 +238,10 @@ subsequent_board:
- 		mtable->has_nonmii = mtable->has_mii = mtable->has_reset = 0;
- 		mtable->csr15dir = mtable->csr15val = 0;
- 
--		dev_info(&dev->dev, "EEPROM default media type %s\n",
--			 media & 0x0800 ? "Autosense" : medianame[media & MEDIA_MASK]);
-+		pr_info("%s: EEPROM default media type %s\n",
-+			dev->name,
-+			media & 0x0800 ? "Autosense"
-+				       : medianame[media & MEDIA_MASK]);
- 		for (i = 0; i < count; i++) {
- 			struct medialeaf *leaf = &mtable->mleaf[i];
- 
-@@ -298,17 +304,17 @@ subsequent_board:
- 			}
- 			if (tulip_debug > 1  &&  leaf->media == 11) {
- 				unsigned char *bp = leaf->leafdata;
--				dev_info(&dev->dev,
--					 "MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
--					 bp[0], bp[1], bp[2 + bp[1]*2],
--					 bp[5 + bp[2 + bp[1]*2]*2],
--					 bp[4 + bp[2 + bp[1]*2]*2]);
-+				pr_info("%s: MII interface PHY %d, setup/reset sequences %d/%d long, capabilities %02x %02x\n",
-+					dev->name,
-+					bp[0], bp[1], bp[2 + bp[1]*2],
-+					bp[5 + bp[2 + bp[1]*2]*2],
-+					bp[4 + bp[2 + bp[1]*2]*2]);
- 			}
--			dev_info(&dev->dev,
--				 "Index #%d - Media %s (#%d) described by a %s (%d) block\n",
--				 i, medianame[leaf->media & 15], leaf->media,
--				 leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
--				 leaf->type);
-+			pr_info("%s: Index #%d - Media %s (#%d) described by a %s (%d) block\n",
-+				dev->name,
-+				i, medianame[leaf->media & 15], leaf->media,
-+				leaf->type < ARRAY_SIZE(block_name) ? block_name[leaf->type] : "<unknown>",
-+				leaf->type);
- 		}
- 		if (new_advertise)
- 			tp->sym_advertise = new_advertise;
+James Bottomley (1):
+      raid_attrs: fix dependency problems
+
+James Smart (7):
+      lpfc 8.3.10: Update Driver version to 8.3.10
+      lpfc 8.3.10: Added round robin FCF failover
+      lpfc 8.3.10: Fix Discovery issues
+      lpfc 8.3.10: Added management for LP21000 through BSG.
+      lpfc 8.3.10: Update SLI interface areas
+      lpfc 8.3.10: Fix user interface issues
+      lpfc 8.3.10: Fix Initialization issues
+
+Jayamohan Kallickal (7):
+      be2iscsi: Alloc only one EQ if intr mode
+      be2iscsi: Fixing memory allocation for connection
+      be2iscsi: Remove debug code
+      be2iscsi: cleans up abort handling
+      be2iscsi: Fix for a possible udelay while holding lock
+      be2iscsi: Cleanup of resets for device and target
+      libiscsi: Make iscsi_eh_target_reset start with session reset
+
+Krishna Gudipati (30):
+      bfa: Update the driver version to 2.1.2.1.
+      bfa: Remove unused header files and did some cleanup.
+      bfa: Handle SCSI IO underrun case.
+      bfa: FCS and include file changes.
+      bfa: Modified the portstats get/clear logic
+      bfa: Replace bfa_get_attr() with specific APIs
+      bfa: New portlog entries for events (FIP/FLOGI/FDISC/LOGO).
+      bfa: Rename pport to fcport in BFA FCS.
+      bfa: IOC fixes, check for IOC down condition.
+      bfa: In MSIX mode, ignore spurious RME interrupts when FCoE ports are in FW mismatch state.
+      bfa: Fix Command Queue (CPE) full condition check and ack CPE interrupt.
+      bfa: IOC recovery fix in fcmode.
+      bfa: AEN and byte alignment fixes.
+      bfa: Introduce a link notification state machine.
+      bfa: Added firmware save clear feature for BFA driver.
+      bfa: FCS authentication related changes.
+      bfa: PCI VPD, FIP and include file changes.
+      bfa: Fix to copy fpma MAC when requested by user space application.
+      bfa: RPORT state machine: direct attach mode fix.
+      bfa: Replace bfa_assert() with bfa_sm_fault()
+      bfa: Clear LL_HALT and PSS_ERR bit when IOC crashes.
+      bfa: IOC changes: Support faster recovery and split bfa_ioc.c into ASIC specific code.
+      bfa: Resume BFA operations after firmware mismatch is resolved.
+      bfa: Fix to allow creation of only 190 vports on CNA.
+      bfa: New interface to handle firmware upgrade scenario
+      bfa: Changes to support FDMI Driver Parameter
+      bfa: Enable new halt interrupt in BFA.
+      bfa: Enable IOC auto-recovery and IOC type fix.
+      bfa: Defined a new LPS event to clear virtual link on a vport
+      bfa: Added separate MSI-X module parameters.
+
+Martin K. Petersen (1):
+      sd: Fix VPD buffer allocations
+
+Mike Miller (1):
+      hpsa: remove scan thread
+
+Stephen M. Cameron (8):
+      hpsa: remove unused members next, prev, and retry_count from command list structure.
+      hpsa: Increase the number of scatter gather elements supported.
+      hpsa: Clarify calculation of padding for commandlist structure
+      hpsa: mark hpsa_pci_init as __devinit
+      hpsa: return -ENOMEM, not -1
+      hpsa: fix scsi status mis-shift
+      hpsa: fix firmwart typo
+      hpsa: allow modifying device queue depth.
+
+Wayne Boyer (9):
+      ipr: adds PCI ID definitions for new adapters
+      ipr: add support for new IOASCs
+      ipr: add support for multiple stages of initialization
+      ipr: implement shutdown changes and remove obsolete write cache parameter
+      ipr: add hardware assisted smart dump functionality
+      ipr: add error handling updates for the next generation chip
+      ipr: update the configuration table code for the next generation chip
+      ipr: define new offsets to registers for the next generation chip
+      ipr: add support for new adapter command structures for the next generation chip
+
+The diffstat is:
+
+ drivers/infiniband/ulp/iser/iscsi_iser.c           |    2 
+ drivers/scsi/Kconfig                               |    6 
+ drivers/scsi/be2iscsi/be_cmds.c                    |    7 
+ drivers/scsi/be2iscsi/be_iscsi.c                   |    4 
+ drivers/scsi/be2iscsi/be_main.c                    |  201 +-
+ drivers/scsi/be2iscsi/be_main.h                    |   11 
+ drivers/scsi/be2iscsi/be_mgmt.c                    |   14 
+ drivers/scsi/be2iscsi/be_mgmt.h                    |    8 
+ drivers/scsi/bfa/Makefile                          |    8 
+ drivers/scsi/bfa/bfa_core.c                        |   19 
+ drivers/scsi/bfa/bfa_fcport.c                      | 1709 +++++++++++---------
+ drivers/scsi/bfa/bfa_fcs.c                         |   63 
+ drivers/scsi/bfa/bfa_fcs_lport.c                   |   75 
+ drivers/scsi/bfa/bfa_fcs_port.c                    |   11 
+ drivers/scsi/bfa/bfa_fcs_uf.c                      |    8 
+ drivers/scsi/bfa/bfa_hw_cb.c                       |   13 
+ drivers/scsi/bfa/bfa_hw_ct.c                       |    9 
+ drivers/scsi/bfa/bfa_intr.c                        |  111 -
+ drivers/scsi/bfa/bfa_ioc.c                         |  762 ++-------
+ drivers/scsi/bfa/bfa_ioc.h                         |   57 
+ drivers/scsi/bfa/bfa_ioc_cb.c                      |  274 +++
+ drivers/scsi/bfa/bfa_ioc_ct.c                      |  423 +++++
+ drivers/scsi/bfa/bfa_iocfc.c                       |   24 
+ drivers/scsi/bfa/bfa_iocfc.h                       |    3 
+ drivers/scsi/bfa/bfa_ioim.c                        |   22 
+ drivers/scsi/bfa/bfa_itnim.c                       |   30 
+ drivers/scsi/bfa/bfa_lps.c                         |  134 +
+ drivers/scsi/bfa/bfa_module.c                      |    4 
+ drivers/scsi/bfa/bfa_modules_priv.h                |    2 
+ drivers/scsi/bfa/bfa_port_priv.h                   |   57 
+ drivers/scsi/bfa/bfa_priv.h                        |    2 
+ drivers/scsi/bfa/bfa_rport.c                       |   26 
+ drivers/scsi/bfa/bfa_trcmod_priv.h                 |   62 
+ drivers/scsi/bfa/bfa_tskim.c                       |   14 
+ drivers/scsi/bfa/bfad.c                            |  208 +-
+ drivers/scsi/bfa/bfad_attr.c                       |   76 
+ drivers/scsi/bfa/bfad_attr.h                       |    9 
+ drivers/scsi/bfa/bfad_drv.h                        |   35 
+ drivers/scsi/bfa/bfad_im.c                         |   53 
+ drivers/scsi/bfa/bfad_im.h                         |    5 
+ drivers/scsi/bfa/bfad_intr.c                       |   11 
+ drivers/scsi/bfa/fabric.c                          |   59 
+ drivers/scsi/bfa/fcbuild.h                         |    6 
+ drivers/scsi/bfa/fcpim.c                           |   51 
+ drivers/scsi/bfa/fcs_fabric.h                      |    2 
+ drivers/scsi/bfa/fcs_fcpim.h                       |    5 
+ drivers/scsi/bfa/fcs_lport.h                       |    7 
+ drivers/scsi/bfa/fcs_port.h                        |    3 
+ drivers/scsi/bfa/fcs_rport.h                       |    3 
+ drivers/scsi/bfa/fcs_uf.h                          |    3 
+ drivers/scsi/bfa/fcs_vport.h                       |    8 
+ drivers/scsi/bfa/fdmi.c                            |   79 
+ drivers/scsi/bfa/include/aen/bfa_aen.h             |   50 
+ drivers/scsi/bfa/include/bfa.h                     |   22 
+ drivers/scsi/bfa/include/bfa_svc.h                 |  101 -
+ drivers/scsi/bfa/include/bfa_timer.h               |    2 
+ drivers/scsi/bfa/include/bfi/bfi.h                 |    4 
+ drivers/scsi/bfa/include/bfi/bfi_cbreg.h           |   16 
+ drivers/scsi/bfa/include/bfi/bfi_ctreg.h           |   26 
+ drivers/scsi/bfa/include/bfi/bfi_ioc.h             |    2 
+ drivers/scsi/bfa/include/bfi/bfi_lps.h             |    8 
+ drivers/scsi/bfa/include/bfi/bfi_pport.h           |  172 --
+ drivers/scsi/bfa/include/cna/bfa_cna_trcmod.h      |    4 
+ drivers/scsi/bfa/include/cs/bfa_log.h              |    2 
+ drivers/scsi/bfa/include/cs/bfa_plog.h             |    9 
+ drivers/scsi/bfa/include/cs/bfa_sm.h               |    8 
+ drivers/scsi/bfa/include/defs/bfa_defs_aen.h       |   10 
+ drivers/scsi/bfa/include/defs/bfa_defs_auth.h      |   22 
+ drivers/scsi/bfa/include/defs/bfa_defs_cee.h       |   14 
+ drivers/scsi/bfa/include/defs/bfa_defs_driver.h    |    3 
+ drivers/scsi/bfa/include/defs/bfa_defs_ethport.h   |    1 
+ drivers/scsi/bfa/include/defs/bfa_defs_fcport.h    |   94 +
+ drivers/scsi/bfa/include/defs/bfa_defs_im_common.h |   32 
+ drivers/scsi/bfa/include/defs/bfa_defs_im_team.h   |   72 
+ drivers/scsi/bfa/include/defs/bfa_defs_ioc.h       |    3 
+ drivers/scsi/bfa/include/defs/bfa_defs_iocfc.h     |   12 
+ drivers/scsi/bfa/include/defs/bfa_defs_lport.h     |    4 
+ drivers/scsi/bfa/include/defs/bfa_defs_mfg.h       |  111 +
+ drivers/scsi/bfa/include/defs/bfa_defs_port.h      |   19 
+ drivers/scsi/bfa/include/defs/bfa_defs_pport.h     |  151 +
+ drivers/scsi/bfa/include/defs/bfa_defs_status.h    |   17 
+ drivers/scsi/bfa/include/fcb/bfa_fcb_fcpim.h       |    1 
+ drivers/scsi/bfa/include/fcs/bfa_fcs.h             |    5 
+ drivers/scsi/bfa/include/fcs/bfa_fcs_lport.h       |    8 
+ drivers/scsi/bfa/include/log/bfa_log_hal.h         |    6 
+ drivers/scsi/bfa/include/log/bfa_log_linux.h       |   16 
+ drivers/scsi/bfa/include/protocol/fc.h             |    5 
+ drivers/scsi/bfa/include/protocol/pcifw.h          |   75 
+ drivers/scsi/bfa/loop.c                            |    2 
+ drivers/scsi/bfa/lport_api.c                       |    5 
+ drivers/scsi/bfa/ms.c                              |   29 
+ drivers/scsi/bfa/ns.c                              |   36 
+ drivers/scsi/bfa/rport.c                           |   91 -
+ drivers/scsi/bfa/rport_api.c                       |    2 
+ drivers/scsi/bfa/rport_ftrs.c                      |   12 
+ drivers/scsi/bfa/scn.c                             |   10 
+ drivers/scsi/bfa/vport.c                           |   86 -
+ drivers/scsi/bnx2i/bnx2i_iscsi.c                   |    2 
+ drivers/scsi/cxgb3i/cxgb3i_iscsi.c                 |    2 
+ drivers/scsi/device_handler/scsi_dh_emc.c          |    6 
+ drivers/scsi/hpsa.c                                |  330 +--
+ drivers/scsi/hpsa.h                                |    7 
+ drivers/scsi/hpsa_cmd.h                            |   20 
+ drivers/scsi/ibmvscsi/ibmvfc.c                     |   27 
+ drivers/scsi/ibmvscsi/ibmvscsi.c                   |   19 
+ drivers/scsi/ibmvscsi/ibmvscsi.h                   |    1 
+ drivers/scsi/ibmvscsi/iseries_vscsi.c              |    6 
+ drivers/scsi/ibmvscsi/rpa_vscsi.c                  |   13 
+ drivers/scsi/ipr.c                                 | 1756 ++++++++++++++++-----
+ drivers/scsi/ipr.h                                 |  467 ++++-
+ drivers/scsi/iscsi_tcp.c                           |    2 
+ drivers/scsi/libiscsi.c                            |   23 
+ drivers/scsi/lpfc/lpfc.h                           |   10 
+ drivers/scsi/lpfc/lpfc_attr.c                      |    7 
+ drivers/scsi/lpfc/lpfc_bsg.c                       |  332 +++
+ drivers/scsi/lpfc/lpfc_bsg.h                       |   12 
+ drivers/scsi/lpfc/lpfc_crtn.h                      |    7 
+ drivers/scsi/lpfc/lpfc_els.c                       |  142 +
+ drivers/scsi/lpfc/lpfc_hbadisc.c                   |  527 ++++--
+ drivers/scsi/lpfc/lpfc_init.c                      |  277 ++-
+ drivers/scsi/lpfc/lpfc_logmsg.h                    |    1 
+ drivers/scsi/lpfc/lpfc_mbox.c                      |    8 
+ drivers/scsi/lpfc/lpfc_scsi.c                      |   49 
+ drivers/scsi/lpfc/lpfc_sli.c                       |  413 ++++
+ drivers/scsi/lpfc/lpfc_sli.h                       |    1 
+ drivers/scsi/lpfc/lpfc_sli4.h                      |   38 
+ drivers/scsi/lpfc/lpfc_version.h                   |    2 
+ drivers/scsi/lpfc/lpfc_vport.c                     |    7 
+ drivers/scsi/osd/osd_initiator.c                   |    4 
+ drivers/scsi/raid_class.c                          |    2 
+ drivers/scsi/scsi_transport_fc.c                   |   24 
+ drivers/scsi/sd.c                                  |    4 
+ include/scsi/libiscsi.h                            |    3 
+ 133 files changed, 7204 insertions(+), 3525 deletions(-)
+
+James
 
 
