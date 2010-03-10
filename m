@@ -1,45 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164Ab0CJU4Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 15:56:25 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:37154 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036Ab0CJU4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 15:56:23 -0500
-Date: Wed, 10 Mar 2010 20:56:18 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pauli Nieminen <suokkos@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Luca Tettamanti <kronos.it@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [Q] How to tell we're using the KMS (during suspend/resume)
-	outside the graphics driver
-Message-ID: <20100310205618.GA28628@srcf.ucam.org>
-References: <201003062236.09801.rjw@sisk.pl> <201003091234.59598.rjw@sisk.pl> <alpine.LFD.2.00.1003091613390.30952@casper.infradead.org> <201003092208.28175.rjw@sisk.pl> <20100310055013.GC19518@linux-sh.org> <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com>
+	id S1757193Ab0CJVAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:00:20 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:38558 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757113Ab0CJVAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 16:00:19 -0500
+Date: Wed, 10 Mar 2010 22:00:15 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl deprecation)
+Message-ID: <20100310210015.GB16230@isilmar.linta.de>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>
+References: <20100303075944.GA23354@comet.dominikbrodowski.net> <20100303083010.GA22928@flint.arm.linux.org.uk> <20100305120746.646126b9@lxorguk.ukuu.org.uk> <20100310204546.GA1394@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <548cdfc21003100254t5c94aca5u5cf1e9eb29215325@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20100310204546.GA1394@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As far as the ACPI video driver goes, acpi_get_physical_pci_device() 
-will give you something to work with. For the console-switching case, I 
-think the most reasonable plan is probably to add a flag to the console 
-drivers to indicate whether or not they support reprogramming the 
-hardware themselves, and then walk all active console drivers. There'd 
-need to be a way for fb drivers to tell fbcon that they can handle it.
+Hey,
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+On Wed, Mar 10, 2010 at 09:45:46PM +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > > So you believe that disabling the button in the graphical environment
+> > > to allow PCMCIA cards to be removed (such as CF cards) - leaving the
+> > > user to merely pull out the CF card, while the FS is mounted, is a
+> > > good idea?
+> > 
+> > Do any graphical environments even support the ancient user space
+> > pcmcica helper stuff ? I can't find any evidence they do but I realise
+> 
+> Yes; qtopia shipped with zaurus sl-5500 (collie), and very probably
+> opie and gpe...
+> 
+> Sharp needed operating system for the handheld, and yes it supported
+> all the hw.
+
+So qtopia still uses the PCMCIA ioctl? Or is it some custom add-on code by
+zaurus? I'd very much like to see some more source code, what parts of
+the IOCTL it uses etc. pp. Or at least some pointers...
+
+Thanks,
+	Dominik
