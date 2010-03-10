@@ -1,176 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323Ab0CJWTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:19:15 -0500
-Received: from mail-ew0-f216.google.com ([209.85.219.216]:34111 "EHLO
-	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756164Ab0CJWTJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:19:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IB4vBLKjOcT0fA9sxSZgSbkiKTC8OQ6iAs6VxQ4VKoLNEj+fN/DRs3HMuF1sVrkDhO
-         zcmHzSPJbV6MHvHcKCu2LyKpInz6YPLBZfcQ2nVsOeEdFrFTfptHURfEb7c9yjtQqEZE
-         vFF44fFPhNzVJEpKs/C0dLGX8t8wbo7SIQJYs=
+	id S1757300Ab0CJWVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:21:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58236 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800Ab0CJWVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 17:21:17 -0500
+Message-ID: <4B981B22.5080103@kernel.org>
+Date: Wed, 10 Mar 2010 14:20:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <b637ec0b1003101409j6b03e219m5ac587b96bf5e26b@mail.gmail.com>
-References: <b637ec0b1003091458j67efc62cg2c975e9e286f4b0b@mail.gmail.com>
-	 <71cd59b01003100507q79878fdan98e53cb4e705d2c2@mail.gmail.com>
-	 <b637ec0b1003100546l121f3a54o311aba94c8cabc5e@mail.gmail.com>
-	 <b637ec0b1003101409j6b03e219m5ac587b96bf5e26b@mail.gmail.com>
-Date: Wed, 10 Mar 2010 23:19:06 +0100
-Message-ID: <b637ec0b1003101419i81391fchd99410530915b1a3@mail.gmail.com>
-Subject: Re: Possible bug in eeepc-laptop.c - EeePC 900
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Corentin Chary <corentin.chary@gmail.com>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC PATCH 6/6] sparc64: use early_res and nobootmem
+References: <1268256267-3769-1-git-send-email-yinghai@kernel.org>	<1268256267-3769-7-git-send-email-yinghai@kernel.org> <20100310.140440.246391326.davem@davemloft.net>
+In-Reply-To: <20100310.140440.246391326.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I'm sorry but I have some more detils to add.
-
-On Wed, Mar 10, 2010 at 11:09 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> HI again.
->
-> On Wed, Mar 10, 2010 at 2:46 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
->> Hi.
+On 03/10/2010 02:04 PM, David Miller wrote:
+> From: Yinghai Lu <yinghai@kernel.org>
+> Date: Wed, 10 Mar 2010 13:24:27 -0800
+> 
+>> use early_res/fw_memmap to replace lmb, so could use early_res replace bootme
+>> later.
 >>
->> On Wed, Mar 10, 2010 at 2:07 PM, Corentin Chary
->> <corentin.chary@gmail.com> wrote:
->>> On Tue, Mar 9, 2010 at 11:58 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
->>>> Hi.
->>>> I have an EeePC 900 running 2.6.34-rc1.
->>>>
->>>> If I boot it on AC the cpu runs at full speed, 900MHz; if I boot it on
->>>> battery it runs only at 630Mhz. Plugging / unplugging the AC does not
->>>> change the cpu frequency. Only a reboot can change the situation.
->>>>
->>>> I already tried to echo 0 or 1 to the
->>>> /sys/devices/platform/eeepc/cpufv file; no effects, even if the file
->>>> changes its value.
->>>>
->>>> This is not a regression from 2.6.33: this behavior is also present in
->>>> that version.
->>>>
->>>> Does this ring any bells? This is really annoying, especially when
->>>> trying to watch a movie on battery. Also 3D apps show a 30%
->>>> performance drop, as expected.
->>>
->>> Can you change the frequency with cpufreq ?
->>
->> No, I can't. Which cpufreq driver am I supposed to use? With only
->> cpufreq compiled in, the directory
->> /sys/drivers/system/cpu/cpu0/cpufreq is empty.
->
-> OK, there's something really wrong here.
-> I tried every possible cpufreq driver and the only one that loads is
-> p4-clockmod (the others say "no such device"). But...
->
-> The result is really unexpected, at least to me. The system switches
-> immediately to full speed, 900MHz (while running on battery). The
-> motivation is probably this:
->
-> [    3.698307] conservative governor failed, too long transition
-> latency of HW, fallback to performance governor
-> [    3.698334] p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation available
->
-> The cause of this is probably that this driver thinks that my eeepc is
-> capable of many intermediate cpu frequency values:
->
-> cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-> 112500 225000 337500 450000 562500 675000 787500 900000
->
-> but the machine is only capable of 630 and 900MHz.
->
-> So, for me this is a really useful workaround: I compiled p4-clockmod
-> statically and so just a few seconds after boot I have my system
-> running at full speed :-)
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> This doesn't boot, it looks like early_res is not initialized
+> early enough, the backtrace is:
+> 
+> [    0.000000] Remapping the kernel... done.
+> [    0.000000] Kernel panic - not syncing: can not find more space for early_res array
+> [    0.000000] Call Trace:
+> [    0.000000]  [0000000000882c48] __check_and_double_early_res+0xc0/0x1c8
+> [    0.000000]  [0000000000882f18] reserve_early+0x10/0x38
+> [    0.000000]  [000000000087b894] prom_early_alloc+0x48/0x7c
+> [    0.000000]  [000000000087b3e4] get_one_property+0x28/0x50
+> [    0.000000]  [000000000087b588] prom_create_node+0x44/0xe8
+> [    0.000000]  [000000000087b6d0] prom_build_tree+0x1c/0xac
+> [    0.000000]  [000000000087b7b4] prom_build_devicetree+0x54/0x80
+> [    0.000000]  [000000000087fd34] paging_init+0x69c/0x1268
+> [    0.000000]  [00000000008786f4] start_kernel+0x88/0x374
+> [    0.000000]  [000000000070589c] tlb_fixup_done+0x98/0xa0
+> [    0.000000]  [0000000000000000] (null)
 
-Unfortunately this is not true. /proc/cpuinfo says:
+looks like we need to increase MAX_EARLY_RES_X in kernel/early_res.c
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 13
-model name	: Intel(R) Celeron(R) M processor          900MHz
-stepping	: 8
-cpu MHz		: 900.000
-cache size	: 512 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx up bts
-bogomips	: 1260.35
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 32 bits physical, 32 bits virtual
+/*
+ * need to make sure this one is bigger enough before
+ * find_fw_memmap_area could be used
+ */
+#define MAX_EARLY_RES_X 32
 
-As you can see, 900MHz with only 1260.35 bogomips (the value
-correspondent to 630MHz).
+struct early_res {
+        u64 start, end;
+        char name[15];
+        char overlap_ok;
+};
+static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata;
 
-A quick performance test confirms that the cpu is running at 630MHz
-and that the value reported by /proc/cpuinfo is totally fake.
-
->
-> To summarize:
->
-> -----Without p4-clockmod
-> * the eeepc-laptop cpufv interface doesn't work at all on my eeepc900
-> * this happens at least with 2.6.33 and 2.6.34-rc1
-> * if the system boots on AC power it stays forever at 900MHz
-> * if it boots on battery it stays forever at 630MHz
->
-> ---With p4-clockmod
-> * the system boots at 630MHz if on battery
-> * as soon that p4-clockmod is loaded it switches to 900MHz
-> * p4-clockmod has a frequency table which is totally meaningless on the eeepc900
-
-* p4-clockmod does not work at all on the eeepc900 too!
-
->
-> What a mess....
->
-
-Indeed.
-
-> Regards,
-> Fabio
->
-
-Fabio
+static int max_early_res __initdata = MAX_EARLY_RES_X;
 
 
+or can you check if setup_memory_map() can be moved that early?
+(try to use early_param for mem=, so need to move that earlier)...
 
+YH
 
->>
->>> Did you try all cpufv values (see cpufv_available file) ?
->>
->> Yes, it only shows 0 and 1. I tried both, without success.
->>
->>> Is you bios up-to-date ?
->>
->> Yes it is, it's 1006.
->>
->>>
->>> --
->>> Corentin Chary
->>> http://xf.iksaif.net
->>>
->>
->> Thanks.
->> Fabio
->>
->
