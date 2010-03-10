@@ -1,133 +1,300 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536Ab0CJGdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 01:33:12 -0500
-Received: from eu1sys200aog120.obsmtp.com ([207.126.144.149]:48545 "EHLO
-	eu1sys200aog120.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753189Ab0CJGdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 01:33:09 -0500
-Message-ID: <4B973CF6.4030009@st.com>
-Date: Wed, 10 Mar 2010 12:02:22 +0530
-From: Viresh KUMAR <viresh.kumar@st.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
+	id S1754667Ab0CJGgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 01:36:17 -0500
+Received: from mga11.intel.com ([192.55.52.93]:61633 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753189Ab0CJGgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 01:36:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,612,1262592000"; 
+   d="scan'208";a="547696337"
+Message-ID: <4B973DDA.6050902@intel.com>
+Date: Wed, 10 Mar 2010 14:36:10 +0800
+From: Shane Wang <shane.wang@intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
-Subject: Re: [PATCH 04/11] ST SPEAr: Added basic header files for SPEAr 	platform
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-2-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-3-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-4-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com>
-In-Reply-To: <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "andi@firstfloor.org" <andi@firstfloor.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+Subject: [PATCH v3] intel_txt: add support for S3 memory integrity protection
+ within Intel(R) TXT launched kernel
+References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com> <20091004185801.GC1378@ucw.cz>  <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
+In-Reply-To: <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
+Content-Type: multipart/mixed;
+ boundary="------------010608010907050303000004"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This is a multi-part message in MIME format.
+--------------010608010907050303000004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 3/10/2010 11:10 AM, Linus Walleij wrote:
-> 2010/3/3 Viresh KUMAR <viresh.kumar@st.com>:
-> 
->>  arch/arm/plat-spear/include/plat/gpt.h |  108 ++++++++++++++++++++++++++++++++
-> 
-> If this file is only supposed to be used from plat-spear/time.c, move it down
-> into plat-spear/gpt.h and #include "gpt.h" so noone else will
-> accidentally use it.
+<compared with v2, this patch adds a check of array size in tboot.c, and a note 
+to specify which c/s of tboot supports this kind of MACing in intel_txt.txt>
 
-GPT's on SPEAr can be used from time.c, platform specific drivers and machine
-specific drivers or any driver wishing to use hardware timer.
-In first two cases "gpt.h" will work, but in rest of cases we need gpt.h to be
-in plat-spear/include/plat
+v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
+tboot.
 
-Is it okay?
+This patch adds support for S3 memory integrity protection within an Intel(R)
+TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
+kernel and userspace, as indicated by memory ranges of type E820_RAM and
+E820_RESERVED_KERN in the e820 table, will be integrity protected.
 
-> 
->> (...)
->>
->> +#ifndef __ASM_PLAT_GPT_H
->> +#define __ASM_PLAT_GPT_H
-> 
-> This file to macro match i.e. __PLAT_GPT_H again I think...
-> (But see below.)
+The MAINTAINERS file is also updated to reflect the maintainers of the
+TXT-related code.
 
-will be changed
+Signed-off-by: Shane Wang <shane.wang@intel.com>
+Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
 
-> 
->> +
->> +/* register offsets */
->> +#define GPT_CTRL_OFF           0x80 /* Control Register */
->> +#define GPT_INT_OFF            0x84 /* Interrupt Regiset */
->> +#define GPT_LOAD_OFF           0x88 /* Load Register */
->> +#define GPT_COUNT_OFF          0x8C /* Current Count Register */
-> 
-> Some people want you to do all the indentation e.g. between
-> GPT_CTRL_OFF -> 0x80 with TABs only, and I tend to do that
-> to keep everybody happy. (This would go for all .h files with
-> register definitions.
-> 
+  Documentation/intel_txt.txt |   16 +++++++++-------
+  MAINTAINERS                 |   11 +++++++++++
+  arch/x86/include/asm/e820.h |    7 ++++++-
+  arch/x86/kernel/tboot.c     |   20 +++++++++++---------
+  4 files changed, 37 insertions(+), 17 deletions(-)
 
-I have done it the way you said. I don't know what happened to
-formatting, even if i see my original patchset, i see tabs and no
-spaces. I will take care of this in next version of patchset too.
+diff -r d2911aa1461d Documentation/intel_txt.txt
+--- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
++++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
+@@ -161,13 +161,15 @@ o  In order to put a system into any of
+        has been restored, it will restore the TPM PCRs and then
+        transfer control back to the kernel's S3 resume vector.
+        In order to preserve system integrity across S3, the kernel
+-      provides tboot with a set of memory ranges (kernel
+-      code/data/bss, S3 resume code, and AP trampoline) that tboot
+-      will calculate a MAC (message authentication code) over and then
+-      seal with the TPM.  On resume and once the measured environment
+-      has been re-established, tboot will re-calculate the MAC and
+-      verify it against the sealed value.  Tboot's policy determines
+-      what happens if the verification fails.
++      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
++      in the e820 table, but not any memory that BIOS might alter over
++      the S3 transition) that tboot will calculate a MAC (message
++      authentication code) over and then seal with the TPM. On resume
++      and once the measured environment has been re-established, tboot
++      will re-calculate the MAC and verify it against the sealed value.
++      Tboot's policy determines what happens if the verification fails.
++      Note that the c/s 194 of tboot which has the new MAC code supports
++      this.
 
->> +
->> + * Following functions are exported by gpt.c which can be used by other
->> + * kernel entities
->> + */
->> +int spear_timer_init(struct spear_timer *, int);
->> +
->> +struct spear_timer *spear_timer_request(void);
->> +struct spear_timer *spear_timer_request_specific(int id);
->> +
->> +int spear_timer_free(struct spear_timer *timer);
->> +int spear_timer_enable(struct spear_timer *timer);
->> +int spear_timer_disable(struct spear_timer *timer);
->> +
->> +int spear_timer_get_irq(struct spear_timer *timer);
->> +
->> +struct clk *spear_timer_get_fclk(struct spear_timer *timer);
->> +
->> +int spear_timer_start(struct spear_timer *timer);
->> +int spear_timer_stop(struct spear_timer *timer);
->> +
->> +int spear_timer_set_source(struct spear_timer *timer, int source);
->> +int spear_timer_set_load(struct spear_timer *timer, int autoreload,
->> +               u16 value);
->> +int spear_timer_set_load_start(struct spear_timer *timer, int autoreload,
->> +               u16 value);
->> +int spear_timer_match_irq(struct spear_timer *timer, int enable);
->> +int spear_timer_set_prescaler(struct spear_timer *timer, int prescaler);
->> +
->> +int spear_timer_read_status(struct spear_timer *timer);
->> +int spear_timer_clear_status(struct spear_timer *timer, u16 value);
->> +
->> +int spear_timer_read_counter(struct spear_timer *timer);
->> +
->> +int spear_timer_active(struct spear_timer *);
-> 
-> Am I right in assuming that this will only ever be used from the plat/timer.c
-> file?
+  That's pretty much it for TXT support.
 
-This will be used by any module looking to use hardware timer.
+diff -r d2911aa1461d MAINTAINERS
+--- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
++++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
+@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
+  F:	Documentation/networking/README.ipw2200
+  F:	drivers/net/wireless/ipw2x00/ipw2200.*
 
-> 
-> I would contemplate moving away the abstraction API altogether and put
-> everything into timer.c, and just hardcode in the timers you're using as
-> clocksource and clock event, and put the register definitions and
-> offsets from base there as well. This will get down the number of files
-> and reduce the forest of files in a nice way.
-> 
-> If you have some other use of timers that you're planning, the API may
-> be justified, please detail the uses you have in mind in that case.
-> 
-> I know writing APIs is great fun, but sometimes it's easier to read the
-> code if you just get rid of them and keep things simple...
-> 
++INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
++M:	Joseph Cihula <joseph.cihula@intel.com>
++M:	Shane Wang <shane.wang@intel.com>
++L:	tboot-devel@lists.sourceforge.net
++W:	http://tboot.sourceforge.net
++T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
++S:	Supported
++F:	Documentation/intel_txt.txt
++F:	include/linux/tboot.h
++F:	arch/x86/kernel/tboot.c
++
+  INTEL WIRELESS WIMAX CONNECTION 2400
+  M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+  M:	linux-wimax@intel.com
+diff -r d2911aa1461d arch/x86/include/asm/e820.h
+--- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
+@@ -45,7 +45,12 @@
+  #define E820_NVS	4
+  #define E820_UNUSABLE	5
 
-Explained earlier.
+-/* reserved RAM used by kernel itself */
++/*
++ * reserved RAM used by kernel itself
++ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
++ * included in the S3 integrity calculation and so should not include
++ * any memory that BIOS might alter over the S3 transition
++ */
+  #define E820_RESERVED_KERN        128
+
+  #ifndef __ASSEMBLY__
+diff -r d2911aa1461d arch/x86/kernel/tboot.c
+--- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
+@@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
+  	struct tboot_mac_region *mr;
+  	phys_addr_t end = start + size;
+
++	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
++		panic("tboot: Too many MAC regions\n");
++
+  	if (start && size) {
+  		mr = &tboot->mac_regions[tboot->num_mac_regions++];
+  		mr->start = round_down(start, PAGE_SIZE);
+@@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
+
+  static void __init tboot_setup_sleep(void)
+  {
++	int i;
++
+  	tboot->num_mac_regions = 0;
+
+-	/* S3 resume code */
+-	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
++	for (i = 0; i < e820.nr_map; i++) {
++		if ((e820.map[i].type != E820_RAM)
++		 && (e820.map[i].type != E820_RESERVED_KERN))
++			continue;
+
+-#ifdef CONFIG_X86_TRAMPOLINE
+-	/* AP trampoline code */
+-	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
+-#endif
+-
+-	/* kernel code + data + bss */
+-	add_mac_region(virt_to_phys(_text), _end - _text);
++		add_mac_region(e820.map[i].addr, e820.map[i].size);
++	}
+
+  	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
+  }
 
 
-viresh kumar
+--------------010608010907050303000004
+Content-Type: text/plain;
+ name="s3_memory_integrity.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="s3_memory_integrity.patch"
+
+v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
+tboot.
+
+This patch adds support for S3 memory integrity protection within an Intel(R)
+TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
+kernel and userspace, as indicated by memory ranges of type E820_RAM and
+E820_RESERVED_KERN in the e820 table, will be integrity protected.
+
+The MAINTAINERS file is also updated to reflect the maintainers of the
+TXT-related code.
+
+Signed-off-by: Shane Wang <shane.wang@intel.com>
+Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+
+diff -r d2911aa1461d Documentation/intel_txt.txt
+--- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
++++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
+@@ -161,13 +161,15 @@ o  In order to put a system into any of 
+       has been restored, it will restore the TPM PCRs and then
+       transfer control back to the kernel's S3 resume vector.
+       In order to preserve system integrity across S3, the kernel
+-      provides tboot with a set of memory ranges (kernel
+-      code/data/bss, S3 resume code, and AP trampoline) that tboot
+-      will calculate a MAC (message authentication code) over and then
+-      seal with the TPM.  On resume and once the measured environment
+-      has been re-established, tboot will re-calculate the MAC and
+-      verify it against the sealed value.  Tboot's policy determines
+-      what happens if the verification fails.
++      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
++      in the e820 table, but not any memory that BIOS might alter over
++      the S3 transition) that tboot will calculate a MAC (message
++      authentication code) over and then seal with the TPM. On resume
++      and once the measured environment has been re-established, tboot
++      will re-calculate the MAC and verify it against the sealed value.
++      Tboot's policy determines what happens if the verification fails.
++      Note that the c/s 194 of tboot which has the new MAC code supports
++      this.
+ 
+ That's pretty much it for TXT support.
+ 
+diff -r d2911aa1461d MAINTAINERS
+--- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
++++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
+@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
+ F:	Documentation/networking/README.ipw2200
+ F:	drivers/net/wireless/ipw2x00/ipw2200.*
+ 
++INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
++M:	Joseph Cihula <joseph.cihula@intel.com>
++M:	Shane Wang <shane.wang@intel.com>
++L:	tboot-devel@lists.sourceforge.net
++W:	http://tboot.sourceforge.net
++T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
++S:	Supported
++F:	Documentation/intel_txt.txt
++F:	include/linux/tboot.h
++F:	arch/x86/kernel/tboot.c
++
+ INTEL WIRELESS WIMAX CONNECTION 2400
+ M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+ M:	linux-wimax@intel.com
+diff -r d2911aa1461d arch/x86/include/asm/e820.h
+--- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
+@@ -45,7 +45,12 @@
+ #define E820_NVS	4
+ #define E820_UNUSABLE	5
+ 
+-/* reserved RAM used by kernel itself */
++/*
++ * reserved RAM used by kernel itself
++ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
++ * included in the S3 integrity calculation and so should not include
++ * any memory that BIOS might alter over the S3 transition
++ */
+ #define E820_RESERVED_KERN        128
+ 
+ #ifndef __ASSEMBLY__
+diff -r d2911aa1461d arch/x86/kernel/tboot.c
+--- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
+@@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
+ 	struct tboot_mac_region *mr;
+ 	phys_addr_t end = start + size;
+ 
++	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
++		panic("tboot: Too many MAC regions\n");
++
+ 	if (start && size) {
+ 		mr = &tboot->mac_regions[tboot->num_mac_regions++];
+ 		mr->start = round_down(start, PAGE_SIZE);
+@@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
+ 
+ static void __init tboot_setup_sleep(void)
+ {
++	int i;
++
+ 	tboot->num_mac_regions = 0;
+ 
+-	/* S3 resume code */
+-	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
++	for (i = 0; i < e820.nr_map; i++) {
++		if ((e820.map[i].type != E820_RAM)
++		 && (e820.map[i].type != E820_RESERVED_KERN))
++			continue;
+ 
+-#ifdef CONFIG_X86_TRAMPOLINE
+-	/* AP trampoline code */
+-	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
+-#endif
+-
+-	/* kernel code + data + bss */
+-	add_mac_region(virt_to_phys(_text), _end - _text);
++		add_mac_region(e820.map[i].addr, e820.map[i].size);
++	}
+ 
+ 	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
+ }
+
+--------------010608010907050303000004--
