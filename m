@@ -1,93 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449Ab0CJX3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 18:29:45 -0500
-Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:57222 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755397Ab0CJX3o (ORCPT
+	id S1757458Ab0CJXaK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 18:30:10 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:48075 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757451Ab0CJXaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 18:29:44 -0500
-Date: Thu, 11 Mar 2010 10:29:40 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Hans-Peter Jansen <hpj@urpla.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: howto combat highly pathologic latencies on a server?
-Message-ID: <20100310232940.GB16344@discord.disaster>
-References: <201003101817.42812.hpj@urpla.net>
+	Wed, 10 Mar 2010 18:30:07 -0500
+Date: Thu, 11 Mar 2010 08:29:14 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Viresh KUMAR <viresh.kumar@st.com>,
+       Linus Walleij <linus.ml.walleij@gmail.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
+       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
+       ashish.priyadarshi@st.com
+Subject: Re: [PATCH 04/11] ST SPEAr: Added basic header files for SPEAr platform
+Message-ID: <20100310232914.GC22729@linux-sh.org>
+References: <1267592861-26911-3-git-send-email-viresh.kumar@st.com> <1267592861-26911-4-git-send-email-viresh.kumar@st.com> <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com> <4B973CF6.4030009@st.com> <63386a3d1003100131v7027e44cu5031c9ee3bf6ec73@mail.gmail.com> <4B977067.3050108@st.com> <20100310141645.GB22729@linux-sh.org> <alpine.LFD.2.00.1003101732010.22855@localhost.localdomain> <20100310221652.GS2900@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201003101817.42812.hpj@urpla.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100310221652.GS2900@atomide.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 06:17:42PM +0100, Hans-Peter Jansen wrote:
-> in a commercial setting, with all those evil elements at work like VMware, 
-> NFS, XFS, openSUSE, diskless fat clients, you name it...
+On Wed, Mar 10, 2010 at 02:16:53PM -0800, Tony Lindgren wrote:
+> * Thomas Gleixner <tglx@linutronix.de> [100310 08:38]:
+> > On Wed, 10 Mar 2010, Paul Mundt wrote:
+> > > This is hardly a unique situation for your platform, this is true for
+> > > most platforms. There's no reason why clockevents couldn't just be
+> > > extended and drivers could then just grab unused clockevents and pin them
+> > > accordingly. Most of the infrastructure is already in place for something
+> > > like that, without really having to do anything special.
+> > > 
+> > > Having said that, most drivers have pretty lame reasons for trying to get
+> > > at fixed timer channels, and most of the time they can easily get by with
+> > > an hrtimer instead. There's also the issue that you're effectively
+> > > bypassing nohz by having some timer channel off on the side doing who
+> > > knows what. You would need a pretty compelling reason for why you are
+> > > sidestepping all of the existing infrastructure anyways.
+> > 
+> > Right, and that's exactly the reason why we did not add the few
+> > missing bits to make clock events directly usable from drivers.
 > 
-> System description:
+> Yeah still no direct users so far for the 12 hardware timers on
+> omaps.. I guess the only use I could see is bit banging data
+> over a few GPIO lines using a FIQ handler.
 > 
-> Dual socket board: Tyan S2892, 2 * AMD Opteron 285 @ 2.6 GHz, 8 GB RAM, 
-> PRO/1000 MT Dual Port Server NIC, Areca ARC-1261 16 channel RAID 
-> controller, with 3 sets of RAID 5 arrays attached:
-> System is running from: 4 * WD Raptor 150GB (WDC WD1500ADFD-00NLR5)
-> VMware (XP-) images used via NFS: 6 * WD Raptor 74 GB (WDC WD740GD-00FLA0)
-> Homes, diskless clients, appl. data: 4 * Hitachi 1 GB (HDE721010SLA330).
+> Another thing to consider is that most likely all hardware timers
+> are not able to wake up the system from idle, which would easily
+> cause some mysterious errors for drivers.
 > 
-> All filesystems are xfs. The server serves about 20 diskless PC's, most use 
-> an Intel Pro/1000 GT NIC, all attached on a 3com 3870 48-port 10/100/1000 
-> switch.
-> 
-> OS is openSUSE 11.1/i586 with kernel 2.6.27.45 (the same kernel as SLE 11).
-> 
-> It serves mostly NFS, SMB, and does mild database (MySQL) and email 
-> processing (Cyrus IMAP, Postfix...). It also drives an ancient (but very 
-> important) terminal based transport order mgmt system, that often syncs 
-> it's data. Unfortunately, it's also used for running a VMware-Server 
-> (1.0.10) XP-client, that itself does simple database stuff (employers time 
-> registration).
-> 
-> Users generally describe this system as slow, although the load on the 
-> server is less than 1.5 most of the time. Interestingly, the former system, 
-> using ancient kernels (2.6.11, SuSE 9.3) was perceived significantly 
-> quicker (but not fast..).
-> 
-> The diskless clients are started once in the morning (taking 60-90 sec), use 
-> an aufs2 layered NFS mount for their openSUSE 11.1 system, and simple NFS 
-> mounted homes and shared folders. 2/3th also need running a VMware XP 
-> client (also NFS mounted). Their CPUs range from Athlon 64 3000+ up to 
-> Phenom X4 955, with 2 or 4 GB RAM.
-> 
-> While this system usually operates fine, it suffers from delays, that are 
-> displayed in latencytop as: "Writing page to disk:     8425,5 ms": 
-> ftp://urpla.net/lat-8.4sec.png, but we see them also in the 1.7-4.8 sec 
-> range: ftp://urpla.net/lat-1.7sec.png, ftp://urpla.net/lat-2.9sec.png, 
-> ftp://urpla.net/lat-4.6sec.png and ftp://urpla.net/lat-4.8sec.png.
-> 
-> From other observations, this issue "feels" like it is induced by single 
-> syncronisation points in the block layer, eg. if I create heavy IO load on 
-> one RAID array, say resizing a VMware disk image, it can take up to a 
-> minute to log in by ssh, although the ssh login does not touch this area at 
-> all (different RAID arrays). Note, that the latencytop snapshots above are 
-> made during normal operation, not this kind of load..
-> 
-> The network side looks fine, as its main interface rarely passes 40MiB/s, 
-> and usually keeps in the 1 Kib/s - 5 MiB/s range. 
-> 
-> The xfs filesystems are mounted with rw,noatime,attr2,nobarrier,noquota 
-> (yes, I do have a BBU on the areca, and disk write cache is effectively 
-> turned off). 
+Even if most drivers shouldn't be touching clockevents directly, there
+are still legitimate cases. In SMP configurations where a single timer
+block is shared across multiple CPUs it would be easier to have the boot
+CPU register all of the timer channels under clockevents and have the
+secondaries grab one at random for setting up their local timers. (Even
+if they're not truly "local" timers, it's still a better situation than
+broadcast IPIs). clockevents would need some minor extension, including
+dealing with unregistration for the CPU hotplug case, but it's a pretty
+good fit for the problem otherwise.
 
-Make sure the filesystem has the "lazy-count=1" attribute set (use
-xfs_info to check, xfs_admin to change). That will remove the
-superblock from most transactions and significant reduce latency of
-transactions as they serialise while locking it...
-
-Cheers,
-
-Dave
--- 
-Dave Chinner
-david@fromorbit.com
+If all timer channels are equal then there's also the possibility of
+matching device IDs against the CPU's struct device, but depending on the
+CPU topology is a pretty dire hack, particularly as most timer channels
+have differing capabilities.
