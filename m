@@ -1,69 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699Ab0CJSsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 13:48:04 -0500
-Received: from lo.gmane.org ([80.91.229.12]:56396 "EHLO lo.gmane.org"
+	id S932695Ab0CJSvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 13:51:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23396 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756923Ab0CJSsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 13:48:01 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Regression? 2.6.23.16 -> 2.6.32.9: ide/libata HD recognition
-Date: Wed, 10 Mar 2010 13:47:49 -0500
-Message-ID: <hn8pgl$eqd$1@dough.gmane.org>
-References: <20100310041614.GG2657@zip.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@dough.gmane.org
-X-Gmane-NNTP-Posting-Host: pool-68-236-149-162.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 SeaMonkey/1.1.16
-In-Reply-To: <20100310041614.GG2657@zip.com.au>
+	id S1756923Ab0CJSu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 13:50:59 -0500
+Date: Wed, 10 Mar 2010 19:44:39 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] call_usermodehelper: call info->init() after
+	set_user_nice()
+Message-ID: <20100310184439.GA3386@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CaT wrote:
-> Hi,
-> 
-> Just had a strange situation with the above upgrade. It was done on an
-> old server that used the serverworks ide driver. The IDE hw config under
-> 2.6.23.16 was:
-> 
-> hda:	HD
-> hdb:	CDROM
-> hdc:	empty
-> hdd:	HD
-> 
-> After upgrade, using either IDE or libata the config changed to:
-> 
-> hda:	HD
-> hdb:	CDROM
-> hdc:	empty
-> hdd:	empty
-> 
-> The BIOS recognised the disk. I went through 3 disks and it wasn't until
-> I made the second HD a master that it was recognised. So now I have a
-> 2.6.32.9 server, using the IDE subsystem with the following config:
-> 
-> hda:	HD
-> hdb:	CDROM
-> hdc:	HD
-> hdd:	empty
-> 
-> Otherwise it does not work.
-> 
-> I had an outage window that I already blew so I was not able to do
-> any more diagnosis than what it took to get the system up.
-> 
-> If anyone wants the full config I'll send. Otherwise:
-> 
-Could you "ls /sys/block" and post? And /var/log/messages from the start to the 
-last device found? Thanks.
+Mostly cosmetic, but imho it makes sense to call sub_info->init() right
+before kernel_execve(). This looks more natural and allows ->init() hook
+to change the priority if needed.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/kmod.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+--- mm/kernel/kmod.c~5_MOVE_INIT_DOWN	2010-03-10 17:36:37.000000000 +0100
++++ mm/kernel/kmod.c	2010-03-10 19:40:24.000000000 +0100
+@@ -159,6 +159,11 @@ static int ____call_usermodehelper(void 
+ 
+ 	/* We can run anywhere, unlike our parent keventd(). */
+ 	set_cpus_allowed_ptr(current, cpu_all_mask);
++	/*
++	 * Our parent is keventd, which runs with elevated scheduling priority.
++	 * Avoid propagating that into the userspace child.
++	 */
++	set_user_nice(current, 0);
+ 
+ 	if (sub_info->init) {
+ 		retval = sub_info->init(sub_info);
+@@ -166,14 +171,7 @@ static int ____call_usermodehelper(void 
+ 			goto fail;
+ 	}
+ 
+-	/*
+-	 * Our parent is keventd, which runs with elevated scheduling priority.
+-	 * Avoid propagating that into the userspace child.
+-	 */
+-	set_user_nice(current, 0);
+-
+ 	retval = kernel_execve(sub_info->path, sub_info->argv, sub_info->envp);
+-
+ 	/* Exec failed? */
+ fail:
+ 	sub_info->retval = retval;
 
