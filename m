@@ -1,78 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002Ab0CJT0Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 14:26:24 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49357 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635Ab0CJT0X convert rfc822-to-8bit (ORCPT
+	id S1753369Ab0CJT3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 14:29:47 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:32738 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058Ab0CJT3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 14:26:23 -0500
-Subject: Re: [PATCHSET] cpuhog: implement and use cpuhog
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, sivanich@sgi.com,
-       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       dipankar@in.ibm.com, josh@freedesktop.org, paulmck@linux.vnet.ibm.com,
-       oleg@redhat.com, akpm@linux-foundation.org
-In-Reply-To: <1268063603-7425-1-git-send-email-tj@kernel.org>
-References: <1268063603-7425-1-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 10 Mar 2010 20:25:55 +0100
-Message-ID: <1268249155.5279.128.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 10 Mar 2010 14:29:45 -0500
+X-SpamScore: -14
+X-BigFish: VPS-14(zz98dN936eM62a3Lab9bhzz1202hzzz32i2a8h6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KZ2ZH7-01-M5H-02
+X-M-MSG: 
+Date: Wed, 10 Mar 2010 20:29:28 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Cyrill Gorcunov <gorcunov@openvz.org>
+CC: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Stephane Eranian <eranian@google.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
+Message-ID: <20100310192928.GD7219@erda.amd.com>
+References: <20100310183102.GC8070@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20100310183102.GC8070@lenovo>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 10 Mar 2010 19:29:28.0564 (UTC) FILETIME=[003E2B40:01CAC088]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-09 at 00:53 +0900, Tejun Heo wrote:
-> Hello, all.
-> 
-> This patchset implements cpuhog which is a simplistic cpu
-> monopolization mechanism and reimplements stop_machine() and replaces
-> migration_thread with it.
-> 
-> This allows stop_machine() to be simpler and much more efficient on
-> very large machines without using more resources while also making the
-> rather messy overloaded migration_thread usages cleaner.
-> 
-> This should solve the slow boot problem[1] caused by repeated
-> stop_machine workqueue creation/destruction reported by Dimitri
-> Sivanich.
-> 
-> The patchset is currently on top of v2.6.33 and contains the following
-> patches.
-> 
->  0001-cpuhog-implement-cpuhog.patch
->  0002-stop_machine-reimplement-using-cpuhog.patch
->  0003-scheduler-replace-migration_thread-with-cpuhog.patch
->  0004-scheduler-kill-paranoia-check-in-synchronize_sched_e.patch
-> 
-> 0001 implements cpuhog.  0002 converts stop_machine.  0003 converts
-> migration users and 0004 removes paranoia checks in
-> synchronize_sched_expedited().  0004 is done separately so that 0003
-> can serve as a debug/bisection point.
-> 
-> Tested cpu on/offlining, shutdown, all migration usage paths including
-> RCU torture test at 0003 and 004 and everything seems to work fine
-> here.  Dimitri, can you please test whether this solves the problem
-> you're seeing there?
+On 10.03.10 21:31:02, Cyrill Gorcunov wrote:
+>  arch/x86/include/asm/perf_event.h      |    2 
+>  arch/x86/include/asm/perf_p4.h         |  707 +++++++++++++++++++++++++++++++++
 
-cpuhog as a name doesn't work for me, stop-machine had a name that
-described its severity and impact, cpuhog makes me think of while(1);.
+If so, it should be perf_event_p4.h.
 
-Can't we keep the stop_machine name and make that a workqueue interface
-like you propose?
+>  arch/x86/kernel/cpu/perf_event.c       |   46 +-
+>  arch/x86/kernel/cpu/perf_event_amd.c   |    2 
+>  arch/x86/kernel/cpu/perf_event_intel.c |   15 
+>  arch/x86/kernel/cpu/perf_event_p4.c    |  612 ++++++++++++++++++++++++++++
+>  arch/x86/kernel/cpu/perf_event_p6.c    |    2 
+>  7 files changed, 1363 insertions(+), 23 deletions(-)
 
-That way we'd end up with something like:
+> Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+> =====================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event.c
+> +++ linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+> @@ -190,6 +190,8 @@ struct x86_pmu {
+>  	void		(*enable_all)(void);
+>  	void		(*enable)(struct perf_event *);
+>  	void		(*disable)(struct perf_event *);
+> +	int		(*hw_config)(struct perf_event_attr *attr, struct hw_perf_event *hwc);
+> +	int		(*schedule_events)(struct cpu_hw_events *cpuc, int n, int *assign);
 
-kernel/stop_machine.c
-  int stop_cpu(int cpu, stop_fn_t fn, void *arg)
-  int stop_machine(struct cpumask *mask, stop_fn_t fn, void *arg)
+I don't like this extension since it widened the interface without
+additional use.
 
-alternatively, something like schedule_primary_work*() might work I
-guess.
+(*hw_config) could be instead implemented in (*event_map).
+(*schedule_events) could be implemented by a special p4 handler for
+(*enable) in struct pmu. Maybe there are other solutions for both
+cases, but it should be possible by adoption of existing functions.
 
+The current implementation of model specific functions is
+sufficient. We have already the following:
 
+* event initialization: x86_pmu.raw_event(), x86_pmu.event_map()
+* event enable:   event->pmu->enable(), x86_pmu.enable()
+* event disable:  event->pmu->disable(), x86_pmu.disable()
+
+Maybe I miss something in the list above. The introduction of more
+function pointers should be reduced to a minimum.
+
+If the pmu differs heavily you even could return a different pmu for
+such an event.
+
+-Robert
+
+>  	unsigned	eventsel;
+>  	unsigned	perfctr;
+>  	u64		(*event_map)(int);
+> @@ -415,6 +417,25 @@ set_ext_hw_attr(struct hw_perf_event *hw
+>  	return 0;
+>  }
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
