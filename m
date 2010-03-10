@@ -1,115 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029Ab0CJCiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 21:38:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60461 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755384Ab0CJCiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 21:38:17 -0500
-Date: Wed, 10 Mar 2010 13:38:13 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] page-allocator: Under memory pressure, wait on
- pressure to relieve instead of congestion
-Message-ID: <20100310023813.GZ8653@laptop>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
- <1268048904-19397-2-git-send-email-mel@csn.ul.ie>
- <20100309133513.GL8653@laptop>
- <20100309141713.GF4883@csn.ul.ie>
- <20100309150332.GP8653@laptop>
- <4B966C7A.5040706@linux.vnet.ibm.com>
- <20100309182228.GJ4883@csn.ul.ie>
+	id S1756064Ab0CJCrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 21:47:24 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:52654 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755180Ab0CJCrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 21:47:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Ld/TkggbMrI39M42DGGxkBpDfyoYRoG4dPV1hYWGdMkr90qqMF2D4AksIBKACk4Ztu
+         VSM4CPt/psEeZULUQ53ZlWYXL/Y1IyEFbC2MI1i2gm7CpKDygkJTOfwVEcWyr3BE1izN
+         m5qrbr4nLfWC8yWWcWXhP+UUuw3bJYW13yUDI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100309182228.GJ4883@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267633569.1947.23.camel@work-vm>
+References: <4B8B901E.4050302@ladisch.de>
+	 <4b8c226e.0aa1660a.67e2.6fdc@mx.google.com>
+	 <1f1b08da1003011259yed7c61bvb18071eb8e465bca@mail.gmail.com>
+	 <be233a491003030107u3d9fae9cvc6b4a25db7060ec9@mail.gmail.com>
+	 <1267633569.1947.23.camel@work-vm>
+Date: Tue, 9 Mar 2010 18:47:19 -0800
+Message-ID: <be233a491003091847s50e7d995qe090902c460cb8af@mail.gmail.com>
+Subject: Re: [PATCH] hpet: factor timer allocate from open
+From: Magnus Lynch <maglyx@gmail.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 06:22:28PM +0000, Mel Gorman wrote:
-> On Tue, Mar 09, 2010 at 04:42:50PM +0100, Christian Ehrhardt wrote:
-> >
-> >
-> > Nick Piggin wrote:
-> >> On Tue, Mar 09, 2010 at 02:17:13PM +0000, Mel Gorman wrote:
-> >>> On Wed, Mar 10, 2010 at 12:35:13AM +1100, Nick Piggin wrote:
-> >>>> On Mon, Mar 08, 2010 at 11:48:21AM +0000, Mel Gorman wrote:
-> >>>>> Under heavy memory pressure, the page allocator may call congestion_wait()
-> >>>>> to wait for IO congestion to clear or a timeout. This is not as sensible
-> >>>>> a choice as it first appears. There is no guarantee that BLK_RW_ASYNC is
-> >>>>> even congested as the pressure could have been due to a large number of
-> >>>>> SYNC reads and the allocator waits for the entire timeout, possibly uselessly.
-> >>>>>
-> >>>>> At the point of congestion_wait(), the allocator is struggling to get the
-> >>>>> pages it needs and it should back off. This patch puts the allocator to sleep
-> >>>>> on a zone->pressure_wq for either a timeout or until a direct reclaimer or
-> >>>>> kswapd brings the zone over the low watermark, whichever happens first.
-> >>>>>
-> >>>>> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> >>>>> ---
-> >>>>>  include/linux/mmzone.h |    3 ++
-> >>>>>  mm/internal.h          |    4 +++
-> >>>>>  mm/mmzone.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++
-> >>>>>  mm/page_alloc.c        |   50 +++++++++++++++++++++++++++++++++++++++++++----
-> >>>>>  mm/vmscan.c            |    2 +
-> >>>>>  5 files changed, 101 insertions(+), 5 deletions(-)
-> >>>>>
-> >>>>> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> >>>>> index 30fe668..72465c1 100644
-> >>>>> --- a/include/linux/mmzone.h
-> >>>>> +++ b/include/linux/mmzone.h
-> > [...]
-> >>>>> +{
-> >>>>> +	/* If no process is waiting, nothing to do */
-> >>>>> +	if (!waitqueue_active(zone->pressure_wq))
-> >>>>> +		return;
-> >>>>> +
-> >>>>> +	/* Check if the high watermark is ok for order 0 */
-> >>>>> +	if (zone_watermark_ok(zone, 0, low_wmark_pages(zone), 0, 0))
-> >>>>> +		wake_up_interruptible(zone->pressure_wq);
-> >>>>> +}
-> >>>> If you were to do this under the zone lock (in your subsequent patch),
-> >>>> then it could avoid races. I would suggest doing it all as a single
-> >>>> patch and not doing the pressure checks in reclaim at all.
-> >>>>
-> >>> That is reasonable. I've already dropped the checks in reclaim because as you
-> >>> say, if the free path check is cheap enough, it's also sufficient. Checking
-> >>> in the reclaim paths as well is redundant.
-> >>>
-> >>> I'll move the call to check_zone_pressure() within the zone lock to avoid
-> >>> races.
-> >>>
-> >
-> > Mel, we talked about a thundering herd issue that might come up here in  
-> > very constraint cases.
-> > So wherever you end up putting that wake_up call, how about being extra  
-> > paranoid about a thundering herd flagging them WQ_FLAG_EXCLUSIVE and  
-> > waking them with something like that:
-> >
-> > wake_up_interruptible_nr(zone->pressure_wq, #nrofpagesabovewatermark#);
-> >
-> > That should be an easy to calculate sane max of waiters to wake up.
-> > On the other hand it might be over-engineered and it implies the need to  
-> > reconsider when it would be best to wake up the rest.
-> >
-> 
-> It seems over-engineering considering that they wake up after a timeout
-> unconditionally. I think it's best for the moment to let them wake up in
-> a herd and recheck their zonelists as they'll go back to sleep if
-> necessary.
+On Wed, Mar 3, 2010 at 8:26 AM, john stultz <johnstul@us.ibm.com> wrote:
+> Oh, right. Sorry about that, Glibc still hasn't picked these up.
+>
+> I'll have to chase down how to get that done.
+>
+> For now, you can just add the following to your code:
+> #define CLOCK_MONOTONIC_RAW             4
 
-I think it isn't a bad idea and I was thinking about that myself, except
-that we might do several wakeups before previously woken processes get
-the chance to run and take pages from the watermark.
-
-Also, if we have a large number of processes waiting here, the system
-isn't in great shape, so a little CPU activity probably isn't going to
-be noticable.
-
-So I agree with Mel it probably isn't needed.
-
+Ah, thanks. Tried it out and it works how I needed. A sad omission
+that this concept wasn't included in the original POSIX clockids. I
+previously read a reference to the _RAW version but gave up when it
+didn't seem to be present according to time.h.
