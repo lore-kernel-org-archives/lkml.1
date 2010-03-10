@@ -1,59 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500Ab0CJRSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:18:49 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:40173 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756908Ab0CJRSp (ORCPT
+	id S932518Ab0CJRTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:19:33 -0500
+Received: from mail-qy0-f204.google.com ([209.85.221.204]:40097 "EHLO
+	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969Ab0CJRTc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:18:45 -0500
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, "x86\@kernel.org" <x86@kernel.org>,
-       "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct irq_chip.
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-	<1268218832.11737.68575.camel@zakaz.uk.xensource.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 10 Mar 2010 09:18:38 -0800
-In-Reply-To: <1268218832.11737.68575.camel@zakaz.uk.xensource.com> (Ian Campbell's message of "Wed\, 10 Mar 2010 11\:00\:32 +0000")
-Message-ID: <m1r5nsjdsh.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 10 Mar 2010 12:19:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OnuubruCmZ1O5Vs8YA12Roe0FirUtol9iI9CF94WgqhJ5I1ceBn7kAj5XFOH6sGzx4
+         /erLwPJVOqg/KmWfYmfZdZJSyfm+z5W5V47Ppz3ekxBS6O20Nq/eo/L5coe3obF9RZcs
+         VmuzV8YRDfa2IN8tZV+cfUeLxTyhRG44BHGUU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: Ian.Campbell@citrix.com, linuxppc-dev@ozlabs.org, x86@kernel.org, paulus@samba.org, benh@kernel.crashing.org, jeremy@goop.org, yinghai@kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+In-Reply-To: <460422.78917.qm@web7603.mail.in.yahoo.com>
+References: <460422.78917.qm@web7603.mail.in.yahoo.com>
+Date: Wed, 10 Mar 2010 09:19:30 -0800
+X-Google-Sender-Auth: 19ed1e0a139f463e
+Message-ID: <1f1b08da1003100919k57d8cc6au6ff753ebf5b6c2f8@mail.gmail.com>
+Subject: Re: BUG: Is it a bug in Linux time() function or Linux OS calls?
+From: john stultz <johnstul@us.ibm.com>
+To: Srinivas Nayak <sinu_nayak2001@yahoo.co.in>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell <Ian.Campbell@citrix.com> writes:
-
-> On Wed, 2010-03-10 at 10:55 +0000, ijc@hellion.org.uk wrote:
->> 
->> arch_init_chip_data cannot be moved into struct irq_chip at this time
->> because irq_desc->chip is not known at the time the irq_desc is
->> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
->> PowerPC, the only other user, whose usage better matches the new name)
->> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
->> call this whenever the IO APIC code allocates a new IRQ.
+On Tue, Mar 9, 2010 at 11:59 PM, Srinivas Nayak
+<sinu_nayak2001@yahoo.co.in> wrote:
+> I wrote a small program, that creates files at an interval of 1 minute. But the time at which the file is created and last written and the last modification time of the file as shown by ls command differs by 1 second. The code and the output is presented below. please let me know where could be the bug?
 >
-> One idea I had to improve this was to add a struct irq_chip * as a
-> parameter to irq_to_desc_alloc_node. The new parameter potentially could
-> be NULL for current behaviour. Does that sound like a reasonable
-> approach?
+[snip]
+> Some system info:
+> ===========
+> Linux new 2.6.24-19-server #1 SMP Wed Jun 18 14:44:47 UTC 2008 x86_64 GNU/Linux
+> Gnu C                  4.2.4
+> Linux C Library        2.7
+> binutils               2.18.0.20080103
+> util-linux             2.13.1
+> Console-tools          0.2.3
+> Sh-utils               6.10
+> ===========
 
-I don't follow why we have the restriction that irq_to_desc_alloc_node
-must call arch_init_chip_data.  Assuming that requirement to call arch_init_chip_data
-is valid, passing something into init_one_irq_desc seems appropriate.
+Hrm. Is CONFIG_NO_HZ enabled?  If so this is a known issue. The
+filesystem timestamps use xtime, which is normally updated every HZ.
+However to reduce overhead with NO_HZ we changed the update to be a
+half-second, which can cause issues like what you describe.
 
-Eric
+The issue has since been resolved, so I'd be interested to hear if you
+can still reproduce it on a more recent kernel.
 
+thanks
+-john
