@@ -1,74 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084Ab0CJPVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:21:44 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55226 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432Ab0CJPVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:21:43 -0500
-Date: Wed, 10 Mar 2010 15:21:25 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Markus Rechberger <mrechberger@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: USBFS Memory allocation Bug
-Message-ID: <20100310152125.GN4883@csn.ul.ie>
-References: <20100310135722.GL4883@csn.ul.ie> <Pine.LNX.4.44L0.1003101007410.1516-100000@iolanthe.rowland.org>
+	id S932108Ab0CJPZR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:25:17 -0500
+Received: from smtp.turknetserver.com ([193.192.122.40]:60764 "EHLO
+	smtp.turknetserver.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756533Ab0CJPZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 10:25:15 -0500
+Message-ID: <4B97B9D8.6050103@turknetserver.com>
+Date: Wed, 10 Mar 2010 17:25:12 +0200
+From: Tarkan Erimer <tarkan@turknetserver.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.2pre) Gecko/20100308 SUSE/3.1b1-5.1 Thunderbird/3.1b1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1003101007410.1516-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-kernel@vger.kernel.org
+Subject: [BISECTED] Re: [BUG] Linux-2.6.33 to 33-git9 intel_drm: drm_fb_helper
+ panic
+References: <4B8FC4E1.4070509@turknetserver.com> <4B950200.4000305@turknetserver.com>
+In-Reply-To: <4B950200.4000305@turknetserver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 10:16:09AM -0500, Alan Stern wrote:
-> On Wed, 10 Mar 2010, Mel Gorman wrote:
-> 
-> > On Tue, Mar 09, 2010 at 10:09:57PM +0100, Markus Rechberger wrote:
-> > > Hi,
-> > > 
-> > > I just stumbled around following issue:
-> > > 
-> > > <SNIP to have one full message>
-> > >
-> > > [275835.491094] mediasrv: page allocation failure. order:6, mode:0x40d0
-> > 
-> > This is massive. Why is usbdev_ioctl requiring an order-6 allocation?
-> > Does it have the option to fall back to vmalloc() for example?
-> 
-> We needed to implement an upper limit on the buffer size, and the value
-> chosen was sufficient for 8 ms of data.  There is no fallback to
-> vmalloc().
-> 
-> Of course, the mediasrv program could always make multiple smaller
-> data submissions instead of a single big one.
-> 
+  On 03/08/2010 03:56 PM, Tarkan Erimer wrote:
+> On 03/04/2010 04:34 PM, Tarkan Erimer wrote:
+>> When I booted into 2.6.33, hard lock up occurs via the following error
+>> message at boot time :
+>>
+>> [drm:drm_fb_helper_panic] *ERROR* panic occured,  switching back to text
+>> console
+>> BUG: scheduling while atomic: init/1/0x00000002
+>>
+>> This is a KMS enabled kernel on i945 VGA. Also, I tried (I found after
+>> googling a bit.)  with "i915.modeset=0 enable_mtrr_cleanup" and
+>> "enable_mtrr_cleanup" kernel boot options. But, still the same error
+>> occurs.
+>>
+>> This bug occurs on kernels from 2.6.33 to 2.6.33-git9. 2.6.33-rc8 works
+>> fine. My .config attached.
+>>
+>> Tarkan
+>>
+> Anybody care to look at this issue ? BTW; it, still,  exist (tested few
+> mins ago.) on .33-git14, too.
+>
+> Tarkan
+>
 
-Is there any means for the driver to take the large request, break it up
-into multiple smaller requests and submit them one at a time?
+Today, I bisected to find out the bad commit. Here is what I found :
 
-> > So, it's a high-order allocation but no swap is configured. As the
-> > system has a big mix of both anonymous and file memory, it is likely it
-> > was unable to find a large enough contiguous range of file-backed memory
-> > it could discard. There is pretty much nothing the memory manager could
-> > do here. 
-> > 
-> > FWIW, if swap was configured I'd think there was more the memory manager
-> > could have done.
-> > 
-> > Is usb falling back to vmalloc() or order-0 pages possible?
-> 
-> No.  It's not possible since the buffer has to be contiguous for DMA
-> purposes (this is a requirement of the driver interface).
-> 
+83d90addc829ab56ace49b10fd7d5d415448aac4 is the first bad commit
 
-Regrettably, there is not much the VM can do in this situation. Without
-swap, it cannot magic up contiguous memory. If memory compaction gets
-merged then it could do more but the risk of failure is still non-zero.
+commit 83d90addc829ab56ace49b10fd7d5d415448aac4
+Merge: 75ef7cd 79da064
+Author: Linus Torvalds<torvalds@linux-foundation.org>
+Date:   Wed Feb 24 07:42:42 2010 -0800
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+     Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+
+     * 'for-linus' of git://git.kernel.dk/linux-2.6-block:
+       Revert "block: improve queue_should_plug() by looking at IO depths"
+
+
+
