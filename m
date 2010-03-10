@@ -1,82 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756906Ab0CJRSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 12:18:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752963Ab0CJRSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 12:18:39 -0500
-Date: Wed, 10 Mar 2010 18:16:34 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Howells <dhowells@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH] wait_for_helper: SIGCHLD from user-space can lead to
-	use-after-free
-Message-ID: <20100310171634.GA1039@redhat.com>
+	id S932500Ab0CJRSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 12:18:49 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:40173 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756908Ab0CJRSp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 12:18:45 -0500
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, "x86\@kernel.org" <x86@kernel.org>,
+       "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct irq_chip.
+References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+	<1268218832.11737.68575.camel@zakaz.uk.xensource.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 10 Mar 2010 09:18:38 -0800
+In-Reply-To: <1268218832.11737.68575.camel@zakaz.uk.xensource.com> (Ian Campbell's message of "Wed\, 10 Mar 2010 11\:00\:32 +0000")
+Message-ID: <m1r5nsjdsh.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: Ian.Campbell@citrix.com, linuxppc-dev@ozlabs.org, x86@kernel.org, paulus@samba.org, benh@kernel.crashing.org, jeremy@goop.org, yinghai@kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this patch is orthogonal to other umh changes in -mm)
+Ian Campbell <Ian.Campbell@citrix.com> writes:
 
-1. wait_for_helper() does allow_signal(SIGCHLD) to ensure the child can't
-   autoreap itself.
+> On Wed, 2010-03-10 at 10:55 +0000, ijc@hellion.org.uk wrote:
+>> 
+>> arch_init_chip_data cannot be moved into struct irq_chip at this time
+>> because irq_desc->chip is not known at the time the irq_desc is
+>> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
+>> PowerPC, the only other user, whose usage better matches the new name)
+>> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
+>> call this whenever the IO APIC code allocates a new IRQ.
+>
+> One idea I had to improve this was to add a struct irq_chip * as a
+> parameter to irq_to_desc_alloc_node. The new parameter potentially could
+> be NULL for current behaviour. Does that sound like a reasonable
+> approach?
 
-   However, this means that a spurious SIGCHILD from user-space can
-   set TIF_SIGPENDING and:
+I don't follow why we have the restriction that irq_to_desc_alloc_node
+must call arch_init_chip_data.  Assuming that requirement to call arch_init_chip_data
+is valid, passing something into init_one_irq_desc seems appropriate.
 
-   	- kernel_thread() or sys_wait4() can fail due to signal_pending()
-
-   	- worse, wait4() can fail before ____call_usermodehelper() execs
-   	  or exits. In this case the caller may kfree(subprocess_info)
-   	  while the child still uses this memory.
-
-   Change the code to use SIG_DFL instead of magic "(void __user *)2"
-   set by allow_signal(). This means that SIGCHLD won't be delivered,
-   yet the child won't autoreap itsefl.
-
-   The problem is minor, only root can send a signal to this kthread.
-
-2. If sys_wait4(&ret) fails it doesn't populate "ret", in this case
-   wait_for_helper() reports a random value from uninitialized var.
-
-   With this patch sys_wait4() should never fail, but still it makes
-   sense to initialize ret = -ECHILD so that the caller can notice
-   the problem.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- kernel/kmod.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
---- mm/kernel/kmod.c~4_SIGCHLD_RACE	2010-03-09 22:23:37.000000000 +0100
-+++ mm/kernel/kmod.c	2010-03-10 17:36:37.000000000 +0100
-@@ -194,15 +194,16 @@ static int wait_for_helper(void *data)
- 	struct subprocess_info *sub_info = data;
- 	pid_t pid;
- 
--	/* Install a handler: if SIGCLD isn't handled sys_wait4 won't
--	 * populate the status, but will return -ECHILD. */
--	allow_signal(SIGCHLD);
-+	/* If SIGCLD is ignored sys_wait4 won't populate the status. */
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->sighand->action[SIGCHLD-1].sa.sa_handler = SIG_DFL;
-+	spin_unlock_irq(&current->sighand->siglock);
- 
- 	pid = kernel_thread(____call_usermodehelper, sub_info, SIGCHLD);
- 	if (pid < 0) {
- 		sub_info->retval = pid;
- 	} else {
--		int ret;
-+		int ret = -ECHILD;
- 
- 		/*
- 		 * Normally it is bogus to call wait4() from in-kernel because
+Eric
 
