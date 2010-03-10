@@ -1,57 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410Ab0CJWua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 17:50:30 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:20742 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393Ab0CJWu1 (ORCPT
+	id S1757417Ab0CJWvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 17:51:24 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:33194 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757396Ab0CJWvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 17:50:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=CW20FGNXzWTngQRa8W0ZeNGziRgdVm1R84HJCkr5tuvSw7XcPpO/wVFyd57bBTcmj
-	PWqHCWgv7cgHow/KjRsNA==
-Date: Wed, 10 Mar 2010 14:50:21 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: [patch] numa: fix BUILD_BUG_ON for node_read_distance
-Message-ID: <alpine.DEB.2.00.1003101449480.21849@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 10 Mar 2010 17:51:23 -0500
+X-Spam-Processed: digidescorp.com, Wed, 10 Mar 2010 16:51:23 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=1685e83607=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] microblaze: Support FRAME_POINTER for better backtrace
+From: "Steven J. Magnani" <steve@digidescorp.com>
+Reply-To: steve@digidescorp.com
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
+In-Reply-To: <1267478765.17327.3.camel@iscandar.digidescorp.com>
+References: <1267128809-22749-1-git-send-email-steve@digidescorp.com>
+	 <4B878106.1090007@monstr.eu>
+	 <1267202998.3124.75.camel@iscandar.digidescorp.com>
+	 <20100301014300.GA23086@linux-sh.org>
+	 <1267478765.17327.3.camel@iscandar.digidescorp.com>
+Content-Type: text/plain
+Organization: Digital Design Corporation
+Date: Wed, 10 Mar 2010 16:51:16 -0600
+Message-Id: <1268261476.3076.100.camel@iscandar.digidescorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-node_read_distance() has a BUILD_BUG_ON() to prevent buffer overruns when
-the number of nodes printed will exceed the buffer length.
+I've had some time to bake a Microblaze implementation of this and have
+come up with a question...
 
-Each node only needs four chars: three for distance (maximum distance is
-255) and one for a seperating space or a trailing newline.
+On Mon, 2010-03-01 at 15:26 -0600, Steven J. Magnani wrote:
+> On Mon, 2010-03-01 at 10:43 +0900, Paul Mundt wrote: 
+> > This doesn't look that bad compared to what some of the other
+> > architectures have to deal with. If the frame pointer is always setup
+> > using these addik/swi pairs then you can trivially scan an arbitrary
+> > number of instructions attempting to match before giving up. We do
+> > similar things for sh64 where we also have to figure out how stack frames
+> > were created in order to roll them back.
+> > 
+> > In any event, take a look at arch/sh/kernel/cpu/sh5/unwind.c, you should
+> > be able to use a similar scheme without the need for undue complexity.
+> > 
+> 
+> Thanks for the tip. This looks manageable. I had thought to search for
+> instructions that create frames but didn't think working backwards from
+> return addresses was a good idea. Using kallsyms to get the "top" of
+> each function is a nice way around that.
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- drivers/base/node.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+The kallsyms approach to unwinding depends on as many functions as
+possible being in the table, for two reasons:
 
-diff --git a/drivers/base/node.c b/drivers/base/node.c
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -165,8 +165,11 @@ static ssize_t node_read_distance(struct sys_device * dev,
- 	int len = 0;
- 	int i;
- 
--	/* buf currently PAGE_SIZE, need ~4 chars per node */
--	BUILD_BUG_ON(MAX_NUMNODES*4 > PAGE_SIZE/2);
-+	/*
-+	 * buf is currently PAGE_SIZE in length and each node needs 4 chars
-+	 * at the most (distance + space or newline).
-+	 */
-+	BUILD_BUG_ON(MAX_NUMNODES*4 > PAGE_SIZE);
- 
- 	for_each_online_node(i)
- 		len += sprintf(buf + len, "%s%d", i ? " " : "", node_distance(nid, i));
+* The unwind can't get past an address that kallsyms can't identify
+* A mis-lookup, such as reporting a nearby global function when the
+  actual address lies in a static function, can send the unwind off the
+  rails
+
+To get static (local) functions into kallsyms, I've found that I need to
+specify -fno-unit-at-a-time to Microblaze gcc 4.1.2. I suspect that
+particular option has other side-effects, but despite much searching I
+couldn't find any mention of a gcc option that would do what I need. My
+x86_64 gcc (4.4.1) seems to emit local symbols by default even with
+-funit-at-a-time. 
+
+Any suggestions?
+
+------------------------------------------------------------------------
+Steven J. Magnani               "I claim this network for MARS!
+www.digidescorp.com              Earthling, return my space modulator!"
+
+#include <standard.disclaimer>
+
+
