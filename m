@@ -1,52 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692Ab0CJPE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:04:26 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:58058 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756034Ab0CJPEZ (ORCPT
+	id S1756703Ab0CJPFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:05:22 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:43420 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756034Ab0CJPFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:04:25 -0500
-Date: Wed, 10 Mar 2010 10:04:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: USBFS Memory allocation Bug
-In-Reply-To: <d9def9db1003100133wa705618ped71e146cf4c326d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.1003100958250.1516-100000@iolanthe.rowland.org>
+	Wed, 10 Mar 2010 10:05:21 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [git pull] fatfs-2.6 fixes patches
+Date: Thu, 11 Mar 2010 00:05:17 +0900
+Message-ID: <874oko1aky.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Markus Rechberger wrote:
+Hi,
 
-> > At any rate, clearly the bug, if there is one, lies in the memory
-> > management subsystem and not in usbfs.
-> >
-> 
-> seems like yes, but the final result of this is that mediasrv was not
-> killable anymore.
+This is two fixes patch for fatfs.
 
-You should have said so earlier.  That is indeed a serious bug.
+Please pull from
 
-> Shouldn't the syscall just fail if this happens?
+    git://git.kernel.org/pub/scm/linux/kernel/git/hirofumi/fatfs-2.6.git master
 
-It _does_ just fail if memory can't be allocated.  Here's the relevant 
-code from proc_do_submiturb():
+to get these changes:
 
-		as->urb->transfer_buffer = kmalloc(uurb->buffer_length,
-				GFP_KERNEL);
-		if (!as->urb->transfer_buffer) {
-			kfree(isopkt);
-			kfree(dr);
-			free_async(as);
-			return -ENOMEM;
-		}
+Kevin Dankwardt (1):
+      fat: Fix stat->f_namelen
 
-Where was the mediasrv process hung when you tried to kill it?
+OGAWA Hirofumi (1):
+      fat: Fix vfat_lookup()
 
-Alan Stern
-
+ fs/fat/inode.c           |    2 +-
+ fs/fat/namei_vfat.c      |   27 +++++++++++++++++++--------
+ include/linux/msdos_fs.h |    3 ++-
+ 3 files changed, 22 insertions(+), 10 deletions(-)
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
