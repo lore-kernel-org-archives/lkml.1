@@ -1,37 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932788Ab0CJVzI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:55:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49525
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932769Ab0CJVzF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 16:55:05 -0500
-Date: Wed, 10 Mar 2010 13:55:25 -0800 (PST)
-Message-Id: <20100310.135525.214295069.davem@davemloft.net>
-To: rmk+lkml@arm.linux.org.uk
-Cc: yinghai@kernel.org, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH 5/6] early_res: seperate common memmap func from e820.c
- to fw_memmap.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100310215018.GD24353@flint.arm.linux.org.uk>
-References: <1268256267-3769-1-git-send-email-yinghai@kernel.org>
-	<1268256267-3769-6-git-send-email-yinghai@kernel.org>
-	<20100310215018.GD24353@flint.arm.linux.org.uk>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S932794Ab0CJV5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:57:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48570 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932769Ab0CJV5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 16:57:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] freezer: only show the state of tasks refusing to freeze
+Date: Wed, 10 Mar 2010 23:00:19 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.34-rc1-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Xiaotian Feng <dfeng@redhat.com>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+References: <1268213322-5094-1-git-send-email-dfeng@redhat.com> <alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003102300.19497.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Date: Wed, 10 Mar 2010 21:50:18 +0000
+On Wednesday 10 March 2010, David Rientjes wrote:
+> On Wed, 10 Mar 2010, Xiaotian Feng wrote:
+> 
+> > show_state will dump all tasks state, so if freezer failed to freeze
+> > any task, kernel will dump all tasks state and flood the dmesg log.
+> > This patch makes freezer only show state of tasks refusing to freeze.
+> > 
+> > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> > Cc: David Rientjes <rientjes@google.com>
+> 
+> Acked-by: David Rientjes <rientjes@google.com>
 
-> Where are patches 1 to 4?
+Applied.
 
-They were x86 specific, from the perspective of your architecture
-you only need to look at the non-x86 parts of patch #5
+Rafael
