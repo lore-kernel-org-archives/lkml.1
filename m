@@ -1,52 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752419Ab0CJFLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 00:11:00 -0500
-Received: from services04.student.cs.uwaterloo.ca ([129.97.152.11]:33330 "EHLO
-	services04.student.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751902Ab0CJFK5 (ORCPT
+	id S1752339Ab0CJFPQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 00:15:16 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:34993 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835Ab0CJFPM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 00:10:57 -0500
-Date: Wed, 10 Mar 2010 00:10:46 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH,REGRESSION] Staging: et131x: Properly disable FC in txmac.
-Message-ID: <20100310051046.GA646@cpu18.student.cs>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (services04.student.cs.uwaterloo.ca [129.97.152.11]); Wed, 10 Mar 2010 00:10:52 -0500 (EST)
-X-Miltered: at mailchk-m02 with ID 4B9729DA.001 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
-X-UUID: feeb38c6-8494-43c6-80cb-a122b361ba4e
+	Wed, 10 Mar 2010 00:15:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KP3RsDjtZeLvWZbpaKyTwRfpjzvUBhJnYkzejvQ1t+kHLk34AzTUjxQgGFAqwB2Q5O
+         dOSJ0fZgK7BF+8XjpsxfYUh4KoJyUFv+bnmOqu+530fKMDSYj3/R5UqrtOFFbJYz1xt1
+         IzArlUkag6UW5bpjYNVm4fJ5t40cLsGYxUNsM=
+MIME-Version: 1.0
+In-Reply-To: <4B95F339.5040903@st.com>
+References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-2-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-3-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-4-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-5-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-6-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-7-git-send-email-viresh.kumar@st.com>
+	 <1267592861-26911-8-git-send-email-viresh.kumar@st.com>
+	 <63386a3d1003082246g2752ccf4ob52d5bb01dfb264c@mail.gmail.com>
+	 <4B95F339.5040903@st.com>
+Date: Wed, 10 Mar 2010 06:15:10 +0100
+Message-ID: <63386a3d1003092115ia91b7d9l64cc89ebd72d7e22@mail.gmail.com>
+Subject: Re: [PATCH 07/11] ST SPEAr: Added source files for SPEAr3xx machine 
+	family
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Viresh KUMAR <viresh.kumar@st.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
+       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
+       ashish.priyadarshi@st.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Bowler <nbowler@draconx.ca>
+2010/3/9 Viresh KUMAR <viresh.kumar@st.com>:
 
-FC disable is bit 3 of the txmac ctl register, but commit
-6720949d55623cb8c4cb6b06f218d8be68780a6f accidentally changed
-the code to set bit 2 instead.
+> On 3/9/2010 12:16 PM, Linus Walleij wrote:
+>> Hi Viresh,
+>>> (...)
+>>> +       .irq = {IRQ_UART, NO_IRQ},
+>>> +       .periphid = 0x00041011,
+>>> +};
+>>
+>> You're hardcoding the PrimeCell ID to the ARM version, (...)
+>
+> Actually PL011 is customized by ST's nomadik platform. And hence above
+> is true for nomadik only. We are using ARM's version of PL011 without
+> any customization over it and so id for our case is still 0x00041011.
 
-Signed-off-by: Nick Bowler <nbowler@draconx.ca>
----
- drivers/staging/et131x/et1310_mac.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+OK then you can probably just delete the .periphid line, the only thing that
+will do is to override the number found in the ID registers with the same
+number. If this doesn't work you certainly have a modified version anyway.
 
-diff --git a/drivers/staging/et131x/et1310_mac.c b/drivers/staging/et131x/et1310_mac.c
-index a292b1e..737a9f5 100644
---- a/drivers/staging/et131x/et1310_mac.c
-+++ b/drivers/staging/et131x/et1310_mac.c
-@@ -226,7 +226,7 @@ void ConfigMACRegs2(struct et131x_adapter *etdev)
- 	}
- 
- 	/* Enable TXMAC */
--	ctl |= 0x05;	/* TX mac enable, FC disable */
-+	ctl |= 0x09;	/* TX mac enable, FC disable */
- 	writel(ctl, &etdev->regs->txmac.ctl);
- 
- 	/* Ready to start the RXDMA/TXDMA engine */
--- 
-1.6.4.4
+Linus
