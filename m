@@ -1,55 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997Ab0CJURI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 15:17:08 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:54918 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756976Ab0CJURG (ORCPT
+	id S1752191Ab0CJUSr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 15:18:47 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:33982 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107Ab0CJUSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 15:17:06 -0500
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAAuNl0urR7Hu/2dsb2JhbACaVHOjUZhThHkEgxc
-X-IronPort-AV: E=Sophos;i="4.49,616,1262563200"; 
-   d="scan'208";a="494790090"
-From: Roland Dreier <rdreier@cisco.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Linux-usb <linux-usb@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH RFC] fix problems with NETIF_F_HIGHDMA in networking drivers v2
-References: <4B8F213B.40603@gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 10 Mar 2010 12:17:00 -0800
-In-Reply-To: <4B8F213B.40603@gmail.com> (Robert Hancock's message of "Wed, 03
-	Mar 2010 20:55:55 -0600")
-Message-ID: <adar5nshqyr.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Wed, 10 Mar 2010 15:18:46 -0500
+Date: Wed, 10 Mar 2010 15:18:37 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] call_usermodehelper: call info->init() after
+ set_user_nice()
+Message-ID: <20100310201837.GB3770@hmsreliant.think-freely.org>
+References: <20100310184439.GA3386@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100310184439.GA3386@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Spam-Score: -4.1 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
- > index df3eb8c..53be462 100644
- > --- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
- > +++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
- > @@ -1058,7 +1058,7 @@ static void ipoib_setup(struct net_device *dev)
- >  	dev->type		 = ARPHRD_INFINIBAND;
- >  	dev->tx_queue_len	 = ipoib_sendq_size * 2;
- >  	dev->features		 = (NETIF_F_VLAN_CHALLENGED	|
- > -				    NETIF_F_HIGHDMA);
- > +				    NETIF_F_DMA_HIGH);
- >  	dev->priv_flags		&= ~IFF_XMIT_DST_RELEASE;
- >  
- >  	memcpy(dev->broadcast, ipv4_bcast_addr, INFINIBAND_ALEN);
+On Wed, Mar 10, 2010 at 07:44:39PM +0100, Oleg Nesterov wrote:
+> Mostly cosmetic, but imho it makes sense to call sub_info->init() right
+> before kernel_execve(). This looks more natural and allows ->init() hook
+> to change the priority if needed.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> ---
+> 
+>  kernel/kmod.c |   12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> --- mm/kernel/kmod.c~5_MOVE_INIT_DOWN	2010-03-10 17:36:37.000000000 +0100
+> +++ mm/kernel/kmod.c	2010-03-10 19:40:24.000000000 +0100
+> @@ -159,6 +159,11 @@ static int ____call_usermodehelper(void 
+>  
+>  	/* We can run anywhere, unlike our parent keventd(). */
+>  	set_cpus_allowed_ptr(current, cpu_all_mask);
+> +	/*
+> +	 * Our parent is keventd, which runs with elevated scheduling priority.
+> +	 * Avoid propagating that into the userspace child.
+> +	 */
+> +	set_user_nice(current, 0);
+>  
+>  	if (sub_info->init) {
+>  		retval = sub_info->init(sub_info);
+> @@ -166,14 +171,7 @@ static int ____call_usermodehelper(void 
+>  			goto fail;
+>  	}
+>  
+> -	/*
+> -	 * Our parent is keventd, which runs with elevated scheduling priority.
+> -	 * Avoid propagating that into the userspace child.
+> -	 */
+> -	set_user_nice(current, 0);
+> -
+>  	retval = kernel_execve(sub_info->path, sub_info->argv, sub_info->envp);
+> -
+>  	/* Exec failed? */
+>  fail:
+>  	sub_info->retval = retval;
+> 
+> 
+> 
 
-Been meaning to mention this for a bit, but ipoib is capable of handling
-any DMA address, so if I understand your patch correctly, this can be
-NETIF_F_DMA_64BIT instead of just DMA_HIGH.
--- 
-Roland Dreier  <rolandd@cisco.com>
-For corporate legal information go to:
-http://www.cisco.com/web/about/doing_business/legal/cri/index.html
+Sure, why not. :)
+
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
+
