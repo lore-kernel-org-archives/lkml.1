@@ -1,42 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620Ab0CJLvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:51:18 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49575 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809Ab0CJLvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:51:15 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted' xattrs
-Date: Wed, 10 Mar 2010 12:48:48 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; i686; ; )
-Cc: James Morris <jmorris@namei.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <1267621378.3436.15.camel@moss-pluto.epoch.ncsc.mil>
-In-Reply-To: <1267621378.3436.15.camel@moss-pluto.epoch.ncsc.mil>
+	id S1751972Ab0CJMCF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 07:02:05 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48585 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751090Ab0CJMCC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 07:02:02 -0500
+Date: Wed, 10 Mar 2010 12:01:56 +0000
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Haojian Zhuang <haojian.zhuang@marvell.com>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
+Message-ID: <20100310120155.GO24422@rakim.wolfsonmicro.main>
+References: <alpine.DEB.2.00.0912152157330.27772@ayla.of.borg>
+ <20091215221357.GA26024@opensource.wolfsonmicro.com>
+ <10f740e81003091113j5b55edf7r7eec8728bcc87821@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003101248.48385.agruen@suse.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <10f740e81003091113j5b55edf7r7eec8728bcc87821@mail.gmail.com>
+Grom: Mark Brown <broonie@opensource.wolfsonmicro.com>
+X-Cookie: Your fault -- core dumped
+User-Agent: Mutt/1.5.20 (2009-06-14)
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 March 2010 14:02:58 Stephen Smalley wrote:
-> Should it be using has_capability_noaudit() rather than capable() so
-> that merely calling listxattr() on a file that happens to have trusted
-> xattrs does not set PF_SUPERPRIV on the task and does not trigger an
-> audit message?
+On Tue, Mar 09, 2010 at 08:13:56PM +0100, Geert Uytterhoeven wrote:
 
-Yes, makes sense.  A version of has_capability_noaudit() without an explicit 
-task parameter, like security_capable(), would be better still.
+> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Thanks,
-Andreas
+> This patch still hasn't made it. In addition, 3 more drivers started
+> to show the same problems
+> on architectures that don't use genirq yet, so I updated it.
+
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+
+TBH I'm surprised there's architectures that haven't implemented genirq
+yet.
