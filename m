@@ -1,75 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473Ab0CJXmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 18:42:36 -0500
-Received: from www.tglx.de ([62.245.132.106]:33546 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757463Ab0CJXme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 18:42:34 -0500
-Date: Thu, 11 Mar 2010 00:42:04 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Tony Lindgren <tony@atomide.com>, Viresh KUMAR <viresh.kumar@st.com>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
-Subject: Re: [PATCH 04/11] ST SPEAr: Added basic header files for SPEAr
- platform
-In-Reply-To: <20100310232914.GC22729@linux-sh.org>
-Message-ID: <alpine.LFD.2.00.1003110040030.22855@localhost.localdomain>
-References: <1267592861-26911-3-git-send-email-viresh.kumar@st.com> <1267592861-26911-4-git-send-email-viresh.kumar@st.com> <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com> <4B973CF6.4030009@st.com>
- <63386a3d1003100131v7027e44cu5031c9ee3bf6ec73@mail.gmail.com> <4B977067.3050108@st.com> <20100310141645.GB22729@linux-sh.org> <alpine.LFD.2.00.1003101732010.22855@localhost.localdomain> <20100310221652.GS2900@atomide.com>
- <20100310232914.GC22729@linux-sh.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S932624Ab0CJXpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 18:45:18 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:37746 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757439Ab0CJXpQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 18:45:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=l/39ILhB5M41QoinXNDDrKZK4TDzDCeGkP7YoLGmNJ5T5EPPmpb/zlrXZIdhDJwuBD
+         UklsqbV2A66EUrjrJqjnLp9QivPB3+5RThsgYXk3glRb0WaFHruZ1+xQR5E0149tXoDz
+         62TE74Q47rF+quhxsaNn16OiU06SV1P22irHI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <201003101817.42812.hpj@urpla.net>
+References: <201003101817.42812.hpj@urpla.net>
+From: David Rees <drees76@gmail.com>
+Date: Wed, 10 Mar 2010 15:44:54 -0800
+Message-ID: <72dbd3151003101544w18afc65ubbc85d5bfc435198@mail.gmail.com>
+Subject: Re: howto combat highly pathologic latencies on a server?
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010, Paul Mundt wrote:
-> On Wed, Mar 10, 2010 at 02:16:53PM -0800, Tony Lindgren wrote:
-> > * Thomas Gleixner <tglx@linutronix.de> [100310 08:38]:
-> > > On Wed, 10 Mar 2010, Paul Mundt wrote:
-> > > > This is hardly a unique situation for your platform, this is true for
-> > > > most platforms. There's no reason why clockevents couldn't just be
-> > > > extended and drivers could then just grab unused clockevents and pin them
-> > > > accordingly. Most of the infrastructure is already in place for something
-> > > > like that, without really having to do anything special.
-> > > > 
-> > > > Having said that, most drivers have pretty lame reasons for trying to get
-> > > > at fixed timer channels, and most of the time they can easily get by with
-> > > > an hrtimer instead. There's also the issue that you're effectively
-> > > > bypassing nohz by having some timer channel off on the side doing who
-> > > > knows what. You would need a pretty compelling reason for why you are
-> > > > sidestepping all of the existing infrastructure anyways.
-> > > 
-> > > Right, and that's exactly the reason why we did not add the few
-> > > missing bits to make clock events directly usable from drivers.
-> > 
-> > Yeah still no direct users so far for the 12 hardware timers on
-> > omaps.. I guess the only use I could see is bit banging data
-> > over a few GPIO lines using a FIQ handler.
-> > 
-> > Another thing to consider is that most likely all hardware timers
-> > are not able to wake up the system from idle, which would easily
-> > cause some mysterious errors for drivers.
-> > 
-> Even if most drivers shouldn't be touching clockevents directly, there
-> are still legitimate cases. In SMP configurations where a single timer
-> block is shared across multiple CPUs it would be easier to have the boot
-> CPU register all of the timer channels under clockevents and have the
-> secondaries grab one at random for setting up their local timers. (Even
-> if they're not truly "local" timers, it's still a better situation than
-> broadcast IPIs). clockevents would need some minor extension, including
-> dealing with unregistration for the CPU hotplug case, but it's a pretty
-> good fit for the problem otherwise.
+On Wed, Mar 10, 2010 at 9:17 AM, Hans-Peter Jansen <hpj@urpla.net> wrote:
+> While this system usually operates fine, it suffers from delays, that are
+> displayed in latencytop as: "Writing page to disk:     8425,5 ms":
+> ftp://urpla.net/lat-8.4sec.png, but we see them also in the 1.7-4.8 sec
+> range: ftp://urpla.net/lat-1.7sec.png, ftp://urpla.net/lat-2.9sec.png,
+> ftp://urpla.net/lat-4.6sec.png and ftp://urpla.net/lat-4.8sec.png.
+>
+> From other observations, this issue "feels" like it is induced by single
+> syncronisation points in the block layer, eg. if I create heavy IO load on
+> one RAID array, say resizing a VMware disk image, it can take up to a
+> minute to log in by ssh, although the ssh login does not touch this area at
+> all (different RAID arrays). Note, that the latencytop snapshots above are
+> made during normal operation, not this kind of load..
+>
+> Might later kernels mitigate this problem? As this is a production system,
+> that is used 6.5 days a week, I cannot do dangerous experiments, also
+> switching to 64 bit is a problem due to the legacy stuff described above...
+> OTOH, my users suffer from this, and anything helping in this respect is
+> highly appreciated.
 
-No objections against that, but that's not a use case for drivers and
-limited to (arch) core code functionality.
+Seems like a 2.6.32 based kernel which has per-BDI writeback and "CFQ
+low latency mode" changes might help a good deal.  I know that on one
+of my bigger machines (similar in specs to yours) which has a lot of
+processes which do a decent amount of IO, latency and load average has
+gone down after going to a 2.6.32 kernel from a 2.6.31 kernel (Fedora
+11 system).
 
-Thanks,
+Like Chris suggested, I've also heard that using the noop IO scheduler
+can work well on Areca controllers on some kernels and workloads.
+It's worth a shot and you can even try changing it at run-time.
 
-	tglx
+-Dave
