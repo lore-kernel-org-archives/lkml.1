@@ -1,92 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020Ab0CJOby (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:31:54 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:48814 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193Ab0CJObx (ORCPT
+	id S1756465Ab0CJOcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:32:04 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:44611 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193Ab0CJOb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:31:53 -0500
-Message-ID: <4B97AD52.7080201@linux.vnet.ibm.com>
-Date: Wed, 10 Mar 2010 15:31:46 +0100
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 10 Mar 2010 09:31:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=TlhtokvINSaH+pPwTJW5Th9T9AikMs5vVxuSXdkftkcRj2NtQ6xxYV+f2WesZGlbJH
+         MIdc/vGqqK2IVr+1XVjHz+01UuO/dvjiwvNtD8zGwxikT1f+rAn23Ah/m894pL/t9Roj
+         ELhhwW+6qJnHRyaYM9CR/B1DFNOYEKaAO2Jc4=
+Message-ID: <4B97AD5B.5080802@garzik.org>
+Date: Wed, 10 Mar 2010 09:31:55 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ronald <intercommit@gmail.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC PATCH] Fix Readahead stalling by plugged device queues
-References: <4B979104.6010907@linux.vnet.ibm.com> <20100310130932.GB18509@localhost>
-In-Reply-To: <20100310130932.GB18509@localhost>
+To: Zeno Davatz <zdavatz@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ata1 timeouts on 2.6.34-rc1
+References: <40a4ed591003100208v67b61ca5sd7a3ab8da99e975e@mail.gmail.com>
+In-Reply-To: <40a4ed591003100208v67b61ca5sd7a3ab8da99e975e@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 03/10/2010 05:08 AM, Zeno Davatz wrote:
+> I am also on an Intel SSD (160 GB). Every timeout blocks my PC for some seconds.
 
 
-Wu Fengguang wrote:
-[...]
-> Christian, did you notice this commit for 2.6.33?
-> 
-> commit 65a80b4c61f5b5f6eb0f5669c8fb120893bfb388
-[...]
+PLEASE provide full information standard to any bug report.  Just 
+posting that you have a timeout tells us nothing about the hardware 
+involved.
 
-I didn't see that particular one, due to the fact that whatever the 
-result is it needs to work .32
+lspci and full dmesg output is needed, at a minimum.
 
-Anyway I'll test it tomorrow and if that already accepted one fixes my 
-issue as well I'll recommend distros older than 2.6.33 picking that one 
-up in their on top patches.
+	Jeff
 
-> 
-> It should at least improve performance between .32 and .33, because
-> once two readahead requests are merged into one single IO request,
-> the PageUptodate() will be true at next readahead, and hence
-> blk_run_backing_dev() get called to break out of the suboptimal
-> situation.
 
-As you saw from my blktrace thats already the case without that patch.
-Once the second readahead comes in and merged it gets unplugged in 
-2.6.32 too - but still that is bad behavior as it denies my things like 
-68% throughput improvement :-).
 
-> 
-> Your patch does reduce the possible readahead submit latency to 0.
-
-yeah and I think/hope that is fine, because as I stated:
-- low utilized disk -> not an issue
-- high utilized disk -> unplug is an noop
-
-At least personally I consider a case where merging of a readahead 
-window with anything except its own sibling very rare - and therefore 
-fair to unplug after and RA is submitted.
-
-> Is your workload a simple dd on a single disk? If so, it sounds like
-> something illogical hidden in the block layer.
-
-It might still be illogical hidden as e.g. 2.6.27 unplugged after the 
-first readahead as well :-)
-But no my load is iozone running with different numbers of processes 
-with one disk per process.
-That neatly resembles e.g. nightly backup jobs which tend to take longer 
-and longer in all time increasing customer scenarios. Such an 
-improvement might banish the backups back to the night were they belong :-)
-
-> Thanks,
-> Fengguang
-
--- 
-
-Grüsse / regards, Christian Ehrhardt
-IBM Linux Technology Center, System z Linux Performance
