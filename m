@@ -1,93 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932360Ab0CJPzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:55:38 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52093 "EHLO gir.skynet.ie"
+	id S932434Ab0CJP4A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:56:00 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44985 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766Ab0CJPzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:55:37 -0500
-Date: Wed, 10 Mar 2010 15:55:20 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Markus Rechberger <mrechberger@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: USBFS Memory allocation Bug
-Message-ID: <20100310155519.GO4883@csn.ul.ie>
-References: <20100310152125.GN4883@csn.ul.ie> <Pine.LNX.4.44L0.1003101045030.1516-100000@iolanthe.rowland.org>
+	id S932390Ab0CJPz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 10:55:58 -0500
+Date: Wed, 10 Mar 2010 16:55:57 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Greg KH <gregkh@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 1/3] lockdep: Move lock events under lockdep recursion
+	protection
+Message-ID: <20100310155557.GA5768@kernel.dk>
+References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com> <1267599302-2886-2-git-send-regression-fweisbec@gmail.com> <20100309083410.GD5768@kernel.dk> <20100309083536.GE5768@kernel.dk> <20100310000533.GF5058@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1003101045030.1516-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20100310000533.GF5058@nowhere>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 10:49:11AM -0500, Alan Stern wrote:
-> On Wed, 10 Mar 2010, Mel Gorman wrote:
-> 
-> > On Wed, Mar 10, 2010 at 10:16:09AM -0500, Alan Stern wrote:
-> > > On Wed, 10 Mar 2010, Mel Gorman wrote:
-> > > 
-> > > > On Tue, Mar 09, 2010 at 10:09:57PM +0100, Markus Rechberger wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > I just stumbled around following issue:
-> > > > > 
-> > > > > <SNIP to have one full message>
-> > > > >
-> > > > > [275835.491094] mediasrv: page allocation failure. order:6, mode:0x40d0
-> > > > 
-> > > > This is massive. Why is usbdev_ioctl requiring an order-6 allocation?
-> > > > Does it have the option to fall back to vmalloc() for example?
-> > > 
-> > > We needed to implement an upper limit on the buffer size, and the value
-> > > chosen was sufficient for 8 ms of data.  There is no fallback to
-> > > vmalloc().
-> > > 
-> > > Of course, the mediasrv program could always make multiple smaller
-> > > data submissions instead of a single big one.
-> > > 
+On Wed, Mar 10 2010, Frederic Weisbecker wrote:
+> On Tue, Mar 09, 2010 at 09:35:37AM +0100, Jens Axboe wrote:
+> > Which, btw, throws a new lockdep warning fest:
 > > 
-> > Is there any means for the driver to take the large request, break it up
-> > into multiple smaller requests and submit them one at a time?
+> > [   42.247718] scsi7 : ioc0: LSISAS1068E B3, FwRev=011b0300h, Ports=1, MaxQ=483, IRQ=26
+> > [   42.281125] BUG: key ffff880c7cb75250 not in .data!
+> > [   42.288346] ------------[ cut here ]------------
+> > [   42.294490] WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x545/0x5f0()
+> > [   42.304013] Hardware name: QSSC-S4R
+> > [   42.309674] Modules linked in: hid_apple usbhid ehci_hcd uhci_hcd usbcore nls_base mptsas(+) mptscsih mptbase scsi_transport_sas igb sg sr_mod cdrom
+> > [   42.332072] Pid: 5197, comm: modprobe Not tainted 2.6.34-rc1 #176
+> > [   42.340597] Call Trace:
+> > [   42.345335]  [<ffffffff8107fb8d>] ? is_module_address+0x2d/0x60
+> > [   42.353670]  [<ffffffff81074aa5>] ? lockdep_init_map+0x545/0x5f0
+> > [   42.362154]  [<ffffffff81044648>] warn_slowpath_common+0x78/0xd0
+> > [   42.371913]  [<ffffffff810446af>] warn_slowpath_null+0xf/0x20
+> > [   42.380109]  [<ffffffff81074aa5>] lockdep_init_map+0x545/0x5f0
 > 
-> In theory almost anything is possible.  But it would be a big effort
-> and not consistent with the way the rest of the driver works.
 > 
+> 
+> This doesn't look related to my patch, it also happen in -rc1 right?
 
-Then about the only other suggestion would be a mempool containing a small
-number of largest-possible buffers that is enabled if there is no swap
-available.
+It's not related, it does happen in -rc1 plain as well.
 
-> > > > So, it's a high-order allocation but no swap is configured. As the
-> > > > system has a big mix of both anonymous and file memory, it is likely it
-> > > > was unable to find a large enough contiguous range of file-backed memory
-> > > > it could discard. There is pretty much nothing the memory manager could
-> > > > do here. 
-> > > > 
-> > > > FWIW, if swap was configured I'd think there was more the memory manager
-> > > > could have done.
-> > > > 
-> > > > Is usb falling back to vmalloc() or order-0 pages possible?
-> > > 
-> > > No.  It's not possible since the buffer has to be contiguous for DMA
-> > > purposes (this is a requirement of the driver interface).
-> > > 
-> > 
-> > Regrettably, there is not much the VM can do in this situation. Without
-> > swap, it cannot magic up contiguous memory. If memory compaction gets
-> > merged then it could do more but the risk of failure is still non-zero.
+> > [   42.388402]  [<ffffffff81156636>] ? sysfs_new_dirent+0x76/0x120
 > 
-> Agreed.  The best way to fix the allocation failure is to provide swap 
-> space.
 > 
+> This calls:
+> 
+> #define sysfs_dirent_init_lockdep(sd)				\
+> do {								\
+> 	struct attribute *attr = sd->s_attr.attr;		\
+> 	struct lock_class_key *key = attr->key;			\
+> 	if (!key)						\
+> 		key = &attr->skey;				\
+> 								\
+> 	lockdep_init_map(&sd->dep_map, "s_active", key, 0);	\
+> } while(0)
+> 
+> 
+> Looks like the struct lock_class_key is dynamically allocated
+> and lockdep doesn't like that.
 
-Or a mempool so at least it can always make some forward progress.
-Whether it is worth it or not depends on what happens the application
-when this allocation fails.
+I saw someone else report the same warning, but from a different path
+than mine. I'll try and bisect it.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jens Axboe
+
