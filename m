@@ -1,39 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160Ab0CJDQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 22:16:59 -0500
-Received: from kroah.org ([198.145.64.141]:52269 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756113Ab0CJDQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 22:16:49 -0500
-Date: Tue, 9 Mar 2010 18:54:11 -0800
-From: Greg KH <greg@kroah.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org, lenz@cs.wisc.edu, rpurdie@openedhand.com
-Subject: Re: private field in led_classdev?
-Message-ID: <20100310025411.GD26642@kroah.com>
-References: <20100307143112.GC5203@const.famille.thibault.fr>
+	id S1756141Ab0CJDVi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 22:21:38 -0500
+Received: from andromeda.dapyr.net ([206.212.254.10]:38677 "EHLO
+	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755180Ab0CJDVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 22:21:35 -0500
+X-Greylist: delayed 692 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 22:21:35 EST
+From: Konrad Rzeszutek Wilk <konrad@darnok.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Xen-devel] [PATCH 7/7] xen: Enable event channel of PV extension of HVM
+Date: Tue, 9 Mar 2010 22:08:22 -0500
+User-Agent: KMail/1.9.10
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
+       Konrad Rzeszutek Wilk <kliw@darnok.org>
+References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com> <alpine.DEB.2.00.1003090954010.4869@kaball-desktop> <4B96A0D4.60605@goop.org>
+In-Reply-To: <4B96A0D4.60605@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100307143112.GC5203@const.famille.thibault.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <201003092208.23964.konrad@darnok.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 07, 2010 at 03:31:12PM +0100, Samuel Thibault wrote:
-> Hello,
-> 
-> Would there be an objection to adding a void *private field to the
-> led_classdev struct?  It would be a lot less burden for the input
-> key board leds support for finding out the keyboard device from the
-> brightness_set callback, as each device may have a long series of leds,
-> not just a fixed number of them.
+On Tuesday 09 March 2010 14:26:12 Jeremy Fitzhardinge wrote:
+> On 03/09/2010 02:22 AM, Stefano Stabellini wrote:
+> > Indeed.
+> > You just need the pirq mappings and few other things, it shouldn't be
+> > too hard.
+> > At this point I am going to do that myself after this patch series is
+> > completed.
 
-What's wrong with using the private pointer in the struct device
-instead?  That's what it is there for.
+Stefano,
 
-thanks,
+Take a look at 
+git://git.kernel.org/pub/scm/linux/kernel/git/konrad/xen.git 
+pv/pcifront-2.6.32
 
-greg k-h
+It has a Linus 2.6.32 as a base and all of the patches necessary for PCI front 
+to work. That includes a lot of patches in the events and the pirq/event 
+channel to make it work. Also tie ins to the MSI/MSI-X and IRQ interrupts to 
+have a PCI device work in PV guest.
+
+
+
+>
+> Thanks.  You might want to coordinate with Konrad who's doing the same
+> thing to get pcifront into an upstreamable form; I think there would be
+> some overlap.
+>
+>      J
+
+
