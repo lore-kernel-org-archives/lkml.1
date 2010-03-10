@@ -1,72 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932080Ab0CJGKn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 01:10:43 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:48362 "EHLO
+	id S932092Ab0CJGUX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 01:20:23 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:39026 "EHLO
 	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247Ab0CJGKl convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752735Ab0CJGUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 01:10:41 -0500
+	Wed, 10 Mar 2010 01:20:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WwTLSGqlxKmoEcXTyElGDnA3GeyehrF3dpMKBOzE5Lh+/nKGi3IQdnqjadQEJrq8Ik
-         nkTXCaIOV4jAi66WWJ7nhgzFtdHHgOlb0Cm0qAvvqUoKw67qwDJ5pEizd5Lk7oHEhzm4
-         casWGDa2BC/mqvgOzGFHFPf9yQORwafZ2zap4=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NOJjGkPZ+7Y1pd7iIT81TpQGYip0CENE5W75ZMxaC6Jq2k5aQUcuKkqXEpRo3c3+Bx
+         oFCR+7QYdESRMHyYgM9EHRpNSNn4r7Zav9fC4cDyyIY1Jb1FnwBDc6ZUi1g/uorKJFu3
+         MKfytsoScAk10l5lF5Hs3tuP8PfWMnD4eFxv4=
+Date: Tue, 9 Mar 2010 22:20:15 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, John Kacur <jkacur@gmail.com>
+Subject: Re: [PATCH 2/3] input: use input_mutex instead of BKL when opening
+ input device
+Message-ID: <20100310062015.GA2445@core.coreip.homeip.net>
+References: <1268162386-2745-1-git-send-email-cascardo@holoscopio.com>
+ <1268162386-2745-2-git-send-email-cascardo@holoscopio.com>
+ <201003092112.14071.arnd@arndb.de>
+ <20100309205947.GB1498@holoscopio.com>
 MIME-Version: 1.0
-In-Reply-To: <63386a3d1003092115ia91b7d9l64cc89ebd72d7e22@mail.gmail.com>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-3-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-4-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-5-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-6-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-7-git-send-email-viresh.kumar@st.com>
-	 <1267592861-26911-8-git-send-email-viresh.kumar@st.com>
-	 <63386a3d1003082246g2752ccf4ob52d5bb01dfb264c@mail.gmail.com>
-	 <4B95F339.5040903@st.com>
-	 <63386a3d1003092115ia91b7d9l64cc89ebd72d7e22@mail.gmail.com>
-Date: Wed, 10 Mar 2010 11:40:39 +0530
-Message-ID: <22dbbef21003092210x44e7e535mf418b1ebf2bc8a9c@mail.gmail.com>
-Subject: Re: [PATCH 07/11] ST SPEAr: Added source files for SPEAr3xx machine 
-	family
-From: viresh kumar <viresh.linux@gmail.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Viresh KUMAR <viresh.kumar@st.com>, rajeev-dlh.kumar@st.com,
-       shiraz.hashim@st.com, armando.visconti@st.com,
-       ashish.priyadarshi@st.com, linux-kernel@vger.kernel.org,
-       vipin.kumar@st.com, amit.goel@st.com, deepak.sikri@st.com,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100309205947.GB1498@holoscopio.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, Mar 09, 2010 at 05:59:48PM -0300, Thadeu Lima de Souza Cascardo wrote:
+> On Tue, Mar 09, 2010 at 09:12:13PM +0100, Arnd Bergmann wrote:
+> > On Tuesday 09 March 2010, Thadeu Lima de Souza Cascardo wrote:
+> > >  MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
+> > > @@ -1881,7 +1880,7 @@ static int input_open_file(struct inode *inode, struct file *file)
+> > >         const struct file_operations *old_fops, *new_fops = NULL;
+> > >         int err;
+> > >  
+> > > -       lock_kernel();
+> > > +       mutex_lock(&input_mutex);
+> > >         /* No load-on-demand here? */
+> > >         handler = input_table[iminor(inode) >> 5];
+> > >         if (!handler || !(new_fops = fops_get(handler->fops))) {
+> > > @@ -1909,7 +1908,7 @@ static int input_open_file(struct inode *inode, struct file *file)
+> > >         }
+> > >         fops_put(old_fops);
+> > >  out:
+> > > -       unlock_kernel();
+> > > +       mutex_unlock(&input_mutex);
+> > >         return err;
+> > >  }
+> > >  
+> > > -- 
+> > 
+> > Well, actually please have a look at
+> > http://git.kernel.org/?p=linux/kernel/git/arnd/playground.git;a=commitdiff;h=c06fd0234357618a5741ce958d58901ae4cb7ac1
+> > 
+> > * use mutex_lock_interruptible() where possible
+> > * you probably don't want to hold input_mutex when calling into the lower
+> >   device's open function
+> > 
+> > 	Arnd
+> 
+> Yeah. I was just looking at your appointed branch. And I've noticed your
+> change was better.
+> 
+> I was willing to let the open call go unprotected. But ended up checking
+> that the three callees were fine (they do not call any of the other
+> functions that take the mutex).
+> 
+> Since the fops_put/fops_get do protect that section from the handler
+> removal and I can't think of any other race right now, I think your
+> version is really better.
+> 
+> Acked-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> 
 
-On Wed, Mar 10, 2010 at 10:45 AM, Linus Walleij
-<linus.ml.walleij@gmail.com> wrote:
-> 2010/3/9 Viresh KUMAR <viresh.kumar@st.com>:
->
->> On 3/9/2010 12:16 PM, Linus Walleij wrote:
->>> Hi Viresh,
->>>> (...)
->>>> +       .irq = {IRQ_UART, NO_IRQ},
->>>> +       .periphid = 0x00041011,
->>>> +};
->>>
->>> You're hardcoding the PrimeCell ID to the ARM version, (...)
->>
->> Actually PL011 is customized by ST's nomadik platform. And hence above
->> is true for nomadik only. We are using ARM's version of PL011 without
->> any customization over it and so id for our case is still 0x00041011.
->
-> OK then you can probably just delete the .periphid line, the only thing that
-> will do is to override the number found in the ID registers with the same
-> number. If this doesn't work you certainly have a modified version anyway.
->
+OK, applied 2 Thadeu's patches and one Arnd's.
 
-OK.
+Thanks.
 
-viresh.
+-- 
+Dmitry
