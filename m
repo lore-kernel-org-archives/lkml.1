@@ -1,46 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246Ab0CJD5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 22:57:48 -0500
-Received: from www.telegraphics.com.au ([204.15.192.19]:63579 "EHLO
-	mail.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756165Ab0CJD5o (ORCPT
+	id S1756237Ab0CJEL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 23:11:28 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:53802 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756166Ab0CJEL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 22:57:44 -0500
-X-Greylist: delayed 564 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 22:57:44 EST
-Date: Wed, 10 Mar 2010 14:48:13 +1100 (EST)
-From: fthain@telegraphics.com.au
-To: Michael Beardsworth <mbeards2@uoregon.edu>
-cc: benh@kernel.crashing.org, grant.likely@secretlab.ca, geert@linux-m68k.org,
-       monstr@monstr.eu, Nick Savage <nagaten@gmail.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: madness, was Re: [PATCH 2/2] Macintosh: fix coding style issues in
- adb.c This is a patch to the adb.c file that cleans up many warnings found
- by the checkpatch.pl tool
-In-Reply-To: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
-Message-ID: <alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
-References: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 9 Mar 2010 23:11:26 -0500
+Date: Wed, 10 Mar 2010 13:10:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg KH <greg@kroah.com>
+Cc: Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org
+Subject: Re: [PATCH] driver core: Early dev_name() support.
+Message-ID: <20100310041037.GC17693@linux-sh.org>
+References: <20100309065753.GA8287@linux-sh.org> <20100310023727.GB26642@kroah.com> <20100310032158.GA19518@linux-sh.org> <20100310032846.GC28444@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100310032846.GC28444@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 9 Mar 2010, Michael Beardsworth wrote:
-
-> -	/* If a probe is in progress or we are sleeping, wait for it to complete */
-> +	/* If a probe is in progress or we are sleeping, wait until complete */
-
-If you must "fix" what aint broke, please try not to damage it. I'm sorry 
-if your VT52 is limited to 80 cols, but IMNSHO this sort of effort is 
-misguided.
-
-Maybe I could point out again (I do this periodically) that checkpatch.pl 
-is great but code that fails it is NOT always wrong.
-
-"Check patch" is a good idea but "check existing code" is a waste of 
-everyone's time.
-
-Finn
+On Tue, Mar 09, 2010 at 07:28:46PM -0800, Greg KH wrote:
+> On Wed, Mar 10, 2010 at 12:21:58PM +0900, Paul Mundt wrote:
+> > On Tue, Mar 09, 2010 at 06:37:27PM -0800, Greg KH wrote:
+> > > On Tue, Mar 09, 2010 at 03:57:53PM +0900, Paul Mundt wrote:
+> > > > Presently early platform devices suffer from the fact they are unable to
+> > > > use dev_xxx() calls early on due to dev_name() and others being
+> > > > unavailable at the time ->probe() is called.
+> > > > 
+> > > > This implements early init_name construction from the matched name/id
+> > > > pair following the semantics of the late device/driver match. As a
+> > > > result, matched IDs (inclusive of requested ones) are preserved when the
+> > > > handoff from the early platform code happens at kobject initialization
+> > > > time.
+> > > > 
+> > > > Since we still require kmalloc slabs to be available at this point, using
+> > > > kstrdup() for establishing the init_name works fine. This subsequently
+> > > > needs to be tested from dev_name() prior to the init_name being cleared
+> > > > by the driver core. We don't kfree() since others will already have a
+> > > > handle on the string long before the kobject initialization takes place.
+> > > > 
+> > > > This is also needed to permit drivers to use the clock framework early,
+> > > > without having to manually construct their own device IDs from the match
+> > > > id/name pair locally (needed by the early console and timer code on sh
+> > > > and arm).
+> > > 
+> > > Is this change something that we need for .34?  Or can it wait for .35?
+> > > 
+> > If it went in for .34 we would get properly dev_name() resolution in the
+> > error paths for the existing early platform drivers, but that's obviously
+> > not critical.
+> > 
+> > I have a bunch of work I plan to do on top of it for 2.6.35, so I was
+> > planning on carrying it in a topic branch once I got your Acked-by.
+> 
+> Sure, that's fine with me.  Feel free to add a:
+> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> to the patch.
+> 
+Done, thanks Greg.
