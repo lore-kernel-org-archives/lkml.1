@@ -1,75 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603Ab0CJMdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 07:33:05 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:22873 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753049Ab0CJMdC (ORCPT
+	id S1753888Ab0CJMhI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 07:37:08 -0500
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:54206 "EHLO
+	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753487Ab0CJMhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 07:33:02 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAJYfl0vCTtAn/2dsb2JhbACbB3O7foR5BA
-Date: Wed, 10 Mar 2010 13:32:57 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH vfat] allow retrieving entries with trailing dots
-Message-ID: <20100310123257.GA2899@frolo.macqel>
+	Wed, 10 Mar 2010 07:37:04 -0500
+Message-ID: <4B978C28.7080100@inf.tu-dresden.de>
+Date: Wed, 10 Mar 2010 13:10:16 +0100
+From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Evan McClain <evan.mcclain@gatech.edu>
+CC: rpurdie@rpsys.net, akpm@linux-foundation.org, mjg@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: mbp_nvidia_bl - add five more MacBook variants
+References: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
+In-Reply-To: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ogawa,
+What about finally adding all machines to the list?
+As far as I know, we have:
 
-This fixes accessing vfat entries with trailing dots created by an external
-vfat driver (like the one in IOMEGA home network hard drives)
+* already present in Linus'/Richard Purdie's tree:
+     Intel chipset:
+         MacBookAir 1,1
+         MacBookPro 3,1
+         MacBookPro 3,2
+         MacBookPro 4,1
 
-Philippe
+     Nvidia chipset:
+         MacBook 5,1
+         MacBook 5,2
+         MacBookAir 2,1
+         MacBookPro 5,1
+         MacBookPro 5,2
+         MacBookPro 5,3
+         MacBookPro 5,4
+         MacBookPro 5,5
 
---
+* recently proposed to add by Evan McClain:
+     Intel chipset:
+         MacBook 1,1
+         MacBook 2,1
+         MacBook 3,1
+         MacBook 4,1
+         MacBook 4,2
 
-Some vfat-formatted network disks that are also usb disk do not discard
-trailing dots when creating files or directories via ftp.
-Connecting afterwards this drive via usb to a linux machine leads to the
-following problem :
-if one issues the `ls' or `find' command, one gets this message :
+* still missing:
+     Intel chipset:
+         MacBookPro 1,1
+         MacBookPro 1,2
+         MacBookPro 2,1
+         MacBookPro 2,2
 
-find: ./Simon_&_Garfunkel-Wednesday_Morning,_3_a.m.: No such file or directory
+     Nvidia chipset:
+         MacBook 6,1
 
-Fix that by first trying to retrieve the entry with the full name, and only if
-that fails and there are trailing dots in the searched name, try then to find
-the truncated name.
-
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-
---- a/fs/fat/namei_vfat.c	2009-09-10 00:13:59.000000000 +0200
-+++ b/fs/fat/namei_vfat.c	2010-02-08 02:28:37.010096903 +0100
-@@ -702,9 +702,22 @@
- static int vfat_find(struct inode *dir, struct qstr *qname,
- 		     struct fat_slot_info *sinfo)
- {
--	unsigned int len = vfat_striptail_len(qname);
-+	int err;
-+	unsigned int len;
-+
-+	/* Some combined ethernet + usb external hard drive do not
-+	 * remove the trailing dots when creating entries in ethernet mode.
-+	 * (e.g. Iomega Home Network Hard Drive)
-+	 * Make accessing those entries possible.
-+	 */
-+	err = fat_search_long(dir, qname->name, qname->len, sinfo);
-+	if (!err)
-+		return err;
-+	len = vfat_striptail_len(qname);
- 	if (len == 0)
- 		return -ENOENT;
-+	if (len == qname->len)
-+		return err;
- 	return fat_search_long(dir, qname->name, len, sinfo);
- }
- 
-
+ciao,
+Mario
