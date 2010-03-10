@@ -1,59 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193Ab0CJVAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:00:20 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:38558 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757113Ab0CJVAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 16:00:19 -0500
+	id S1757198Ab0CJVDd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:03:33 -0500
+Received: from mail-ew0-f216.google.com ([209.85.219.216]:37267 "EHLO
+	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757113Ab0CJVDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 16:03:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=RdW+BA5OQMF68CgPKNvEEb2Ynmfa8YXpEyxvWPayx/DEr2YiY7++vnN+Ldn/IwAhXR
+         Hxla+Mr2igBrGg+n3VlXWKnSQLr4KOWUGu0pOBtANii1S5IaTqeOeq58fL0ujv0jR7UR
+         P+NWpb+R8M6L/Oc6ALHiEKgYtKVMqEsCaYWS8=
+From: wouter.vanrooy@gmail.com
+To: gregkh@suse.de
+Cc: andre@bitwigglers.org, ak@linux.intel.com, peterhuewe@gmx.de,
+       kevin.granade@gmail.com, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Staging: asus_oled: fix space where tab should be This patches the asus_oled.c file so that checkpatch.pl doesn't provide any more warnings. Signed-off-by: Wouter Van Rooy <wouter.vanrooy@gmail.com>
 Date: Wed, 10 Mar 2010 22:00:15 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl deprecation)
-Message-ID: <20100310210015.GB16230@isilmar.linta.de>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>
-References: <20100303075944.GA23354@comet.dominikbrodowski.net> <20100303083010.GA22928@flint.arm.linux.org.uk> <20100305120746.646126b9@lxorguk.ukuu.org.uk> <20100310204546.GA1394@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100310204546.GA1394@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <1268254815-11995-1-git-send-email-wouter.vanrooy@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+From: wouter <wouter@wouter-desktop.(none)>
 
-On Wed, Mar 10, 2010 at 09:45:46PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > So you believe that disabling the button in the graphical environment
-> > > to allow PCMCIA cards to be removed (such as CF cards) - leaving the
-> > > user to merely pull out the CF card, while the FS is mounted, is a
-> > > good idea?
-> > 
-> > Do any graphical environments even support the ancient user space
-> > pcmcica helper stuff ? I can't find any evidence they do but I realise
-> 
-> Yes; qtopia shipped with zaurus sl-5500 (collie), and very probably
-> opie and gpe...
-> 
-> Sharp needed operating system for the handheld, and yes it supported
-> all the hw.
+---
+ drivers/staging/asus_oled/asus_oled.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-So qtopia still uses the PCMCIA ioctl? Or is it some custom add-on code by
-zaurus? I'd very much like to see some more source code, what parts of
-the IOCTL it uses etc. pp. Or at least some pointers...
+diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+index 7ebecc9..5b279fb 100644
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
+ };
+ 
+ static CLASS_ATTR_STRING(version, S_IRUGO,
+-		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
++			ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
+ 
+ static int __init asus_oled_init(void)
+ {
+-- 
+1.6.3.3
 
-Thanks,
-	Dominik
