@@ -1,20 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446Ab0CJPnB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:43:01 -0500
+	id S1756781Ab0CJPnK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:43:10 -0500
 Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:27705 "EHLO
 	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932434Ab0CJPm6 (ORCPT
+	with ESMTP id S932434Ab0CJPnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:42:58 -0500
+	Wed, 10 Mar 2010 10:43:05 -0500
 X-IronPort-AV: E=Sophos;i="4.49,614,1262563200"; 
-   d="scan'208";a="9880202"
-Date: Wed, 10 Mar 2010 15:47:05 +0000
+   d="scan'208";a="9880207"
+Date: Wed, 10 Mar 2010 15:47:11 +0000
 From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
 X-X-Sender: sstabellini@kaball-desktop
-To: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 3 of 5] pv clocksource
-Message-ID: <alpine.DEB.2.00.1003101502120.28412@kaball-desktop>
+To: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4 of 5] evtchn delivery on HVM
+Message-ID: <alpine.DEB.2.00.1003101506570.28412@kaball-desktop>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
@@ -23,8 +24,8 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
-this adds a PV clocksource that can provide a reliable clocksource for
-Linux running as an HVM guest on Xen.
+this patch sets the callback to receive evtchns from Xen, using the
+callback vector delivery mechanism.
 
 Signed-off-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
@@ -32,73 +33,133 @@ Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
 
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 42135e8..6292cc6 100644
+index 6292cc6..72e8546 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1253,6 +1253,20 @@ static void __init init_shared_info(void)
- 	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
+@@ -34,8 +34,11 @@
+ #include <xen/interface/vcpu.h>
+ #include <xen/interface/memory.h>
+ #include <xen/interface/hvm/hvm_op.h>
++#include <xen/interface/hvm/params.h>
+ #include <xen/features.h>
+ #include <xen/page.h>
++#include <xen/hvm.h>
++#include <xen/events.h>
+ #include <xen/hvc-console.h>
+ 
+ #include <asm/paravirt.h>
+@@ -1267,9 +1270,25 @@ static void __init init_pv_clocksource(void)
+ 	xen_register_clocksource();
  }
  
-+static void __init init_pv_clocksource(void)
++static int set_callback_via(uint64_t via)
 +{
-+	if (!xen_hvm_domain())
-+		return;
++	struct xen_hvm_param a;
 +
-+	pv_time_ops.sched_clock = xen_sched_clock;
++	a.domid = DOMID_SELF;
++	a.index = HVM_PARAM_CALLBACK_IRQ;
++	a.value = via;
++	return HYPERVISOR_hvm_op(HVMOP_set_param, &a);
++}
 +
-+	x86_platform.calibrate_tsc = xen_tsc_khz;
-+	x86_platform.get_wallclock = xen_get_wallclock;
-+	x86_platform.set_wallclock = xen_set_wallclock;
-+
-+	xen_register_clocksource();
++void do_hvm_pv_evtchn_intr(void)
++{
++	xen_evtchn_do_upcall(get_irq_regs());
 +}
 +
  void __init xen_guest_init(void)
  {
  	int r;
-@@ -1262,5 +1276,6 @@ void __init xen_guest_init(void)
- 		return;
++	uint64_t callback_via;
+ 
+ 	r = init_hvm_pv_info();
+ 	if (r < 0)
+@@ -1277,5 +1296,14 @@ void __init xen_guest_init(void)
  
  	init_shared_info();
-+	init_pv_clocksource();
- }
- 
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 0a5aa44..d1c1c50 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -474,11 +474,21 @@ void xen_timer_resume(void)
- 	}
- }
- 
-+static bool xen_clocksource_enabled;
+ 	init_pv_clocksource();
 +
-+void xen_register_clocksource(void)
-+{
-+	if (!xen_clocksource_enabled) {
-+		clocksource_register(&xen_clocksource);
-+		xen_clocksource_enabled = 1;
++	callback_via = HVM_CALLBACK_VECTOR(GENERIC_INTERRUPT_VECTOR);
++	set_callback_via(callback_via);
++	generic_interrupt_extension = do_hvm_pv_evtchn_intr;
++
++	have_vcpu_info_placement = 0;
++	x86_init.irqs.intr_init = xen_init_IRQ;
++	pv_time_ops = xen_time_ops;
++	machine_ops = xen_machine_ops;
+ }
+ 
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 2f57276..ef25a53 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -621,9 +621,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
+  	unsigned count;
+ 
+-	exit_idle();
+-	irq_enter();
+-
++	if (!xen_hvm_domain()) {
++		exit_idle();
++		irq_enter();
 +	}
-+}
+ 	do {
+ 		unsigned long pending_words;
+ 
+@@ -659,8 +660,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 	} while(count != 1);
+ 
+ out:
+-	irq_exit();
+-	set_irq_regs(old_regs);
++	if (!xen_hvm_domain()) {
++		irq_exit();
++		set_irq_regs(old_regs);
++	}
+ 
+ 	put_cpu();
+ }
+@@ -939,5 +942,8 @@ void __init xen_init_IRQ(void)
+ 	for (i = 0; i < NR_EVENT_CHANNELS; i++)
+ 		mask_evtchn(i);
+ 
+-	irq_ctx_init(smp_processor_id());
++	if (xen_hvm_domain())
++		native_init_IRQ();
++	else
++		irq_ctx_init(smp_processor_id());
+ }
+diff --git a/include/xen/events.h b/include/xen/events.h
+index e68d59a..b0d3b3c 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -56,4 +56,6 @@ void xen_poll_irq(int irq);
+ /* Determine the IRQ which is bound to an event channel */
+ unsigned irq_from_evtchn(unsigned int evtchn);
+ 
++void xen_evtchn_do_upcall(struct pt_regs *regs);
 +
- __init void xen_time_init(void)
+ #endif	/* _XEN_EVENTS_H */
+diff --git a/include/xen/hvm.h b/include/xen/hvm.h
+index c2a55f6..35c9c11 100644
+--- a/include/xen/hvm.h
++++ b/include/xen/hvm.h
+@@ -3,6 +3,7 @@
+ #define XEN_HVM_H__
+ 
+ #include <xen/interface/hvm/params.h>
++#include <asm/xen/hypercall.h>
+ 
+ static inline unsigned long hvm_get_parameter(int idx)
  {
- 	int cpu = smp_processor_id();
+@@ -20,4 +21,9 @@ static inline unsigned long hvm_get_parameter(int idx)
+        return xhv.value;
+ }
  
--	clocksource_register(&xen_clocksource);
-+	xen_register_clocksource();
- 
- 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
- 		/* Successfully turned off 100Hz tick, so we have the
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 355fa6b..2aeaf51 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -46,6 +46,7 @@ cycle_t xen_clocksource_read(void);
- void xen_setup_cpu_clockevents(void);
- unsigned long xen_tsc_khz(void);
- void __init xen_time_init(void);
-+void xen_register_clocksource(void);
- unsigned long xen_get_wallclock(void);
- int xen_set_wallclock(unsigned long time);
- unsigned long long xen_sched_clock(void);
++#define HVM_CALLBACK_VIA_TYPE_VECTOR 0x2
++#define HVM_CALLBACK_VIA_TYPE_SHIFT 56
++#define HVM_CALLBACK_VECTOR(x) (((uint64_t)HVM_CALLBACK_VIA_TYPE_VECTOR)<<\
++                               HVM_CALLBACK_VIA_TYPE_SHIFT | (x))
++
+ #endif /* XEN_HVM_H__ */
