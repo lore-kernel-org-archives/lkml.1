@@ -1,69 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932448Ab0CJP4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:56:17 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44997 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932239Ab0CJP4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:56:15 -0500
-Date: Wed, 10 Mar 2010 16:56:14 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Greg KH <gregkh@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 1/3] lockdep: Move lock events under lockdep recursion
-	protection
-Message-ID: <20100310155614.GB5768@kernel.dk>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com> <1267599302-2886-2-git-send-regression-fweisbec@gmail.com> <20100309083410.GD5768@kernel.dk> <20100309083536.GE5768@kernel.dk> <20100310000533.GF5058@nowhere> <1268235925.5279.2.camel@twins>
+	id S1756826Ab0CJP6c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:58:32 -0500
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:59149 "EHLO
+	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756783Ab0CJP6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 10:58:31 -0500
+Message-ID: <4B97C170.6010809@inf.tu-dresden.de>
+Date: Wed, 10 Mar 2010 16:57:36 +0100
+From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268235925.5279.2.camel@twins>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Evan McClain <evan.mcclain@gatech.edu>, rpurdie@rpsys.net,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: mbp_nvidia_bl - add five more MacBook	variants
+References: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu> <20100310142424.GA21625@srcf.ucam.org> <4B97BEA7.8010804@inf.tu-dresden.de> <20100310154752.GA23027@srcf.ucam.org>
+In-Reply-To: <20100310154752.GA23027@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10 2010, Peter Zijlstra wrote:
-> On Wed, 2010-03-10 at 01:05 +0100, Frederic Weisbecker wrote:
-> > On Tue, Mar 09, 2010 at 09:35:37AM +0100, Jens Axboe wrote:
-> > > Which, btw, throws a new lockdep warning fest:
-> > > 
-> > > [   42.247718] scsi7 : ioc0: LSISAS1068E B3, FwRev=011b0300h,
-> > Ports=1, MaxQ=483, IRQ=26
-> > > [   42.281125] BUG: key ffff880c7cb75250 not in .data!
-> > > [   42.288346] ------------[ cut here ]------------
-> > > [   42.294490] WARNING: at kernel/lockdep.c:2706 lockdep_init_map
-> > +0x545/0x5f0()
-> > > [   42.304013] Hardware name: QSSC-S4R
-> > > [   42.309674] Modules linked in: hid_apple usbhid ehci_hcd uhci_hcd
-> > usbcore nls_base mptsas(+) mptscsih mptbase scsi_transport_sas igb sg
-> > sr_mod cdrom
-> > > [   42.332072] Pid: 5197, comm: modprobe Not tainted 2.6.34-rc1 #176
-> > > [   42.340597] Call Trace:
-> > > [   42.345335]  [<ffffffff8107fb8d>] ? is_module_address+0x2d/0x60
-> > > [   42.353670]  [<ffffffff81074aa5>] ? lockdep_init_map+0x545/0x5f0
-> > > [   42.362154]  [<ffffffff81044648>] warn_slowpath_common+0x78/0xd0
-> > > [   42.371913]  [<ffffffff810446af>] warn_slowpath_null+0xf/0x20
-> > > [   42.380109]  [<ffffffff81074aa5>] lockdep_init_map+0x545/0x5f0
-> > 
-> > 
-> > 
-> > This doesn't look related to my patch, it also happen in -rc1 right?
-> 
-> 
-> The per-cpu changes broke lockdep, Tejun already posted patches for
-> this:
-> 
-> http://lkml.org/lkml/2010/3/10/76
-> http://lkml.org/lkml/2010/3/10/79
+Hi,
 
-Ah good, saves me the trouble of locating it, thanks!
+On 10.03.2010 16:47, Matthew Garrett wrote:
+> On Wed, Mar 10, 2010 at 04:45:43PM +0100, Mario Schwalbe wrote:
+>
+>> Tested using a simple program that writes the ports from userland.
+>> And ack: it should probably be renamed to something more reasonable.
+>> Something like apple_bl?
+>
+> Sure. Want to do a patch for that and Kconfig? It probably wants a
+> module alias line for backwards compatibility.
 
--- 
-Jens Axboe
+Why not? How should the module alias line look like?
+MODULE_ALIAS("mbp_nvidia_bl");
+Or prefixed with some subsystem identifier? I've never used it before.
 
+Thanks & ciao,
+Mario
