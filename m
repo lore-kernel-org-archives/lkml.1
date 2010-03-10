@@ -1,62 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684Ab0CJJUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 04:20:44 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:65297 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170Ab0CJJUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 04:20:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=XhTWSuSmkHxKjyaBvz9f8wM/ZaGCyI+rzVshFJrx4dk+cdUTOYMIa88P4Y9cYqf+bn
-         w0eoo+rRbaLsXKzh+kwNUplaTCBpu9EVRMQOXHxqIof65VPncy2kNccujvQcVBsgmSnc
-         W1qADGSBRHmODrU179VJAYX/5fyiO/9cR0PuM=
-MIME-Version: 1.0
-In-Reply-To: <2ea1731b1003100002w104633ffy1ae46ef3d245e5b5@mail.gmail.com>
-References: <4B968834.3040609@gmail.com>
-	 <21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
-	 <2ea1731b1003100002w104633ffy1ae46ef3d245e5b5@mail.gmail.com>
-Date: Wed, 10 Mar 2010 18:20:33 +0900
-X-Google-Sender-Auth: 6fd769b5fa59e540
-Message-ID: <21eaeb5a1003100120x6cd3f69ak598954af3c9fe955@mail.gmail.com>
-Subject: Re: [PATCH v2] char drivers: Ram oops/panic logger
-From: Yuasa Yoichi <yuasa@linux-mips.org>
-To: Marco Stornelli <marco.stornelli@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754408Ab0CJJ3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 04:29:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44931 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769Ab0CJJ3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 04:29:22 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       David Rientjes <rientjes@google.com>
+Subject: [PATCH] freezer: only show the state of tasks refusing to freeze
+Date: Wed, 10 Mar 2010 17:28:42 +0800
+Message-Id: <1268213322-5094-1-git-send-email-dfeng@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
-> 2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
->> Hi,
->>
->> 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
->>> Ramoops, like mtdoops, can log oops/panic information but in RAM.
->>
->> What is different from mtdoops + mtd-ram?
->>
->> Yoichi
->>
->
-> It can be used in a very easy way with persistent RAM for systems
-> without flash support. For this systems, with this driver, it's no
-> more needed add to the kernel the mtd subsystem with advantage in
-> footprint as I said in the description.
+show_state will dump all tasks state, so if freezer failed to freeze
+any task, kernel will dump all tasks state and flood the dmesg log.
+This patch makes freezer only show state of tasks refusing to freeze.
 
-right.
-But,
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: David Rientjes <rientjes@google.com>
+---
+ kernel/power/process.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> In addition, you can save
-> flash space and store this information only in RAM. I think it's very
-> useful for embedded systems.
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 5ade1bd..a0480cd 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -88,12 +88,11 @@ static int try_to_freeze_tasks(bool sig_only)
+ 		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
+ 				"(%d tasks refusing to freeze):\n",
+ 				elapsed_csecs / 100, elapsed_csecs % 100, todo);
+-		show_state();
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+ 			task_lock(p);
+ 			if (freezing(p) && !freezer_should_skip(p))
+-				printk(KERN_ERR " %s\n", p->comm);
++				sched_show_task(p);
+ 			cancel_freezing(p);
+ 			task_unlock(p);
+ 		} while_each_thread(g, p);
+-- 
+1.6.6.1
 
-CONFIG_MTD_RAM uses only RAM.
-I think there's no big difference about this point.
-
-Yoichi
