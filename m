@@ -1,93 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463Ab0CJQa5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 11:30:57 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:41856 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932450Ab0CJQay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 11:30:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=alXm6IeRtoOM9aUi47cY7ZpI4mH7fbL88AHV+QldTkB6+0+4h9MjPhLWhkmYBXDaB2
-         jY+dM8p7P28sLSw+AWL1AD78FxK8r57GcxyRO6jx6eW7Rx5W9SRDcZ0ss8K4EXycqv/v
-         5b3JQiV2odopoaNBbPTbLapHjM53RqDqhPTh4=
-Message-ID: <4B97C93B.9050002@garzik.org>
-Date: Wed, 10 Mar 2010 11:30:51 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S932453Ab0CJQg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 11:36:26 -0500
+Received: from xenotime.net ([72.52.64.118]:40743 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756841Ab0CJQgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 11:36:25 -0500
+Message-ID: <4B97CA84.1050606@xenotime.net>
+Date: Wed, 10 Mar 2010 08:36:20 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Zeno Davatz <zdavatz@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ata1 timeouts on 2.6.34-rc1
-References: <40a4ed591003100208v67b61ca5sd7a3ab8da99e975e@mail.gmail.com>	 <4B97AD5B.5080802@garzik.org> <40a4ed591003100741i3f62c180k99fc85b2c57ab210@mail.gmail.com>
-In-Reply-To: <40a4ed591003100741i3f62c180k99fc85b2c57ab210@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Magnus Damm <magnus.damm@gmail.com>
+CC: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH] Driver core: Early platform kernel-doc update
+References: <20100310115038.21785.46115.sendpatchset@t400s>
+In-Reply-To: <20100310115038.21785.46115.sendpatchset@t400s>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10/2010 10:41 AM, Zeno Davatz wrote:
-> Mar 10 13:30:01 zenogentoo cron[12528]: (root) CMD (test -x
-> /usr/sbin/run-crons&&  /usr/sbin/run-crons )
-> Mar 10 13:33:32 zenogentoo sudo:     zeno : TTY=pts/0 ; PWD=/home/zeno
-> ; USER=root ; COMMAND=/usr/bin/emerge --sync
-> Mar 10 13:33:48 zenogentoo ata1: clearing spurious IRQ
-> Mar 10 13:34:19 zenogentoo ata1: lost interrupt (Status 0x50)
-> Mar 10 13:34:19 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
-> 0x0 action 0x6 frozen
-> Mar 10 13:34:19 zenogentoo ata1.00: failed command: READ DMA
-> Mar 10 13:34:19 zenogentoo ata1.00: cmd
-> c8/00:08:d5:20:cb/00:00:00:00:00/e9 tag 0 dma 4096 in
-> Mar 10 13:34:19 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
-> Emask 0x4 (timeout)
-> Mar 10 13:34:19 zenogentoo ata1.00: status: { DRDY }
-> Mar 10 13:34:19 zenogentoo ata1: soft resetting link
-> Mar 10 13:34:19 zenogentoo ata1.00: configured for UDMA/133
-> Mar 10 13:34:19 zenogentoo ata1.00: device reported invalid CHS sector 0
-> Mar 10 13:34:19 zenogentoo ata1: EH complete
-> Mar 10 13:35:55 zenogentoo ata1: clearing spurious IRQ
-> Mar 10 13:36:26 zenogentoo ata1: lost interrupt (Status 0x50)
-> Mar 10 13:36:26 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
-> 0x0 action 0x6 frozen
-> Mar 10 13:36:26 zenogentoo ata1.00: failed command: WRITE DMA
-> Mar 10 13:36:26 zenogentoo ata1.00: cmd
-> ca/00:10:1d:ad:52/00:00:00:00:00/e6 tag 0 dma 8192 out
-> Mar 10 13:36:26 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
-> Emask 0x4 (timeout)
-> Mar 10 13:36:26 zenogentoo ata1.00: status: { DRDY }
-> Mar 10 13:36:26 zenogentoo ata1: soft resetting link
-> Mar 10 13:36:26 zenogentoo ata1.00: configured for UDMA/133
-> Mar 10 13:36:26 zenogentoo ata1.00: device reported invalid CHS sector 0
-> Mar 10 13:36:26 zenogentoo ata1: EH complete
-> Mar 10 13:40:01 zenogentoo cron[12707]: (root) CMD (test -x
-> /usr/sbin/run-crons&&  /usr/sbin/run-crons )
-> Mar 10 13:48:05 zenogentoo sudo:     zeno : TTY=pts/0 ; PWD=/home/zeno
-> ; USER=root ; COMMAND=/usr/bin/emerge portage
-> Mar 10 13:49:22 zenogentoo ata1: clearing spurious IRQ
-> Mar 10 13:49:53 zenogentoo ata1: lost interrupt (Status 0x50)
-> Mar 10 13:49:53 zenogentoo ata1.00: exception Emask 0x0 SAct 0x0 SErr
-> 0x0 action 0x6 frozen
-> Mar 10 13:49:53 zenogentoo ata1.00: failed command: WRITE DMA
-> Mar 10 13:49:53 zenogentoo ata1.00: cmd
-> ca/00:08:05:21:df/00:00:00:00:00/ef tag 0 dma 4096 out
-> Mar 10 13:49:53 zenogentoo res 40/00:00:00:00:00/00:00:00:00:00/00
-> Emask 0x4 (timeout)
-> Mar 10 13:49:53 zenogentoo ata1.00: status: { DRDY }
-> Mar 10 13:49:53 zenogentoo ata1: soft resetting link
-> Mar 10 13:49:53 zenogentoo ata1.00: configured for UDMA/133
-> Mar 10 13:49:53 zenogentoo ata1.00: device reported invalid CHS sector 0
-> Mar 10 13:49:53 zenogentoo ata1: EH complete
->
-> Let me know if I can supply you with anymore information. Also see
-> attached lspci-v file.
->
+On 03/10/10 03:50, Magnus Damm wrote:
+> From: Magnus Damm <damm@opensource.se>
+> 
+> This patch updates the kernel-doc notation for early
+> platform functions.
+> 
+> Signed-off-by: Magnus Damm <damm@opensource.se>
+
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+
+Thanks much.
+
+> ---
+> 
+>  drivers/base/platform.c |   27 ++++++++++++++++++++-------
+>  1 file changed, 20 insertions(+), 7 deletions(-)
+> 
+> --- 0001/drivers/base/platform.c
+> +++ work/drivers/base/platform.c	2010-03-10 20:45:06.000000000 +0900
+> @@ -1052,9 +1052,11 @@ static __initdata LIST_HEAD(early_platfo
+>  static __initdata LIST_HEAD(early_platform_device_list);
+>  
+>  /**
+> - * early_platform_driver_register
+> + * early_platform_driver_register - register early platform driver
+>   * @epdrv: early_platform driver structure
+>   * @buf: string passed from early_param()
+> + *
+> + * Helper function for early_platform_init() / early_platform_init_buffer()
+>   */
+>  int __init early_platform_driver_register(struct early_platform_driver *epdrv,
+>  					  char *buf)
+> @@ -1106,9 +1108,12 @@ int __init early_platform_driver_registe
+>  }
+>  
+>  /**
+> - * early_platform_add_devices - add a numbers of early platform devices
+> + * early_platform_add_devices - adds a number of early platform devices
+>   * @devs: array of early platform devices to add
+>   * @num: number of early platform devices in array
+> + *
+> + * Used by early architecture code to register early platform devices and
+> + * their platform data.
+>   */
+>  void __init early_platform_add_devices(struct platform_device **devs, int num)
+>  {
+> @@ -1128,8 +1133,12 @@ void __init early_platform_add_devices(s
+>  }
+>  
+>  /**
+> - * early_platform_driver_register_all
+> + * early_platform_driver_register_all - register early platform drivers
+>   * @class_str: string to identify early platform driver class
+> + *
+> + * Used by architecture code to register all early platform drivers
+> + * for a certain class. If omitted then only early platform drivers
+> + * with matching kernel command line class parameters will be registered.
+>   */
+>  void __init early_platform_driver_register_all(char *class_str)
+>  {
+> @@ -1151,7 +1160,7 @@ void __init early_platform_driver_regist
+>  }
+>  
+>  /**
+> - * early_platform_match
+> + * early_platform_match - find early platform device matching driver
+>   * @epdrv: early platform driver structure
+>   * @id: id to match against
+>   */
+> @@ -1169,7 +1178,7 @@ early_platform_match(struct early_platfo
+>  }
+>  
+>  /**
+> - * early_platform_left
+> + * early_platform_left - check if early platform driver has matching devices
+>   * @epdrv: early platform driver structure
+>   * @id: return true if id or above exists
+>   */
+> @@ -1187,7 +1196,7 @@ static  __init int early_platform_left(s
+>  }
+>  
+>  /**
+> - * early_platform_driver_probe_id
+> + * early_platform_driver_probe_id - probe drivers matching class_str and id
+>   * @class_str: string to identify early platform driver class
+>   * @id: id to match against
+>   * @nr_probe: number of platform devices to successfully probe before exiting
+> @@ -1257,10 +1266,14 @@ static int __init early_platform_driver_
+>  }
+>  
+>  /**
+> - * early_platform_driver_probe
+> + * early_platform_driver_probe - probe a class of registered drivers
+>   * @class_str: string to identify early platform driver class
+>   * @nr_probe: number of platform devices to successfully probe before exiting
+>   * @user_only: only probe user specified early platform devices
+> + *
+> + * Used by architecture code to probe registered early platform drivers
+> + * within a certain class. For probe to happen a registered early platform
+> + * device matching a registered early platform driver is needed.
+>   */
+>  int __init early_platform_driver_probe(char *class_str,
+>  				       int nr_probe,
 
 
-need full dmesg from boot, not just error snippet.
-
-	Jeff
-
+-- 
+~Randy
