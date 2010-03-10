@@ -1,66 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237Ab0CJEL2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 23:11:28 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:53802 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756166Ab0CJEL0 (ORCPT
+	id S1756226Ab0CJEQU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 23:16:20 -0500
+Received: from nessie.weebeastie.net ([220.233.7.36]:53095 "EHLO
+	bunyip.billabong.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755205Ab0CJEQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 23:11:26 -0500
-Date: Wed, 10 Mar 2010 13:10:37 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Greg KH <greg@kroah.com>
-Cc: Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: Re: [PATCH] driver core: Early dev_name() support.
-Message-ID: <20100310041037.GC17693@linux-sh.org>
-References: <20100309065753.GA8287@linux-sh.org> <20100310023727.GB26642@kroah.com> <20100310032158.GA19518@linux-sh.org> <20100310032846.GC28444@kroah.com>
+	Tue, 9 Mar 2010 23:16:18 -0500
+Date: Wed, 10 Mar 2010 15:16:15 +1100
+From: CaT <cat@zip.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: Regression? 2.6.23.16 -> 2.6.32.9: ide/libata HD recognition
+Message-ID: <20100310041614.GG2657@zip.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100310032846.GC28444@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Organisation: Furball Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 07:28:46PM -0800, Greg KH wrote:
-> On Wed, Mar 10, 2010 at 12:21:58PM +0900, Paul Mundt wrote:
-> > On Tue, Mar 09, 2010 at 06:37:27PM -0800, Greg KH wrote:
-> > > On Tue, Mar 09, 2010 at 03:57:53PM +0900, Paul Mundt wrote:
-> > > > Presently early platform devices suffer from the fact they are unable to
-> > > > use dev_xxx() calls early on due to dev_name() and others being
-> > > > unavailable at the time ->probe() is called.
-> > > > 
-> > > > This implements early init_name construction from the matched name/id
-> > > > pair following the semantics of the late device/driver match. As a
-> > > > result, matched IDs (inclusive of requested ones) are preserved when the
-> > > > handoff from the early platform code happens at kobject initialization
-> > > > time.
-> > > > 
-> > > > Since we still require kmalloc slabs to be available at this point, using
-> > > > kstrdup() for establishing the init_name works fine. This subsequently
-> > > > needs to be tested from dev_name() prior to the init_name being cleared
-> > > > by the driver core. We don't kfree() since others will already have a
-> > > > handle on the string long before the kobject initialization takes place.
-> > > > 
-> > > > This is also needed to permit drivers to use the clock framework early,
-> > > > without having to manually construct their own device IDs from the match
-> > > > id/name pair locally (needed by the early console and timer code on sh
-> > > > and arm).
-> > > 
-> > > Is this change something that we need for .34?  Or can it wait for .35?
-> > > 
-> > If it went in for .34 we would get properly dev_name() resolution in the
-> > error paths for the existing early platform drivers, but that's obviously
-> > not critical.
-> > 
-> > I have a bunch of work I plan to do on top of it for 2.6.35, so I was
-> > planning on carrying it in a topic branch once I got your Acked-by.
-> 
-> Sure, that's fine with me.  Feel free to add a:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> to the patch.
-> 
-Done, thanks Greg.
+Hi,
+
+Just had a strange situation with the above upgrade. It was done on an
+old server that used the serverworks ide driver. The IDE hw config under
+2.6.23.16 was:
+
+hda:	HD
+hdb:	CDROM
+hdc:	empty
+hdd:	HD
+
+After upgrade, using either IDE or libata the config changed to:
+
+hda:	HD
+hdb:	CDROM
+hdc:	empty
+hdd:	empty
+
+The BIOS recognised the disk. I went through 3 disks and it wasn't until
+I made the second HD a master that it was recognised. So now I have a
+2.6.32.9 server, using the IDE subsystem with the following config:
+
+hda:	HD
+hdb:	CDROM
+hdc:	HD
+hdd:	empty
+
+Otherwise it does not work.
+
+I had an outage window that I already blew so I was not able to do
+any more diagnosis than what it took to get the system up.
+
+If anyone wants the full config I'll send. Otherwise:
+
+IDE subsystem (no libata subsystem configured):
+
+CONFIG_HAVE_IDE=y
+CONFIG_IDE=y
+CONFIG_IDE_XFER_MODE=y
+CONFIG_IDE_ATAPI=y
+CONFIG_IDE_GD=y
+CONFIG_IDE_GD_ATA=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
+CONFIG_BLK_DEV_IDEACPI=y
+CONFIG_IDE_PROC_FS=y
+CONFIG_BLK_DEV_IDEDMA_SFF=y
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_LEDS_TRIGGER_IDE_DISK=y
+
+libata kernel (no IDE subsystem configured):
+
+CONFIG_ATA=y
+CONFIG_ATA_VERBOSE_ERROR=y
+CONFIG_ATA_ACPI=y
+CONFIG_SATA_PMP=y
+CONFIG_ATA_SFF=y
+CONFIG_PATA_SERVERWORKS=y
+
+-- 
+  "A search of his car uncovered pornography, a homemade sex aid, women's 
+  stockings and a Jack Russell terrier."
+    - http://www.news.com.au/story/0%2C27574%2C24675808-421%2C00.html
