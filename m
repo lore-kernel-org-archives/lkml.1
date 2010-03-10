@@ -1,79 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221Ab0CJD4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 22:56:37 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:47426 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756028Ab0CJD4c (ORCPT
+	id S1756246Ab0CJD5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 22:57:48 -0500
+Received: from www.telegraphics.com.au ([204.15.192.19]:63579 "EHLO
+	mail.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756165Ab0CJD5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 22:56:32 -0500
-Date: Wed, 10 Mar 2010 09:26:24 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: linux-mm@kvack.org, Andrea Righi <arighi@develer.com>,
-       linux-kernel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
- [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure)
-Message-ID: <20100310035624.GP3073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
- <20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
- <20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
- <20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
- <20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
- <20100309001252.GB13490@linux>
- <20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
- <20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
- <20100309045058.GX3073@balbir.in.ibm.com>
- <20100310104309.c5f9c9a9.nishimura@mxp.nes.nec.co.jp>
+	Tue, 9 Mar 2010 22:57:44 -0500
+X-Greylist: delayed 564 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 22:57:44 EST
+Date: Wed, 10 Mar 2010 14:48:13 +1100 (EST)
+From: fthain@telegraphics.com.au
+To: Michael Beardsworth <mbeards2@uoregon.edu>
+cc: benh@kernel.crashing.org, grant.likely@secretlab.ca, geert@linux-m68k.org,
+       monstr@monstr.eu, Nick Savage <nagaten@gmail.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: madness, was Re: [PATCH 2/2] Macintosh: fix coding style issues in
+ adb.c This is a patch to the adb.c file that cleans up many warnings found
+ by the checkpatch.pl tool
+In-Reply-To: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
+Message-ID: <alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
+References: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100310104309.c5f9c9a9.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2010-03-10 10:43:09]:
 
-> > Please please measure the performance overhead of this change.
-> > 
-> 
-> here.
-> 
-> > > > > > > I made a patch below and measured the time(average of 10 times) of kernel build
-> > > > > > > on tmpfs(make -j8 on 8 CPU machine with 2.6.33 defconfig).
-> > > > > > > 
-> > > > > > > <before>
-> > > > > > > - root cgroup: 190.47 sec
-> > > > > > > - child cgroup: 192.81 sec
-> > > > > > > 
-> > > > > > > <after>
-> > > > > > > - root cgroup: 191.06 sec
-> > > > > > > - child cgroup: 193.06 sec
-> > > > > > > 
-> 
-> <after2(local_irq_save/restore)>
-> - root cgroup: 191.42 sec
-> - child cgroup: 193.55 sec
-> 
-> hmm, I think it's in error range, but I can see a tendency by testing several times
-> that it's getting slower as I add additional codes. Using local_irq_disable()/enable()
-> except in mem_cgroup_update_file_mapped(it can be the only candidate to be called
-> with irq disabled in future) might be the choice.
->
+On Tue, 9 Mar 2010, Michael Beardsworth wrote:
 
-Error range would depend on things like standard deviation and
-repetition. It might be good to keep update_file_mapped and see the
-impact. My concern is with large systems, the difference might be
-larger.
- 
--- 
-	Three Cheers,
-	Balbir
+> -	/* If a probe is in progress or we are sleeping, wait for it to complete */
+> +	/* If a probe is in progress or we are sleeping, wait until complete */
+
+If you must "fix" what aint broke, please try not to damage it. I'm sorry 
+if your VT52 is limited to 80 cols, but IMNSHO this sort of effort is 
+misguided.
+
+Maybe I could point out again (I do this periodically) that checkpatch.pl 
+is great but code that fails it is NOT always wrong.
+
+"Check patch" is a good idea but "check existing code" is a waste of 
+everyone's time.
+
+Finn
