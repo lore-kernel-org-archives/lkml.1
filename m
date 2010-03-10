@@ -1,40 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653Ab0CJCIJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 21:08:09 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:36435 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755384Ab0CJCIH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 21:08:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=wrMecEITdzEPuUUmq6KJZs+T9gP1GES3zYEB6V7HaLowDArWOuqJRq7lyjktpQUBaD
-         JFP36ecGi0wPEiFAeTG4XYqgYHTUC4NMSE1ZO2JXLGIgcGGKyaKymK/xMdRJSoYci6xy
-         EAITmnWWaVHQDpb/We1ZxxcZH9MA9QCDogtYg=
+	id S1755871Ab0CJCOH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 21:14:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56901 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755522Ab0CJCOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 21:14:05 -0500
+Message-ID: <4B970064.2040802@cn.fujitsu.com>
+Date: Wed, 10 Mar 2010 10:13:56 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <4B968834.3040609@gmail.com>
-References: <4B968834.3040609@gmail.com>
-Date: Wed, 10 Mar 2010 11:08:04 +0900
-X-Google-Sender-Auth: 17363b87679a8807
-Message-ID: <21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
-Subject: Re: [PATCH v2] char drivers: Ram oops/panic logger
-From: Yuasa Yoichi <yuasa@linux-mips.org>
-To: Marco Stornelli <marco.stornelli@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, josh@joshtriplett.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC PATCH] rcu: don't ignore preempt_disable() in the idle	loop
+References: <4B962D57.1000406@cn.fujitsu.com> <20100310013035.GB6203@linux.vnet.ibm.com>
+In-Reply-To: <20100310013035.GB6203@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Paul E. McKenney wrote:
+>>
+>> This is another try, it uses the fact that idle loops
+>> are executing with preept_count()=1.
+>> But I didn't look deep into all idle loops.
+> 
+> Hello, Lai!
+> 
+> One question below...
+> 
+> 						Thanx, Paul
+> 
 
-2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
-> Ramoops, like mtdoops, can log oops/panic information but in RAM.
+[...]
 
-What is different from mtdoops + mtd-ram?
+>> +
+>> +	if ((preempt_count() & PREEMPT_MASK) > IDLE_CORE_LOOP_PREEMPT_COUNT)
+>> +		return 0;
+> 
+> How does this work in CONFIG_PREEMPT=n kernels?  I don't see how it
+> does, regardless of what preempt_count() returns in this case.
+> 
+>
 
-Yoichi
+You are right, It cannot work in CONFIG_PREEMPT=n kernels.
+ignore this stupid patch.
+
+Thanx, Lai
