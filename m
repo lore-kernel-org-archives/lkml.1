@@ -1,49 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794Ab0CJV5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 16:57:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48570 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932769Ab0CJV5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 16:57:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] freezer: only show the state of tasks refusing to freeze
-Date: Wed, 10 Mar 2010 23:00:19 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.34-rc1-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Xiaotian Feng <dfeng@redhat.com>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <len.brown@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-References: <1268213322-5094-1-git-send-email-dfeng@redhat.com> <alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003102300.19497.rjw@sisk.pl>
+	id S932799Ab0CJV74 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 16:59:56 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:44395 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932769Ab0CJV7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 16:59:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:message-id:x-mailer;
+        b=PbpLYAAdhGs43TulnR3gNEzaIxkxZplAOwgTlIKZhd094GwbcyqQhsKJkqwvasMhi4
+         qmgWRHtINM5qj0u+WrbRCxDgfAD30FZDn+hYQk0LGXrXF6YD9OvtiE3Bf7k69FojvgOQ
+         KBKgtFyNWFGZCXvgP8fcsIrBvkKNDp6IaVERU=
+From: Maurice Dawson <mauricedawson2699@googlemail.com>
+To: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 16/16] Staging: comedi: fix macro coding style issue in adl_pci9111.c
+Date: Wed, 10 Mar 2010 21:59:39 +0000
+Message-Id: <1268258379-4995-1-git-send-email-mauricedawson2699@googlemail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 March 2010, David Rientjes wrote:
-> On Wed, 10 Mar 2010, Xiaotian Feng wrote:
-> 
-> > show_state will dump all tasks state, so if freezer failed to freeze
-> > any task, kernel will dump all tasks state and flood the dmesg log.
-> > This patch makes freezer only show state of tasks refusing to freeze.
-> > 
-> > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> > Cc: David Rientjes <rientjes@google.com>
-> 
-> Acked-by: David Rientjes <rientjes@google.com>
+Patch to remove trailing semi-colons from do - while loops in the adl_pci9111.c file
 
-Applied.
+Signed-off-by: Maurice Dawson <mauricedawson2699@googlemail.com>
+---
+ drivers/staging/comedi/drivers/adl_pci9111.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Rafael
+diff --git a/drivers/staging/comedi/drivers/adl_pci9111.c b/drivers/staging/comedi/drivers/adl_pci9111.c
+index 5171176..5421104 100755
+--- a/drivers/staging/comedi/drivers/adl_pci9111.c
++++ b/drivers/staging/comedi/drivers/adl_pci9111.c
+@@ -214,7 +214,7 @@ Add external multiplexer support.
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
+ 		outb(PCI9111_FFEN_SET_FIFO_ENABLE, \
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_INTERRUPT_CONTROL); \
+-	} while (0);
++	} while (0)
+ 
+ #define pci9111_is_fifo_full() \
+   ((inb(PCI9111_IO_BASE+PCI9111_REGISTER_RANGE_STATUS_READBACK)& \
+@@ -271,7 +271,7 @@ Add external multiplexer support.
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0); \
+ 		outb((data >> 8) & 0xFF, \
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_0); \
+-	} while (0);
++	} while (0)
+ 
+ #define pci9111_8254_counter_1_set(data) \
+ 	do { \
+@@ -279,7 +279,7 @@ Add external multiplexer support.
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1); \
+ 		outb((data >> 8) & 0xFF, \
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_1); \
+-	} while (0);
++	} while (0)
+ 
+ #define pci9111_8254_counter_2_set(data) \
+ 	do { \
+@@ -287,7 +287,7 @@ Add external multiplexer support.
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2); \
+ 		outb((data >> 8) & 0xFF, \
+ 			PCI9111_IO_BASE+PCI9111_REGISTER_8254_COUNTER_2); \
+-	} while (0);
++	} while (0)
+ 
+ /*  Function prototypes */
+ 
+@@ -581,7 +581,7 @@ static int pci9111_ai_cancel(struct comedi_device *dev,
+ 	do { \
+ 		tmp = src; \
+ 		src &= flags; if (!src || tmp != src) error++; \
+-	} while (0);
++	} while (0)
+ 
+ static int
+ pci9111_ai_do_cmd_test(struct comedi_device *dev,
+-- 
+1.6.3.3
+
