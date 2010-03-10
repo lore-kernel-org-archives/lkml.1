@@ -1,96 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043Ab0CJLcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:32:48 -0500
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:58749 "EHLO
-	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754916Ab0CJLco (ORCPT
+	id S1756271Ab0CJLdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:33:14 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:59926 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754916Ab0CJLdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:32:44 -0500
-Date: Wed, 10 Mar 2010 12:33:11 +0100
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: Jeremy Katz <katzj@redhat.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>, Phil Dibowitz <phil@ipom.com>,
-       Jan Dumon <j.dumon@option.com>, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
-Cc: vamos@i4.informatik.uni-erlangen.de
-Subject: [PATCH] rest of USB_BERRY_CHARGE
-Message-ID: <20100310113311.GA2824@faui49.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 10 Mar 2010 06:33:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=SlRELFS/QJVt9ZOvw/qz5R9KhAqXQu/NI4O33IxKxg0lqD35mzTTsz5QGnjmDAzsVz
+         nOawuL7xQCiqhotINrQjawAGvG+olxbgV1P2fakoktNd8DHmSHaDxBfprBVl5+fAc17+
+         T9cmGo4Zqck+ayuSyrM5VhABuzpubhW3jvlis=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: lethal@linux-sh.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org
+Date: Wed, 10 Mar 2010 20:33:10 +0900
+Message-Id: <20100310113310.20654.18555.sendpatchset@t400s>
+Subject: [PATCH] video: enable sh_mobile_lcdc on SH-Mobile ARM
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+From: Magnus Damm <damm@opensource.se>
 
-	As part of the VAMOS[0] research project at the University of
-Erlangen we're checking referential integrity between kernel KConfig
-options and in-code Conditional blocks.
+This patch enables the sh_mobile_lcdc driver on
+SH-Mobile ARM.
 
-	This seems to just be a random leftover from a recent driver
-removal [1] that showed up on my most recent vamos run.
-
-	Please keep me informed of this patch getting confirmed /
-merged so we can keep track of it.
-
-Regards
-
-	Christoph Egger
-
-[0] http://vamos1.informatik.uni-erlangen.de/
-[1] a8d4211f33a9573f7b1bdcfd9c9c48631d1515ee
-
-----
->From 8584032b1060535d573cf68d77dd0ea39f2df0b5 Mon Sep 17 00:00:00 2001
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Wed, 10 Mar 2010 12:25:51 +0100
-Subject: [PATCH] Remove last bit of CONFIG_USB_BERRY_CHARGE
-
-One last bit was missed while removing the USB_BERRY_CHARGE config
-option in a8d4211f33a9573f7b1bdcfd9c9c48631d1515ee which gets dropped
-by this patch.
-
-Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Signed-off-by: Magnus Damm <damm@opensource.se>
 ---
- drivers/usb/storage/unusual_devs.h |   14 --------------
- 1 files changed, 0 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index 98b549b..266287a 100644
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1380,20 +1380,6 @@ UNUSUAL_DEV(  0x0f19, 0x0105, 0x0100, 0x0100,
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_IGNORE_RESIDUE ),
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- 0001/drivers/video/Kconfig
++++ work/drivers/video/Kconfig	2010-03-10 20:12:42.000000000 +0900
+@@ -1867,7 +1867,7 @@ config FB_W100
  
--/* Jeremy Katz <katzj@redhat.com>:
-- * The Blackberry Pearl can run in two modes; a usb-storage only mode
-- * and a mode that allows access via mass storage and to its database.
-- * The berry_charge module will set the device to dual mode and thus we
-- * should ignore its native mode if that module is built
-- */
--#ifdef CONFIG_USB_BERRY_CHARGE
--UNUSUAL_DEV(  0x0fca, 0x0006, 0x0001, 0x0001,
--		"RIM",
--		"Blackberry Pearl",
--		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_IGNORE_DEVICE ),
--#endif
--
- /* Reported by Michael Stattmann <michael@stattmann.com> */
- UNUSUAL_DEV(  0x0fce, 0xd008, 0x0000, 0x0000,
- 		"Sony Ericsson",
--- 
-1.6.3.3
-
-
-
-
-
-
-
+ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+-	depends on FB && SUPERH && HAVE_CLK
++	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
