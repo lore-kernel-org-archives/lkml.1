@@ -1,66 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859Ab0CJL32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:29:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48843 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754271Ab0CJL30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:29:26 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted' xattrs
-Date: Wed, 10 Mar 2010 12:26:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; i686; ; )
-Cc: James Morris <jmorris@namei.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <20100303140940.GA2253@infradead.org>
-In-Reply-To: <20100303140940.GA2253@infradead.org>
+	id S1756043Ab0CJLcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:32:48 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:58749 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754916Ab0CJLco (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 06:32:44 -0500
+Date: Wed, 10 Mar 2010 12:33:11 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: Jeremy Katz <katzj@redhat.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>, Phil Dibowitz <phil@ipom.com>,
+       Jan Dumon <j.dumon@option.com>, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
+Cc: vamos@i4.informatik.uni-erlangen.de
+Subject: [PATCH] rest of USB_BERRY_CHARGE
+Message-ID: <20100310113311.GA2824@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003101226.59705.agruen@suse.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 March 2010 15:09:41 Christoph Hellwig wrote:
-> On Tue, Mar 02, 2010 at 07:01:05PM +1100, James Morris wrote:
-> > I noticed that there are differences in the behavior of listxattr(2) for 
-> > xattrs in the trusted namespace.
-> > 
-> > Some filesystems, such as ext[234], require CAP_SYS_ADMIN for this, i.e. 
-> > trusted xattr names are hidden from unprivileged users.
-> > 
-> > I audited the kernel for users of the trusted xattr namespace, and found 
-> > the following filesystems not checking for CAP_SYS_ADMIN:
-> > 
-> >   - jffs2
-> >   - ocfs2
-> >   - btrfs
-> >   - xfs
-> > 
-> > I've created patches for jffs2 (tested) and ocfs2 (not tested) to add the 
-> > check -- see following emails. btrfs and xfs have custom listxattr 
-> > operations and will need a bit more work to fix.
-> 
-> I think the behaviour of the above filesystems is correct.  There is no
-> requirement for privilegues to see the existence of these attributes.
-> We also don't hide entries that aren't readable from readdir output.
+Hi all!
 
-The original idea was that regular processes will never have access to 
-trusted.* attributes anyway, and so there is little point in listing such 
-attributes in the first place.
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
-This is different from user.* attributes which a particular process may or may 
-not have access to depending on file permissions.  Checking those permissions 
-in listxattr() would have significant overheads, and race with permission 
-changes, possibly leading to weird results.  (In contrast, processes don't 
-usually listxattr() with privileges and then getxattr() without privileges, or 
-vice versa.)
+	This seems to just be a random leftover from a recent driver
+removal [1] that showed up on my most recent vamos run.
 
-Andreas
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+[1] a8d4211f33a9573f7b1bdcfd9c9c48631d1515ee
+
+----
+>From 8584032b1060535d573cf68d77dd0ea39f2df0b5 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Wed, 10 Mar 2010 12:25:51 +0100
+Subject: [PATCH] Remove last bit of CONFIG_USB_BERRY_CHARGE
+
+One last bit was missed while removing the USB_BERRY_CHARGE config
+option in a8d4211f33a9573f7b1bdcfd9c9c48631d1515ee which gets dropped
+by this patch.
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ drivers/usb/storage/unusual_devs.h |   14 --------------
+ 1 files changed, 0 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+index 98b549b..266287a 100644
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1380,20 +1380,6 @@ UNUSUAL_DEV(  0x0f19, 0x0105, 0x0100, 0x0100,
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_IGNORE_RESIDUE ),
+ 
+-/* Jeremy Katz <katzj@redhat.com>:
+- * The Blackberry Pearl can run in two modes; a usb-storage only mode
+- * and a mode that allows access via mass storage and to its database.
+- * The berry_charge module will set the device to dual mode and thus we
+- * should ignore its native mode if that module is built
+- */
+-#ifdef CONFIG_USB_BERRY_CHARGE
+-UNUSUAL_DEV(  0x0fca, 0x0006, 0x0001, 0x0001,
+-		"RIM",
+-		"Blackberry Pearl",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_IGNORE_DEVICE ),
+-#endif
+-
+ /* Reported by Michael Stattmann <michael@stattmann.com> */
+ UNUSUAL_DEV(  0x0fce, 0xd008, 0x0000, 0x0000,
+ 		"Sony Ericsson",
+-- 
+1.6.3.3
+
+
+
+
+
+
+
