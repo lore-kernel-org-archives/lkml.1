@@ -1,53 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126Ab0CJKU4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:20:56 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41611 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751987Ab0CJKUw (ORCPT
+	id S1753424Ab0CJK0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:26:04 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:21906 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036Ab0CJK0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:20:52 -0500
-Message-ID: <4B977282.40505@cs.helsinki.fi>
-Date: Wed, 10 Mar 2010 12:20:50 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 10 Mar 2010 05:26:00 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=g8+0/jBpm9uLv12ab3TZBohxMnPE/R/kqM//Ygxaf0PlcDSCrXJa10nt+2WrmoxaR
+	4Gi2g0aGJ88T8XP4QjTnA==
+Date: Wed, 10 Mar 2010 02:25:51 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Jakub Narebski <jnareb@gmail.com>,
+       Jiri Slaby <jslaby@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johannes Sixt <j.sixt@viscovery.net>
+Subject: Re: [PATCH 1/1] gitignore: do not ignore include/linux/
+In-Reply-To: <2375c9f91003100211vbe66a49g1bec37b2dcf609c2@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.1003100223090.30021@chino.kir.corp.google.com>
+References: <4B90CBE5.9090102@viscovery.net> <1267780845-10547-1-git-send-email-jslaby@suse.cz> <m3pr3jkq26.fsf@localhost.localdomain> <4B9120F2.2020000@gmail.com> <alpine.DEB.2.00.1003100205170.17698@chino.kir.corp.google.com>
+ <2375c9f91003100211vbe66a49g1bec37b2dcf609c2@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: "=?UTF-8?B?QW3DqXJpY28gV2FuZw==?=" <xiyou.wangcong@gmail.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       mingo@elte.hu, akpm@linux-foundation.org, roland@redhat.com,
-       peterz@infradead.org
-Subject: Re: 2.6.34-rc1: kernel BUG at mm/slab.c:2989!
-References: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>
-In-Reply-To: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="531400454-795328965-1268216754=:30021"
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang kirjoitti:
-> Hello, mm experts,
-> 
-> I triggered an mm bug today, the full backtrace is here:
-> 
-> http://pastebin.ca/1831436
-> 
-> I am using yesterday's Linus tree.
-> 
-> It's not easy to reproduce this, I got this very randomly.
-> 
-> Some related config's are:
-> 
-> CONFIG_SLAB=y
-> CONFIG_SLABINFO=y
-> # CONFIG_DEBUG_SLAB is not set
-> 
-> Please let me know if you need more info.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Looks like regular SLAB corruption bug to me. Can you trigget it with SLUB?
+--531400454-795328965-1268216754=:30021
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Anyway, it seems very unlikely that it's caused by the SLAB changes in 
--rc1 so I'm CC'ing scheduler and fs folks in case the oops rings a bell.
+On Wed, 10 Mar 2010, Américo Wang wrote:
 
-			Pekka
+> >> >> +!/.gitignore
+> >> >> +!/.mailmap
+> >> >
+> >> > Actually you want to *not ignore* .gitignore and .mailmap (and
+> >> > .gitattributes which is missing here) anywhere, not only as top-level
+> >> > file.  So .gitignore and .mailmap should not be prepended with slash.
+> >>
+> >> <and moved out of the 'Top-level generic files' section then>
+> >>
+> >
+> > Please either revert 3b2a8c8f3c65 or merge the fixed up patch for
+> > 2.6.34-rc2, otherwise include/linux will continue to be ignored by git
+> > just like it is for 2.6.34-rc1.
+> 
+> Why not apply the patch from Jiri? Since this problem is introduced
+> by new version of git, not that commit.
+> 
+
+Like I said, please either revert the commit that added "linux" to 
+.gitignore or merge Jiri's patch.  I'm not interested in engaging in a 
+discussion about what can or cannot be merged during rc cycles, I just 
+hope this is resolved for rc2.
+--531400454-795328965-1268216754=:30021--
