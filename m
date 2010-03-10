@@ -1,66 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888Ab0CJMhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 07:37:08 -0500
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:54206 "EHLO
-	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487Ab0CJMhE (ORCPT
+	id S1754139Ab0CJMnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 07:43:50 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:23771 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753422Ab0CJMnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 07:37:04 -0500
-Message-ID: <4B978C28.7080100@inf.tu-dresden.de>
-Date: Wed, 10 Mar 2010 13:10:16 +0100
-From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
+	Wed, 10 Mar 2010 07:43:47 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: Cong Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
+Date: Wed, 10 Mar 2010 14:42:47 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nhorman@tuxdriver.com,
+       eric.dumazet@gmail.com
+References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com> <m1vddbdhmo.fsf@fess.ebiederm.org> <4B976503.4050702@redhat.com>
+In-Reply-To: <4B976503.4050702@redhat.com>
 MIME-Version: 1.0
-To: Evan McClain <evan.mcclain@gatech.edu>
-CC: rpurdie@rpsys.net, akpm@linux-foundation.org, mjg@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: mbp_nvidia_bl - add five more MacBook variants
-References: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
-In-Reply-To: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003101442.47192.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 10 Mar 2010 12:42:47.0306 (UTC) FILETIME=[2FF5AEA0:01CAC04F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What about finally adding all machines to the list?
-As far as I know, we have:
+On Wednesday 10 March 2010 11:23:15 you wrote:
+> Eric W. Biederman wrote:
+> > I would add the restriction that the values in the list of ranges
+> > always must be increasing, and in general restrict the set of accepted
+> > values as much as possible.  If we don't accept it now we don't have
+> > to worry about some userspace application relying on some unitended
+> > side effect a few years into the future.
+> 
+> I don't think this is good.
+> 
+> Suppose that when I just want to add one port into the list and keep the
+> original ones, I want to do this:
+> 
+> orig=$(cat ip_local_reserved_ports)
+> new_list="$orig, $new_one"
+> echo "$new_list" > ip_local_reserved_ports
+> 
+> If we add this restriction, the above could be failed if the new port
+> is lower than the original ones. This will be not convenient.
+> 
+> > I think it is a serious bug that you clear the destination bitmap
+> > in the middle of parsing it.  That will either open or close all
+> > ports in the middle of parsing, and I can't see how that would
+> > ever be a good thing.
+> 
+> Agreed.
+> 
+> By the way, Octavian, any new updates?
+> 
 
-* already present in Linus'/Richard Purdie's tree:
-     Intel chipset:
-         MacBookAir 1,1
-         MacBookPro 3,1
-         MacBookPro 3,2
-         MacBookPro 4,1
+Sorry, didn't got time to work on this lately, but I will submit a new version 
+I hope end of this week to address Eric's comments.
 
-     Nvidia chipset:
-         MacBook 5,1
-         MacBook 5,2
-         MacBookAir 2,1
-         MacBookPro 5,1
-         MacBookPro 5,2
-         MacBookPro 5,3
-         MacBookPro 5,4
-         MacBookPro 5,5
-
-* recently proposed to add by Evan McClain:
-     Intel chipset:
-         MacBook 1,1
-         MacBook 2,1
-         MacBook 3,1
-         MacBook 4,1
-         MacBook 4,2
-
-* still missing:
-     Intel chipset:
-         MacBookPro 1,1
-         MacBookPro 1,2
-         MacBookPro 2,1
-         MacBookPro 2,2
-
-     Nvidia chipset:
-         MacBook 6,1
-
-ciao,
-Mario
