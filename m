@@ -1,37 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279Ab0CJOea (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:34:30 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:41175 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693Ab0CJOe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:34:28 -0500
-Date: Wed, 10 Mar 2010 08:33:06 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       roland@redhat.com, peterz@infradead.org
-Subject: Re: 2.6.34-rc1: kernel BUG at mm/slab.c:2989!
-In-Reply-To: <4B977282.40505@cs.helsinki.fi>
-Message-ID: <alpine.DEB.2.00.1003100832200.17615@router.home>
-References: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com> <4B977282.40505@cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1756580Ab0CJOiP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:38:15 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:48026 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756462Ab0CJOiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 09:38:13 -0500
+Date: Wed, 10 Mar 2010 15:38:10 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Dan Carpenter <error27@gmail.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: smatch_scripts/whitespace_only.sh
+In-Reply-To: <20100310142759.GG6321@bicker>
+Message-ID: <Pine.LNX.4.64.1003101537040.27249@ask.diku.dk>
+References: <20100310101224.GC6321@bicker> <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk>
+ <20100310142759.GG6321@bicker>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Pekka Enberg wrote:
+On Wed, 10 Mar 2010, Dan Carpenter wrote:
 
-> > Please let me know if you need more info.
->
-> Looks like regular SLAB corruption bug to me. Can you trigget it with SLUB?
+> On Wed, Mar 10, 2010 at 11:14:53AM +0100, Julia Lawall wrote:
+> > On Wed, 10 Mar 2010, Dan Carpenter wrote:
+> > 
+> > > I wrote a script to check that a patch only changes white space.
+> > > It compiles the files before and after the patch is applied and 
+> > > verifies that they are the same.
+> > > 
+> > > You'll need to compile smatch:
+> > > 	git pull git://repo.or.cz/smatch.git
+> > > 	make
+> > > 	cd /path/to/kernel/src/
+> > > 	/path/to/smatch_scripts/whitespace_only.sh <patch>
+> > > 
+> > > Adding or removing parenthesis and curly braces counts as a code 
+> > > change.  Changes to comments, #if 0, white space changes do not.
+> > > 
+> > > You can fix a lot of style violations if you limit yourself to 
+> > > adding and removing tabs, spaces and new lines.  Then the next 
+> > > patch could remove unneeded parenthesis.  It would be easier to
+> > > audit that way instead of everything mixed together.
+> > > 
+> > > regards,
+> > > dan carpenter
+> > > 
+> > > PS.  I feel really bad slagging the newbies trying to help.  
+> > > Could we fix checkpatch.pl to not complain about line lengths?
+> > 
+> > I hope not...  Are newbies really put off by having to add a newline here 
+> > and there?
+> > 
+> > julia
+> > 
+> 
+> The problem is that newbies are only too happy to chop lines up into smaller 
+> and smaller bits.  :P  I've seen situations where the actual author of the code
+> broke up _his own_ perfectly reasonable code into tiny chunks just to satisfy 
+> checkpatch.pl.
+> 
+> 				printk("blah blah blah blah"
+> 						"blah blah"
+> 						"blah");
+> 
+> It would be great if people dealt with checkpatch warnings by breaking
+> things out into separate functions and eliminating indent levels but 
+> that never happens.
 
-Run SLUB with CONFIG_SLUB_DEBUG_ON or specify slub_debug on the kernel
-command line to have all allocations checked.
+Maybe checkpatch could be changed to not complain about > 80 characters 
+when the line contains a string?
 
+julia
