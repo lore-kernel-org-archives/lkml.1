@@ -1,51 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932298Ab0CJPZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 10:25:29 -0500
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:25002 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932161Ab0CJPZ0 (ORCPT
+	id S1756706Ab0CJP1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 10:27:00 -0500
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:36166 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756034Ab0CJP06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 10:25:26 -0500
-X-IronPort-AV: E=Sophos;i="4.49,614,1262563200"; 
-   d="scan'208";a="9879709"
-Date: Wed, 10 Mar 2010 15:29:30 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
-       Konrad Rzeszutek Wilk <kliw@darnok.org>
-Subject: Re: [Xen-devel] [PATCH 7/7] xen: Enable event channel of PV extension
- of HVM
-In-Reply-To: <201003101056.42511.sheng@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.1003101452540.28412@kaball-desktop>
-References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com> <1268128085.11737.59761.camel@zakaz.uk.xensource.com> <alpine.DEB.2.00.1003090954010.4869@kaball-desktop> <201003101056.42511.sheng@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 10 Mar 2010 10:26:58 -0500
+X-SpamScore: -34
+X-BigFish: VPS-34(zz1432R98dN936eM179dN9371Pab9bhzz1202hzzz32i2a8h87h6bh43h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KZ2O8L-01-263-02
+X-M-MSG: 
+Date: Wed, 10 Mar 2010 16:26:43 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/18] KVM: MMU: Make tdp_enabled a mmu-context
+ parameter
+Message-ID: <20100310152643.GO5619@amd.com>
+References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+ <1267643541-451-3-git-send-email-joerg.roedel@amd.com>
+ <4B94C0B5.7080507@redhat.com>
+ <20100310144426.GK5619@amd.com>
+ <4B97B269.3010502@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4B97B269.3010502@redhat.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 10 Mar 2010 15:26:43.0802 (UTC) FILETIME=[16F7DBA0:01CAC066]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, Sheng Yang wrote:
-> I think we can leave the controversial thing later. At least, we want a 
-> framework for PV extension of HVM. We can work together to determine what is 
-> the better way for evtchn, as well as porting pirqs. (And the later MSI work 
-> may also depends on it)
+On Wed, Mar 10, 2010 at 04:53:29PM +0200, Avi Kivity wrote:
+> On 03/10/2010 04:44 PM, Joerg Roedel wrote:
+> >On Mon, Mar 08, 2010 at 11:17:41AM +0200, Avi Kivity wrote:
+> >>On 03/03/2010 09:12 PM, Joerg Roedel wrote:
+> >>>This patch changes the tdp_enabled flag from its global
+> >>>meaning to the mmu-context. This is necessary for Nested SVM
+> >>>with emulation of Nested Paging where we need an extra MMU
+> >>>context to shadow the Nested Nested Page Table.
+> >>>
+> >>>
+> >>>diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> >>>index ec891a2..e7bef19 100644
+> >>>--- a/arch/x86/include/asm/kvm_host.h
+> >>>+++ b/arch/x86/include/asm/kvm_host.h
+> >>>@@ -254,6 +254,7 @@ struct kvm_mmu {
+> >>>  	int root_level;
+> >>>  	int shadow_root_level;
+> >>>  	union kvm_mmu_page_role base_role;
+> >>>+	bool tdp_enabled;
+> >>>
+> >>This needs a different name, since the old one is still around.
+> >>Perhaps we could call it parent_mmu and make it a kvm_mmu pointer.
+> >Hmm, how about renaming the global tdp_enabled variable to tdp_usable?
+> >The global variable indicates if tdp is _usable_ and we can _enable_ it
+> >for a mmu context.
 > 
+> I think of the global flags as host tdp, and the mmu as guest tdp
+> (but maybe this is wrong?).  If that makes sense, the naming should
+> reflect that.
 
-Most of my patch series can be upstreamed right now, the only thing that
-needs some extra work is the pirq remapping.
-So yes, we can upstream the rest and that would also make PV on HVM work
-on linux upstream ASAP.
-I think that is a worthy goal by itself, therefore I am going to send
-another reduced patch series, ready to be upstreamed, without pirq
-remappings, with support for PV on HVM.
+The basic flow of the mmu state with npt-npt is:
+
+	1. As long as the L1 is running the arch.mmu context is in tdp
+	   mode and builds a direct-mapped page table.
+	
+	2. When vmrun is emulated and the nested vmcb enables nested
+	   paging, arch.mmu is switched to a shadow-mmu mode which now
+	   shadows the l1 nested page table.
+	   So when the l2-guest runs with nested paging the
+	   arch.mmu.tdp_enabled variable on the host is false.
+	
+	3. On a vmexit emulation the mmu is switched back to tdp
+	   handling state.
+
+So the mmu.tdp_enabled parameter is about tdp being enabled for the
+mmu context (so mmu.tdp_enabled means that we build a l1-direct-mapped
+page table when true or shadow a l1-page-table when false). Thats why I
+think the 'tdp_enabled' name makes sense in the mmu-context.
+The global flag only shows if an mmu-context could be in tdp-state. So
+tdp_usable may be a good name for it.
+
+	Joerg
+
 
