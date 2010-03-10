@@ -1,50 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906Ab0CJAha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Mar 2010 19:37:30 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44272 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755340Ab0CJAh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Mar 2010 19:37:27 -0500
-Message-ID: <4B96E99C.7010005@zytor.com>
-Date: Tue, 09 Mar 2010 16:36:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Daniel Taylor <Daniel.Taylor@wdc.com>,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       James Bottomley <James.Bottomley@suse.de>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, mkp@mkp.net
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org>	 <1268031640.4389.11.camel@mulgrave.site> <4B94ACE8.4060400@zytor.com> <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com> <4B96E25B.7050200@kernel.org> <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD80@wdscexbe01.sc.wdc.com> <4B96E71A.9070701@kernel.org>
-In-Reply-To: <4B96E71A.9070701@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755835Ab0CJAnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Mar 2010 19:43:46 -0500
+Received: from deliverator10.gatech.edu ([130.207.160.100]:48771 "EHLO
+	deliverator10.gatech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755563Ab0CJAnn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Mar 2010 19:43:43 -0500
+X-Greylist: delayed 1362 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2010 19:43:43 EST
+From: Evan McClain <evan.mcclain@gatech.edu>
+To: rpurdie@rpsys.net, akpm@linux-foundation.org, schwalbe@inf.tu-dresden.de,
+       mjg@redhat.com
+Cc: linux-kernel@vger.kernel.org, Evan McClain <evan.mcclain@gatech.edu>
+Subject: [PATCH] backlight: mbp_nvidia_bl - add five more MacBook variants
+Date: Tue,  9 Mar 2010 19:20:58 -0500
+Message-Id: <1268180458-1844-1-git-send-email-evan.mcclain@gatech.edu>
+X-Mailer: git-send-email 1.7.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 04:26 PM, Tejun Heo wrote:
->
->> I will run some experiments to see if any of the systems on my desk can boot
->> Linux from a GPT.
->
-> I'm not sure about grub although I strongly suspect recent version of
-> it should work but AFAICS lilo should definitely work as it doesn't
-> care how the disk is logically organized at all.
->
+This adds the MacBook 1,1 2,1 3,1 4,1 and 4,2 to the DMI tables.
 
-In the case of Syslinux, you have to install gptmbr.bin, but otherwise 
-it works unmodified (Syslinux itself doesn't care about the partition 
-table at all.)
+Signed-off-by: Evan McClain <evan.mcclain@gatech.edu>
+---
+ drivers/video/backlight/mbp_nvidia_bl.c |   45 +++++++++++++++++++++++++++++++
+ 1 files changed, 45 insertions(+), 0 deletions(-)
 
-Note: the official standard for GPT booting on BIOS is still evolving, 
-so I might change gptmbr to match the new standard.
+diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
+index 2e78b07..9804ee9 100644
+--- a/drivers/video/backlight/mbp_nvidia_bl.c
++++ b/drivers/video/backlight/mbp_nvidia_bl.c
+@@ -139,6 +139,51 @@ static int mbp_dmi_match(const struct dmi_system_id *id)
+ static const struct dmi_system_id __initdata mbp_device_table[] = {
+ 	{
+ 		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 1,1",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook1,1"),
++		},
++		.driver_data	= (void *)&intel_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 2,1",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook2,1"),
++		},
++		.driver_data	= (void *)&intel_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 3,1",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook3,1"),
++		},
++		.driver_data	= (void *)&intel_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 4,1",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook4,1"),
++		},
++		.driver_data	= (void *)&intel_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 4,2",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook4,2"),
++		},
++		.driver_data	= (void *)&intel_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
+ 		.ident		= "MacBookPro 3,1",
+ 		.matches	= {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
+-- 
+1.7.0
 
-	-hpa
