@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932225Ab0CJNYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 08:24:00 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53587 "EHLO hera.kernel.org"
+	id S932244Ab0CJNYi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 08:24:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53625 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932118Ab0CJNX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 08:23:57 -0500
-Date: Wed, 10 Mar 2010 13:23:25 GMT
+	id S932118Ab0CJNYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 08:24:36 -0500
+Date: Wed, 10 Mar 2010 13:23:42 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        acme@infradead.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
@@ -17,32 +17,29 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/pebs] perf, x86: Deal with multiple state bits for pebs-fmt1
-Message-ID: <tip-12ab854d744f04bfc5c6c4db723b7e31fc03eb29@git.kernel.org>
-Git-Commit-ID: 12ab854d744f04bfc5c6c4db723b7e31fc03eb29
+Subject: [tip:perf/pebs] perf, x86: Fix silly bug in intel_pmu_pebs_{enable,disable}
+Message-ID: <tip-ad0e6cfe2a2a61d7b5530188e571d508146cb43b@git.kernel.org>
+Git-Commit-ID: ad0e6cfe2a2a61d7b5530188e571d508146cb43b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:23:25 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Mar 2010 13:23:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  12ab854d744f04bfc5c6c4db723b7e31fc03eb29
-Gitweb:     http://git.kernel.org/tip/12ab854d744f04bfc5c6c4db723b7e31fc03eb29
+Commit-ID:  ad0e6cfe2a2a61d7b5530188e571d508146cb43b
+Gitweb:     http://git.kernel.org/tip/ad0e6cfe2a2a61d7b5530188e571d508146cb43b
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Sat, 6 Mar 2010 18:57:38 +0100
+AuthorDate: Sat, 6 Mar 2010 19:49:06 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 10 Mar 2010 13:23:38 +0100
 
-perf, x86: Deal with multiple state bits for pebs-fmt1
+perf, x86: Fix silly bug in intel_pmu_pebs_{enable,disable}
 
-Its unclear if the PEBS state record will have only a single bit set, in
-case it does not and accumulates bits, deal with that by only processing
-each event once.
-
-Also, robustify some of the code.
+We need to use the actual cpuc->pebs_enabled value, not a local copy for
+the changes to take effect.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Arnaldo Carvalho de Melo <acme@infradead.org>
@@ -53,44 +50,37 @@ Cc: fweisbec@gmail.com
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/cpu/perf_event_intel_ds.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/perf_event_intel_ds.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_event_intel_ds.c b/arch/x86/kernel/cpu/perf_event_intel_ds.c
-index 9ad0e67..b4680da 100644
+index b4680da..2423694 100644
 --- a/arch/x86/kernel/cpu/perf_event_intel_ds.c
 +++ b/arch/x86/kernel/cpu/perf_event_intel_ds.c
-@@ -538,6 +538,7 @@ static void intel_pmu_drain_pebs_nhm(struct pt_regs *iregs)
- 	struct perf_event *event = NULL;
- 	struct perf_raw_record raw;
- 	struct pt_regs regs;
-+	u64 status = 0;
- 	int bit, n;
+@@ -333,11 +333,10 @@ static void intel_pmu_pebs_enable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	struct hw_perf_event *hwc = &event->hw;
+-	u64 val = cpuc->pebs_enabled;
  
- 	if (!ds || !x86_pmu.pebs)
-@@ -561,13 +562,22 @@ static void intel_pmu_drain_pebs_nhm(struct pt_regs *iregs)
+ 	hwc->config &= ~ARCH_PERFMON_EVENTSEL_INT;
  
- 	for ( ; at < top; at++) {
- 		for_each_bit(bit, (unsigned long *)&at->status, MAX_PEBS_EVENTS) {
--			if (!cpuc->events[bit]->attr.precise)
-+			event = cpuc->events[bit];
-+			if (!test_bit(bit, cpuc->active_mask))
- 				continue;
+-	val |= 1ULL << hwc->idx;
++	cpuc->pebs_enabled |= 1ULL << hwc->idx;
+ 	WARN_ON_ONCE(cpuc->enabled);
  
--			event = cpuc->events[bit];
-+			WARN_ON_ONCE(!event);
-+
-+			if (!event->attr.precise)
-+				continue;
-+
-+			if (__test_and_set_bit(bit, (unsigned long *)&status))
-+				continue;
-+
-+			break;
- 		}
+ 	if (x86_pmu.intel_cap.pebs_trap)
+@@ -348,11 +347,10 @@ static void intel_pmu_pebs_disable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	struct hw_perf_event *hwc = &event->hw;
+-	u64 val = cpuc->pebs_enabled;
  
--		if (!event)
-+		if (!event || bit >= MAX_PEBS_EVENTS)
- 			continue;
+-	val &= ~(1ULL << hwc->idx);
++	cpuc->pebs_enabled &= ~(1ULL << hwc->idx);
+ 	if (cpuc->enabled)
+-		wrmsrl(MSR_IA32_PEBS_ENABLE, val);
++		wrmsrl(MSR_IA32_PEBS_ENABLE, cpuc->pebs_enabled);
  
- 		if (!intel_pmu_save_and_restart(event))
+ 	hwc->config |= ARCH_PERFMON_EVENTSEL_INT;
+ 
