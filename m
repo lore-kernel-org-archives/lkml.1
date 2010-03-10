@@ -1,48 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106Ab0CJJyz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 04:54:55 -0500
-Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:64475
-	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756279Ab0CJJyv (ORCPT
+	id S932119Ab0CJJzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 04:55:37 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:54084 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279Ab0CJJzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 04:54:51 -0500
-X-Greylist: delayed 594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 04:54:51 EST
-X-IronPort-AV: E=Sophos;i="4.49,613,1262559600"; 
-   d="scan'208";a="58491695"
-Date: Wed, 10 Mar 2010 10:44:52 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, lenz@cs.wisc.edu, rpurdie@openedhand.com
-Subject: Re: private field in led_classdev?
-Message-ID: <20100310094452.GA5702@const.bordeaux.inria.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	lenz@cs.wisc.edu, rpurdie@openedhand.com
-References: <20100307143112.GC5203@const.famille.thibault.fr> <20100310025411.GD26642@kroah.com>
+	Wed, 10 Mar 2010 04:55:33 -0500
+Message-ID: <4B976C8F.1000703@in.ibm.com>
+Date: Wed, 10 Mar 2010 15:25:27 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100310025411.GD26642@kroah.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Moore, Eric" <Eric.Moore@lsi.com>
+Subject: Re: [-next Feb 9] Boot failure on x86_64: mptbase fails to initialize
+References: <20100209190736.fe252102.sfr@canb.auug.org.au> <4B715809.6000202@in.ibm.com> <1C9608B8A4CD534FB19C7C7543CBB249020E1A7BF0@inbmail02.lsi.com>
+In-Reply-To: <1C9608B8A4CD534FB19C7C7543CBB249020E1A7BF0@inbmail02.lsi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH, le Tue 09 Mar 2010 18:54:11 -0800, a écrit :
-> On Sun, Mar 07, 2010 at 03:31:12PM +0100, Samuel Thibault wrote:
-> > Would there be an objection to adding a void *private field to the
-> > led_classdev struct?  It would be a lot less burden for the input
-> > key board leds support for finding out the keyboard device from the
-> > brightness_set callback, as each device may have a long series of leds,
-> > not just a fixed number of them.
-> 
-> What's wrong with using the private pointer in the struct device
-> instead?
+Desai, Kashyap wrote:
+> Sachin,
+>
+> This may be related to something specific to your system's APIC/or bad HW rather than pure driver issue.
+> Below line from log is important to note.
+> "mptsas 0000:03:04.0: can't find IRQ for PCI INT A; probably buggy MP table"
+>
+> It means LSI controller is not able to reserve IRQ line and that is where all problem starts.
+> Need to broaden the scope of the issue.
+>
+> Another confusing thing to me.
+> I have seen "probably buggy MP table" print only in arch/x86, but you have mentioned that in your case arch is x86_64.
+>
+> Thanks,
+> Kashyap
+>   
+This actually was because of some other problem.
 
-Ah, right. In my case there is a struct device corresponding to the
-actual input device. I hadn't realized that since registering a led
-creates a new device, I have another private pointer which I can use.
+Here is the post for it.
+http://marc.info/?l=linux-kernel&m=126741813906116&w=2
 
-Samuel
+Which was eventually fixed. Patch is available here.
+http://marc.info/?l=linux-kernel&m=126745177832615&w=2
+
+Thanks
+-Sachin
+
+>
+>
+>   
+>> -----Original Message-----
+>> From: linux-scsi-owner@vger.kernel.org [mailto:linux-scsi-
+>> owner@vger.kernel.org] On Behalf Of Sachin Sant
+>> Sent: Tuesday, February 09, 2010 6:12 PM
+>> To: linux-scsi
+>> Cc: linux-next@vger.kernel.org; LKML; Moore, Eric
+>> Subject: [-next Feb 9] Boot failure on x86_64: mptbase fails to
+>> initialize
+>>
+>> Today's next failed to boot on my 4 way x86_64 box because of mptbase
+>> driver initialization failure.
+>>
+>> Snippet of messages during boot :
+>>
+>> Fusion MPT SAS Host driver 3.04.14
+>> mptsas 0000:03:04.0: can't find IRQ for PCI INT A; probably buggy MP
+>> table
+>> mptbase: ioc0: Initiating bringup
+>> ioc0: LSISAS1064 A3: Capabilities={Initiator}
+>> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+>> mptbase: ioc0: Initiating recovery
+>> mptbase: ioc0: Attempting Retry Config request type 0x1, page 0x2,
+>> action 0
+>> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+>> mptbase: ioc0: Initiating recovery
+>> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+>> mptbase: ioc0: Initiating recovery
+>> mptbase: ioc0: Attempting Retry Config request type 0x1, page 0x1,
+>> action 0
+>> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+>>
+>> Eventually machine fails to boot. I have similar problem on a x86 box
+>> but with IPS driver. So might not be a driver specific issue.
+>>
+>> I had similar problem with yesterday's next.IIRC the last successful
+>> boot was with next-20100203.
+>>
+>> Have attached the boot log from x86_64 box.
+>>
+>> Thanks
+>> -Sachin
+>>
+>>
+>> --
+>>
+>> ---------------------------------
+>> Sachin Sant
+>> IBM Linux Technology Center
+>> India Systems and Technology Labs
+>> Bangalore, India
+>> ---------------------------------
+>>     
+>
+>   
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
