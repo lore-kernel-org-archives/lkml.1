@@ -1,170 +1,327 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887Ab0CJXJJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 18:09:09 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:2425 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932801Ab0CJXJG (ORCPT
+	id S932897Ab0CJXMv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 18:12:51 -0500
+Received: from wdscspam2.wdc.com ([129.253.170.131]:51177 "EHLO
+	wdscspam2.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932847Ab0CJXMu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 18:09:06 -0500
-Message-ID: <4B98268D.2020206@hp.com>
-Date: Wed, 10 Mar 2010 18:09:01 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 10 Mar 2010 18:12:50 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Michael Chan <mchan@broadcom.com>
-CC: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>,
-       Benjamin Li <benli@broadcom.com>, NetDEV <netdev@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
-References: <20091229084929.54912c0c@pluto.restena.lu> <1262077540.12520.4.camel@localhost> <20091229145403.39f82773@pluto.restena.lu> <1262149691.2788.63.camel@localhost> <20100219091034.5fbb0165@pluto.restena.lu> <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com> <20100223131508.4c6cb866@neptune.home> <1267493170.2762.45.camel@dhcp-10-12-137-104.broadcom.com> <20100302081051.3d1b1c53@pluto.restena.lu> <20100302092020.52cfcd0e@pluto.restena.lu> <1267567926.19491.175.camel@nseg_linux_HP1.broadcom.com> <4B90189B.2040801@hp.com>
-In-Reply-To: <4B90189B.2040801@hp.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] fs/partitions/msdos: add support for large disks
+Date: Wed, 10 Mar 2010 15:12:48 -0800
+Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD86@wdscexbe01.sc.wdc.com>
+In-Reply-To: <87wrxkw52s.fsf_-_@devron.myhome.or.jp>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] fs/partitions/msdos: add support for large disks
+Thread-Index: AcrAaSNTUmbm4buvRiewTFGWnSgoNwAOE8mQ
+References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com><20100301141335.395dc4c3.akpm@linux-foundation.org><873a0h1p2c.fsf@devron.myhome.or.jp><876358iehd.fsf@devron.myhome.or.jp> <4B9430B6.701@zytor.com><87pr3fd68r.fsf@devron.myhome.or.jp> <4B9440FC.3090502@zytor.com><87zl2j9muz.fsf@devron.myhome.or.jp> <87wrxkw52s.fsf_-_@devron.myhome.or.jp>
+From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
+To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 10 Mar 2010 23:12:49.0111 (UTC) FILETIME=[33975E70:01CAC0A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Haley wrote:
-> Hi Michael,
+Looks good to me.
+
+Thank you for the review/fixes.
+
+Regards,
+
+Dan
+
+> -----Original Message-----
+> From: OGAWA Hirofumi [mailto:hirofumi@mail.parknet.co.jp] 
+> Sent: Wednesday, March 10, 2010 7:48 AM
+> To: Andrew Morton
+> Cc: H. Peter Anvin; Daniel Taylor; linux-kernel@vger.kernel.org
+> Subject: [PATCH 1/2] fs/partitions/msdos: add support for large disks
 > 
-> Michael Chan wrote:
->> Do we have timers running in this environment?  The timer in the bnx2
->> driver, bnx2_timer(), needs to run to provide a heart beat to the
->> firmware.  In netpoll mode without timer interrupts, if we are regularly
->> calling the NAPI poll function, it should also be able to provide the
->> heartbeat.  Without the heartbeat, the firmware will reset the chip and
->> result in the NETDEV WATCHDOG.
+> Hi,
 > 
-> We have also been seeing watchdog timeouts with bnx2, below is a
-> stack trace with Benjamin's debug patch applied.  Normally we were
-> only seeing them under heavy load, but this one was at boot.  We haven't
-> tried the latest firmware/driver from 2.6.33 yet.  You can contact me
-> offline if you need more detailed info.
-
-Following-up since I have more info on this issue.
-
-I'm able to cause a netdev_watchdog timeout by changing the coalesce
-settings on my bnx2, I built a little test program for it:
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <linux/if.h>
-#include <linux/ethtool.h>
-#include <linux/sockios.h>
-
-main()
-{
-	struct ifreq ifr;
-	struct ethtool_coalesce ecoal;
-	int fd, err;
-	int sleeptime = 5;
-	char *ifname = "eth0";
-
-	fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (fd < 0) {
-		perror("socket");
-		exit(1);
-	}
-
-	bzero(&ifr, sizeof(ifr));
-	bcopy(ifname, ifr.ifr_name, sizeof(ifname));
-
-	bzero(&ecoal, sizeof(ecoal));
-
-	printf("Running ETHTOOL_GCOALESCE on %s\n", ifname);
-	ecoal.cmd = ETHTOOL_GCOALESCE;
-	ifr.ifr_data = (caddr_t)&ecoal;
-	err = ioctl(fd, SIOCETHTOOL, &ifr);
-	if (err)
-		perror("ETHTOOL_GCOALESCE");
-	printf("Sleeping %d seconds\n", sleeptime);
-	sleep(sleeptime);
-
-	ecoal.rx_coalesce_usecs = 0;
-	ecoal.rx_max_coalesced_frames = 1;
-	ecoal.rx_coalesce_usecs_irq = 0;
-	ecoal.rx_max_coalesced_frames_irq = 1;
-
-	printf("Setting ETHTOOL_SCOALESCE on %s\n", ifname);
-	ecoal.cmd = ETHTOOL_SCOALESCE;
-	ifr.ifr_data = (caddr_t)&ecoal;
-	err = ioctl(fd, SIOCETHTOOL, &ifr);
-	if (err)
-		perror("ETHTOOL_SCOALESCE");
-}
-
-[    2.428093] bnx2 0000:04:00.0: firmware: requesting bnx2/bnx2-rv2p-06-5.0.0.j3.fw
-[    2.432526] eth0: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X 64-bit 133MHz found at mem f6000000, IRQ 41, node addr 00:1c:c4:e1:cc:ea
-[    2.439520] bnx2 0000:42:00.0: PCI INT A -> GSI 34 (level, low) -> IRQ 34
-
-lspci shows this is a HP 373i, it's the onboard NIC.
-
-Running this on one particular system I get:
-
-Mar 10 07:48:58 N1002563 kernel: [  870.780023] ------------[ cut here ]------------
-Mar 10 07:48:58 N1002563 kernel: [  870.780037] WARNING: at net/sched/sch_generic.c:261 dev_watchdog+0x12d/0x1d5()
-Mar 10 07:48:58 N1002563 kernel: [  870.780041] Hardware name: ProLiant DL385 G5 
-Mar 10 07:48:58 N1002563 kernel: [  870.780046] NETDEV WATCHDOG: eth0 (bnx2): transmit queue 0 timed out
-Mar 10 07:48:58 N1002563 kernel: [  870.780050] Modules linked in: mptctl ipmi_devintf deflate zlib_deflate ctr twofish twofish_common camellia serpent blowfish cast5 des_generic cbc cryptd aes_x86_64 aes_generic xcbc rmd160 sha256_generic sha1_generic crypto_null af_key sg bonding sctp crc32c libcrc32c loop psmouse serio_raw container amd64_edac_mod edac_core i2c_piix4 shpchp pci_hotplug ipmi_si i2c_core ipmi_msghandler hpilo processor evdev ext3 jbd mbcache sd_mod crc_t10dif usbhid hid ata_generic libata ide_pci_generic e1000e bnx2 mptsas mptscsih mptbase serverworks scsi_transport_sas ide_core ehci_hcd scsi_mod ohci_hcd uhci_hcd button thermal fan thermal_sys edd [last unloaded: scsi_wait_scan]
-Mar 10 07:48:58 N1002563 kernel: [  870.780133] Pid: 0, comm: swapper Not tainted 2.6.32-clim-4-amd64 #1
-Mar 10 07:48:58 N1002563 kernel: [  870.780137] Call Trace:
-Mar 10 07:48:58 N1002563 kernel: [  870.780141]  <IRQ>  [<ffffffff812697a0>] ? dev_watchdog+0x12d/0x1d5
-Mar 10 07:48:58 N1002563 kernel: [  870.780156]  [<ffffffff81049914>] warn_slowpath_common+0x77/0xa4
-Mar 10 07:48:58 N1002563 kernel: [  870.780170]  [<ffffffff810499b6>] warn_slowpath_fmt+0x64/0x66
-Mar 10 07:48:58 N1002563 kernel: [  870.780177]  [<ffffffff81045df7>] ? default_wake_function+0xd/0xf
-Mar 10 07:48:58 N1002563 kernel: [  870.780184]  [<ffffffff81035fa7>] ? __wake_up_common+0x46/0x76
-Mar 10 07:48:58 N1002563 kernel: [  870.780191]  [<ffffffff8103b414>] ? __wake_up+0x43/0x50
-Mar 10 07:48:58 N1002563 kernel: [  870.780198]  [<ffffffff81253829>] ? netdev_drivername+0x43/0x4b
-Mar 10 07:48:58 N1002563 kernel: [  870.780204]  [<ffffffff812697a0>] dev_watchdog+0x12d/0x1d5
-Mar 10 07:48:58 N1002563 kernel: [  870.780214]  [<ffffffff8105e84a>] ? delayed_work_timer_fn+0x0/0x3d
-Mar 10 07:48:58 N1002563 kernel: [  870.780219]  [<ffffffff8105e7ee>] ? __queue_work+0x35/0x3d
-Mar 10 07:48:58 N1002563 kernel: [  870.780227]  [<ffffffff81269673>] ? dev_watchdog+0x0/0x1d5
-Mar 10 07:48:58 N1002563 kernel: [  870.780234]  [<ffffffff8105655a>] run_timer_softirq+0x1ff/0x2a1
-Mar 10 07:48:58 N1002563 kernel: [  870.780242]  [<ffffffff810205a1>] ? lapic_next_event+0x18/0x1c
-Mar 10 07:48:58 N1002563 kernel: [  870.780249]  [<ffffffff8104f9e3>] __do_softirq+0xde/0x19f
-Mar 10 07:48:58 N1002563 kernel: [  870.780256]  [<ffffffff8100ccec>] call_softirq+0x1c/0x28
-Mar 10 07:48:58 N1002563 kernel: [  870.780262]  [<ffffffff8100e8b1>] do_softirq+0x41/0x81
-Mar 10 07:48:58 N1002563 kernel: [  870.780268]  [<ffffffff8104f7bd>] irq_exit+0x36/0x75
-Mar 10 07:48:58 N1002563 kernel: [  870.780274]  [<ffffffff81020f33>] smp_apic_timer_interrupt+0x88/0x96
-Mar 10 07:48:58 N1002563 kernel: [  870.780287]  [<ffffffff8100c6b3>] apic_timer_interrupt+0x13/0x20
-Mar 10 07:48:58 N1002563 kernel: [  870.780291]  <EOI>  [<ffffffff81027740>] ? native_safe_halt+0x6/0x8
-Mar 10 07:48:58 N1002563 kernel: [  870.780304]  [<ffffffff81012da3>] ? default_idle+0x55/0x74
-Mar 10 07:48:58 N1002563 kernel: [  870.780309]  [<ffffffff810131ce>] ? c1e_idle+0xf4/0xfb
-Mar 10 07:48:58 N1002563 kernel: [  870.780315]  [<ffffffff81065529>] ? atomic_notifier_call_chain+0x13/0x15
-Mar 10 07:48:58 N1002563 kernel: [  870.780321]  [<ffffffff8100aeec>] ? cpu_idle+0x5b/0x93
-Mar 10 07:48:58 N1002563 kernel: [  870.780329]  [<ffffffff81304144>] ? start_secondary+0x1a8/0x1ac
-Mar 10 07:48:58 N1002563 kernel: [  870.780334] ---[ end trace 08b420ca1e09a176 ]---
-Mar 10 07:48:58 N1002563 kernel: [  870.780339] bnx2: eth0 DEBUG: intr_sem[0]
-Mar 10 07:48:58 N1002563 kernel: [  870.780345] bnx2: eth0 DEBUG: EMAC_TX_STATUS[00000008] RPM_MGMT_PKT_CTRL[00000000]
-Mar 10 07:48:58 N1002563 kernel: [  870.780352] bnx2: eth0 DEBUG: MCP_STATE_P0[00000000] MCP_STATE_P1[00000000]
-Mar 10 07:48:58 N1002563 kernel: [  870.780357] bnx2: eth0 DEBUG: HC_STATS_INTERRUPT_STATUS[00000000]
-Mar 10 07:49:03 N1002563 kernel: [  875.780020] bnx2: eth0 DEBUG: intr_sem[0]
-Mar 10 07:49:03 N1002563 kernel: [  875.780026] bnx2: eth0 DEBUG: EMAC_TX_STATUS[00000008] RPM_MGMT_PKT_CTRL[00000000]
-Mar 10 07:49:03 N1002563 kernel: [  875.780038] bnx2: eth0 DEBUG: MCP_STATE_P0[00000000] MCP_STATE_P1[00000000]
-Mar 10 07:49:03 N1002563 kernel: [  875.780043] bnx2: eth0 DEBUG: HC_STATS_INTERRUPT_STATUS[00000000]
-
-This debug message would repeat every 5 seconds, eventually
-the systems locks-up.
-
-This is running a 2.6.32-8 stable kernel, I've tried a version with Ben's
-patch from this thread installed with no change in behavior.  I'm in the
-process of backporting all the upstream changes to see if that helps.
-
-Guessing it's a race condition caused by these calls in bnx2_set_coalesce():
-
-        if (netif_running(bp->dev)) {
-                bnx2_netif_stop(bp);
-                bnx2_init_nic(bp, 0);
-                bnx2_netif_start(bp);
-        }
-
-Thanks for any help,
-
--Brian
+> This is rediff with fix of "Daniel Taylor" <Daniel.Taylor@wdc.com>.
+> Daniel, please check I'm breaking your patch.
+> 
+> 
+> 
+> From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
+> 
+> In order to use disks larger than 2TiB on Windows XP, it is necessary
+> to use 4096-byte logical sectors in an MBR.
+> 
+> Although the kernel storage and functions called from msdos.c used
+> "sector_t" internally, msdos.c still used u32 variables, which results
+> in the ability to handle XP-compatible large disks.
+> 
+> This patch changes the internal variables to "sector_t".
+> 
+> Signed-off-by: Daniel Taylor <daniel.taylor@wdc.com>
+> [tweaks and fix]
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  fs/partitions/msdos.c |   74 
+> +++++++++++++++++++++++++------------------------
+>  1 file changed, 39 insertions(+), 35 deletions(-)
+> 
+> diff -puN fs/partitions/msdos.c~part-support-4k-block 
+> fs/partitions/msdos.c
+> --- linux-2.6/fs/partitions/msdos.c~part-support-4k-block	
+> 2010-03-07 04:10:48.000000000 +0900
+> +++ linux-2.6-hirofumi/fs/partitions/msdos.c	2010-03-07 
+> 19:41:56.000000000 +0900
+> @@ -31,14 +31,17 @@
+>   */
+>  #include <asm/unaligned.h>
+>  
+> -#define SYS_IND(p)	(get_unaligned(&p->sys_ind))
+> -#define NR_SECTS(p)	({ __le32 __a =	
+> get_unaligned(&p->nr_sects);	\
+> -				le32_to_cpu(__a); \
+> -			})
+> -
+> -#define START_SECT(p)	({ __le32 __a =	
+> get_unaligned(&p->start_sect);	\
+> -				le32_to_cpu(__a); \
+> -			})
+> +#define SYS_IND(p)	get_unaligned(&p->sys_ind)
+> +
+> +static inline sector_t nr_sects(struct partition *p)
+> +{
+> +	return (sector_t)get_unaligned_le32(&p->nr_sects);
+> +}
+> +
+> +static inline sector_t start_sect(struct partition *p)
+> +{
+> +	return (sector_t)get_unaligned_le32(&p->start_sect);
+> +}
+>  
+>  static inline int is_extended_partition(struct partition *p)
+>  {
+> @@ -104,13 +107,13 @@ static int aix_magic_present(unsigned ch
+>  
+>  static void
+>  parse_extended(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -			u32 first_sector, u32 first_size)
+> +			sector_t first_sector, sector_t first_size)
+>  {
+>  	struct partition *p;
+>  	Sector sect;
+>  	unsigned char *data;
+> -	u32 this_sector, this_size;
+> -	int sector_size = bdev_logical_block_size(bdev) / 512;
+> +	sector_t this_sector, this_size;
+> +	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
+>  	int loopct = 0;		/* number of links followed
+>  				   without finding a data partition */
+>  	int i;
+> @@ -145,14 +148,14 @@ parse_extended(struct parsed_partitions
+>  		 * First process the data partition(s)
+>  		 */
+>  		for (i=0; i<4; i++, p++) {
+> -			u32 offs, size, next;
+> -			if (!NR_SECTS(p) || is_extended_partition(p))
+> +			sector_t offs, size, next;
+> +			if (!nr_sects(p) || is_extended_partition(p))
+>  				continue;
+>  
+>  			/* Check the 3rd and 4th entries -
+>  			   these sometimes contain random garbage */
+> -			offs = START_SECT(p)*sector_size;
+> -			size = NR_SECTS(p)*sector_size;
+> +			offs = start_sect(p)*sector_size;
+> +			size = nr_sects(p)*sector_size;
+>  			next = this_sector + offs;
+>  			if (i >= 2) {
+>  				if (offs + size > this_size)
+> @@ -179,13 +182,13 @@ parse_extended(struct parsed_partitions
+>  		 */
+>  		p -= 4;
+>  		for (i=0; i<4; i++, p++)
+> -			if (NR_SECTS(p) && is_extended_partition(p))
+> +			if (nr_sects(p) && is_extended_partition(p))
+>  				break;
+>  		if (i == 4)
+>  			goto done;	 /* nothing left to do */
+>  
+> -		this_sector = first_sector + START_SECT(p) * 
+> sector_size;
+> -		this_size = NR_SECTS(p) * sector_size;
+> +		this_sector = first_sector + start_sect(p) * 
+> sector_size;
+> +		this_size = nr_sects(p) * sector_size;
+>  		put_dev_sector(sect);
+>  	}
+>  done:
+> @@ -197,7 +200,7 @@ done:
+>  
+>  static void
+>  parse_solaris_x86(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -			u32 offset, u32 size, int origin)
+> +			sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_SOLARIS_X86_PARTITION
+>  	Sector sect;
+> @@ -244,7 +247,7 @@ parse_solaris_x86(struct parsed_partitio
+>   */
+>  static void
+>  parse_bsd(struct parsed_partitions *state, struct block_device *bdev,
+> -		u32 offset, u32 size, int origin, char *flavour,
+> +		sector_t offset, sector_t size, int origin, 
+> char *flavour,
+>  		int max_partitions)
+>  {
+>  	Sector sect;
+> @@ -263,7 +266,7 @@ parse_bsd(struct parsed_partitions *stat
+>  	if (le16_to_cpu(l->d_npartitions) < max_partitions)
+>  		max_partitions = le16_to_cpu(l->d_npartitions);
+>  	for (p = l->d_partitions; p - l->d_partitions < 
+> max_partitions; p++) {
+> -		u32 bsd_start, bsd_size;
+> +		sector_t bsd_start, bsd_size;
+>  
+>  		if (state->next == state->limit)
+>  			break;
+> @@ -290,7 +293,7 @@ parse_bsd(struct parsed_partitions *stat
+>  
+>  static void
+>  parse_freebsd(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -		u32 offset, u32 size, int origin)
+> +		sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_BSD_DISKLABEL
+>  	parse_bsd(state, bdev, offset, size, origin,
+> @@ -300,7 +303,7 @@ parse_freebsd(struct parsed_partitions *
+>  
+>  static void
+>  parse_netbsd(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -		u32 offset, u32 size, int origin)
+> +		sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_BSD_DISKLABEL
+>  	parse_bsd(state, bdev, offset, size, origin,
+> @@ -310,7 +313,7 @@ parse_netbsd(struct parsed_partitions *s
+>  
+>  static void
+>  parse_openbsd(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -		u32 offset, u32 size, int origin)
+> +		sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_BSD_DISKLABEL
+>  	parse_bsd(state, bdev, offset, size, origin,
+> @@ -324,7 +327,7 @@ parse_openbsd(struct parsed_partitions *
+>   */
+>  static void
+>  parse_unixware(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -		u32 offset, u32 size, int origin)
+> +		sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_UNIXWARE_DISKLABEL
+>  	Sector sect;
+> @@ -348,7 +351,8 @@ parse_unixware(struct parsed_partitions
+>  
+>  		if (p->s_label != UNIXWARE_FS_UNUSED)
+>  			put_partition(state, state->next++,
+> -						START_SECT(p), 
+> NR_SECTS(p));
+> +				      le32_to_cpu(p->start_sect),
+> +				      le32_to_cpu(p->nr_sects));
+>  		p++;
+>  	}
+>  	put_dev_sector(sect);
+> @@ -363,7 +367,7 @@ parse_unixware(struct parsed_partitions
+>   */
+>  static void
+>  parse_minix(struct parsed_partitions *state, struct 
+> block_device *bdev,
+> -		u32 offset, u32 size, int origin)
+> +		sector_t offset, sector_t size, int origin)
+>  {
+>  #ifdef CONFIG_MINIX_SUBPARTITION
+>  	Sector sect;
+> @@ -390,7 +394,7 @@ parse_minix(struct parsed_partitions *st
+>  			/* add each partition in use */
+>  			if (SYS_IND(p) == MINIX_PARTITION)
+>  				put_partition(state, state->next++,
+> -					      START_SECT(p), 
+> NR_SECTS(p));
+> +					      start_sect(p), 
+> nr_sects(p));
+>  		}
+>  		printk(" >\n");
+>  	}
+> @@ -401,7 +405,7 @@ parse_minix(struct parsed_partitions *st
+>  static struct {
+>  	unsigned char id;
+>  	void (*parse)(struct parsed_partitions *, struct block_device *,
+> -			u32, u32, int);
+> +			sector_t, sector_t, int);
+>  } subtypes[] = {
+>  	{FREEBSD_PARTITION, parse_freebsd},
+>  	{NETBSD_PARTITION, parse_netbsd},
+> @@ -415,7 +419,7 @@ static struct {
+>   
+>  int msdos_partition(struct parsed_partitions *state, struct 
+> block_device *bdev)
+>  {
+> -	int sector_size = bdev_logical_block_size(bdev) / 512;
+> +	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
+>  	Sector sect;
+>  	unsigned char *data;
+>  	struct partition *p;
+> @@ -483,8 +487,8 @@ int msdos_partition(struct parsed_partit
+>  
+>  	state->next = 5;
+>  	for (slot = 1 ; slot <= 4 ; slot++, p++) {
+> -		u32 start = START_SECT(p)*sector_size;
+> -		u32 size = NR_SECTS(p)*sector_size;
+> +		sector_t start = start_sect(p)*sector_size;
+> +		sector_t size = nr_sects(p)*sector_size;
+>  		if (!size)
+>  			continue;
+>  		if (is_extended_partition(p)) {
+> @@ -513,7 +517,7 @@ int msdos_partition(struct parsed_partit
+>  		unsigned char id = SYS_IND(p);
+>  		int n;
+>  
+> -		if (!NR_SECTS(p))
+> +		if (!nr_sects(p))
+>  			continue;
+>  
+>  		for (n = 0; subtypes[n].parse && id != 
+> subtypes[n].id; n++)
+> @@ -521,8 +525,8 @@ int msdos_partition(struct parsed_partit
+>  
+>  		if (!subtypes[n].parse)
+>  			continue;
+> -		subtypes[n].parse(state, bdev, 
+> START_SECT(p)*sector_size,
+> -						
+> NR_SECTS(p)*sector_size, slot);
+> +		subtypes[n].parse(state, bdev, 
+> start_sect(p)*sector_size,
+> +						
+> nr_sects(p)*sector_size, slot);
+>  	}
+>  	put_dev_sector(sect);
+>  	return 1;
+> _
+> 
+> -- 
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> 
