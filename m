@@ -1,64 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944Ab0CJKMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 05:12:47 -0500
-Received: from eu1sys200aog104.obsmtp.com ([207.126.144.117]:51923 "EHLO
-	eu1sys200aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751693Ab0CJKMm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 05:12:42 -0500
-Message-ID: <4B977067.3050108@st.com>
-Date: Wed, 10 Mar 2010 15:41:51 +0530
-From: Viresh KUMAR <viresh.kumar@st.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
+	id S1752860Ab0CJKO7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 05:14:59 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:52177 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823Ab0CJKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 05:14:56 -0500
+Date: Wed, 10 Mar 2010 11:14:53 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Dan Carpenter <error27@gmail.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: smatch_scripts/whitespace_only.sh
+In-Reply-To: <20100310101224.GC6321@bicker>
+Message-ID: <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk>
+References: <20100310101224.GC6321@bicker>
 MIME-Version: 1.0
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       armando.visconti@st.com, amit.goel@st.com, shiraz.hashim@st.com,
-       vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com,
-       ashish.priyadarshi@st.com
-Subject: Re: [PATCH 04/11] ST SPEAr: Added basic header files for SPEAr 	platform
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-2-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-3-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-4-git-send-email-viresh.kumar@st.com>	 <1267592861-26911-5-git-send-email-viresh.kumar@st.com>	 <63386a3d1003092140o67a6c943rdee3a6c905cea7ef@mail.gmail.com>	 <4B973CF6.4030009@st.com> <63386a3d1003100131v7027e44cu5031c9ee3bf6ec73@mail.gmail.com>
-In-Reply-To: <63386a3d1003100131v7027e44cu5031c9ee3bf6ec73@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/10/2010 3:01 PM, Linus Walleij wrote:
-> 2010/3/10 Viresh KUMAR <viresh.kumar@st.com>:
->> Linus Walleij:
->>> If this file is only supposed to be used from plat-spear/time.c, move it down
->>> into plat-spear/gpt.h and #include "gpt.h" so noone else will
->>> accidentally use it.
->>
->> GPT's on SPEAr can be used from time.c, platform specific drivers and machine
->> specific drivers or any driver wishing to use hardware timer.
->> In first two cases "gpt.h" will work, but in rest of cases we need gpt.h to be
->> in plat-spear/include/plat
->>
->> Is it okay?
-> 
-> If you have or have already planned to write such platform, machine
-> or subsystem drivers, it's OK, if there are no such users and you cannot
-> easily give one, it's overdesigned IMHO. Some realistic examples of such
-> drivers will make me change my mind :-)
-> 
-> The reason I persist is that I've seen such unutilized timer API:s before and
-> no other user than the system timer in sight. I never understood what they
-> were to be used for, and I still don't, so help me understand. The kernel
-> has many internal timer API:s based on clockevent available already so
-> why add yet another, platform-specific one?
-> 
+On Wed, 10 Mar 2010, Dan Carpenter wrote:
 
-As you may have seen in spear.h files in mach folders, we have multiple hardware
-timers in our design (3 in spear3xx, 4 in spear6xx and each timer have two
-independent channels. That doubles the timers count, so it is 6 and 8).
-One timer (or two channels) are used by clock event and clock source, but rest of
-the timers are still available. So we need some way to export this functionality
-of our hardware. It can be considered simply as a driver for GPT.
+> I wrote a script to check that a patch only changes white space.
+> It compiles the files before and after the patch is applied and 
+> verifies that they are the same.
+> 
+> You'll need to compile smatch:
+> 	git pull git://repo.or.cz/smatch.git
+> 	make
+> 	cd /path/to/kernel/src/
+> 	/path/to/smatch_scripts/whitespace_only.sh <patch>
+> 
+> Adding or removing parenthesis and curly braces counts as a code 
+> change.  Changes to comments, #if 0, white space changes do not.
+> 
+> You can fix a lot of style violations if you limit yourself to 
+> adding and removing tabs, spaces and new lines.  Then the next 
+> patch could remove unneeded parenthesis.  It would be easier to
+> audit that way instead of everything mixed together.
+> 
+> regards,
+> dan carpenter
+> 
+> PS.  I feel really bad slagging the newbies trying to help.  
+> Could we fix checkpatch.pl to not complain about line lengths?
 
-What do you say?
+I hope not...  Are newbies really put off by having to add a newline here 
+and there?
 
-viresh.
+julia
+
+> Also could we tell them to stay in staging where no one cares
+> about git blame?
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
