@@ -1,82 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324Ab0CJO2o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 09:28:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40643 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755938Ab0CJO2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 09:28:41 -0500
-Date: Wed, 10 Mar 2010 15:28:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [GIT PULL] perf updates
-Message-ID: <20100310142826.GA7848@elte.hu>
-References: <1267826147-6613-1-git-send-regression-fweisbec@gmail.com>
+	id S1756020Ab0CJOby (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 09:31:54 -0500
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:48814 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193Ab0CJObx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 09:31:53 -0500
+Message-ID: <4B97AD52.7080201@linux.vnet.ibm.com>
+Date: Wed, 10 Mar 2010 15:31:46 +0100
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267826147-6613-1-git-send-regression-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ronald <intercommit@gmail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC PATCH] Fix Readahead stalling by plugged device queues
+References: <4B979104.6010907@linux.vnet.ibm.com> <20100310130932.GB18509@localhost>
+In-Reply-To: <20100310130932.GB18509@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Ingo,
+Wu Fengguang wrote:
+[...]
+> Christian, did you notice this commit for 2.6.33?
 > 
-> Please pull the perf/core branch that can be found at:
+> commit 65a80b4c61f5b5f6eb0f5669c8fb120893bfb388
+[...]
+
+I didn't see that particular one, due to the fact that whatever the 
+result is it needs to work .32
+
+Anyway I'll test it tomorrow and if that already accepted one fixes my 
+issue as well I'll recommend distros older than 2.6.33 picking that one 
+up in their on top patches.
+
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	perf/core
+> It should at least improve performance between .32 and .33, because
+> once two readahead requests are merged into one single IO request,
+> the PageUptodate() will be true at next readahead, and hence
+> blk_run_backing_dev() get called to break out of the suboptimal
+> situation.
+
+As you saw from my blktrace thats already the case without that patch.
+Once the second readahead comes in and merged it gets unplugged in 
+2.6.32 too - but still that is bad behavior as it denies my things like 
+68% throughput improvement :-).
+
 > 
-> - Lock events seem to be usable now with perf
-> - Better performances in x86-64 stacktraces
-> - Trace events now have correct callchains
-> - Cleanups
-> 
-> 
-> Other patches still in discussion are not in the branch.
-> 
+> Your patch does reduce the possible readahead submit latency to 0.
+
+yeah and I think/hope that is fine, because as I stated:
+- low utilized disk -> not an issue
+- high utilized disk -> unplug is an noop
+
+At least personally I consider a case where merging of a readahead 
+window with anything except its own sibling very rare - and therefore 
+fair to unplug after and RA is submitted.
+
+> Is your workload a simple dd on a single disk? If so, it sounds like
+> something illogical hidden in the block layer.
+
+It might still be illogical hidden as e.g. 2.6.27 unplugged after the 
+first readahead as well :-)
+But no my load is iozone running with different numbers of processes 
+with one disk per process.
+That neatly resembles e.g. nightly backup jobs which tend to take longer 
+and longer in all time increasing customer scenarios. Such an 
+improvement might banish the backups back to the night were they belong :-)
+
 > Thanks,
-> 	Frederic
-> ---
-> 
-> Frederic Weisbecker (5):
->       lockdep: Move lock events under lockdep recursion protection
->       perf/x86-64: Use frame pointer to walk on irq and process stacks
->       perf: Introduce new perf_fetch_caller_regs() for hot regs snapshot
->       perf: Take a hot regs snapshot for trace events
->       perf: Drop the obsolete profile naming for trace events
-> 
-> 
->  arch/x86/kernel/cpu/perf_event.c   |   12 +++
->  arch/x86/kernel/dumpstack.h        |   15 +++
->  arch/x86/kernel/dumpstack_64.c     |    4 +-
->  include/linux/ftrace_event.h       |   23 +++--
->  include/linux/perf_event.h         |   42 +++++++++-
->  include/linux/syscalls.h           |   24 +++---
->  include/trace/ftrace.h             |   44 +++++-----
->  include/trace/syscall.h            |    8 +-
->  kernel/lockdep.c                   |    9 +--
->  kernel/perf_event.c                |   18 ++--
->  kernel/trace/Makefile              |    2 +-
->  kernel/trace/trace_event_perf.c    |  165 ++++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_event_profile.c |  164 -----------------------------------
->  kernel/trace/trace_events.c        |    2 +-
->  kernel/trace/trace_kprobe.c        |   29 +++---
->  kernel/trace/trace_syscalls.c      |   72 ++++++++--------
->  16 files changed, 353 insertions(+), 280 deletions(-)
+> Fengguang
 
-Pulled, thanks a lot Frederic!
+-- 
 
-	Ingo
+Grüsse / regards, Christian Ehrhardt
+IBM Linux Technology Center, System z Linux Performance
