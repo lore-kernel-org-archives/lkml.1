@@ -1,60 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126Ab0CJHJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 02:09:40 -0500
-Received: from relay01.digicable.hu ([92.249.128.189]:59061 "EHLO
-	relay01.digicable.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910Ab0CJHJg (ORCPT
+	id S1754848Ab0CJHQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 02:16:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35810
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752551Ab0CJHQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 02:09:36 -0500
-Date: Wed, 10 Mar 2010 08:09:29 +0100
-From: Gabor Gombas <gombasg@digikabel.hu>
-To: Daniel Taylor <Daniel.Taylor@wdc.com>
-Cc: Tejun Heo <tj@kernel.org>, Greg Freemyer <greg.freemyer@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       James Bottomley <James.Bottomley@suse.de>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-       jdelvare@suse.de, mkp@mkp.net
-Subject: Re: ATA 4 KiB sector issues.
-Message-ID: <20100310070929.GA6188@twister.home>
-Mail-Followup-To: Daniel Taylor <Daniel.Taylor@wdc.com>,
-	Tejun Heo <tj@kernel.org>, Greg Freemyer <greg.freemyer@gmail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	James Bottomley <James.Bottomley@suse.de>,
-	linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-	Jeff Garzik <jeff@garzik.org>, Mark Lord <kernel@teksavvy.com>,
-	tytso@mit.edu, hirofumi@mail.parknet.co.jp,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-	Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
-	jdelvare@suse.de, mkp@mkp.net
-References: <4B947393.2050002@kernel.org>
- <1268031640.4389.11.camel@mulgrave.site>
- <4B94ACE8.4060400@zytor.com>
- <87f94c371003091446h62e50257qf884b278c69cfbfa@mail.gmail.com>
- <4B96E25B.7050200@kernel.org>
- <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD80@wdscexbe01.sc.wdc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD80@wdscexbe01.sc.wdc.com>
-X-Copyright: Forwarding or publishing without permission is prohibited.
-X-Original: 92.249.139.220
+	Wed, 10 Mar 2010 02:16:17 -0500
+Date: Tue, 09 Mar 2010 23:16:35 -0800 (PST)
+Message-Id: <20100309.231635.199019630.davem@davemloft.net>
+To: hannes@cmpxchg.org
+Cc: akpm@linux-foundation.org, yinghai@kernel.org, x86@kernel.org,
+       linux-arch@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: further plans on bootmem, was: Re: -
+ bootmem-avoid-dma32-zone-by-default.patch removed from -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100310000121.GA9985@cmpxchg.org>
+References: <4B96B923.7020805@kernel.org>
+	<20100309134902.171ba2ae.akpm@linux-foundation.org>
+	<20100310000121.GA9985@cmpxchg.org>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 09, 2010 at 04:14:30PM -0800, Daniel Taylor wrote:
+From: Johannes Weiner <hannes@cmpxchg.org>
+Date: Wed, 10 Mar 2010 01:01:21 +0100
 
-> I will run some experiments to see if any of the systems on my desk can boot
-> Linux from a GPT.
+> I also found it weird that it makes x86 skip an allocator level that all
+> the other architectures are using, and replaces it with 'generic' code that
+> nobody but x86 is using (sparc, powerpc, sh and microblaze  appear to have
+> lib/lmb.c at this stage and for this purpose? lmb was also suggested by
+> benh [4] but I have to admit I do not understand Yinghai's response to it).
 
-My desktop with a BIOS from 2005 has no problems with GPT. AFAIK a
-recent Debian installer automatically chooses GPT if the disk is 2 TB or
-larger.
+It kind of irked me that lmb was passed over for whatever vague reason
+was given.
 
-Gabor
+It works fine with memory hotplug on powerpc, so a lack of hotplug
+support can't be an argument for not using it.
+
+But hey, having yet another early memory allocator instead of making
+one of the existing ones do what you want, that's fine right?
