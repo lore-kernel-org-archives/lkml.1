@@ -1,70 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932605Ab0CJSBY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 13:01:24 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50839 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932578Ab0CJSBX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 13:01:23 -0500
-Subject: Re: Q: select_fallback_rq() && cpuset_lock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20100310173018.GA1294@redhat.com>
-References: <20100309180615.GA11681@redhat.com>
-	 <1268239242.5279.46.camel@twins>  <20100310173018.GA1294@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 10 Mar 2010 19:01:15 +0100
-Message-ID: <1268244075.5279.53.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S932613Ab0CJSD4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 13:03:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53400 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932578Ab0CJSDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 13:03:55 -0500
+Date: Wed, 10 Mar 2010 13:03:36 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Chad Talbott <ctalbott@google.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Nauman Rafique <nauman@google.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface
+	"weight_device" for IO-Controller
+Message-ID: <20100310180336.GC10738@redhat.com>
+References: <20100304152400.GB18786@redhat.com> <4B906BB6.3080104@cn.fujitsu.com> <20100305141300.GA3296@redhat.com> <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com> <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com> <20100309190340.GD8663@redhat.com> <4B96E8CC.9080803@cn.fujitsu.com> <20100310153032.GB10738@redhat.com> <1786ab031003100938x19e7c054ieba6c34ebd939ad6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1786ab031003100938x19e7c054ieba6c34ebd939ad6@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-10 at 18:30 +0100, Oleg Nesterov wrote:
-> On 03/10, Peter Zijlstra wrote:
-> >
-> > On Tue, 2010-03-09 at 19:06 +0100, Oleg Nesterov wrote:
-> > > In particular, see http://marc.info/?l=linux-kernel&m=125261083613103
-> >
-> > /me puts it on the to-review stack.
+On Wed, Mar 10, 2010 at 09:38:35AM -0800, Chad Talbott wrote:
+> On Wed, Mar 10, 2010 at 7:30 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > This still leaves the issue of reaching a gendisk object from request
+> > queue. Looking into it.
 > 
-> Great, thanks. In fact, you already acked it before ;)
+> It looks like we have that pairing way back in blk_register_queue()
+> which takes a gendisk.  Is there any reason we don't hold onto the
+> gendisk there?  Eyeballing add_disk() and unlink_gendisk() seems to
+> confirm that gendisk lifetime spans request_queue.
 > 
-> > > But now I have another question. Since 5da9a0fb673a0ea0a093862f95f6b89b3390c31e
-> > > cpuset_cpus_allowed_locked() is called without callback_mutex held by
-> > > try_to_wake_up().
-> > >
-> > > And, without callback_mutex held, isn't it possible to race with, say,
-> > > update_cpumask() which changes cpuset->cpus_allowed? Yes, update_tasks_cpumask()
-> > > should fixup task->cpus_allowed later. But isn't it possible (at least
-> > > in theory) that try_to_wake_up() gets, say, all-zeroes in task->cpus_allowed
-> > > after select_fallback_rq()->cpuset_cpus_allowed_locked() if we race with
-> > > update_cpumask()->cpumask_copy() ?
-> >
-> > Hurmm,.. good point,.. yes I think that might be possible.
-> > p->cpus_allowed is synchronized properly, but cs->cpus_allowed is not,
-> > bugger.
-> >
-> > I guess the quick fix is to really bail and always use cpu_online_mask
-> > in select_fallback_rq().
+
+Yes, looking at the code, it looks like gendisk and request_queue object's
+lifetime is same and probably we can store a pointer to gendisk in
+request_queue at blk_register_queue() time. And then use this pointer to
+retrieve gendisk->disk_name to report stats.
+
+> Nauman and I were also wondering why blkio_group and blkio_policy_node
+> store a dev_t, rather than a direct pointer to gendisk.  dev_t seems
+> more like a userspace<->kernel interface than an inside-the-kernel
+> interface.
 > 
-> Yes, but this breaks cpusets.
 
-Arguably, so, but you can also argue that binding a task to a cpu and
-then unplugging that cpu without first fixing up the affinity is a 'you
-get to keep both pieces' situation.
+blkio_policy_node currently can't store a pointer to gendisk because there
+is no mechanism to call back into blkio if device is removed. So if we
+implement something so that once device is removed, blkio layer gets a
+callback and we cleanup any state/rules associated with that device, then
+I think we should be able to store the pointer to gendisk.
 
-> Peter, please see the attached mbox with the last discussion and patches.
-> Of course, the changes in sched.c need the trivial fixups. I'll resend
-> if you think these changes make sense.
+I am still trying to figure out how elevator/ioscheduler state is cleaned
+up if a device is removed while some IO is happening to it.
 
-Ah, right.. Damn I must be getting old, there wasn't even a spark of
-recollection.
+OTOH, Gui, may be one can use blk_lookup_devt() to lookup the dev_t of a
+device using the disk name (sda). I just noticed it while reading the
+code.
 
-Right, so if you refresh these patches, I'll feed them to mingo and they
-should eventually end up in -linus, how's that? :-)
+Thanks
+Vivek
