@@ -1,141 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047Ab0CJLDQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 06:03:16 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59824 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553Ab0CJLDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 06:03:14 -0500
-Message-ID: <4B977BDB.2090204@cn.fujitsu.com>
-Date: Wed, 10 Mar 2010 19:00:43 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1754548Ab0CJLDn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 06:03:43 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:33119 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910Ab0CJLDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 06:03:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type;
+        b=qxI8iNbp86PtoDw4Ovndt1VssqopDwVrGAVOJ86K3kH8uog9JwY6LLpV2pBivh8T/b
+         UXCTKPBe/QCcw7oMgcO17heCgAKxU4gF6WO4LVUtRHlJ0cRM8UhNXoqTmdni2dfC00r7
+         ZxnCW2lhDWoeQ0UL7ijLkPRmaZVkw1+182ey8=
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kvm: cleanup kvm trace
+Date: Wed, 10 Mar 2010 12:03:37 +0100
+X-Google-Sender-Auth: fff3c577cc2887e6
+Message-ID: <10f740e81003100303m5a4ffb45t26c380b4ef3dec37@mail.gmail.com>
+Subject: DMA_ERROR_CODE (was: Re: linux-next: build failure after merge of the 
+	final tree)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-arch@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch does:
+On Mon, Mar 1, 2010 at 10:40, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+>
+> drivers/mtd/nand/r852.c:22: error: 'enable_dma' redeclared as different kind of symbol
+> arch/powerpc/include/asm/dma.h:189: note: previous definition of 'enable_dma' was here
+> drivers/mtd/nand/r852.c: In function 'r852_engine_enable':
+> drivers/mtd/nand/r852.c:545: error: implicit declaration of function 'msleep'
+>
+> Caused by commit 67e054e919248fa1db93de727fb9ad49eb700642 ("mtd: nand:
+> Add driver for Ricoh xD/SmartMedia reader") from the mtd.
+>
+> I applied the following patch for today.
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 1 Mar 2010 20:21:06 +1100
+> Subject: [PATCH] mtd: nand: fix name space clash
+>
+> and include delay.h for msleep().
 
- - no need call tracepoint_synchronize_unregister() when kvm module
-   is unloaded since ftrace can handle it
+Another issue is that this driver uses DMA_ERROR_CODE, which is currently
+defined on powerpc/sparc/x86 only.
 
- - cleanup ftrace's macro
+Gr{oetje,eeting}s,
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- arch/x86/kvm/mmu.c         |    1 -
- arch/x86/kvm/mmutrace.h    |    7 +++++--
- arch/x86/kvm/trace.h       |    7 +++++--
- arch/x86/kvm/x86.c         |    2 +-
- include/trace/events/kvm.h |    1 -
- virt/kvm/kvm_main.c        |    1 -
- 6 files changed, 11 insertions(+), 8 deletions(-)
+						Geert
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 741373e..d0f5e11 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -147,7 +147,6 @@ module_param(oos_shadow, bool, 0644);
- 
- #include <trace/events/kvm.h>
- 
--#undef TRACE_INCLUDE_FILE
- #define CREATE_TRACE_POINTS
- #include "mmutrace.h"
- 
-diff --git a/arch/x86/kvm/mmutrace.h b/arch/x86/kvm/mmutrace.h
-index 3e4a5c6..1fe956a 100644
---- a/arch/x86/kvm/mmutrace.h
-+++ b/arch/x86/kvm/mmutrace.h
-@@ -6,8 +6,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvmmmu
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE mmutrace
- 
- #define KVM_MMU_PAGE_FIELDS \
- 	__field(__u64, gfn) \
-@@ -216,5 +214,10 @@ TRACE_EVENT(
- 
- #endif /* _TRACE_KVMMMU_H */
- 
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH .
-+#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_FILE mmutrace
-+
- /* This part must be outside protection */
- #include <trace/define_trace.h>
-diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
-index 6ad30a2..e6e5e54 100644
---- a/arch/x86/kvm/trace.h
-+++ b/arch/x86/kvm/trace.h
-@@ -5,8 +5,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm
--#define TRACE_INCLUDE_PATH arch/x86/kvm
--#define TRACE_INCLUDE_FILE trace
- 
- /*
-  * Tracepoint for guest mode entry.
-@@ -553,5 +551,10 @@ TRACE_EVENT(kvm_skinit,
- 
- #endif /* _TRACE_KVM_H */
- 
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH arch/x86/kvm
-+#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_FILE trace
-+
- /* This part must be outside protection */
- #include <trace/define_trace.h>
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index e46282a..6db6fd2 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -40,7 +40,7 @@
- #include <linux/user-return-notifier.h>
- #include <linux/srcu.h>
- #include <trace/events/kvm.h>
--#undef TRACE_INCLUDE_FILE
-+
- #define CREATE_TRACE_POINTS
- #include "trace.h"
- 
-diff --git a/include/trace/events/kvm.h b/include/trace/events/kvm.h
-index b17d49d..6dd3a51 100644
---- a/include/trace/events/kvm.h
-+++ b/include/trace/events/kvm.h
-@@ -5,7 +5,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm
--#define TRACE_INCLUDE_FILE kvm
- 
- #if defined(__KVM_HAVE_IOAPIC)
- TRACE_EVENT(kvm_set_irq,
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 548f925..c908096 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -2272,7 +2272,6 @@ EXPORT_SYMBOL_GPL(kvm_init);
- 
- void kvm_exit(void)
- {
--	tracepoint_synchronize_unregister();
- 	kvm_exit_debug();
- 	misc_deregister(&kvm_dev);
- 	kmem_cache_destroy(kvm_vcpu_cache);
--- 
-1.6.1.2
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
