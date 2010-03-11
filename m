@@ -1,64 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932979Ab0CKAP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 19:15:29 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:59112 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932969Ab0CKAP2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 19:15:28 -0500
-From: "Hans-Peter Jansen" <hpj@urpla.net>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: howto combat highly pathologic latencies on a server?
-Date: Thu, 11 Mar 2010 01:15:14 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <201003101817.42812.hpj@urpla.net> <20100310181548.GA25684@infradead.org>
-In-Reply-To: <20100310181548.GA25684@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S932994Ab0CKAQY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 19:16:24 -0500
+Received: from sh.osrg.net ([192.16.179.4]:42608 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932972Ab0CKAQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 19:16:21 -0500
+Date: Thu, 11 Mar 2010 09:15:19 +0900
+To: geert@linux-m68k.org
+Cc: sfr@canb.auug.org.au, dwmw2@infradead.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, maximlevitsky@gmail.com,
+       linux-arch@vger.kernel.org
+Subject: Re: DMA_ERROR_CODE (was: Re: linux-next: build failure after merge
+ of the 	final tree)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <10f740e81003100303m5a4ffb45t26c380b4ef3dec37@mail.gmail.com>
+References: <10f740e81003100303m5a4ffb45t26c380b4ef3dec37@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201003110115.14555.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX18ToHUj+BvpFOgnMqMjdGlL2VJERBQRszFiijJ
- E9fFyzEVddGDLGlI5jCJft8nbDkgn0XuIYZL1kq2/inFRNCibB
- 1/1JViywB6tzIglU8cz0g==
+Message-Id: <20100311091506J.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 11 Mar 2010 09:15:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 March 2010, 19:15:48 Christoph Hellwig wrote:
-> On Wed, Mar 10, 2010 at 06:17:42PM +0100, Hans-Peter Jansen wrote:
-> > While this system usually operates fine, it suffers from delays, that
-> > are displayed in latencytop as: "Writing page to disk:     8425,5 ms":
-> > ftp://urpla.net/lat-8.4sec.png, but we see them also in the 1.7-4.8 sec
-> > range: ftp://urpla.net/lat-1.7sec.png, ftp://urpla.net/lat-2.9sec.png,
-> > ftp://urpla.net/lat-4.6sec.png and ftp://urpla.net/lat-4.8sec.png.
+On Wed, 10 Mar 2010 12:03:37 +0100
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+> On Mon, Mar 1, 2010 at 10:40, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > After merging the final tree, today's linux-next build (powerpc
+> > allyesconfig) failed like this:
 > >
-> > >From other observations, this issue "feels" like it is induced by
-> > > single
+> > drivers/mtd/nand/r852.c:22: error: 'enable_dma' redeclared as different kind of symbol
+> > arch/powerpc/include/asm/dma.h:189: note: previous definition of 'enable_dma' was here
+> > drivers/mtd/nand/r852.c: In function 'r852_engine_enable':
+> > drivers/mtd/nand/r852.c:545: error: implicit declaration of function 'msleep'
 > >
-> > syncronisation points in the block layer, eg. if I create heavy IO load
-> > on one RAID array, say resizing a VMware disk image, it can take up to
-> > a minute to log in by ssh, although the ssh login does not touch this
-> > area at all (different RAID arrays). Note, that the latencytop
-> > snapshots above are made during normal operation, not this kind of
-> > load..
->
-> I had very similar issues on various systems (mostly using xfs, but some
-> with ext3, too) using kernels before ~ 2.6.30 when using the cfq I/O
-> scheduler.  Switching to noop fixed that for me, or upgrading to a
-> recent kernel where cfq behaves better again.
+> > Caused by commit 67e054e919248fa1db93de727fb9ad49eb700642 ("mtd: nand:
+> > Add driver for Ricoh xD/SmartMedia reader") from the mtd.
+> >
+> > I applied the following patch for today.
+> >
+> > From: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Date: Mon, 1 Mar 2010 20:21:06 +1100
+> > Subject: [PATCH] mtd: nand: fix name space clash
+> >
+> > and include delay.h for msleep().
+> 
+> Another issue is that this driver uses DMA_ERROR_CODE, which is currently
+> defined on powerpc/sparc/x86 only.
 
-Christoph, thanks for this valuable suggestion: I've changed it to noop 
-right away, and also:
-
-vm.dirty_ratio = 20
-vm.dirty_background_ratio = 1
-
-since the defaults of 40 and 10 seem to also not fit my needs. Even the 20 
-might be still oversized with 8GB total mem. 
-
-Thanks,
-Pete
+Why can't use dma_mapping_error()?
