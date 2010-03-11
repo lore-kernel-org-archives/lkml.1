@@ -1,82 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933236Ab0CKQ3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:29:37 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:49460 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933208Ab0CKQ3f (ORCPT
+	id S1756962Ab0CKQc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:32:26 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:23070 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023Ab0CKQcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:29:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=YAlBJsubQde6TXy80snfirXYVDbyazteb8SbXuEBDjzl6dwyJgUpnmfxU3IHFaQcda
-         7L/gxW3U1YUIGuKWsqBYdtAnVfW07/hBEl+qAz6b5kF2x1LZSMlV7xAQT5eL1hINqlcC
-         evaO2xngSDNdKYCD+vgkEGQWhBjLQxl5ZwisA=
-Date: Thu, 11 Mar 2010 17:29:30 +0100
-From: Johan Hovold <jhovold@gmail.com>
-To: =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: Race condition in TTY ldisc layer in 2.6.33
-Message-ID: <20100311162930.GA18217@localhost>
-References: <20100311133222.GA19884@rere.qmqm.pl>
- <20100311135009.GA8801@kroah.com>
- <20100311155015.GA25607@rere.qmqm.pl>
- <20100311160653.GA30832@rere.qmqm.pl>
+	Thu, 11 Mar 2010 11:32:24 -0500
+Message-ID: <4B991A6F.1080006@oracle.com>
+Date: Thu, 11 Mar 2010 08:29:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100311160653.GA30832@rere.qmqm.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH -next] mtd/nand/r852: fix build for CONFIG_PM=n
+References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>	 <4B8C378B.2090400@oracle.com> <1267531329.10734.1.camel@maxim-laptop>
+In-Reply-To: <1267531329.10734.1.camel@maxim-laptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B991AD6.018A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 05:06:53PM +0100, Michał Mirosław wrote:
-> On Thu, Mar 11, 2010 at 04:50:15PM +0100, Michał Mirosław wrote:
-> > On Thu, Mar 11, 2010 at 05:50:09AM -0800, Greg KH wrote:
-> > > On Thu, Mar 11, 2010 at 02:32:22PM +0100, Micha? Miros?aw wrote:
-> > > > Looks like there's some race contition in switching ldiscs on USB serial
-> > > > ports. The following warnings trigger sometimes after killing and restarting
-> > > > process that changes ldisc and waits forever. In case you want to look at
-> > > > the code, there it is: http://rere.qmqm.pl/~mirq/sermmc/
-> > > If you apply git commit 638b9648ab51c9c549ff5735d3de519ef6199df3 to the
-> > > 2.6.33 kernel, does it solve the issue for you?
-> > I'm running with the patch now. After couple cycles of starting and killing
-> > the ldisc-setting process I get no warnings. I'll get back to you when/if
-> > I encounter them again.
-> 
-> Hah. Just seconds after I sent that mail I hit this again. The stack traces
-> are exactly the same (except for different starting address of
-> flush_to_ldisc()).
-> 
-> The warnings are triggered by:
-> 
-> 	struct usb_serial_port *port = tty->driver_data;
-> 	...
-> 	/* count is managed under the mutex lock for the tty so cannot
-> 	   drop to zero until after the last close completes */
-> 	WARN_ON(!port->port.count);
+On 03/02/10 04:02, Maxim Levitsky wrote:
+> On Mon, 2010-03-01 at 13:54 -0800, Randy Dunlap wrote: 
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Fix r852 build for the case of CONFIG_PM=n.
+>>
+>> drivers/mtd/nand/r852.c:1039: error: implicit declaration of function 'pci_prepare_to_sleep'
+>> drivers/mtd/nand/r852.c:1048: error: implicit declaration of function 'pci_back_from_sleep'
+>>
+>> This patch leaves r852_pm_ops untouched.
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> Cc: Maxim Levitsky <maximlevitsky@gmail.com>
+>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>> Cc: David Woodhouse <dwmw2@infradead.org>
+>> ---
+>>  drivers/mtd/nand/r852.c |    5 +++++
+>>  1 file changed, 5 insertions(+)
+>>
+>> --- linux-next-20100301.orig/drivers/mtd/nand/r852.c
+>> +++ linux-next-20100301/drivers/mtd/nand/r852.c
+>> @@ -1007,6 +1007,7 @@ void r852_shutdown(struct pci_dev *pci_d
+>>  	pci_disable_device(pci_dev);
+>>  }
+>>  
+>> +#ifdef CONFIG_PM
+>>  int r852_suspend(struct device *device)
+>>  {
+>>  	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
+>> @@ -1081,6 +1082,10 @@ int r852_resume(struct device *device)
+>>  	r852_update_card_detect(dev);
+>>  	return 0;
+>>  }
+>> +#else
+>> +#define r852_suspend	NULL
+>> +#define r852_resume	NULL
+>> +#endif
+>>  
+>>  static const struct pci_device_id r852_pci_id_tbl[] = {
+>>  
+>>
+> oops, I forgot about that case again..
+> Acked-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
-This is a false warning that was fixed by commit
-49d3380e3f1297ff7bdc700c0a7fe6c3a036b3ab.
+Ping.  can we get this added to linux-next, please?
 
-> BTW, Couple of minutes earlier I got this message:
-> 
-> [  201.629616] cp210x ttyUSB0: usb_serial_generic_resubmit_read_urb - failed resubmitting read urb, error -1
-> 
-> But after that I disconnected and reconnected the device, so this is probably
-> not relevant here.
 
-You're right, it's unrelated. I submitted a patch a while ago that
-removes this message (as it is not an error):
-
-http://thread.gmane.org/gmane.linux.usb.general/28047/focus=28052
-
-Regards,
-Johan
-
+-- 
+~Randy
