@@ -1,56 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933905Ab0CKSI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:08:56 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:41624 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933449Ab0CKSG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:06:59 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 33/37] sound/soc: use .dev.of_node instead of .node in struct
-	of_device
-To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
-       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
-       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
-       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
-       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
-       alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:06:50 -0700
-Message-ID: <20100311180649.4824.10368.stgit@angua>
-In-Reply-To: <20100311174830.4824.19820.stgit@angua>
-References: <20100311174830.4824.19820.stgit@angua>
-User-Agent: StGIT/0.14.2
+	id S933912Ab0CKSJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:09:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54231 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933825Ab0CKSJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 13:09:07 -0500
+Date: Thu, 11 Mar 2010 13:07:53 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Message-ID: <20100311180753.GE29246@redhat.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268175636-4673-1-git-send-email-arighi@develer.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.node is being removed
+On Wed, Mar 10, 2010 at 12:00:31AM +0100, Andrea Righi wrote:
+> Control the maximum amount of dirty pages a cgroup can have at any given time.
+> 
+> Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> will not be able to consume more than their designated share of dirty pages and
+> will be forced to perform write-out if they cross that limit.
+> 
+> The overall design is the following:
+> 
+>  - account dirty pages per cgroup
+>  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+>    and memory.dirty_background_ratio / memory.dirty_background_bytes in
+>    cgroupfs
+>  - start to write-out (background or actively) when the cgroup limits are
+>    exceeded
+> 
+> This feature is supposed to be strictly connected to any underlying IO
+> controller implementation, so we can stop increasing dirty pages in VM layer
+> and enforce a write-out before any cgroup will consume the global amount of
+> dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
+> /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
+> 
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Hi Andrea,
 
- sound/soc/fsl/mpc8610_hpcd.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I am doing a simple dd test of writting a 4G file. This machine has got
+64G of memory and I have created one cgroup with 100M as limit_in_bytes.
 
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index ef67d1c..d7e1b9a 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -202,7 +202,7 @@ static struct snd_soc_ops mpc8610_hpcd_ops = {
- static int mpc8610_hpcd_probe(struct of_device *ofdev,
- 	const struct of_device_id *match)
- {
--	struct device_node *np = ofdev->node;
-+	struct device_node *np = ofdev->dev.of_node;
- 	struct device_node *codec_np = NULL;
- 	struct device_node *guts_np = NULL;
- 	struct device_node *dma_np = NULL;
+I run following dd program both in root cgroup as well as test1/
+cgroup(100M limit) one after the other.
 
+In root cgroup
+==============
+dd if=/dev/zero of=/root/zerofile bs=4K count=1000000
+1000000+0 records in
+1000000+0 records out
+4096000000 bytes (4.1 GB) copied, 59.5571 s, 68.8 MB/s
+
+In test1/ cgroup
+===============
+dd if=/dev/zero of=/root/zerofile bs=4K count=1000000
+1000000+0 records in
+1000000+0 records out
+4096000000 bytes (4.1 GB) copied, 20.6683 s, 198 MB/s
+
+It is strange that we are throttling process in root group much more than
+process in test1/ cgroup?
+
+Thanks
+Vivek
