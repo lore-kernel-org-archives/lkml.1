@@ -1,94 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702Ab0CKVge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 16:36:34 -0500
-Received: from wdscspam1.wdc.com ([129.253.170.130]:63221 "EHLO
-	wdscspam1.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384Ab0CKVgc convert rfc822-to-8bit (ORCPT
+	id S1754788Ab0CKViI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:38:08 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41275 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316Ab0CKViE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:36:32 -0500
-X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 16:36:32 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition for > 512B sector
-Date: Thu, 11 Mar 2010 13:25:55 -0800
-Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD8E@wdscexbe01.sc.wdc.com>
-In-Reply-To: <873a07oyts.fsf@devron.myhome.or.jp>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition for > 512B sector
-Thread-Index: AcrBEhYhIjFloX5cRjee6uRAJqhQHgATfThw
-References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com><20100301141335.395dc4c3.akpm@linux-foundation.org><873a0h1p2c.fsf@devron.myhome.or.jp><876358iehd.fsf@devron.myhome.or.jp> <4B9430B6.701@zytor.com><87pr3fd68r.fsf@devron.myhome.or.jp> <4B9440FC.3090502@zytor.com><87zl2j9muz.fsf@devron.myhome.or.jp><87wrxkw52s.fsf_-_@devron.myhome.or.jp><87sk88w4xk.fsf_-_@devron.myhome.or.jp><3E0C3AE547FA504DA5E89EA5A24AC85803E2BD87@wdscexbe01.sc.wdc.com> <873a07oyts.fsf@devron.myhome.or.jp>
-From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
-To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Mar 2010 21:26:44.0567 (UTC) FILETIME=[8C70C670:01CAC161]
+	Thu, 11 Mar 2010 16:38:04 -0500
+Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
+From: Peter Zijlstra <peterz@infradead.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Stephane Eranian <eranian@google.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100311213128.GE25162@lenovo>
+References: <20100310183102.GC8070@lenovo>
+	 <1268274775.4996.16.camel@minggr.sh.intel.com>
+	 <20100311165439.GB5129@lenovo> <20100311181646.GA12235@elte.hu>
+	 <20100311183921.GA30249@elte.hu> <20100311211538.GC25162@lenovo>
+	 <1268342662.5037.143.camel@laptop>  <20100311213128.GE25162@lenovo>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 22:38:00 +0100
+Message-ID: <1268343480.5037.145.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-03-12 at 00:31 +0300, Cyrill Gorcunov wrote:
+> On Thu, Mar 11, 2010 at 10:24:22PM +0100, Peter Zijlstra wrote:
+> > On Fri, 2010-03-12 at 00:15 +0300, Cyrill Gorcunov wrote:
+> > 
+> > > Perhaps something like the patch below (tested with kvm)? With this patch
+> > > we will actually waste ~4/8 bytes per PMU (intel,amd,p6) since this call
+> > > hits on p4 only, so I think perhaps better to use one x86 scheduler hook
+> > > instead of empty schedule_events() in PMU, hmm?
+> > > ---
+> > > 
+> > > x86,perf: Fix NULL deref on not assigned x86_pmu
+> > > 
+> > > In case of not assigned x86_pmu and software events
+> > > NULL dereference may being hit via x86_pmu::schedule_events
+> > > method.
+> > > 
+> > > Fix it by calling x86_pmu::schedule_events only if we
+> > > have one. Otherwise use general scheduler.
+> > > 
+> > > Also the former x86_schedule_events calls restored.
+> > 
+> > Hrm,.. not sure that makes sense, sure it might not crash anymore, but
+> > its not making much sense to compute anything if we don't have an
+> > initialized x86_pmu.
+> > 
+> > Doesn't adding something like:
+> > 
+> >   if (!x86_pmu_initialized())
+> >    return;
+> > 
+> > to hw_perf_group_sched_in() make more sense? We seem to do that for all
+> > these weak things except this one.
+> > 
+> 
+> As far as I see it'll not update tstamp_running then (in x86_event_sched_in).
+> Or I miss somethig?
 
-> -----Original Message-----
-> From: OGAWA Hirofumi [mailto:hirofumi@mail.parknet.co.jp] 
-> Sent: Thursday, March 11, 2010 3:58 AM
-> To: Daniel Taylor
-> Cc: Andrew Morton; H. Peter Anvin; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 2/2] fs/partition/msdos: Fix unusable 
-> extended partition for > 512B sector
-> 
-> "Daniel Taylor" <Daniel.Taylor@wdc.com> writes:
-> 
-> > In the near future, WD will be releasing products that need 
-> this patch.
-> >
-> > Wouldn't it be a better Linux user experience to never have 
-> the problem,
-> > rather than wait for a bug-fix cycle on the kernel?
-> 
-> Of course, if we can fix, it's better.
-> 
-> However, probably, users of this patch would be only boot loader,
-> because this is a first sector on extended-partition itself, not
-> logical-partitions in extended-partition.
+Have it return 0 and it will fallback to defaults. Since there is no
+initialized x86_pmu there's no point in doing anything x86 specific.
 
-I have not yet tried booting from one of these disks.
-
-They are in USB-attached enclosures, attached well after boot, so the
-bootloader has never seen them.  They simply refuse to mount to a running
-Linux system because, when the storage for partition size and start was
-expanded to 64-bit, no one bothered to fix the intermediate storage in
-msdos.c, so the kernel cannot locate the start nor figure the size of
-the partitions.
-
-Logically, this patch is not complicated.  The data types in msdos.c
-are flat-out wrong, given that the real stored data is of type sector_t.
-The intermediate variables should not be u32.
-
-For users of small disks, that are not shared with Windows XP, the patch
-is totally innocuous.  It does not diminish any existing working behavior,
-for anyone, nor change any API, so I do not understand the resistance to
-using it.
-
-> 
-> So, maybe this wouldn't be so major problem for normal users, and what
-> is needed actually is not sure to me for now (I guess it might be
-> depending to BIOS, if boot loader is using BIOS call.).
-> 
-> So, this patch provides one logical sector, but it's just guess.
-> 
-> > OTOH, it would be reasonable to wait until someone else had 
-> a chance to
-> > test the change.  We are awaiting NDAs from RedHat, Canonical, and
-> > Novell/SUSE to send them the affected products for 
-> library/application
-> > development.
-> 
-> Thanks.
-> -- 
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> 
