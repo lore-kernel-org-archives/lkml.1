@@ -1,75 +1,619 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077Ab0CKVbe (ORCPT <rfc822;w@1wt.eu>);
+	id S1754422Ab0CKVbi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:31:38 -0500
+Received: from claw.goop.org ([74.207.240.146]:33896 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754101Ab0CKVbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Mar 2010 16:31:34 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:46549 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837Ab0CKVbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:31:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BS8szMCC2AZXgvPTBs5oRwBfJ/0zrXqBzCHcEzA12R+lXqrQCz8hPVladhq6m8kF1k
-         3B0tp44dg2OFSdSD24FCgD3WIRT3sNY+9yRktn80XOMl6Hau+uRlQ9NOGh6dRdvTqrbw
-         wXJ1XhSTSnugfw6BGrYJ1gSv3I/IoIXlbOAjs=
-Date: Fri, 12 Mar 2010 00:31:28 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Stephane Eranian <eranian@google.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
-Message-ID: <20100311213128.GE25162@lenovo>
-References: <20100310183102.GC8070@lenovo> <1268274775.4996.16.camel@minggr.sh.intel.com> <20100311165439.GB5129@lenovo> <20100311181646.GA12235@elte.hu> <20100311183921.GA30249@elte.hu> <20100311211538.GC25162@lenovo> <1268342662.5037.143.camel@laptop>
+Message-ID: <4B996130.3030709@goop.org>
+Date: Thu, 11 Mar 2010 13:31:28 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268342662.5037.143.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+CC: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] [PATCH 5 of 5] xen pci platform device driver
+References: <alpine.DEB.2.00.1003101504480.28412@kaball-desktop>
+In-Reply-To: <alpine.DEB.2.00.1003101504480.28412@kaball-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 10:24:22PM +0100, Peter Zijlstra wrote:
-> On Fri, 2010-03-12 at 00:15 +0300, Cyrill Gorcunov wrote:
-> 
-> > Perhaps something like the patch below (tested with kvm)? With this patch
-> > we will actually waste ~4/8 bytes per PMU (intel,amd,p6) since this call
-> > hits on p4 only, so I think perhaps better to use one x86 scheduler hook
-> > instead of empty schedule_events() in PMU, hmm?
-> > ---
-> > 
-> > x86,perf: Fix NULL deref on not assigned x86_pmu
-> > 
-> > In case of not assigned x86_pmu and software events
-> > NULL dereference may being hit via x86_pmu::schedule_events
-> > method.
-> > 
-> > Fix it by calling x86_pmu::schedule_events only if we
-> > have one. Otherwise use general scheduler.
-> > 
-> > Also the former x86_schedule_events calls restored.
-> 
-> Hrm,.. not sure that makes sense, sure it might not crash anymore, but
-> its not making much sense to compute anything if we don't have an
-> initialized x86_pmu.
-> 
-> Doesn't adding something like:
-> 
->   if (!x86_pmu_initialized())
->    return;
-> 
-> to hw_perf_group_sched_in() make more sense? We seem to do that for all
-> these weak things except this one.
-> 
+On 03/10/2010 07:47 AM, Stefano Stabellini wrote:
+> Hi all,
+> this patch adds the xen pci platform device driver that is responsible
+> for initializing the grant table and xenbus in PV on HVM mode.
+> Few changes to xenbus and grant table are necessary to allow the delayed
+> initialization in HVM mode.
+> Finally grant table needs few additional modifications to work in HVM
+> mode.
+>    
 
-As far as I see it'll not update tstamp_running then (in x86_event_sched_in).
-Or I miss somethig?
+Will you add the ability to event channels via this device's interrupt 
+for back-compat?
 
-	-- Cyrill
+(more comments below)
+> Signed-off-by: Stefano Stabellini<stefano.stabellini@eu.citrix.com>
+> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+>
+> ---
+>
+> diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
+> index cab100a..b2795db 100644
+> --- a/drivers/xen/Kconfig
+> +++ b/drivers/xen/Kconfig
+> @@ -60,4 +60,14 @@ config XEN_SYS_HYPERVISOR
+>            Create entries under /sys/hypervisor describing the Xen
+>   	 hypervisor environment.  When running native or in another
+>   	 virtual environment, /sys/hypervisor will still be present,
+> -	 but will have no xen contents.
+> \ No newline at end of file
+> +	 but will have no xen contents.
+> +
+> +config XEN_PLATFORM_PCI
+> +	tristate "xen platform pci device driver"
+> +	depends on XEN
+> +	select XEN_XENBUS_FRONTEND
+> +	help
+> +	  Driver for the Xen Pci Platform device: it is responsible for
+> +	  initializing xenbus and grant_table when running in a Xen HVM
+> +	  domain. As a consequence this driver is required to run any Xen PV
+> +	  frontend on Xen HVM.
+> diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+> index 7c28434..2a502d2 100644
+> --- a/drivers/xen/Makefile
+> +++ b/drivers/xen/Makefile
+> @@ -9,4 +9,5 @@ obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
+>   obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
+>   obj-$(CONFIG_XEN_DEV_EVTCHN)	+= evtchn.o
+>   obj-$(CONFIG_XENFS)		+= xenfs/
+> -obj-$(CONFIG_XEN_SYS_HYPERVISOR)	+= sys-hypervisor.o
+> \ No newline at end of file
+> +obj-$(CONFIG_XEN_SYS_HYPERVISOR)	+= sys-hypervisor.o
+> +obj-$(CONFIG_XEN_PLATFORM_PCI)		+= platform-pci.o
+> diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+> index 7d8f531..dd5be9d 100644
+> --- a/drivers/xen/grant-table.c
+> +++ b/drivers/xen/grant-table.c
+> @@ -40,11 +40,14 @@
+>   #include<xen/interface/xen.h>
+>   #include<xen/page.h>
+>   #include<xen/grant_table.h>
+> +#include<xen/platform_pci.h>
+>   #include<asm/xen/hypercall.h>
+>
+>   #include<asm/pgtable.h>
+>   #include<asm/sync_bitops.h>
+>
+> +#include<xen/interface/memory.h>
+> +#include<linux/io.h>
+>
+>   /* External tools reserve first few grant table entries. */
+>   #define NR_RESERVED_ENTRIES 8
+> @@ -57,6 +60,7 @@ static unsigned int boot_max_nr_grant_frames;
+>   static int gnttab_free_count;
+>   static grant_ref_t gnttab_free_head;
+>   static DEFINE_SPINLOCK(gnttab_list_lock);
+> +static unsigned long hvm_pv_resume_frames;
+>
+>   static struct grant_entry *shared;
+>
+> @@ -447,6 +451,26 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+>   	unsigned int nr_gframes = end_idx + 1;
+>   	int rc;
+>
+> +	if (xen_hvm_domain()) {
+> +		struct xen_add_to_physmap xatp;
+> +		unsigned int i = end_idx;
+> +		rc = 0;
+> +		/*
+> +		 * Loop backwards, so that the first hypercall has the largest
+> +		 * index, ensuring that the table will grow only once.
+> +		 */
+> +		do {
+> +			xatp.domid = DOMID_SELF;
+> +			xatp.idx = i;
+> +			xatp.space = XENMAPSPACE_grant_table;
+> +			xatp.gpfn = (hvm_pv_resume_frames>>  PAGE_SHIFT) + i;
+> +			if ((rc = HYPERVISOR_memory_op(XENMEM_add_to_physmap,&xatp)) != 0)
+> +				break;
+> +		} while (i-->  start_idx);
+> +
+> +		return rc;
+> +	}
+> +
+>   	frames = kmalloc(nr_gframes * sizeof(unsigned long), GFP_ATOMIC);
+>   	if (!frames)
+>   		return -ENOMEM;
+> @@ -474,9 +498,28 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+>
+>   int gnttab_resume(void)
+>   {
+> -	if (max_nr_grant_frames()<  nr_grant_frames)
+> +	unsigned int max_nr_gframes;
+> +
+> +	max_nr_gframes = max_nr_grant_frames();
+> +	if (max_nr_gframes<  nr_grant_frames)
+>   		return -ENOSYS;
+> -	return gnttab_map(0, nr_grant_frames - 1);
+> +
+> +	if (xen_pv_domain())
+> +		return gnttab_map(0, nr_grant_frames - 1);
+> +
+> +	if (!hvm_pv_resume_frames) {
+> +		hvm_pv_resume_frames = alloc_xen_mmio(PAGE_SIZE * max_nr_gframes);
+> +		shared = ioremap(hvm_pv_resume_frames, PAGE_SIZE * max_nr_gframes);
+> +		if (shared == NULL) {
+> +			printk(KERN_WARNING
+> +					"Fail to ioremap gnttab share frames\n");
+> +			return -ENOMEM;
+> +		}
+> +	}
+> +
+> +	gnttab_map(0, nr_grant_frames - 1);
+> +
+> +	return 0;
+>   }
+>
+>   int gnttab_suspend(void)
+> @@ -503,15 +546,12 @@ static int gnttab_expand(unsigned int req_entries)
+>   	return rc;
+>   }
+>
+> -static int __devinit gnttab_init(void)
+> +int gnttab_init(void)
+>   {
+>   	int i;
+>   	unsigned int max_nr_glist_frames, nr_glist_frames;
+>   	unsigned int nr_init_grefs;
+>
+> -	if (!xen_domain())
+> -		return -ENODEV;
+> -
+>   	nr_grant_frames = 1;
+>   	boot_max_nr_grant_frames = __max_nr_grant_frames();
+>
+> @@ -555,4 +595,16 @@ static int __devinit gnttab_init(void)
+>   	return -ENOMEM;
+>   }
+>
+> -core_initcall(gnttab_init);
+> +static int __devinit __gnttab_init(void)
+> +{
+> +	if (!xen_pv_domain())
+> +		return -ENODEV;
+> +
+> +	/* Delay grant-table initialization in the PV on HVM case */
+> +	if (xen_hvm_domain())
+> +		return 0;
+> +
+> +	return gnttab_init();
+> +}
+> +
+> +core_initcall(__gnttab_init);
+> diff --git a/drivers/xen/platform-pci.c b/drivers/xen/platform-pci.c
+> new file mode 100644
+> index 0000000..71e76fd
+> --- /dev/null
+> +++ b/drivers/xen/platform-pci.c
+> @@ -0,0 +1,220 @@
+> +/******************************************************************************
+> + * platform-pci.c
+> + *
+> + * Xen platform PCI device driver
+> + * Copyright (c) 2005, Intel Corporation.
+> + * Copyright (c) 2007, XenSource Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along with
+> + * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+> + * Place - Suite 330, Boston, MA 02111-1307 USA.
+> + *
+> + */
+> +
+> +#include<linux/module.h>
+> +#include<linux/pci.h>
+> +#include<linux/version.h>
+> +
+> +#include<asm/io.h>
+> +
+> +#include<xen/grant_table.h>
+> +#include<xen/platform_pci.h>
+> +#include<xen/interface/platform_pci.h>
+> +#include<xen/xenbus.h>
+> +
+> +#define DRV_NAME    "xen-platform-pci"
+> +
+> +MODULE_AUTHOR("ssmith@xensource.com and stefano.stabellini@eu.citrix.com");
+> +MODULE_DESCRIPTION("Xen platform PCI device");
+> +MODULE_LICENSE("GPL");
+> +
+> +/* NB. [aux-]ide-disks options do not unplug IDE CD-ROM drives. */
+> +/* NB. aux-ide-disks is equiv to ide-disks except ignores primary master. */
+> +static int unplug;
+> +static char *dev_unplug;
+> +module_param(dev_unplug, charp, 0644);
+> +MODULE_PARM_DESC(dev_unplug, "Emulated devices to unplug: "
+> +		 "[all,][ide-disks,][aux-ide-disks,][nics]\n");
+> +
+> +static unsigned long platform_mmio;
+> +static unsigned long platform_mmio_alloc;
+> +static unsigned long platform_mmiolen;
+> +
+> +unsigned long alloc_xen_mmio(unsigned long len)
+> +{
+> +	unsigned long addr;
+> +
+> +	addr = platform_mmio + platform_mmio_alloc;
+> +	platform_mmio_alloc += len;
+> +	BUG_ON(platform_mmio_alloc>  platform_mmiolen);
+> +
+> +	return addr;
+> +}
+> +
+> +#define XEN_IOPORT_MAGIC_VAL 0x49d2
+> +#define XEN_IOPORT_LINUX_PRODNUM 0xffff
+> +#define XEN_IOPORT_LINUX_DRVVER  ((LINUX_VERSION_CODE<<  8) + 0x0)
+>    
+
+Surely there's a better header to put this stuff?
+
+> +
+> +static int check_platform_magic(struct device *dev, long ioaddr, long iolen)
+> +{
+> +	short magic;
+> +	char protocol, *err;
+> +
+> +	if (iolen<  0x16) {
+> +		err = "backend too old";
+> +		goto no_dev;
+> +	}
+> +
+> +	magic = inw(XEN_IOPORT_MAGIC);
+> +
+> +	if (magic != XEN_IOPORT_MAGIC_VAL) {
+> +		err = "unrecognised magic value";
+> +		goto no_dev;
+> +	}
+> +
+> +	protocol = inb(XEN_IOPORT_PROTOVER);
+> +
+> +	dev_info(dev, "I/O protocol version %d\n", protocol);
+> +
+> +	switch (protocol) {
+> +	case 1:
+> +		outw(XEN_IOPORT_LINUX_PRODNUM, XEN_IOPORT_PRODNUM);
+> +		outl(XEN_IOPORT_LINUX_DRVVER, XEN_IOPORT_DRVVER);
+> +		if (inw(XEN_IOPORT_MAGIC) != XEN_IOPORT_MAGIC_VAL) {
+> +			dev_err(dev, "blacklisted by host\n");
+> +			return -ENODEV;
+> +		}
+> +		/* Fall through */
+> +	case 0:
+> +		outw(unplug, XEN_IOPORT_UNPLUG);
+>    
+
+Is there any way of getting these devices back?
+
+How does the unplug appear to the kernel?  Does it depend on this 
+happening before the normal disk/net/etc drivers come up?
+
+Shouldn't the unplug happen as each PV device comes up, rather than 
+having to pre-specify it here?
+
+> +		break;
+> +	default:
+> +		err = "unknown I/O protocol version";
+> +		goto no_dev;
+> +	}
+> +
+> +	return 0;
+> +
+> + no_dev:
+> +	dev_warn(dev, "failed backend handshake: %s\n", err);
+> +	if (!unplug)
+> +		return 0;
+> +	dev_err(dev, "failed to execute specified dev_unplug options!\n");
+> +	return -ENODEV;
+> +}
+> +
+> +static int __devinit platform_pci_init(struct pci_dev *pdev,
+> +				       const struct pci_device_id *ent)
+> +{
+> +	int i, ret;
+> +	long ioaddr, iolen;
+> +	long mmio_addr, mmio_len;
+> +
+> +	i = pci_enable_device(pdev);
+> +	if (i)
+> +		return i;
+> +
+> +	ioaddr = pci_resource_start(pdev, 0);
+> +	iolen = pci_resource_len(pdev, 0);
+> +
+> +	mmio_addr = pci_resource_start(pdev, 1);
+> +	mmio_len = pci_resource_len(pdev, 1);
+> +
+> +	if (mmio_addr == 0 || ioaddr == 0) {
+> +		printk(KERN_WARNING DRV_NAME ":no resources found\n");
+> +		return -ENOENT;
+> +	}
+> +
+> +	if (request_mem_region(mmio_addr, mmio_len, DRV_NAME) == NULL) {
+> +		printk(KERN_ERR ":MEM I/O resource 0x%lx @ 0x%lx busy\n",
+> +		       mmio_addr, mmio_len);
+> +		return -EBUSY;
+> +	}
+> +
+> +	if (request_region(ioaddr, iolen, DRV_NAME) == NULL) {
+> +		printk(KERN_ERR DRV_NAME ":I/O resource 0x%lx @ 0x%lx busy\n",
+> +		       iolen, ioaddr);
+> +		release_mem_region(mmio_addr, mmio_len);
+> +		return -EBUSY;
+> +	}
+> +
+> +	platform_mmio = mmio_addr;
+> +	platform_mmiolen = mmio_len;
+> +
+> +	ret = check_platform_magic(&pdev->dev, ioaddr, iolen);
+> +	if (ret<  0)
+> +		goto out;
+> +
+> +	if ((ret = gnttab_init()))
+> +		goto out;
+> +
+> +	if ((ret = xenbus_probe_init()))
+> +		goto out;
+> +
+> + out:
+> +	if (ret) {
+> +		release_mem_region(mmio_addr, mmio_len);
+> +		release_region(ioaddr, iolen);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +#define XEN_PLATFORM_VENDOR_ID 0x5853
+> +#define XEN_PLATFORM_DEVICE_ID 0x0001
+> +static struct pci_device_id platform_pci_tbl[] __devinitdata = {
+> +	{XEN_PLATFORM_VENDOR_ID, XEN_PLATFORM_DEVICE_ID,
+> +	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+> +	{0,}
+> +};
+> +
+> +MODULE_DEVICE_TABLE(pci, platform_pci_tbl);
+> +
+> +static struct pci_driver platform_driver = {
+> +	name:     DRV_NAME,
+> +	probe:    platform_pci_init,
+> +	id_table: platform_pci_tbl,
+> +};
+> +
+> +static int __init platform_pci_module_init(void)
+> +{
+> +	int rc;
+> +	char *p, *q;
+> +
+> +	for (p = dev_unplug; p; p = q) {
+> +		q = strchr(dev_unplug, ',');
+> +		if (q)
+> +			*q++ = '\0';
+> +		if (!strcmp(p, "all"))
+> +			unplug |= UNPLUG_ALL;
+> +		else if (!strcmp(p, "ide-disks"))
+> +			unplug |= UNPLUG_ALL_IDE_DISKS;
+> +		else if (!strcmp(p, "aux-ide-disks"))
+> +			unplug |= UNPLUG_AUX_IDE_DISKS;
+> +		else if (!strcmp(p, "nics"))
+> +			unplug |= UNPLUG_ALL_NICS;
+> +		else
+> +			printk(KERN_WARNING "unrecognised option '%s' "
+> +				 "in module parameter 'dev_unplug'\n", p);
+> +	}
+> +
+> +	rc = pci_register_driver(&platform_driver);
+> +	if (rc) {
+> +		printk(KERN_INFO DRV_NAME
+> +		       ": No platform pci device model found\n");
+> +		return rc;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +module_init(platform_pci_module_init);
+> diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+> index 586b8f8..439372a 100644
+> --- a/drivers/xen/xenbus/xenbus_probe.c
+> +++ b/drivers/xen/xenbus/xenbus_probe.c
+> @@ -779,16 +779,24 @@ void xenbus_probe(struct work_struct *unused)
+>   	blocking_notifier_call_chain(&xenstore_chain, 0, NULL);
+>   }
+>
+> -static int __init xenbus_probe_init(void)
+> +static int __init __xenbus_probe_init(void)
+> +{
+> +	if (!xen_pv_domain())
+> +		return -ENODEV;
+> +
+> +	/* Delay initialization in the PV on HVM case */
+> +	if (xen_hvm_domain())
+> +		return 0;
+> +
+> +	return xenbus_probe_init();
+> +}
+> +
+> +int xenbus_probe_init(void)
+>   {
+>   	int err = 0;
+>
+>   	DPRINTK("");
+>
+> -	err = -ENODEV;
+> -	if (!xen_domain())
+> -		goto out_error;
+> -
+>   	/* Register ourselves with the kernel bus subsystem */
+>   	err = bus_register(&xenbus_frontend.bus);
+>   	if (err)
+> @@ -850,7 +858,7 @@ static int __init xenbus_probe_init(void)
+>   	return err;
+>   }
+>
+> -postcore_initcall(xenbus_probe_init);
+> +postcore_initcall(__xenbus_probe_init);
+>
+>   MODULE_LICENSE("GPL");
+>
+> diff --git a/include/xen/grant_table.h b/include/xen/grant_table.h
+> index a40f1cd..811cda5 100644
+> --- a/include/xen/grant_table.h
+> +++ b/include/xen/grant_table.h
+> @@ -51,6 +51,7 @@ struct gnttab_free_callback {
+>   	u16 count;
+>   };
+>
+> +int gnttab_init(void);
+>   int gnttab_suspend(void);
+>   int gnttab_resume(void);
+>
+> diff --git a/include/xen/interface/grant_table.h b/include/xen/interface/grant_table.h
+> index 39da93c..39e5717 100644
+> --- a/include/xen/interface/grant_table.h
+> +++ b/include/xen/interface/grant_table.h
+> @@ -28,6 +28,7 @@
+>   #ifndef __XEN_PUBLIC_GRANT_TABLE_H__
+>   #define __XEN_PUBLIC_GRANT_TABLE_H__
+>
+> +#include<xen/interface/xen.h>
+>
+>   /***********************************
+>    * GRANT TABLE REPRESENTATION
+> diff --git a/include/xen/interface/platform_pci.h b/include/xen/interface/platform_pci.h
+> new file mode 100644
+> index 0000000..bc230cd
+> --- /dev/null
+> +++ b/include/xen/interface/platform_pci.h
+> @@ -0,0 +1,45 @@
+> +/******************************************************************************
+> + * platform_pci.h
+> + *
+> + * Interface for granting foreign access to page frames, and receiving
+> + * page-ownership transfers.
+> + *
+> + * Permission is hereby granted, free of charge, to any person obtaining a copy
+> + * of this software and associated documentation files (the "Software"), to
+> + * deal in the Software without restriction, including without limitation the
+> + * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+> + * sell copies of the Software, and to permit persons to whom the Software is
+> + * furnished to do so, subject to the following conditions:
+> + *
+> + * The above copyright notice and this permission notice shall be included in
+> + * all copies or substantial portions of the Software.
+> + *
+> + * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> + * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> + * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> + * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> + * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+> + * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> + * DEALINGS IN THE SOFTWARE.
+> + */
+> +
+> +#ifndef __XEN_PUBLIC_PLATFORM_PCI_H__
+> +#define __XEN_PUBLIC_PLATFORM_PCI_H__
+> +
+> +#define XEN_IOPORT_BASE 0x10
+> +
+> +#define XEN_IOPORT_PLATFLAGS	(XEN_IOPORT_BASE + 0) /* 1 byte access (R/W) */
+> +#define XEN_IOPORT_MAGIC	(XEN_IOPORT_BASE + 0) /* 2 byte access (R) */
+> +#define XEN_IOPORT_UNPLUG	(XEN_IOPORT_BASE + 0) /* 2 byte access (W) */
+> +#define XEN_IOPORT_DRVVER	(XEN_IOPORT_BASE + 0) /* 4 byte access (W) */
+> +
+> +#define XEN_IOPORT_SYSLOG	(XEN_IOPORT_BASE + 2) /* 1 byte access (W) */
+> +#define XEN_IOPORT_PROTOVER	(XEN_IOPORT_BASE + 2) /* 1 byte access (R) */
+> +#define XEN_IOPORT_PRODNUM	(XEN_IOPORT_BASE + 2) /* 2 byte access (W) */
+> +
+> +#define UNPLUG_ALL_IDE_DISKS 1
+> +#define UNPLUG_ALL_NICS 2
+> +#define UNPLUG_AUX_IDE_DISKS 4
+> +#define UNPLUG_ALL 7
+> +
+> +#endif /* __XEN_PUBLIC_PLATFORM_PCI_H__ */
+> diff --git a/include/xen/platform_pci.h b/include/xen/platform_pci.h
+> new file mode 100644
+> index 0000000..c178230
+> --- /dev/null
+> +++ b/include/xen/platform_pci.h
+> @@ -0,0 +1,34 @@
+> +/******************************************************************************
+> + * platform-pci.h
+> + *
+> + * Xen platform PCI device driver
+> + * Copyright (c) 2004, Intel Corporation.<xiaofeng.ling@intel.com>
+> + * Copyright (c) 2007, XenSource Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along with
+> + * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+> + * Place - Suite 330, Boston, MA 02111-1307 USA.
+> + */
+> +
+> +#ifndef _XEN_PLATFORM_PCI_H
+> +#define _XEN_PLATFORM_PCI_H
+> +
+> +#ifdef CONFIG_XEN_PLATFORM_PCI
+> +unsigned long alloc_xen_mmio(unsigned long len);
+> +#else
+> +static inline unsigned long alloc_xen_mmio(unsigned long len)
+> +{
+> +	return 0xffffffff;
+>    
+
+What's this?  Is it really supposed to be 0xffffffff, or is it ~0UL?
+
+> +}
+> +#endif
+> +
+> +#endif /* _XEN_PLATFORM_PCI_H */
+> diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+> index b9763ba..7fa0c22 100644
+> --- a/include/xen/xenbus.h
+> +++ b/include/xen/xenbus.h
+> @@ -173,6 +173,7 @@ void unregister_xenbus_watch(struct xenbus_watch *watch);
+>   void xs_suspend(void);
+>   void xs_resume(void);
+>   void xs_suspend_cancel(void);
+> +int xenbus_probe_init(void);
+>
+>   /* Used by xenbus_dev to borrow kernel's store connection. */
+>   void *xenbus_dev_request_and_reply(struct xsd_sockmsg *msg);
+>
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
+>
+>    
+
+     J
