@@ -1,174 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934Ab0CKSbc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:31:32 -0500
-Received: from mail-px0-f198.google.com ([209.85.216.198]:64662 "EHLO
-	mail-px0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568Ab0CKSbK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:31:10 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 12/27] drivers/mtd/of: don't use deprecated field in
-	of_platform_driver
-To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
-       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
-       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
-       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
-       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
-       alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:22:54 -0700
-Message-ID: <20100311182253.13103.92479.stgit@angua>
-In-Reply-To: <20100311181604.13103.30088.stgit@angua>
-References: <20100311181604.13103.30088.stgit@angua>
-User-Agent: StGIT/0.14.2
+	id S1755520Ab0CKSbo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:31:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40806 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755558Ab0CKSbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 13:31:38 -0500
+Date: Thu, 11 Mar 2010 18:30:38 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1268301003.6785.28.camel@marge.simson.net>
+References: <1268301003.6785.28.camel@marge.simson.net>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Rate-limit nohz
+Message-ID: <tip-39c0cbe2150cbd848a25ba6cdb271d1ad46818ad@git.kernel.org>
+Git-Commit-ID: 39c0cbe2150cbd848a25ba6cdb271d1ad46818ad
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 18:30:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.name, .match_table and .owner are duplicated in both of_platform_driver
-and device_driver, so the of_platform_driver copies will be removed soon.
+Commit-ID:  39c0cbe2150cbd848a25ba6cdb271d1ad46818ad
+Gitweb:     http://git.kernel.org/tip/39c0cbe2150cbd848a25ba6cdb271d1ad46818ad
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Thu, 11 Mar 2010 17:17:13 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 11 Mar 2010 18:32:49 +0100
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+sched: Rate-limit nohz
+
+Entering nohz code on every micro-idle is costing ~10% throughput for netperf
+TCP_RR when scheduling cross-cpu.  Rate limiting entry fixes this, but raises
+ticks a bit.  On my Q6600, an idle box goes from ~85 interrupts/sec to 128.
+
+The higher the context switch rate, the more nohz entry costs.  With this patch
+and some cycle recovery patches in my tree, max cross cpu context switch rate is
+improved by ~16%, a large portion of which of which is this ratelimiting.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1268301003.6785.28.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ include/linux/sched.h    |    6 ++++++
+ kernel/sched.c           |   12 ++++++++++++
+ kernel/time/tick-sched.c |    3 +++
+ 3 files changed, 21 insertions(+), 0 deletions(-)
 
- drivers/mtd/maps/physmap_of.c    |    7 +++++--
- drivers/mtd/maps/sun_uflash.c    |    7 +++++--
- drivers/mtd/nand/fsl_elbc_nand.c |    5 +++--
- drivers/mtd/nand/fsl_upm.c       |    7 +++++--
- drivers/mtd/nand/ndfc.c          |    5 +++--
- drivers/mtd/nand/pasemi_nand.c   |    7 +++++--
- drivers/mtd/nand/socrates_nand.c |    7 +++++--
- 7 files changed, 31 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index 494af8e..997ee62 100644
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -374,8 +374,11 @@ static struct of_device_id of_flash_match[] = {
- MODULE_DEVICE_TABLE(of, of_flash_match);
- 
- static struct of_platform_driver of_flash_driver = {
--	.name		= "of-flash",
--	.match_table	= of_flash_match,
-+	.driver = {
-+		.name = "of-flash",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_flash_match,
-+	},
- 	.probe		= of_flash_probe,
- 	.remove		= of_flash_remove,
- };
-diff --git a/drivers/mtd/maps/sun_uflash.c b/drivers/mtd/maps/sun_uflash.c
-index 365811d..b27be02 100644
---- a/drivers/mtd/maps/sun_uflash.c
-+++ b/drivers/mtd/maps/sun_uflash.c
-@@ -148,8 +148,11 @@ static const struct of_device_id uflash_match[] = {
- MODULE_DEVICE_TABLE(of, uflash_match);
- 
- static struct of_platform_driver uflash_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= uflash_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = uflash_match,
-+	},
- 	.probe		= uflash_probe,
- 	.remove		= __devexit_p(uflash_remove),
- };
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 4a60795..f45a8d0 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -1078,9 +1078,10 @@ static const struct of_device_id fsl_elbc_match[] = {
- 
- static struct of_platform_driver fsl_elbc_ctrl_driver = {
- 	.driver = {
--		.name	= "fsl-elbc",
-+		.name = "fsl-elbc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsl_elbc_match,
- 	},
--	.match_table = fsl_elbc_match,
- 	.probe = fsl_elbc_ctrl_probe,
- 	.remove = fsl_elbc_ctrl_remove,
- };
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index 071a60c..8dcbb18 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -356,8 +356,11 @@ static struct of_device_id of_fun_match[] = {
- MODULE_DEVICE_TABLE(of, of_fun_match);
- 
- static struct of_platform_driver of_fun_driver = {
--	.name		= "fsl,upm-nand",
--	.match_table	= of_fun_match,
-+	.driver = {
-+		.name = "fsl,upm-nand",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_fun_match,
-+	},
- 	.probe		= fun_probe,
- 	.remove		= __devexit_p(fun_remove),
- };
-diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-index 40b5658..19d94a2 100644
---- a/drivers/mtd/nand/ndfc.c
-+++ b/drivers/mtd/nand/ndfc.c
-@@ -293,9 +293,10 @@ MODULE_DEVICE_TABLE(of, ndfc_match);
- 
- static struct of_platform_driver ndfc_driver = {
- 	.driver = {
--		.name	= "ndfc",
-+		.name = "ndfc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ndfc_match,
- 	},
--	.match_table = ndfc_match,
- 	.probe = ndfc_probe,
- 	.remove = __devexit_p(ndfc_remove),
- };
-diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
-index edfc27b..a97e9c9 100644
---- a/drivers/mtd/nand/pasemi_nand.c
-+++ b/drivers/mtd/nand/pasemi_nand.c
-@@ -221,8 +221,11 @@ MODULE_DEVICE_TABLE(of, pasemi_nand_match);
- 
- static struct of_platform_driver pasemi_nand_driver =
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8cc863d..13efe7d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -271,11 +271,17 @@ extern cpumask_var_t nohz_cpu_mask;
+ #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ)
+ extern int select_nohz_load_balancer(int cpu);
+ extern int get_nohz_load_balancer(void);
++extern int nohz_ratelimit(int cpu);
+ #else
+ static inline int select_nohz_load_balancer(int cpu)
  {
--	.name		= (char*)driver_name,
--	.match_table	= pasemi_nand_match,
-+	.driver = {
-+		.name = (char*)driver_name,
-+		.owner = THIS_MODULE,
-+		.of_match_table = pasemi_nand_match,
-+	},
- 	.probe		= pasemi_nand_probe,
- 	.remove		= pasemi_nand_remove,
- };
-diff --git a/drivers/mtd/nand/socrates_nand.c b/drivers/mtd/nand/socrates_nand.c
-index a4519a7..edb9b13 100644
---- a/drivers/mtd/nand/socrates_nand.c
-+++ b/drivers/mtd/nand/socrates_nand.c
-@@ -301,8 +301,11 @@ static struct of_device_id socrates_nand_match[] =
- MODULE_DEVICE_TABLE(of, socrates_nand_match);
+ 	return 0;
+ }
++
++static inline int nohz_ratelimit(int cpu)
++{
++	return 0;
++}
+ #endif
  
- static struct of_platform_driver socrates_nand_driver = {
--	.name		= "socrates_nand",
--	.match_table	= socrates_nand_match,
-+	.driver = {
-+		.name = "socrates_nand",
-+		.owner = THIS_MODULE,
-+		.of_match_table = socrates_nand_match,
-+	},
- 	.probe		= socrates_nand_probe,
- 	.remove		= __devexit_p(socrates_nand_remove),
- };
-
+ /*
+diff --git a/kernel/sched.c b/kernel/sched.c
+index a4aa071..60b1bbe 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -492,6 +492,7 @@ struct rq {
+ 	#define CPU_LOAD_IDX_MAX 5
+ 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
+ #ifdef CONFIG_NO_HZ
++	u64 nohz_stamp;
+ 	unsigned char in_nohz_recently;
+ #endif
+ 	/* capture load from *all* tasks on this cpu: */
+@@ -1228,6 +1229,17 @@ void wake_up_idle_cpu(int cpu)
+ 	if (!tsk_is_polling(rq->idle))
+ 		smp_send_reschedule(cpu);
+ }
++
++int nohz_ratelimit(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	u64 diff = rq->clock - rq->nohz_stamp;
++
++	rq->nohz_stamp = rq->clock;
++
++	return diff < (NSEC_PER_SEC / HZ) >> 1;
++}
++
+ #endif /* CONFIG_NO_HZ */
+ 
+ static u64 sched_avg_period(void)
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index f992762..f25735a 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -262,6 +262,9 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 		goto end;
+ 	}
+ 
++	if (nohz_ratelimit(cpu))
++		goto end;
++
+ 	ts->idle_calls++;
+ 	/* Read jiffies and the time when jiffies were updated last */
+ 	do {
