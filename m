@@ -1,56 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154Ab0CKUPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 15:15:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32858 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758120Ab0CKUO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 15:14:59 -0500
-Message-ID: <4B994EC4.2050705@kernel.org>
-Date: Thu, 11 Mar 2010 12:12:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Greg Thelen <gthelen@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.com
-Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <4B90C921.6060908@kernel.org> <4B90DC3C.1060000@gmail.com> <4B92FE9E.90600@kernel.org> <4B98CBC8.6080008@gmail.com>
-In-Reply-To: <4B98CBC8.6080008@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1758167Ab0CKUQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 15:16:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59503 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758120Ab0CKUQQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 15:16:16 -0500
+Date: Thu, 11 Mar 2010 12:15:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: Add AES-NI accelerated CTR mode
+Message-Id: <20100311121510.80a16ec4.akpm@linux-foundation.org>
+In-Reply-To: <1267424076.1640.82.camel@yhuang-dev.sh.intel.com>
+References: <1267424076.1640.82.camel@yhuang-dev.sh.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/2010 02:54 AM, Jiri Slaby wrote:
-> On 03/07/2010 02:17 AM, Yinghai Lu wrote:
->> On 03/05/2010 02:26 AM, Jiri Slaby wrote:
->>> On 03/05/2010 10:04 AM, Yinghai Lu wrote:
->>>> according to context
->>>> http://patchwork.kernel.org/patch/73893/
->>>>
->>>> Jiri,
->>>> please check current linus tree still have problem about mem_map is
->>>> using that much low mem?
->>>
->>> Hi!
->>>
->>> Sorry, I don't have direct access to the machine. I might try to ask the
->>> owners to do so.
->>>
->>>> on my 1024g system first node has 128G ram, [2g, 4g) are mmio range.
->>>
->>> So where gets your mem_map allocated (I suppose you're running flat
->>> model)?
->>
->> what kernel version? 2.6.27?
+On Mon, 01 Mar 2010 14:14:36 +0800
+Huang Ying <ying.huang@intel.com> wrote:
+
+> To take advantage of the hardware pipeline implementation of AES-NI
+> instructions. CTR mode cryption is implemented in ASM to schedule
+> multiple AES-NI instructions one after another. This way, some latency
+> of AES-NI instruction can be eliminated.
 > 
-> Hi, yes, it is 2.6.27.
+> Performance testing based on dm-crypt should 50% reduction of
+> ecryption/decryption time.
+> 
+> ...
+>
+> +/*
+> + * _aesni_inc_init:	internal ABI
+> + *	setup registers used by _aesni_inc
+> + * input:
+> + *	IV
+> + * output:
+> + *	CTR:	== IV, in little endian
+> + *	TCTR_LOW: == lower qword of CTR
+> + *	INC:	== 1, in little endian
+> + *	BSWAP_MASK == endian swapping mask
+> + */
+> +_aesni_inc_init:
+> +	movaps .Lbswap_mask, BSWAP_MASK
+> +	movaps IV, CTR
+> +	PSHUFB_XMM BSWAP_MASK CTR
+> +	mov $1, TCTR_LOW
+> +	movq TCTR_LOW, INC
+> +	movq CTR, TCTR_LOW
 
-SLES 11?
+^^ these two lines don't assemble with gas 2.16.1:
 
-Yinghai
+arch/x86/crypto/aesni-intel_asm.S: Assembler messages:
+arch/x86/crypto/aesni-intel_asm.S:752: Error: suffix or operands invalid for `movq'
+arch/x86/crypto/aesni-intel_asm.S:753: Error: suffix or operands invalid for `movq'
+
+> +	ret
+
