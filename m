@@ -1,105 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163Ab0CKSco (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:32:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40883 "EHLO hera.kernel.org"
+	id S1755984Ab0CKSdE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:33:04 -0500
+Received: from mail1.perex.cz ([212.20.107.53]:34419 "EHLO mail1.perex.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755379Ab0CKScg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:32:36 -0500
-Date: Thu, 11 Mar 2010 18:32:01 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1268301369.6785.36.camel@marge.simson.net>
-References: <1268301369.6785.36.camel@marge.simson.net>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Fix select_idle_sibling()
-Message-ID: <tip-8b911acdf08477c059d1c36c21113ab1696c612b@git.kernel.org>
-Git-Commit-ID: 8b911acdf08477c059d1c36c21113ab1696c612b
-X-Mailer: tip-git-log-daemon
+	id S1756101Ab0CKScS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 13:32:18 -0500
+Date: Thu, 11 Mar 2010 19:32:14 +0100 (CET)
+From: Jaroslav Kysela <perex@perex.cz>
+To: VDR User <user.vdr@gmail.com>
+cc: Wu Fengguang <fengguang.wu@intel.com>, Wei Ni <wni@nvidia.com>,
+       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
+       Jaroslav Kysela <jkysela@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
+Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+In-Reply-To: <a3ef07921003111015x2386cc80x73a2a4bd679b1fe1@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1003111927570.4672@eeebox2.perex-int.cz>
+References: <s5htyswpb18.wl%tiwai@suse.de>  <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>  <20100308044614.GA29026@localhost>  <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>
+  <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>  <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>  <20100310125456.GA18509@localhost>  <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>  <alpine.LNX.2.00.1003110824390.4672@eeebox2.perex-int.cz>
+ <a3ef07921003111015x2386cc80x73a2a4bd679b1fe1@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 18:32:01 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8b911acdf08477c059d1c36c21113ab1696c612b
-Gitweb:     http://git.kernel.org/tip/8b911acdf08477c059d1c36c21113ab1696c612b
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Thu, 11 Mar 2010 17:17:16 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 11 Mar 2010 18:32:51 +0100
+On Thu, 11 Mar 2010, VDR User wrote:
 
-sched: Fix select_idle_sibling()
+> On Wed, Mar 10, 2010 at 11:30 PM, Jaroslav Kysela <perex@perex.cz> wrote:
+>> On Wed, 10 Mar 2010, VDR User wrote:
+>>
+>>> [pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+>>> pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+>>
+>> -EPIPE means underrun condition.
+>>
+>> Try 'echo 101 > /proc/asound/card0/pcm0p/xrun_debug' and send dmesg output
+>> to check if the ring buffer pointer in the hda-intel driver does not return
+>> wrong values. Replace card0 and pcm0p with right identifiers (look to 'aplay
+>> -l' for right numbers).
+>>
+>> More info: http://www.alsa-project.org/main/index.php/XRUN_Debug
+>
+> Hi, thanks for your further reply.  However, I don't see
+> "CONFIG_SND_PCM_XRUN_DEBUG" anywhere in the kernel config (both in
+> menuconfig or .config).
 
-Don't bother with selection when the current cpu is idle.  Recent load
-balancing changes also make it no longer necessary to check wake_affine()
-success before returning the selected sibling, so we now always use it.
+All these parameters should be set: CONFIG_SND_PCM_XRUN_DEBUG, 
+CONFIG_SND_VERBOSE_PROCFS, CONFIG_SND_DEBUG . I updated wiki.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1268301369.6785.36.camel@marge.simson.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
+ 					Jaroslav
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index d19df5b..0008cc4 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1439,7 +1439,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 	int cpu = smp_processor_id();
- 	int prev_cpu = task_cpu(p);
- 	int new_cpu = cpu;
--	int want_affine = 0;
-+	int want_affine = 0, cpu_idle = !current->pid;
- 	int want_sd = 1;
- 	int sync = wake_flags & WF_SYNC;
- 
-@@ -1497,13 +1497,15 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			 * If there's an idle sibling in this domain, make that
- 			 * the wake_affine target instead of the current cpu.
- 			 */
--			if (tmp->flags & SD_SHARE_PKG_RESOURCES)
-+			if (!cpu_idle && tmp->flags & SD_SHARE_PKG_RESOURCES)
- 				target = select_idle_sibling(p, tmp, target);
- 
- 			if (target >= 0) {
- 				if (tmp->flags & SD_WAKE_AFFINE) {
- 					affine_sd = tmp;
- 					want_affine = 0;
-+					if (target != cpu)
-+						cpu_idle = 1;
- 				}
- 				cpu = target;
- 			}
-@@ -1519,6 +1521,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			sd = tmp;
- 	}
- 
-+#ifdef CONFIG_FAIR_GROUP_SCHED
- 	if (sched_feat(LB_SHARES_UPDATE)) {
- 		/*
- 		 * Pick the largest domain to update shares over
-@@ -1532,9 +1535,12 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 		if (tmp)
- 			update_shares(tmp);
- 	}
-+#endif
- 
--	if (affine_sd && wake_affine(affine_sd, p, sync))
--		return cpu;
-+	if (affine_sd) {
-+		if (cpu_idle || cpu == prev_cpu || wake_affine(affine_sd, p, sync))
-+			return cpu;
-+	}
- 
- 	while (sd) {
- 		int load_idx = sd->forkexec_idx;
+-----
+Jaroslav Kysela <perex@perex.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, Red Hat, Inc.
+
