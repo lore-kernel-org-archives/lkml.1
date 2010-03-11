@@ -1,85 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062Ab0CKQeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:34:23 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:54054 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399Ab0CKQeW convert rfc822-to-8bit (ORCPT
+	id S933249Ab0CKQft (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:35:49 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:52115 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724Ab0CKQfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:34:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=AArndDgHIpbPcdxtsKV7oYbMPXXXj8PspOyzCtXq34AO29+KB4OQ/lPBFxB/jomvy2
-         GcZB3NWGJy4L1sTbmc/NRqqn1HJY8ipomS15/yG56v9S81PEfVZEvIg7mi88PeQpqjmG
-         mAkvL6hl1A/xwDtbOyFL+nRYUEBBYlWfaIG/A=
+	Thu, 11 Mar 2010 11:35:47 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX182bgcXakAQeKfOJZZnHCyJ
+Date: Thu, 11 Mar 2010 08:37:01 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: Greg KH <greg@kroah.com>, linux-serial@vger.kernel.org,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>, Alan Cox <alan@linux.intel.com>,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Reposting: [PATCH v1] serial: Add OMAP high-speed UART driver.
+Message-ID: <20100311163700.GC2900@atomide.com>
+References: <40015.192.168.10.89.1267707156.squirrel@dbdmail.itg.ti.com>
+ <38271.10.24.255.17.1268313278.squirrel@dbdmail.itg.ti.com>
 MIME-Version: 1.0
-In-Reply-To: <20100311152551.GG1497@thunk.org>
-References: <4B947393.2050002@kernel.org>
-	 <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
-	 <1268318374.2798.2.camel@mulgrave.site>
-	 <201003112035.26743.knikanth@suse.de>
-	 <20100311152551.GG1497@thunk.org>
-Date: Thu, 11 Mar 2010 11:34:21 -0500
-Message-ID: <87f94c371003110834t37235274yc641258ac5939c24@mail.gmail.com>
-Subject: Re: ATA 4 KiB sector issues.
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: tytso@mit.edu, Nikanth Karthikesan <knikanth@suse.de>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <38271.10.24.255.17.1268313278.squirrel@dbdmail.itg.ti.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 10:25 AM,  <tytso@mit.edu> wrote:
-> On Thu, Mar 11, 2010 at 08:35:26PM +0530, Nikanth Karthikesan wrote:
->> The real problem, here is just that partitioning-tools should create
->> partitions that can work with both XP as well as Windows7. May be distro
->> installers, should ask the user which compatibility he needs.
->
-> 4k aligned sectors will *work* with Windows XP, will it not?  It's
-> just simply a matter of Windows XP, being really ancient, doesn't
-> create properly alligned partitions by default.
->
-> And how often are we going to see Windows XP systems with these new 4k
-> physical sector drives anyway, where the first OS to touch the
-> partition is Windows XP?  And in the case where this does happy, the
-> resulting partition will be result in terribly performance for Windows
-> XP as well as Linux.
->
-> What's the specific scenario which you are trying to solve, and how
-> likely is it to occur in real life?
->
->                                        - Ted
+* Govindraj.R <govindraj.raja@ti.com> [100311 05:11]:
+> 
+> Hi Greg,
+> 
+> Could you please have this patch into your tty tree now?
+> 
+> As I do not see any further comment in community on this
+> for quite long time now.
 
-Ted,
+There are still outstanding comments. I've commented several
+times that this patch needs to be posted with the related
+patches so people can actually try it out.
 
-Apparently the real issue is Win2K, not XP.
+Regards,
 
-It seems to require the boot partition and possibly all partitions
-start on a cylinder boundary.  And may have 255/63 hard-coded in to
-define what a cylinder is.  I agree with the apparent consensus that a
-2010 era linux partitioner does not need to be Win2K compatible.  If
-someone wants to install Win2K they will need to either use an older
-generation partitioner to create the partitions or use specific
-command-line args to force a non-optimal alignment.
-
-I do think the linux partitioners should provide a way to force a
-cylinder alignment.  Tejun, I would like to see your doc describe how
-to force a win2k compatible partition layout.
-
-fyi: The same issue apparently also exists for users still running OS/2.
-
-Greg
+Tony
