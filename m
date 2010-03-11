@@ -1,46 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216Ab0CKS2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:28:31 -0500
-Received: from mx3-phx2.redhat.com ([209.132.183.24]:60838 "EHLO
-	mx01.colomx.prod.int.phx2.redhat.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752331Ab0CKS20 (ORCPT
+	id S1755451Ab0CKS3O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:29:14 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:47893 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367Ab0CKS2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:28:26 -0500
-X-Greylist: delayed 2085 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 13:28:26 EST
-Date: Thu, 11 Mar 2010 12:53:33 -0500 (EST)
-From: Sachin Prabhu <sprabhu@redhat.com>
-To: Eric Van Hensbergen <ericvh@gmail.com>, Ron Minnich <rminnich@sandia.gov>,
-       Latchesar Ionkov <lucho@ionkov.net>
-Cc: Steven Whitehouse <swhiteho@redhat.com>, linux-kernel@vger.kernel.org
-Message-ID: <1691295304.288201268330013229.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <129079056.288181268330011583.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-Subject: [PATCH] v9fs: Skip check for mandatory locks when unlocking
+	Thu, 11 Mar 2010 13:28:14 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 02/27] drivers/gpio/of: don't use deprecated fields in
+	of_platform_driver
+To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
+       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
+       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
+       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
+       alsa-devel@alsa-project.org
+Date: Thu, 11 Mar 2010 11:21:59 -0700
+Message-ID: <20100311182158.13103.93206.stgit@angua>
+In-Reply-To: <20100311181604.13103.30088.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.71]
-X-Mailer: Zimbra 5.0.21_GA_3150.RHEL4_64 (ZimbraWebClient - FF3.0 (Linux)/5.0.21_GA_3150.RHEL4_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While investigating a bug, I came across a possible bug in v9fs. The problem is similar to the one reported for NFS by ASANO Masahiro in http://lkml.org/lkml/2005/12/21/334. 
+.name, .match_table and .owner are duplicated in both of_platform_driver
+and device_driver, so the of_platform_driver copies will be removed soon.
 
-v9fs_file_lock() will skip locks on file which has mode set to 02666. This is a problem in cases where the mode of the file is changed after a process has obtained a lock on the file. Such a lock will be skipped during unlock and the machine will end up with a BUG in locks_remove_flock().
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-v9fs_file_lock() should skip the check for mandatory locks when unlocking a file.
+ drivers/leds/leds-gpio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Signed-off-by: Sachin Prabhu <sprabhu@redhat.com>
-diff -up linux-2.6/fs/9p/vfs_file.c.9p linux-2.6/fs/9p/vfs_file.c
---- linux-2.6/fs/9p/vfs_file.c.9p	2010-03-11 17:32:52.000000000 +0000
-+++ linux-2.6/fs/9p/vfs_file.c	2010-03-11 17:33:11.000000000 +0000
-@@ -114,7 +114,7 @@ static int v9fs_file_lock(struct file *f
- 	P9_DPRINTK(P9_DEBUG_VFS, "filp: %p lock: %p\n", filp, fl);
- 
- 	/* No mandatory locks */
--	if (__mandatory_lock(inode))
-+	if (__mandatory_lock(inode) && fl->fl_type != F_UNLCK)
- 		return -ENOLCK;
- 
- 	if ((IS_SETLK(cmd) || IS_SETLKW(cmd)) && fl->fl_type != F_UNLCK) {
+diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
+index 7ff758a..0e6e9ac 100644
+--- a/drivers/leds/leds-gpio.c
++++ b/drivers/leds/leds-gpio.c
+@@ -291,8 +291,8 @@ static struct of_platform_driver of_gpio_leds_driver = {
+ 	.driver = {
+ 		.name = "of_gpio_leds",
+ 		.owner = THIS_MODULE,
++		.of_match_table = of_gpio_leds_match,
+ 	},
+-	.match_table = of_gpio_leds_match,
+ 	.probe = of_gpio_leds_probe,
+ 	.remove = __devexit_p(of_gpio_leds_remove),
+ };
+
