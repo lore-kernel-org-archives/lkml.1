@@ -1,134 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933096Ab0CKPYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 10:24:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49577 "EHLO mx2.mail.elte.hu"
+	id S1756602Ab0CKP0P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 10:26:15 -0500
+Received: from THUNK.ORG ([69.25.196.29]:58731 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932561Ab0CKPYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 10:24:47 -0500
-Date: Thu, 11 Mar 2010 16:24:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: John Kacur <jkacur@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Kyle McMartin <kyle@redhat.com>
-Subject: Re: [PATCH] perf: Make the install relative to DESTDIR if specified
-Message-ID: <20100311152421.GA5577@elte.hu>
-References: <20100311141438.GA31225@elte.hu>
- <313773182.3316301268318778469.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+	id S1751931Ab0CKP0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 10:26:12 -0500
+Date: Thu, 11 Mar 2010 10:25:51 -0500
+From: tytso@mit.edu
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+Message-ID: <20100311152551.GG1497@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Nikanth Karthikesan <knikanth@suse.de>,
+	James Bottomley <James.Bottomley@suse.de>,
+	Damian Lukowski <damian@tvk.rwth-aachen.de>,
+	"linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+	Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+	Daniel Taylor <Daniel.Taylor@wdc.com>,
+	Mark Lord <kernel@teksavvy.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	hirofumi@mail.parknet.co.jp,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+	aschnell@suse.de, jdelvare@suse.de
+References: <4B947393.2050002@kernel.org>
+ <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
+ <1268318374.2798.2.camel@mulgrave.site>
+ <201003112035.26743.knikanth@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <313773182.3316301268318778469.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <201003112035.26743.knikanth@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 11, 2010 at 08:35:26PM +0530, Nikanth Karthikesan wrote:
+> The real problem, here is just that partitioning-tools should create 
+> partitions that can work with both XP as well as Windows7. May be distro 
+> installers, should ask the user which compatibility he needs.
 
-* John Kacur <jkacur@redhat.com> wrote:
+4k aligned sectors will *work* with Windows XP, will it not?  It's
+just simply a matter of Windows XP, being really ancient, doesn't
+create properly alligned partitions by default.   
 
-> 
-> ----- "Ingo Molnar" <mingo@elte.hu> wrote:
-> 
-> > * John Kacur <jkacur@redhat.com> wrote:
-> > 
-> > > On Thu, Mar 11, 2010 at 1:57 PM, John Kacur <jkacur@redhat.com>
-> > wrote:
-> > > > Without this change, the install path is relative to
-> > > > prefix/DESTDIR
-> > > > where prefix is automatically set to $HOME
-> > > >
-> > > > This can produce unexpected results. For example
-> > > >
-> > > > make -C tools/perf DESTDIR=/home/jkacur/tmp install-man
-> > > >
-> > > > creates the directory: ? ? ? ?
-> > ?/home/jkacur/home/jkacur/tmp/share/...
-> > > > instead of ?the expected: ? ? ? /home/jkacur/tmp/share/...
-> > > >
-> > > > Signed-off-by: John Kacur <jkacur@redhat.com>
-> > > > ---
-> > > > ?tools/perf/Documentation/Makefile | ? ?4 +++-
-> > > > ?tools/perf/Makefile ? ? ? ? ? ? ? | ? ?4 +++-
-> > > > ?2 files changed, 6 insertions(+), 2 deletions(-)
-> > > >
-> > > > diff --git a/tools/perf/Documentation/Makefile
-> > b/tools/perf/Documentation/Makefile
-> > > > index bdd3b7e..bd498d4 100644
-> > > > --- a/tools/perf/Documentation/Makefile
-> > > > +++ b/tools/perf/Documentation/Makefile
-> > > > @@ -24,7 +24,10 @@ DOC_MAN1=$(patsubst %.txt,%.1,$(MAN1_TXT))
-> > > > ?DOC_MAN5=$(patsubst %.txt,%.5,$(MAN5_TXT))
-> > > > ?DOC_MAN7=$(patsubst %.txt,%.7,$(MAN7_TXT))
-> > > >
-> > > > +# Make the path relative to DESTDIR, not prefix
-> > > > +ifndef DESTDIR
-> > > > ?prefix?=$(HOME)
-> > > > +endif
-> > > > ?bindir?=$(prefix)/bin
-> > > > ?htmldir?=$(prefix)/share/doc/perf-doc
-> > > > ?pdfdir?=$(prefix)/share/doc/perf-doc
-> > > > @@ -32,7 +35,6 @@ mandir?=$(prefix)/share/man
-> > > > ?man1dir=$(mandir)/man1
-> > > > ?man5dir=$(mandir)/man5
-> > > > ?man7dir=$(mandir)/man7
-> > > > -# DESTDIR=
-> > > >
-> > > > ?ASCIIDOC=asciidoc
-> > > > ?ASCIIDOC_EXTRA = --unsafe
-> > > > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> > > > index 2d53738..5da0cd0 100644
-> > > > --- a/tools/perf/Makefile
-> > > > +++ b/tools/perf/Makefile
-> > > > @@ -216,7 +216,10 @@ STRIP ?= strip
-> > > > ?# runtime figures out where they are based on the path to the
-> > executable.
-> > > > ?# This can help installing the suite in a relocatable way.
-> > > >
-> > > > +# Make the path relative to DESTDIR, not to prefix
-> > > > +ifndef DESTDIR
-> > > > ?prefix = $(HOME)
-> > > > +endif
-> > > > ?bindir_relative = bin
-> > > > ?bindir = $(prefix)/$(bindir_relative)
-> > > > ?mandir = share/man
-> > > > @@ -233,7 +236,6 @@ sysconfdir = $(prefix)/etc
-> > > > ?ETC_PERFCONFIG = etc/perfconfig
-> > > > ?endif
-> > > > ?lib = lib
-> > > > -# DESTDIR=
-> > > >
-> > > > ?export prefix bindir sharedir sysconfdir
-> > > >
-> > > > --
-> > > > 1.6.6.1
-> > > 
-> > > Sorry, I'd like to withdraw this patch.
-> > > 
-> > > I see I can achieve my desired ends without changing the behaviour
-> > for
-> > > others who expect the old behaviour,
-> > 
-> > The old behavior doesnt look very logical though, right?
-> 
-> No, not really. Well, logical for people quickly prototyping code
-> on their own machines, but perf has grown beyond that.
-> 
-> However, I don't like my quick fix either, maybe I can come-up
-> with something cleaner.
+And how often are we going to see Windows XP systems with these new 4k
+physical sector drives anyway, where the first OS to touch the
+partition is Windows XP?  And in the case where this does happy, the
+resulting partition will be result in terribly performance for Windows
+XP as well as Linux.
 
-I've applied it meanwhile though, as /home/jkacur/home/jkacur/ is clearly a 
-misbehavior :-)
+What's the specific scenario which you are trying to solve, and how
+likely is it to occur in real life?
 
-	Ingo
+					- Ted
