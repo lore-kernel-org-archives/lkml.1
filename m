@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933741Ab0CKSGE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:06:04 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:34774 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933693Ab0CKSFo (ORCPT
+	id S933766Ab0CKSGW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:06:22 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:63703 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933740Ab0CKSGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:05:44 -0500
+	Thu, 11 Mar 2010 13:06:09 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 19/37] drivers/serial: use .dev.of_node instead of .node in
+Subject: [PATCH 24/37] drivers/char: use .dev.of_node instead of .node in
 	struct of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
@@ -20,8 +20,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:05:33 -0700
-Message-ID: <20100311180532.4824.64755.stgit@angua>
+Date: Thu, 11 Mar 2010 11:06:00 -0700
+Message-ID: <20100311180600.4824.44001.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 User-Agent: StGIT/0.14.2
@@ -37,113 +37,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/serial/apbuart.c    |    2 +-
- drivers/serial/nwpserial.c  |    2 +-
- drivers/serial/of_serial.c  |    4 ++--
- drivers/serial/pmac_zilog.c |    2 +-
- drivers/serial/sunhv.c      |    2 +-
- drivers/serial/sunsab.c     |    6 +++---
- 6 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/char/hw_random/n2-drv.c     |    2 +-
+ drivers/char/hw_random/pasemi-rng.c |    2 +-
+ drivers/char/ipmi/ipmi_si_intf.c    |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/serial/apbuart.c b/drivers/serial/apbuart.c
-index fe91319..52015d7 100644
---- a/drivers/serial/apbuart.c
-+++ b/drivers/serial/apbuart.c
-@@ -559,7 +559,7 @@ static int __devinit apbuart_probe(struct of_device *op,
- 
- 	i = 0;
- 	for (i = 0; i < grlib_apbuart_port_nr; i++) {
--		if (op->node == grlib_apbuart_nodes[i])
-+		if (op->dev.of_node == grlib_apbuart_nodes[i])
- 			break;
- 	}
- 
-diff --git a/drivers/serial/nwpserial.c b/drivers/serial/nwpserial.c
-index e1ab8ec..3c02fa9 100644
---- a/drivers/serial/nwpserial.c
-+++ b/drivers/serial/nwpserial.c
-@@ -344,7 +344,7 @@ int nwpserial_register_port(struct uart_port *port)
- 
- 	mutex_lock(&nwpserial_mutex);
- 
--	dn = to_of_device(port->dev)->node;
-+	dn = to_of_device(port->dev)->dev.of_node;
- 	if (dn == NULL)
- 		goto out;
- 
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index cdf172e..18bf39b 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -30,7 +30,7 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
- 					int type, struct uart_port *port)
+diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
+index 9b3e09c..4d05003 100644
+--- a/drivers/char/hw_random/n2-drv.c
++++ b/drivers/char/hw_random/n2-drv.c
+@@ -660,7 +660,7 @@ static int __devinit n2rng_probe(struct of_device *op,
+ 				np->hvapi_major);
+ 			goto out_hvapi_unregister;
+ 		}
+-		np->num_units = of_getintprop_default(op->node,
++		np->num_units = of_getintprop_default(op->dev.of_node,
+ 						      "rng-#units", 0);
+ 		if (!np->num_units) {
+ 			dev_err(&op->dev, "VF RNG lacks rng-#units property\n");
+diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
+index 7fa61dd..b213855 100644
+--- a/drivers/char/hw_random/pasemi-rng.c
++++ b/drivers/char/hw_random/pasemi-rng.c
+@@ -98,7 +98,7 @@ static int __devinit rng_probe(struct of_device *ofdev,
+ 			       const struct of_device_id *match)
  {
+ 	void __iomem *rng_regs;
+-	struct device_node *rng_np = ofdev->node;
++	struct device_node *rng_np = ofdev->dev.of_node;
+ 	struct resource res;
+ 	int err = 0;
+ 
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 176f175..45305f2 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2406,7 +2406,7 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
+ 	struct smi_info *info;
  	struct resource resource;
--	struct device_node *np = ofdev->node;
-+	struct device_node *np = ofdev->dev.of_node;
- 	const unsigned int *clk, *spd;
- 	const u32 *prop;
- 	int ret, prop_size;
-@@ -87,7 +87,7 @@ static int __devinit of_platform_serial_probe(struct of_device *ofdev,
- 	int port_type;
+ 	const int *regsize, *regspacing, *regshift;
+-	struct device_node *np = dev->node;
++	struct device_node *np = dev->dev.of_node;
  	int ret;
+ 	int proplen;
  
--	if (of_find_property(ofdev->node, "used-by-rtas", NULL))
-+	if (of_find_property(ofdev->dev.of_node, "used-by-rtas", NULL))
- 		return -EBUSY;
+@@ -2462,7 +2462,7 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
+ 	info->io.regspacing	= regspacing ? *regspacing : DEFAULT_REGSPACING;
+ 	info->io.regshift	= regshift ? *regshift : 0;
  
- 	info = kmalloc(sizeof(*info), GFP_KERNEL);
-diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
-index f020de1..8abbbb3 100644
---- a/drivers/serial/pmac_zilog.c
-+++ b/drivers/serial/pmac_zilog.c
-@@ -1610,7 +1610,7 @@ static int pmz_attach(struct macio_dev *mdev, const struct of_device_id *match)
- 	/* Iterate the pmz_ports array to find a matching entry
- 	 */
- 	for (i = 0; i < MAX_ZS_PORTS; i++)
--		if (pmz_ports[i].node == mdev->ofdev.node) {
-+		if (pmz_ports[i].node == mdev->ofdev.dev.of_node) {
- 			struct uart_pmac_port *uap = &pmz_ports[i];
+-	info->irq		= irq_of_parse_and_map(dev->node, 0);
++	info->irq		= irq_of_parse_and_map(dev->dev.of_node, 0);
+ 	info->dev		= &dev->dev;
  
- 			uap->dev = mdev;
-diff --git a/drivers/serial/sunhv.c b/drivers/serial/sunhv.c
-index d14cca7..d1eedf1 100644
---- a/drivers/serial/sunhv.c
-+++ b/drivers/serial/sunhv.c
-@@ -565,7 +565,7 @@ static int __devinit hv_probe(struct of_device *op, const struct of_device_id *m
- 	if (err)
- 		goto out_free_con_read_page;
- 
--	sunserial_console_match(&sunhv_console, op->node,
-+	sunserial_console_match(&sunhv_console, op->dev.of_node,
- 				&sunhv_reg, port->line, false);
- 
- 	err = uart_add_one_port(&sunhv_reg, port);
-diff --git a/drivers/serial/sunsab.c b/drivers/serial/sunsab.c
-index d514e28..2b8b2c2 100644
---- a/drivers/serial/sunsab.c
-+++ b/drivers/serial/sunsab.c
-@@ -883,7 +883,7 @@ static int sunsab_console_setup(struct console *con, char *options)
- 	printk("Console: ttyS%d (SAB82532)\n",
- 	       (sunsab_reg.minor - 64) + con->index);
- 
--	sunserial_console_termios(con, to_of_device(up->port.dev)->node);
-+	sunserial_console_termios(con, to_of_device(up->port.dev)->dev.of_node);
- 
- 	switch (con->cflag & CBAUD) {
- 	case B150: baud = 150; break;
-@@ -1026,11 +1026,11 @@ static int __devinit sab_probe(struct of_device *op, const struct of_device_id *
- 	if (err)
- 		goto out1;
- 
--	sunserial_console_match(SUNSAB_CONSOLE(), op->node,
-+	sunserial_console_match(SUNSAB_CONSOLE(), op->dev.of_node,
- 				&sunsab_reg, up[0].port.line,
- 				false);
- 
--	sunserial_console_match(SUNSAB_CONSOLE(), op->node,
-+	sunserial_console_match(SUNSAB_CONSOLE(), op->dev.of_node,
- 				&sunsab_reg, up[1].port.line,
- 				false);
- 
+ 	dev_dbg(&dev->dev, "addr 0x%lx regsize %d spacing %d irq %x\n",
 
