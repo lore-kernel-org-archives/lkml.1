@@ -1,79 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897Ab0CKIMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:12:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53702 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445Ab0CKIMP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:12:15 -0500
-Subject: Re: Patch for tracing c states (power_end) on x86
-From: Peter Zijlstra <peterz@infradead.org>
-To: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1268289377.3374.13.camel@localhost>
-References: <1266999573.3415.8.camel@localhost>
-	 <1267102320.12790.139.camel@laptop>  <1268289377.3374.13.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 11 Mar 2010 09:12:03 +0100
-Message-ID: <1268295123.5279.859.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755612Ab0CKIMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:12:49 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55261 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754264Ab0CKIMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 03:12:48 -0500
+Date: Thu, 11 Mar 2010 09:12:46 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-kbuild@vger.kernel.org, Eric Miao <eric.y.miao@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: Do not unnecessarily regenerate modules.builtin
+Message-ID: <20100311081246.GA13932@sepie.suse.cz>
+References: <1268047222-13218-1-git-send-email-mmarek@suse.cz>
+ <20100311160326.bad1500e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100311160326.bad1500e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 07:36 +0100, Robert Schöne wrote:
-> Did anyone look at the problem described and checked the patch?
-> I still received no reply.
+Hi Stephen,
 
-Ingo, how about applying it and letting people complain when they don't
-agree? :-)
+On Thu, Mar 11, 2010 at 04:03:26PM +1100, Stephen Rothwell wrote:
+> This breaks a "make modules modules_install" type build:
+[...]
+> $ make O=../ntest.obj INSTALL_MOD_PATH=../ -s modules modules_install
+> cp: cannot stat `/home/sfr/kernels/ntest.obj/modules.builtin': No such file or directory
 
-> Am Donnerstag, den 25.02.2010, 13:52 +0100 schrieb Peter Zijlstra:
-> > On Wed, 2010-02-24 at 09:19 +0100, Robert Schöne wrote:
-> > > Hello,
-> > > 
-> > > Since noone replied to my last mail (Febr. 15th, 11:42), describing the
-> > > way to fix the missing c-state tracing, here's a patch.
-> > > Maybe its easier that way.
-> > > 
-> > > (I used the perf-fixes-for-linus git tree to obtain a
-> > > more-then-up-to-date version)
-> > 
-> > Arjan, any comments?, you seem skilled with this power stuff ;-)
-> > 
-> > > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> > > index 02d6780..b1cfb88 100644
-> > > --- a/arch/x86/kernel/process.c
-> > > +++ b/arch/x86/kernel/process.c
-> > > @@ -384,6 +384,7 @@ void default_idle(void)
-> > >                 else
-> > >                         local_irq_enable();
-> > >                 current_thread_info()->status |= TS_POLLING;
-> > > +               trace_power_end(1);
-> > >         } else {
-> > >                 local_irq_enable();
-> > >                 /* loop is done by the caller */
-> > > @@ -451,6 +452,7 @@ void mwait_idle_with_hints(unsigned long ax,
-> > > unsigned long cx)
-> > >                 if (!need_resched())
-> > >                         __mwait(ax, cx);
-> > >         }
-> > > +       trace_power_end((ax>>4)+1);
-> > >  }
-> > >  
-> > >  /* Default MONITOR/MWAIT with no hints, used for default C1 state */
-> > > @@ -467,6 +469,7 @@ static void mwait_idle(void)
-> > >                         __sti_mwait(0, 0);
-> > >                 else
-> > >                         local_irq_enable();
-> > > +               trace_power_end(1);
-> > >         } else
-> > >                 local_irq_enable();
-> > >  }
-> > > 
-> > 
+Andrew reported this yesterday, too. The followin patch should fix it
+(added to the for-next branch):
+
+>From 73d1393eb8507ed5fd7f8e696f6b1ecc18035ebe Mon Sep 17 00:00:00 2001
+From: Michal Marek <mmarek@suse.cz>
+Date: Wed, 10 Mar 2010 12:28:58 +0100
+Subject: [PATCH] kbuild: Generate modules.builtin in make modules_install
+
+The previous approach didn't work if one did
+make modules && make modules_install
+Add modules.builtin as dependency of _modinst_, which is the target that
+actually needs the file.
+
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ Makefile |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 160cada..b98943a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1086,7 +1086,7 @@ ifdef CONFIG_MODULES
+ 
+ # By default, build modules as well
+ 
+-all: modules modules.builtin
++all: modules
+ 
+ #	Build modules
+ #
+@@ -1104,7 +1104,7 @@ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
+ modules.builtin: $(vmlinux-dirs:%=%/modules.builtin)
+ 	$(Q)$(AWK) '!x[$$0]++' $^ > $(objtree)/modules.builtin
+ 
+-%/modules.builtin: include/config/auto.conf | modules
++%/modules.builtin: include/config/auto.conf
+ 	$(Q)$(MAKE) $(modbuiltin)=$*
+ 
+ 
+@@ -1117,7 +1117,7 @@ PHONY += modules_install
+ modules_install: _modinst_ _modinst_post
+ 
+ PHONY += _modinst_
+-_modinst_:
++_modinst_: modules.builtin
+ 	@if [ -z "`$(DEPMOD) -V 2>/dev/null | grep module-init-tools`" ]; then \
+ 		echo "Warning: you may need to install module-init-tools"; \
+ 		echo "See http://www.codemonkey.org.uk/docs/post-halloween-2.6.txt";\
+-- 
+1.6.6.1
+
