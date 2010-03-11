@@ -1,58 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932306Ab0CKOSw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:18:52 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:50323 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757939Ab0CKOSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:18:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Nszdnl6aIN7tnEjzn44wM/rHJ9PxhaPs1iKishM3+k2J1rNp7K77rwfHV7IIusFEKd
-         oi6H1G5RWxTttZFzsWGGgXaSsg30JL2BOplRIoMMthkg/hLFm1brWi20TGB2XvB3npg3
-         Jfu19N6OT2RpWnFy6zQ5ln89MuIWBitOAUpIY=
-Date: Thu, 11 Mar 2010 15:18:44 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf: export perf_trace_regs and
-	perf_arch_fetch_caller_regs
-Message-ID: <20100311141841.GA4987@nowhere>
-References: <4B989C1B.2090407@cn.fujitsu.com> <20100311090248.GA10904@infradead.org> <1268298651.5279.986.camel@twins> <20100311091444.GA19699@infradead.org>
-MIME-Version: 1.0
+	id S1757903Ab0CKOdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:33:24 -0500
+Received: from DMZ-MAILSEC-SCANNER-8.MIT.EDU ([18.7.68.37]:64505 "EHLO
+	dmz-mailsec-scanner-8.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756027Ab0CKOdX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:33:23 -0500
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 09:33:22 EST
+X-AuditID: 12074425-b7d00ae000002295-7c-4b98fe05e28a
+Subject: Re: ATA 4 KiB sector issues.
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100311091444.GA19699@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Theodore Tso <tytso@MIT.EDU>
+In-Reply-To: <201003111927.24829.knikanth@suse.de>
+Date: Thu, 11 Mar 2010 09:28:11 -0500
+Cc: Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+Content-Transfer-Encoding: 8BIT
+Message-Id: <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
+References: <4B947393.2050002@kernel.org> <4B97C6A5.4010209@tvk.rwth-aachen.de> <17BB1CC0-9B13-401D-B6AA-90365208A042@mit.edu> <201003111927.24829.knikanth@suse.de>
+To: Nikanth Karthikesan <knikanth@suse.de>
+X-Mailer: Apple Mail (2.1077)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 04:14:44AM -0500, Christoph Hellwig wrote:
-> On Thu, Mar 11, 2010 at 10:10:51AM +0100, Peter Zijlstra wrote:
-> > Pretty much all modular tracepoint users I think, I just got this from a
-> > pp64_defconfig build:
+
+On Mar 11, 2010, at 8:57 AM, Nikanth Karthikesan wrote:
 > 
-> Interesting, that doesn't happen in mainline yet.
-> 
+> I guess, what he meant was, to keep filesystem blocks aligned, even if the 
+> partition is not. Say if the partition is mis-aligned by 512-bytes, let the 
+> filesystem waste 4k-512bytes and keep it's blocks aligned. But it might be a 
+> case of over-engineering, possibly requiring disk format change.
 
+Ah, yes, I agree with you; that's probably what he meant.
 
-Yeah, it's in -tip.
+Sure, that's theoretically possible, but it would mean changing every single filesystem, and it would require a file system format change --- or at least a file system format extension.
 
-Thanks guys for this fix. I think I'm unable to remind
-there are modules in the kernel, I'm not counting anymore
-the number of times I forget to export symbols for modules.
+It would seem to be way easier to simply fix the partitioning tools to do the right thing, though.
 
-May be I should start to stick posters with photos of modules
-entitled "I want to believe" everywhere in my flat.
-Or perhaps I'm going to buy electronic glasses that display
-modules advertizing in the street. I'm not sure yet but I'll
-find a way.
+-- Ted
 
