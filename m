@@ -1,55 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054Ab0CKPIi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 10:08:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33555 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932587Ab0CKPIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 10:08:36 -0500
-Message-ID: <4B9907F0.6060504@kernel.org>
-Date: Fri, 12 Mar 2010 00:10:40 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
+	id S933047Ab0CKPMY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 10:12:24 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:60800 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932522Ab0CKPMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 10:12:23 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: Re: [PATCHv2] fs: fat: use pack_hex_byte() instead of custom one
+References: <87iq93s013.fsf@devron.myhome.or.jp>
+	<1268319614-21252-1-git-send-email-andy.shevchenko@gmail.com>
+Date: Fri, 12 Mar 2010 00:12:18 +0900
+In-Reply-To: <1268319614-21252-1-git-send-email-andy.shevchenko@gmail.com>
+	(Andy Shevchenko's message of "Thu, 11 Mar 2010 17:00:14 +0200")
+Message-ID: <87aaueopt9.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
 MIME-Version: 1.0
-To: Nikanth Karthikesan <knikanth@suse.de>
-CC: Theodore Tso <tytso@mit.edu>, Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org> <201003111927.24829.knikanth@suse.de> <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu> <201003112030.44605.knikanth@suse.de>
-In-Reply-To: <201003112030.44605.knikanth@suse.de>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 15:07:41 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Andy Shevchenko <andy.shevchenko@gmail.com> writes:
 
-On 03/12/2010 12:00 AM, Nikanth Karthikesan wrote:
-> But the actual problem here is that partitioning tools might create
-> partitions that wont allow other operating-systems to boot. So it
-> might be enough, if the partitioning tools just create partitions
-> with (mis-)alignment requirement for Windows.
+> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+>
+> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-Turns out XP is generally OK.  The reported problem was only on
-specific configurations (some BIOS stuff).  Windows 2000 reportedly
-would be hurt but I really think we don't have to care about that too
-much.  So, it seems like we wouldn't have to worry too much about it
-and just go ahead with new alignment schemes.  I'll update the doc
-this weekend with new information from this now rather large thread.
+Looks good to me.
+
+	Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+(From 1/4 with previous patch, I guess it's series of patches) Or I
+should take this patch into my tree?
 
 Thanks.
 
+> ---
+>  fs/fat/dir.c |   14 +++++---------
+>  1 files changed, 5 insertions(+), 9 deletions(-)
+>
+> diff --git a/fs/fat/dir.c b/fs/fat/dir.c
+> index 530b4ca..5de1a70 100644
+> --- a/fs/fat/dir.c
+> +++ b/fs/fat/dir.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/buffer_head.h>
+>  #include <linux/compat.h>
+>  #include <asm/uaccess.h>
+> +#include <linux/kernel.h>
+>  #include "fat.h"
+>  
+>  /*
+> @@ -149,19 +150,14 @@ static int uni16_to_x8(unsigned char *ascii, const wchar_t *uni, int len,
+>  
+>  	while (*ip && ((len - NLS_MAX_CHARSET_SIZE) > 0)) {
+>  		ec = *ip++;
+> -		if ( (charlen = nls->uni2char(ec, op, NLS_MAX_CHARSET_SIZE)) > 0) {
+> +		if ((charlen = nls->uni2char(ec, op, NLS_MAX_CHARSET_SIZE)) > 0) {
+>  			op += charlen;
+>  			len -= charlen;
+>  		} else {
+>  			if (uni_xlate == 1) {
+> -				*op = ':';
+> -				for (k = 4; k > 0; k--) {
+> -					nc = ec & 0xF;
+> -					op[k] = nc > 9	? nc + ('a' - 10)
+> -							: nc + '0';
+> -					ec >>= 4;
+> -				}
+> -				op += 5;
+> +				*op++ = ':';
+> +				op = pack_hex_byte(op, ec >> 8);
+> +				op = pack_hex_byte(op, ec);
+>  				len -= 5;
+>  			} else {
+>  				*op++ = '?';
+
 -- 
-tejun
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
