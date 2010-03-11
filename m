@@ -1,33 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427Ab0CKT7i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 14:59:38 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:56003 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404Ab0CKT7f (ORCPT
+	id S1753821Ab0CKUDt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 15:03:49 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:41581 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752582Ab0CKUDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 14:59:35 -0500
-MIME-Version: 1.0
-In-Reply-To: <20100309065753.GA8287@linux-sh.org>
-References: <20100309065753.GA8287@linux-sh.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 11 Mar 2010 20:59:18 +0100
-Message-ID: <ac3eb2511003111159q84e6cefi43de106c79c0e333@mail.gmail.com>
-Subject: Re: [PATCH] driver core: Early dev_name() support.
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Greg KH <greg@kroah.com>, Magnus Damm <damm@opensource.se>,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 11 Mar 2010 15:03:48 -0500
+Subject: [PATCH] MIPS: Fix compile error implicit declaration of function
+ cpu_local_wrap
+From: Philby John <pjohn@mvista.com>
+Reply-To: pjohn@mvista.com
+To: linux-kernel@vger.kernel.org
+Cc: Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       David Daney <ddaney@caviumnetworks.com>
+Content-Type: text/plain
+Date: Fri, 12 Mar 2010 01:33:36 +0530
+Message-Id: <1268337816.29250.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o2BJxumE032681
 
-On Tue, Mar 9, 2010 at 07:57, Paul Mundt <lethal@linux-sh.org> wrote:> This implements early init_name construction from the matched name/id> pair following the semantics of the late device/driver match. As a> result, matched IDs (inclusive of requested ones) are preserved when the> handoff from the early platform code happens at kobject initialization> time.
-> +                       if (!match->dev.init_name) {> +                               char buf[32];> +> +                               if (match->id != -1)> +                                       snprintf(buf, sizeof(buf), "%s.%d",> +                                                match->name, match->id);> +                               else> +                                       snprintf(buf, sizeof(buf), "%s",> +                                                match->name);> +> +                               match->dev.init_name = kstrdup(buf, GFP_KERNEL);> +                               if (!match->dev.init_name)> +                                       return -ENOMEM;> +                       }
-This can be kasprintf() I guess.
->  static inline const char *dev_name(const struct device *dev)>  {> +       /* Use the init name until the kobject becomes available */
-This should probably state that it's used for getting names out ofunregistered devices. Otherwise it sounds confusing.
-> +       if (dev->init_name)> +               return dev->init_name;> +>        return kobject_name(&dev->kobj);>  }
-Thanks,Kay���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+The commit 38b7827fc removed cpu_local_xx macros that lead to
+a compile error: implicit declaration of function 'cpu_local_wrap',
+when compiled for the MIPS Cavium Octeon processors. Revert back
+to old code.
+
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>
+CC: David Daney <ddaney@caviumnetworks.com>
+Signed-off-by: Philby John <pjohn@mvista.com>
+---
+ arch/mips/include/asm/local.h |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/arch/mips/include/asm/local.h b/arch/mips/include/asm/local.h
+index bdcdef0..65ec69d 100644
+--- a/arch/mips/include/asm/local.h
++++ b/arch/mips/include/asm/local.h
+@@ -193,4 +193,29 @@ static __inline__ long local_sub_return(long i, local_t * l)
+ #define __local_add(i, l)	((l)->a.counter+=(i))
+ #define __local_sub(i, l)	((l)->a.counter-=(i))
+ 
++/* Need to disable preemption for the cpu local counters otherwise we could
++   still access a variable of a previous CPU in a non atomic way. */
++#define cpu_local_wrap_v(l)             \
++	({ local_t res__;               \
++	   preempt_disable();           \
++	   res__ = (l);                 \
++	   preempt_enable();            \
++	   res__; })
++#define cpu_local_wrap(l)               \
++	({ preempt_disable();           \
++	   l;                           \
++	   preempt_enable(); })         \
++
++#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
++#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
++#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
++#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
++#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
++#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
++
++#define __cpu_local_inc(l)      cpu_local_inc(l)
++#define __cpu_local_dec(l)      cpu_local_dec(l)
++#define __cpu_local_add(i, l)   cpu_local_add((i), (l))
++#define __cpu_local_sub(i, l)   cpu_local_sub((i), (l))
++
+ #endif /* _ARCH_MIPS_LOCAL_H */
+-- 
+1.6.3.3.311.g7ec7
+
+
+
