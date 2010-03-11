@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933657Ab0CKSFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:05:13 -0500
+	id S934044Ab0CKSSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:18:23 -0500
 Received: from mail-pw0-f46.google.com ([209.85.160.46]:63703 "EHLO
 	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933625Ab0CKSE5 (ORCPT
+	with ESMTP id S933572Ab0CKSEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:04:57 -0500
+	Thu, 11 Mar 2010 13:04:51 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 12/37] drivers/usb: use .dev.of_node instead of .node in
+Subject: [PATCH 11/37] drivers/scsi: use .dev.of_node instead of .node in
 	struct of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
@@ -20,8 +20,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:04:54 -0700
-Message-ID: <20100311180453.4824.61269.stgit@angua>
+Date: Thu, 11 Mar 2010 11:04:48 -0700
+Message-ID: <20100311180448.4824.67773.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 User-Agent: StGIT/0.14.2
@@ -37,48 +37,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/usb/host/ehci-ppc-of.c |    2 +-
- drivers/usb/host/isp1760-if.c  |    2 +-
- drivers/usb/host/ohci-ppc-of.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/qlogicpti.c |   10 +++++-----
+ drivers/scsi/sun_esp.c   |   16 ++++++++--------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
-index 8df33b8..ad06623 100644
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ b/drivers/usb/host/ehci-ppc-of.c
-@@ -108,7 +108,7 @@ ppc44x_enable_bmt(struct device_node *dn)
- static int __devinit
- ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index fa34b92..7374fbe 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -755,7 +755,7 @@ static void __devinit qpti_get_scsi_id(struct qlogicpti *qpti)
+ 	struct of_device *op = qpti->op;
+ 	struct device_node *dp;
+ 
+-	dp = op->node;
++	dp = op->dev.of_node;
+ 
+ 	qpti->scsi_id = of_getintprop_default(dp, "initiator-id", -1);
+ 	if (qpti->scsi_id == -1)
+@@ -776,8 +776,8 @@ static void qpti_get_bursts(struct qlogicpti *qpti)
+ 	struct of_device *op = qpti->op;
+ 	u8 bursts, bmask;
+ 
+-	bursts = of_getintprop_default(op->node, "burst-sizes", 0xff);
+-	bmask = of_getintprop_default(op->node->parent, "burst-sizes", 0xff);
++	bursts = of_getintprop_default(op->dev.of_node, "burst-sizes", 0xff);
++	bmask = of_getintprop_default(op->dev.of_node->parent, "burst-sizes", 0xff);
+ 	if (bmask != 0xff)
+ 		bursts &= bmask;
+ 	if (bursts == 0xff ||
+@@ -1293,7 +1293,7 @@ static struct scsi_host_template qpti_template = {
+ static int __devinit qpti_sbus_probe(struct of_device *op, const struct of_device_id *match)
  {
--	struct device_node *dn = op->node;
-+	struct device_node *dn = op->dev.of_node;
- 	struct usb_hcd *hcd;
- 	struct ehci_hcd	*ehci = NULL;
- 	struct resource res;
-diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
-index 4293cfd..36360e2 100644
---- a/drivers/usb/host/isp1760-if.c
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -31,7 +31,7 @@ static int of_isp1760_probe(struct of_device *dev,
- 		const struct of_device_id *match)
+ 	struct scsi_host_template *tpnt = match->data;
+-	struct device_node *dp = op->node;
++	struct device_node *dp = op->dev.of_node;
+ 	struct Scsi_Host *host;
+ 	struct qlogicpti *qpti;
+ 	static int nqptis;
+@@ -1315,7 +1315,7 @@ static int __devinit qpti_sbus_probe(struct of_device *op, const struct of_devic
+ 	qpti->qhost = host;
+ 	qpti->op = op;
+ 	qpti->qpti_id = nqptis;
+-	strcpy(qpti->prom_name, op->node->name);
++	strcpy(qpti->prom_name, op->dev.of_node->name);
+ 	qpti->is_pti = strcmp(qpti->prom_name, "QLGC,isp");
+ 
+ 	if (qpti_map_regs(qpti) < 0)
+diff --git a/drivers/scsi/sun_esp.c b/drivers/scsi/sun_esp.c
+index 3d73aad..4369b76 100644
+--- a/drivers/scsi/sun_esp.c
++++ b/drivers/scsi/sun_esp.c
+@@ -124,7 +124,7 @@ static void __devinit esp_get_scsi_id(struct esp *esp, struct of_device *espdma)
+ 	struct of_device *op = esp->dev;
+ 	struct device_node *dp;
+ 
+-	dp = op->node;
++	dp = op->dev.of_node;
+ 	esp->scsi_id = of_getintprop_default(dp, "initiator-id", 0xff);
+ 	if (esp->scsi_id != 0xff)
+ 		goto done;
+@@ -133,7 +133,7 @@ static void __devinit esp_get_scsi_id(struct esp *esp, struct of_device *espdma)
+ 	if (esp->scsi_id != 0xff)
+ 		goto done;
+ 
+-	esp->scsi_id = of_getintprop_default(espdma->node,
++	esp->scsi_id = of_getintprop_default(espdma->dev.of_node,
+ 					     "scsi-initiator-id", 7);
+ 
+ done:
+@@ -146,7 +146,7 @@ static void __devinit esp_get_differential(struct esp *esp)
+ 	struct of_device *op = esp->dev;
+ 	struct device_node *dp;
+ 
+-	dp = op->node;
++	dp = op->dev.of_node;
+ 	if (of_find_property(dp, "differential", NULL))
+ 		esp->flags |= ESP_FLAG_DIFFERENTIAL;
+ 	else
+@@ -159,7 +159,7 @@ static void __devinit esp_get_clock_params(struct esp *esp)
+ 	struct device_node *bus_dp, *dp;
+ 	int fmhz;
+ 
+-	dp = op->node;
++	dp = op->dev.of_node;
+ 	bus_dp = dp->parent;
+ 
+ 	fmhz = of_getintprop_default(dp, "clock-frequency", 0);
+@@ -171,12 +171,12 @@ static void __devinit esp_get_clock_params(struct esp *esp)
+ 
+ static void __devinit esp_get_bursts(struct esp *esp, struct of_device *dma_of)
  {
- 	struct usb_hcd *hcd;
--	struct device_node *dp = dev->node;
-+	struct device_node *dp = dev->dev.of_node;
- 	struct resource *res;
- 	struct resource memory;
- 	struct of_irq oirq;
-diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
-index 103263c..003aea2 100644
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -83,7 +83,7 @@ static const struct hc_driver ohci_ppc_of_hc_driver = {
- static int __devinit
- ohci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
+-	struct device_node *dma_dp = dma_of->node;
++	struct device_node *dma_dp = dma_of->dev.of_node;
+ 	struct of_device *op = esp->dev;
+ 	struct device_node *dp;
+ 	u8 bursts, val;
+ 
+-	dp = op->node;
++	dp = op->dev.of_node;
+ 	bursts = of_getintprop_default(dp, "burst-sizes", 0xff);
+ 	val = of_getintprop_default(dma_dp, "burst-sizes", 0xff);
+ 	if (val != 0xff)
+@@ -564,7 +564,7 @@ fail:
+ static int __devinit esp_sbus_probe(struct of_device *op, const struct of_device_id *match)
  {
--	struct device_node *dn = op->node;
-+	struct device_node *dn = op->dev.of_node;
- 	struct usb_hcd *hcd;
- 	struct ohci_hcd	*ohci;
- 	struct resource res;
+ 	struct device_node *dma_node = NULL;
+-	struct device_node *dp = op->node;
++	struct device_node *dp = op->dev.of_node;
+ 	struct of_device *dma_of = NULL;
+ 	int hme = 0;
+ 
+@@ -573,7 +573,7 @@ static int __devinit esp_sbus_probe(struct of_device *op, const struct of_device
+ 	     !strcmp(dp->parent->name, "dma")))
+ 		dma_node = dp->parent;
+ 	else if (!strcmp(dp->name, "SUNW,fas")) {
+-		dma_node = op->node;
++		dma_node = op->dev.of_node;
+ 		hme = 1;
+ 	}
+ 	if (dma_node)
 
