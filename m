@@ -1,64 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256Ab0CKJPI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:15:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55489 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110Ab0CKJPE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:15:04 -0500
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-From: Peter Zijlstra <peterz@infradead.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
-	 <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 11 Mar 2010 10:14:25 +0100
-Message-ID: <1268298865.5279.997.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1754589Ab0CKJP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:15:58 -0500
+Received: from mga09.intel.com ([134.134.136.24]:25281 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753806Ab0CKJP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 04:15:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,619,1262592000"; 
+   d="scan'208";a="499756322"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Avi Kivity <avi@redhat.com>, Qing He <qing.he@intel.com>
+Subject: Re: [PATCH] x86/kvm: Show guest system/user cputime in cpustat
+Date: Thu, 11 Mar 2010 17:17:26 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+References: <1268292022-31352-1-git-send-email-sheng@linux.intel.com> <201003111546.44059.sheng@linux.intel.com> <4B98A0DE.1020006@redhat.com>
+In-Reply-To: <4B98A0DE.1020006@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003111717.26475.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 11 Mar 2010 09:39:13 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > The performance overhead is not so huge in both solutions, but the impact on
-> > > performance is even more reduced using a complicated solution...
-> > > 
-> > > Maybe we can go ahead with the simplest implementation for now and start to
-> > > think to an alternative implementation of the page_cgroup locking and
-> > > charge/uncharge of pages.
+On Thursday 11 March 2010 15:50:54 Avi Kivity wrote:
+> On 03/11/2010 09:46 AM, Sheng Yang wrote:
+> > On Thursday 11 March 2010 15:36:01 Avi Kivity wrote:
+> >> On 03/11/2010 09:20 AM, Sheng Yang wrote:
+> >>> Currently we can only get the cpu_stat of whole guest as one. This
+> >>> patch enhanced cpu_stat with more detail, has guest_system and
+> >>> guest_user cpu time statistics with a little overhead.
+> >>>
+> >>> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> >>> ---
+> >>>
+> >>> This draft patch based on KVM upstream to show the idea. I would split
+> >>> it into more kernel friendly version later.
+> >>>
+> >>> The overhead is, the cost of get_cpl() after each exit from guest.
+> >>
+> >> This can be very expensive in the nested virtualization case, so I
+> >> wouldn't like this to be in normal paths.  I think detailed profiling
+> >> like that can be left to 'perf kvm', which only has overhead if enabled
+> >> at runtime.
+> >
+> > Yes, that's my concern too(though nested vmcs/vmcb read already too
+> > expensive, they should be optimized...).
+> 
+> Any ideas on how to do that?  Perhaps use paravirt_ops to covert the
+> vmread into a memory read?  We store the vmwrites in the vmcs anyway.
 
-FWIW bit spinlocks suck massive.
+When Qing(CCed) was working on nested VMX in the past, he found PV 
+vmread/vmwrite indeed works well(it would write to the virtual vmcs so vmwrite 
+can also benefit). Though compared to old machine(one our internal patch shows 
+improve more than 5%), NHM get less benefit due to the reduced vmexit cost.
 
-> > 
-> > maybe. But in this 2 years, one of our biggest concerns was the performance.
-> > So, we do something complex in memcg. But complex-locking is , yes, complex.
-> > Hmm..I don't want to bet we can fix locking scheme without something complex.
-> > 
-> But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
-> will give us much benefit (of performance) than we lose by small overheads.
+-- 
+regards
+Yang, Sheng
 
-Well, the !cgroup or root case should really have no performance impact.
-
-> IIUC, this series affects trgger for background-write-out.
-
-Not sure though, while this does the accounting the actual writeout is
-still !cgroup aware and can definately impact performance negatively by
-shrinking too much.
+> 
+> > The other concern is, perf alike mechanism would
+> > bring a lot more overhead compared to this.
+> 
+> Ordinarily users won't care if time is spent in guest kernel mode or
+> guest user mode.  They want to see which guest is imposing a load on a
+> system.  I consider a user profiling a guest from the host an advanced
+> and rarer use case, so it's okay to require tools and additional
+> overhead for this.
+> 
+> >> For example you can put the code to note the cpl in a tracepoint which
+> >> is enabled dynamically.
+> >
+> > Yanmin have already implement "perf kvm" to support this. We are just
+> > arguing if a normal top-alike mechanism is necessary.
+> >
+> > I am also considering to make it a feature that can be disabled. But
+> > seems it make things complicate and result in uncertain cpustat output.
+> 
+> I'm not even sure that guest time was a good idea.
+> 
