@@ -1,119 +1,307 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932607Ab0CKOqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:46:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3586 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932501Ab0CKOqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:46:33 -0500
-Date: Thu, 11 Mar 2010 09:46:18 -0500 (EST)
-From: John Kacur <jkacur@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Kyle McMartin <kyle@redhat.com>
-Message-ID: <313773182.3316301268318778469.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <20100311141438.GA31225@elte.hu>
-Subject: Re: [PATCH] perf: Make the install relative to DESTDIR if specified
+	id S932683Ab0CKOrH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:47:07 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:41051 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932501Ab0CKOrE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:47:04 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.72]
+In-Reply-To: <20100311165700.4468ef2a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100311165315.c282d6d2.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100311165700.4468ef2a.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 11 Mar 2010 16:47:00 +0200
+Message-ID: <cc557aab1003110647q1b70c9a0j73867c2c33dd28ce@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/3] memcg: oom notifier
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 11, 2010 at 9:57 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> Considering containers or other resource management softwares in userland,
+> event notification of OOM in memcg should be implemented.
+> Now, memcg has "threshold" notifier which uses eventfd, we can make
+> use of it for oom notification.
+>
+> This patch adds oom notification eventfd callback for memcg. The usage
+> is very similar to threshold notifier, but control file is
+> memory.oom_control and no arguments other than eventfd is required.
+>
+>        % cgroup_event_notifier /cgroup/A/memory.oom_control dummy
+>        (About cgroup_event_notifier, see Documentation/cgroup/)
+>
+> TODO:
+>  - add a knob to disable oom-kill under a memcg.
+>  - add read/write function to oom_control
+>
+> Changelog: 20100309
+>  - splitted from threshold functions. use list rather than array.
+>  - moved all to inside of mutex.
+> Changelog: 20100304
+>  - renewed implemenation.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
------ "Ingo Molnar" <mingo@elte.hu> wrote:
+Looks great! Two remarks below.
 
-> * John Kacur <jkacur@redhat.com> wrote:
-> 
-> > On Thu, Mar 11, 2010 at 1:57 PM, John Kacur <jkacur@redhat.com>
-> wrote:
-> > > Without this change, the install path is relative to
-> > > prefix/DESTDIR
-> > > where prefix is automatically set to $HOME
-> > >
-> > > This can produce unexpected results. For example
-> > >
-> > > make -C tools/perf DESTDIR=/home/jkacur/tmp install-man
-> > >
-> > > creates the directory: ? ? ? ?
-> ?/home/jkacur/home/jkacur/tmp/share/...
-> > > instead of ?the expected: ? ? ? /home/jkacur/tmp/share/...
-> > >
-> > > Signed-off-by: John Kacur <jkacur@redhat.com>
-> > > ---
-> > > ?tools/perf/Documentation/Makefile | ? ?4 +++-
-> > > ?tools/perf/Makefile ? ? ? ? ? ? ? | ? ?4 +++-
-> > > ?2 files changed, 6 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/tools/perf/Documentation/Makefile
-> b/tools/perf/Documentation/Makefile
-> > > index bdd3b7e..bd498d4 100644
-> > > --- a/tools/perf/Documentation/Makefile
-> > > +++ b/tools/perf/Documentation/Makefile
-> > > @@ -24,7 +24,10 @@ DOC_MAN1=$(patsubst %.txt,%.1,$(MAN1_TXT))
-> > > ?DOC_MAN5=$(patsubst %.txt,%.5,$(MAN5_TXT))
-> > > ?DOC_MAN7=$(patsubst %.txt,%.7,$(MAN7_TXT))
-> > >
-> > > +# Make the path relative to DESTDIR, not prefix
-> > > +ifndef DESTDIR
-> > > ?prefix?=$(HOME)
-> > > +endif
-> > > ?bindir?=$(prefix)/bin
-> > > ?htmldir?=$(prefix)/share/doc/perf-doc
-> > > ?pdfdir?=$(prefix)/share/doc/perf-doc
-> > > @@ -32,7 +35,6 @@ mandir?=$(prefix)/share/man
-> > > ?man1dir=$(mandir)/man1
-> > > ?man5dir=$(mandir)/man5
-> > > ?man7dir=$(mandir)/man7
-> > > -# DESTDIR=
-> > >
-> > > ?ASCIIDOC=asciidoc
-> > > ?ASCIIDOC_EXTRA = --unsafe
-> > > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> > > index 2d53738..5da0cd0 100644
-> > > --- a/tools/perf/Makefile
-> > > +++ b/tools/perf/Makefile
-> > > @@ -216,7 +216,10 @@ STRIP ?= strip
-> > > ?# runtime figures out where they are based on the path to the
-> executable.
-> > > ?# This can help installing the suite in a relocatable way.
-> > >
-> > > +# Make the path relative to DESTDIR, not to prefix
-> > > +ifndef DESTDIR
-> > > ?prefix = $(HOME)
-> > > +endif
-> > > ?bindir_relative = bin
-> > > ?bindir = $(prefix)/$(bindir_relative)
-> > > ?mandir = share/man
-> > > @@ -233,7 +236,6 @@ sysconfdir = $(prefix)/etc
-> > > ?ETC_PERFCONFIG = etc/perfconfig
-> > > ?endif
-> > > ?lib = lib
-> > > -# DESTDIR=
-> > >
-> > > ?export prefix bindir sharedir sysconfdir
-> > >
-> > > --
-> > > 1.6.6.1
-> > 
-> > Sorry, I'd like to withdraw this patch.
-> > 
-> > I see I can achieve my desired ends without changing the behaviour
-> for
-> > others who expect the old behaviour,
-> 
-> The old behavior doesnt look very logical though, right?
+Reviewed-by: Kirill A. Shutemov <kirill@shutemov.name>
 
-No, not really. Well, logical for people quickly prototyping code
-on their own machines, but perf has grown beyond that.
+> ---
+>  Documentation/cgroups/memory.txt |   20 +++++++
+>  mm/memcontrol.c                  |  105 ++++++++++++++++++++++++++++++++++++---
+>  2 files changed, 116 insertions(+), 9 deletions(-)
+>
+> Index: mmotm-2.6.34-Mar9/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.34-Mar9.orig/mm/memcontrol.c
+> +++ mmotm-2.6.34-Mar9/mm/memcontrol.c
+> @@ -149,6 +149,7 @@ struct mem_cgroup_threshold {
+>        u64 threshold;
+>  };
+>
+> +/* For threshold */
+>  struct mem_cgroup_threshold_ary {
+>        /* An array index points to threshold just below usage. */
+>        atomic_t current_threshold;
+> @@ -157,8 +158,14 @@ struct mem_cgroup_threshold_ary {
+>        /* Array of thresholds */
+>        struct mem_cgroup_threshold entries[0];
+>  };
+> +/* for OOM */
+> +struct mem_cgroup_eventfd_list {
+> +       struct list_head list;
+> +       struct eventfd_ctx *eventfd;
+> +};
+>
+>  static void mem_cgroup_threshold(struct mem_cgroup *mem);
+> +static void mem_cgroup_oom_notify(struct mem_cgroup *mem);
+>
+>  /*
+>  * The memory controller data structure. The memory controller controls both
+> @@ -220,6 +227,9 @@ struct mem_cgroup {
+>        /* thresholds for mem+swap usage. RCU-protected */
+>        struct mem_cgroup_threshold_ary *memsw_thresholds;
+>
+> +       /* For oom notifier event fd */
+> +       struct list_head oom_notify;
+> +
+>        /*
+>         * Should we move charges of a task when a task is moved into this
+>         * mem_cgroup ? And what type of charges should we move ?
+> @@ -282,9 +292,12 @@ enum charge_type {
+>  /* for encoding cft->private value on file */
+>  #define _MEM                   (0)
+>  #define _MEMSWAP               (1)
+> +#define _OOM_TYPE              (2)
+>  #define MEMFILE_PRIVATE(x, val)        (((x) << 16) | (val))
+>  #define MEMFILE_TYPE(val)      (((val) >> 16) & 0xffff)
+>  #define MEMFILE_ATTR(val)      ((val) & 0xffff)
+> +/* Used for OOM nofiier */
+> +#define OOM_CONTROL            (0)
+>
+>  /*
+>  * Reclaim flags for mem_cgroup_hierarchical_reclaim
+> @@ -1351,6 +1364,8 @@ bool mem_cgroup_handle_oom(struct mem_cg
+>         */
+>        if (!locked)
+>                prepare_to_wait(&memcg_oom_waitq, &owait.wait, TASK_KILLABLE);
+> +       else
+> +               mem_cgroup_oom_notify(mem);
+>        mutex_unlock(&memcg_oom_mutex);
+>
+>        if (locked)
+> @@ -3398,8 +3413,22 @@ static int compare_thresholds(const void
+>        return _a->threshold - _b->threshold;
+>  }
+>
+> -static int mem_cgroup_register_event(struct cgroup *cgrp, struct cftype *cft,
+> -               struct eventfd_ctx *eventfd, const char *args)
+> +static int mem_cgroup_oom_notify_cb(struct mem_cgroup *mem, void *data)
+> +{
+> +       struct mem_cgroup_eventfd_list *ev;
+> +
+> +       list_for_each_entry(ev, &mem->oom_notify, list)
+> +               eventfd_signal(ev->eventfd, 1);
+> +       return 0;
+> +}
+> +
+> +static void mem_cgroup_oom_notify(struct mem_cgroup *mem)
+> +{
+> +       mem_cgroup_walk_tree(mem, NULL, mem_cgroup_oom_notify_cb);
+> +}
+> +
+> +static int mem_cgroup_usage_register_event(struct cgroup *cgrp,
+> +       struct cftype *cft, struct eventfd_ctx *eventfd, const char *args)
+>  {
+>        struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+>        struct mem_cgroup_threshold_ary *thresholds, *thresholds_new;
+> @@ -3483,8 +3512,8 @@ unlock:
+>        return ret;
+>  }
+>
+> -static int mem_cgroup_unregister_event(struct cgroup *cgrp, struct cftype *cft,
+> -               struct eventfd_ctx *eventfd)
+> +static int mem_cgroup_usage_unregister_event(struct cgroup *cgrp,
+> +       struct cftype *cft, struct eventfd_ctx *eventfd)
+>  {
+>        struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+>        struct mem_cgroup_threshold_ary *thresholds, *thresholds_new;
+> @@ -3568,13 +3597,66 @@ unlock:
+>        return ret;
+>  }
+>
+> +static int mem_cgroup_oom_register_event(struct cgroup *cgrp,
+> +       struct cftype *cft, struct eventfd_ctx *eventfd, const char *args)
+> +{
+> +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +       struct mem_cgroup_eventfd_list *event;
+> +       int type = MEMFILE_TYPE(cft->private);
+> +       int ret = -ENOMEM;
+> +
+> +       BUG_ON(type != _OOM_TYPE);
+> +
+> +       mutex_lock(&memcg_oom_mutex);
+> +
+> +       /* Allocate memory for new array of thresholds */
 
-However, I don't like my quick fix either, maybe I can come-up
-with something cleaner.
+Irrelevant comment?
 
-John
+> +       event = kmalloc(sizeof(*event), GFP_KERNEL);
+> +       if (!event)
+> +               goto unlock;
+> +       /* Add new threshold */
+
+Ditto.
+
+> +       event->eventfd = eventfd;
+> +       list_add(&event->list, &memcg->oom_notify);
+> +
+> +       /* already in OOM ? */
+> +       if (atomic_read(&memcg->oom_lock))
+> +               eventfd_signal(eventfd, 1);
+> +       ret = 0;
+> +unlock:
+> +       mutex_unlock(&memcg_oom_mutex);
+> +
+> +       return ret;
+> +}
+> +
+> +static int mem_cgroup_oom_unregister_event(struct cgroup *cgrp,
+> +       struct cftype *cft, struct eventfd_ctx *eventfd)
+> +{
+> +       struct mem_cgroup *mem = mem_cgroup_from_cont(cgrp);
+> +       struct mem_cgroup_eventfd_list *ev, *tmp;
+> +       int type = MEMFILE_TYPE(cft->private);
+> +
+> +       BUG_ON(type != _OOM_TYPE);
+> +
+> +       mutex_lock(&memcg_oom_mutex);
+> +
+> +       list_for_each_entry_safe(ev, tmp, &mem->oom_notify, list) {
+> +               if (ev->eventfd == eventfd) {
+> +                       list_del(&ev->list);
+> +                       kfree(ev);
+> +               }
+> +       }
+> +
+> +       mutex_unlock(&memcg_oom_mutex);
+> +
+> +       return 0;
+> +}
+> +
+>  static struct cftype mem_cgroup_files[] = {
+>        {
+>                .name = "usage_in_bytes",
+>                .private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+>                .read_u64 = mem_cgroup_read,
+> -               .register_event = mem_cgroup_register_event,
+> -               .unregister_event = mem_cgroup_unregister_event,
+> +               .register_event = mem_cgroup_usage_register_event,
+> +               .unregister_event = mem_cgroup_usage_unregister_event,
+>        },
+>        {
+>                .name = "max_usage_in_bytes",
+> @@ -3623,6 +3705,12 @@ static struct cftype mem_cgroup_files[]
+>                .read_u64 = mem_cgroup_move_charge_read,
+>                .write_u64 = mem_cgroup_move_charge_write,
+>        },
+> +       {
+> +               .name = "oom_control",
+> +               .register_event = mem_cgroup_oom_register_event,
+> +               .unregister_event = mem_cgroup_oom_unregister_event,
+> +               .private = MEMFILE_PRIVATE(_OOM_TYPE, OOM_CONTROL),
+> +       },
+>  };
+>
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> @@ -3631,8 +3719,8 @@ static struct cftype memsw_cgroup_files[
+>                .name = "memsw.usage_in_bytes",
+>                .private = MEMFILE_PRIVATE(_MEMSWAP, RES_USAGE),
+>                .read_u64 = mem_cgroup_read,
+> -               .register_event = mem_cgroup_register_event,
+> -               .unregister_event = mem_cgroup_unregister_event,
+> +               .register_event = mem_cgroup_usage_register_event,
+> +               .unregister_event = mem_cgroup_usage_unregister_event,
+>        },
+>        {
+>                .name = "memsw.max_usage_in_bytes",
+> @@ -3876,6 +3964,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>        }
+>        mem->last_scanned_child = 0;
+>        spin_lock_init(&mem->reclaim_param_lock);
+> +       INIT_LIST_HEAD(&mem->oom_notify);
+>
+>        if (parent)
+>                mem->swappiness = get_swappiness(parent);
+> Index: mmotm-2.6.34-Mar9/Documentation/cgroups/memory.txt
+> ===================================================================
+> --- mmotm-2.6.34-Mar9.orig/Documentation/cgroups/memory.txt
+> +++ mmotm-2.6.34-Mar9/Documentation/cgroups/memory.txt
+> @@ -184,6 +184,9 @@ limits on the root cgroup.
+>
+>  Note2: When panic_on_oom is set to "2", the whole system will panic.
+>
+> +When oom event notifier is registered, event will be delivered.
+> +(See oom_control section)
+> +
+>  2. Locking
+>
+>  The memory controller uses the following hierarchy
+> @@ -488,7 +491,22 @@ threshold in any direction.
+>
+>  It's applicable for root and non-root cgroup.
+>
+> -10. TODO
+> +10. OOM Control
+> +
+> +Memory controler implements oom notifier using cgroup notification
+> +API (See cgroups.txt). It allows to register multiple oom notification
+> +delivery and gets notification when oom happens.
+> +
+> +To register a notifier, application need:
+> + - create an eventfd using eventfd(2)
+> + - open memory.oom_control file
+> + - write string like "<event_fd> <memory.oom_control>" to cgroup.event_control
+> +
+> +Application will be notifier through eventfd when oom happens.
+> +OOM notification doesn't work for root cgroup.
+> +
+> +
+> +11. TODO
+>
+>  1. Add support for accounting huge pages (as a separate controller)
+>  2. Make per-cgroup scanner reclaim not-shared pages first
+>
+>
