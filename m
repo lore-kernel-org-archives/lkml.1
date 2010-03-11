@@ -1,59 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756635Ab0CKKFA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:05:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44073 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756432Ab0CKKE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:04:58 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19g+vokx/pgKvRs8q1demmmjxElP52fnjTZ3aMIAg
-	4zL+hueqxna+l7
-Subject: Re: [patch 12/12] sched: remove AFFINE_WAKEUPS feature
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1268300950.6785.27.camel@marge.simson.net>
-References: <1268300950.6785.27.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 11 Mar 2010 11:04:50 +0100
-Message-Id: <1268301890.6785.50.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53000000000000003
+	id S1756723Ab0CKKFm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:05:42 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:62415 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756498Ab0CKKFj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:05:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=f8BOTnSE8HJypHpbIBwd/CNT35rcH9yvpY059kHb/tZoPSLXhgbtrXPptcZZWYXDdr
+         5HOtjsuZZdgpJKmcDj56ddXF3Wz4CnD7Xr2lnl+IZK8z0aAQi9KZ6GNaPlqF/FrCuIH2
+         3WJfV4g7Vp1G8FLKDGAb8xX3BHWbnwTDObtwA=
+MIME-Version: 1.0
+Date: Thu, 11 Mar 2010 18:05:38 +0800
+Message-ID: <2375c9f91003110205v1d7f00bfk89472cb11bd985d3@mail.gmail.com>
+Subject: 2.6.34-rc1: rcu lockdep bug?
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=00163630eda98b67a50481838ef4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--00163630eda98b67a50481838ef4
+Content-Type: text/plain; charset=UTF-8
 
-sched: remove AFFINE_WAKEUPS feature
+Hello, Paul and Peter,
 
-Disabling affine wakeups is too horrible to contemplate.  Remove it.
+Attached is the lockdep warning that I triggered today.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+I am not sure if this is a bug of rcu lockdep, because I am
+testing my patch when this occurred. However, in the backtrace,
+there is none of the functions that I touched, weird.
 
----
- kernel/sched_fair.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+So, please help to check if this is a bug of rcu lockdep.
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -1433,8 +1433,7 @@ static int select_task_rq_fair(struct ta
- 	int sync = wake_flags & WF_SYNC;
- 
- 	if (sd_flag & SD_BALANCE_WAKE) {
--		if (sched_feat(AFFINE_WAKEUPS) &&
--		    cpumask_test_cpu(cpu, &p->cpus_allowed))
-+		if (cpumask_test_cpu(cpu, &p->cpus_allowed))
- 			want_affine = 1;
- 		new_cpu = prev_cpu;
- 	}
+Please Cc netdev when necessary.
 
+Thanks much!
 
+--00163630eda98b67a50481838ef4
+Content-Type: text/plain; charset=US-ASCII; name="rcu-lockdep-bug.txt"
+Content-Disposition: attachment; filename="rcu-lockdep-bug.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g6ne79q60
+
+TWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ID09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PQpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogWyBJTkZP
+OiBpbmNvbnNpc3RlbnQgbG9jayBzdGF0ZSBdCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUg
+a2VybmVsOiAyLjYuMzQtcmMxICM1OApNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5l
+bDogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCk1hciAxMSAxNzoxMToyMiBkaGNw
+LTY2LTcwLTUga2VybmVsOiBpbmNvbnNpc3RlbnQge1NPRlRJUlEtT04tV30gLT4ge0lOLVNPRlRJ
+UlEtV30gdXNhZ2UuCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiBzd2FwcGVy
+LzAgW0hDMFswXTpTQzFbMV06SEUwOlNFMF0gdGFrZXM6Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2
+LTcwLTUga2VybmVsOiAgKHVzYmZzX211dGV4KXsrLj8uLi59LCBhdDogWzxmZmZmZmZmZjgxNDY0
+MTlmPl0gbmV0aWZfcmVjZWl2ZV9za2IrMHhlNy8weDgxOQpNYXIgMTEgMTc6MTE6MjIgZGhjcC02
+Ni03MC01IGtlcm5lbDoge1NPRlRJUlEtT04tV30gc3RhdGUgd2FzIHJlZ2lzdGVyZWQgYXQ6Ck1h
+ciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgIFs8ZmZmZmZmZmY4MTBhNmRjMj5d
+IF9fbG9ja19hY3F1aXJlKzB4YWVjLzB4ZTU1Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUg
+a2VybmVsOiAgIFs8ZmZmZmZmZmY4MTBhOTU4NT5dIGxvY2tfYWNxdWlyZSsweDE2My8weDFhYQpN
+YXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogICBbPGZmZmZmZmZmODE1NGY1Zjk+
+XSBtdXRleF9sb2NrX25lc3RlZCsweDY0LzB4NGU5Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcw
+LTUga2VybmVsOiAgIFs8ZmZmZmZmZmY4MTNlNWVjNT5dIHVzYmRldl9vcGVuKzB4MTE1LzB4NGU5
+Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgIFs8ZmZmZmZmZmY4MTE3YWY4
+Mz5dIGNocmRldl9vcGVuKzB4MjdhLzB4MmZlCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUg
+a2VybmVsOiAgIFs8ZmZmZmZmZmY4MTE3MmY5OD5dIF9fZGVudHJ5X29wZW4rMHgyZDQvMHg0ZDIK
+TWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICAgWzxmZmZmZmZmZjgxMTc0NTYw
+Pl0gbmFtZWlkYXRhX3RvX2ZpbHArMHg1OC8weDdlCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcw
+LTUga2VybmVsOiAgIFs8ZmZmZmZmZmY4MTE4NThlOT5dIGRvX2xhc3QrMHg4MWIvMHhhM2QKTWFy
+IDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICAgWzxmZmZmZmZmZjgxMTg3MjIwPl0g
+ZG9fZmlscF9vcGVuKzB4MmZmLzB4ODY5Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2Vy
+bmVsOiAgIFs8ZmZmZmZmZmY4MTE3MmI1Mz5dIGRvX3N5c19vcGVuKzB4OGMvMHgxODcKTWFyIDEx
+IDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICAgWzxmZmZmZmZmZjgxMTcyYzk2Pl0gc3lz
+X29wZW4rMHgyNy8weDMwCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgIFs8
+ZmZmZmZmZmY4MTAwM2E1Yj5dIHN5c3RlbV9jYWxsX2Zhc3RwYXRoKzB4MTYvMHgxYgpNYXIgMTEg
+MTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogaXJxIGV2ZW50IHN0YW1wOiA3MTM1NjE5Ck1h
+ciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiBoYXJkaXJxcyBsYXN0ICBlbmFibGVk
+IGF0ICg3MTM1NjE4KTogWzxmZmZmZmZmZjgxMTZjNjlmPl0gX19rbWFsbG9jX25vZGVfdHJhY2tf
+Y2FsbGVyKzB4MThkLzB4MjU2Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiBo
+YXJkaXJxcyBsYXN0IGRpc2FibGVkIGF0ICg3MTM1NjE5KTogWzxmZmZmZmZmZjgxNTUyMjBhPl0g
+X3Jhd19zcGluX2xvY2tfaXJxc2F2ZSsweDNmLzB4ZTIKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYt
+NzAtNSBrZXJuZWw6IHNvZnRpcnFzIGxhc3QgIGVuYWJsZWQgYXQgKDcxMzU2MDQpOiBbPGZmZmZm
+ZmZmODEwNmE5YTg+XSBfX2RvX3NvZnRpcnErMHgzMzQvMHgzNWYKTWFyIDExIDE3OjExOjIyIGRo
+Y3AtNjYtNzAtNSBrZXJuZWw6IHNvZnRpcnFzIGxhc3QgZGlzYWJsZWQgYXQgKDcxMzU2MTEpOiBb
+PGZmZmZmZmZmODEwMDQ5OGM+XSBjYWxsX3NvZnRpcnErMHgxYy8weDRjCk1hciAxMSAxNzoxMToy
+MiBkaGNwLTY2LTcwLTUga2VybmVsOiAKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJu
+ZWw6IG90aGVyIGluZm8gdGhhdCBtaWdodCBoZWxwIHVzIGRlYnVnIHRoaXM6Ck1hciAxMSAxNzox
+MToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAyIGxvY2tzIGhlbGQgYnkgc3dhcHBlci8wOgpNYXIg
+MTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogICMwOiAgKHJjdV9yZWFkX2xvY2spey4r
+LisuLn0sIGF0OiBbPGZmZmZmZmZmODE0NjhiYWE+XSBuZXRfcnhfYWN0aW9uKzB4YzkvMHg0MGYK
+TWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICAjMTogICgmKCZuYXBpLT5wb2xs
+X2xvY2spLT5ybG9jayl7Ky4tLi4ufSwgYXQ6IFs8ZmZmZmZmZmY4MTQ2OGMzOT5dIG5ldF9yeF9h
+Y3Rpb24rMHgxNTgvMHg0MGYKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6IApN
+YXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogc3RhY2sgYmFja3RyYWNlOgpNYXIg
+MTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogUGlkOiAwLCBjb21tOiBzd2FwcGVyIE5v
+dCB0YWludGVkIDIuNi4zNC1yYzEgIzU4Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2Vy
+bmVsOiBDYWxsIFRyYWNlOgpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIDxJ
+UlE+ICBbPGZmZmZmZmZmODEwYTE5ODU+XSBwcmludF91c2FnZV9idWcrMHgyNmIvMHgyODMKTWFy
+IDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwYTQ0ODY+XSA/
+IGNoZWNrX3VzYWdlX2ZvcndhcmRzKzB4MC8weDE0MQpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03
+MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTBhMWU3ZD5dIG1hcmtfbG9jaysweDRlMC8weDhmZgpN
+YXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTBhNmNlMz5d
+IF9fbG9ja19hY3F1aXJlKzB4YTBkLzB4ZTU1Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUg
+a2VybmVsOiAgWzxmZmZmZmZmZjgxMGE5NTg1Pl0gbG9ja19hY3F1aXJlKzB4MTYzLzB4MWFhCk1h
+ciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxNDY0MTlmPl0g
+PyBuZXRpZl9yZWNlaXZlX3NrYisweGU3LzB4ODE5Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcw
+LTUga2VybmVsOiAgWzxmZmZmZmZmZjgxNTUyMjM3Pl0gX3Jhd19zcGluX2xvY2tfaXJxc2F2ZSsw
+eDZjLzB4ZTIKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZm
+ODE0NjQxOWY+XSA/IG5ldGlmX3JlY2VpdmVfc2tiKzB4ZTcvMHg4MTkKTWFyIDExIDE3OjExOjIy
+IGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODE0NjQxOWY+XSBuZXRpZl9yZWNlaXZl
+X3NrYisweGU3LzB4ODE5Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxm
+ZmZmZmZmZjgxNDY0OWE4Pl0gbmFwaV9za2JfZmluaXNoKzB4MzcvMHg2YQpNYXIgMTEgMTc6MTE6
+MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTQ2NTExOD5dIG5hcGlfZ3JvX3Jl
+Y2VpdmUrMHg0NC8weDUwCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxm
+ZmZmZmZmZmEwMWQ4YmRjPl0gdGczX3BvbGxfd29yaysweDljNi8weGZhYiBbdGczXQpNYXIgMTEg
+MTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTBhNzA2Mz5dID8gX19s
+b2NrX2FjcXVpcmUrMHhkOGQvMHhlNTUKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJu
+ZWw6ICBbPGZmZmZmZmZmYTAxZDkyYmM+XSB0ZzNfcG9sbCsweGZiLzB4MzIyIFt0ZzNdCk1hciAx
+MSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxNDY4Yzk1Pl0gbmV0
+X3J4X2FjdGlvbisweDFiNC8weDQwZgpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5l
+bDogIFs8ZmZmZmZmZmY4MTQ2OGJhYT5dID8gbmV0X3J4X2FjdGlvbisweGM5LzB4NDBmCk1hciAx
+MSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDZhODA4Pl0gX19k
+b19zb2Z0aXJxKzB4MTk0LzB4MzVmCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVs
+OiAgWzxmZmZmZmZmZjgxMDA0OThjPl0gY2FsbF9zb2Z0aXJxKzB4MWMvMHg0YwpNYXIgMTEgMTc6
+MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwNmQxMD5dIGRvX3NvZnRp
+cnErMHg4Yy8weDE4MQpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZm
+ZmZmZmY4MTA2YTY2Yj5dIGlycV9leGl0KzB4YTUvMHhhZQpNYXIgMTEgMTc6MTE6MjIgZGhjcC02
+Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTU1YzJhYT5dIGRvX0lSUSsweDEwYS8weDEzNgpN
+YXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTU1MzQ1Mz5d
+IHJldF9mcm9tX2ludHIrMHgwLzB4ZgpNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5l
+bDogIDxFT0k+ICBbPGZmZmZmZmZmODEzMzI1NDQ+XSA/IGFjcGlfc2FmZV9oYWx0KzB4NjEvMHg4
+NApNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTMzMjUz
+Yj5dID8gYWNwaV9zYWZlX2hhbHQrMHg1OC8weDg0Ck1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcw
+LTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMzMyNzBlPl0gYWNwaV9pZGxlX2VudGVyX2MxKzB4ZDcv
+MHgxN2IKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODE1
+NTgxYjQ+XSA/IF9fYXRvbWljX25vdGlmaWVyX2NhbGxfY2hhaW4rMHg5Mi8weGE3Ck1hciAxMSAx
+NzoxMToyMiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxNDI5NjBmPl0gPyBsYWRk
+ZXJfc2VsZWN0X3N0YXRlKzB4NDIvMHgyM2QKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBr
+ZXJuZWw6ICBbPGZmZmZmZmZmODE0Mjg0Mzk+XSBjcHVpZGxlX2lkbGVfY2FsbCsweDEwNC8weDFi
+NApNYXIgMTEgMTc6MTE6MjIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMjBk
+Zj5dIGNwdV9pZGxlKzB4ZmQvMHgxNjMKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJu
+ZWw6ICBbPGZmZmZmZmZmODE1MmNiMzY+XSByZXN0X2luaXQrMHgxM2EvMHgxNDUKTWFyIDExIDE3
+OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODE1MmM5ZmM+XSA/IHJlc3Rf
+aW5pdCsweDAvMHgxNDUKTWFyIDExIDE3OjExOjIyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZm
+ZmZmZmZmODFjOTI3MDI+XSBzdGFydF9rZXJuZWwrMHg3ODkvMHg3OWQKTWFyIDExIDE3OjExOjIy
+IGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODFjOTEyZjQ+XSB4ODZfNjRfc3RhcnRf
+cmVzZXJ2YXRpb25zKzB4MTA0LzB4MTBmCk1hciAxMSAxNzoxMToyMiBkaGNwLTY2LTcwLTUga2Vy
+bmVsOiAgWzxmZmZmZmZmZjgxYzkxNGRmPl0geDg2XzY0X3N0YXJ0X2tlcm5lbCsweDFlMC8weDFl
+ZQo=
+--00163630eda98b67a50481838ef4--
