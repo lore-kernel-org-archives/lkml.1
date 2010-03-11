@@ -1,127 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834Ab0CKMhz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 07:37:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44824 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344Ab0CKMhx (ORCPT
+	id S1757741Ab0CKMli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 07:41:38 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:50132 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757571Ab0CKMlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 07:37:53 -0500
-Subject: Re: [PATCH] perf_events: fix X86 bogus counts when multiplexing
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@google.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       fweisbec@gmail.com, robert.richter@amd.com, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <1268296361.5279.901.camel@twins>
-References: <1268288259-4011-1-git-send-email-eranian@google.com>
-	 <1268296361.5279.901.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Mar 2010 13:37:49 +0100
-Message-ID: <1268311069.5037.31.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 07:41:36 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
+References: <20100310123257.GA2899@frolo.macqel>
+	<87d3zc1bjo.fsf@devron.myhome.or.jp>
+	<20100310161429.GA16799@frolo.macqel>
+	<87hboow105.fsf@devron.myhome.or.jp>
+	<20100310235808.GA4353@frolo.macqel>
+	<87bpevryxt.fsf@devron.myhome.or.jp>
+	<20100311120214.GA23767@frolo.macqel>
+Date: Thu, 11 Mar 2010 21:41:33 +0900
+In-Reply-To: <20100311120214.GA23767@frolo.macqel> (Philippe De Muyter's
+	message of "Thu, 11 Mar 2010 13:02:14 +0100")
+Message-ID: <87y6hzni82.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 09:32 +0100, Peter Zijlstra wrote:
-> On Wed, 2010-03-10 at 22:17 -0800, eranian@google.com wrote:
-> > This patch fixes a bug in 2.6.33 X86 event scheduling whereby
-> > all counts are bogus as soon as events need to be multiplexed
-> > because the PMU is overcommitted.
-> > 
-> > The code in hw_perf_enable() was causing multiplexed events
-> > to accumulate collected counts twice causing bogus results.
-> > 
-> > This is demonstrated on AMD Barcelona with the example
-> > below. First run, no conflict, you obtain the actual counts.
-> > Second run, PMU overcommitted, multiplexing, all events are
-> > over-counted. Third run, patch applied, you obtain the correct
-> > count through scaling.
-> > 
-> 
-> I'm a bit puzzled by this one, if we, during scheduling move an event
-> from idx 1 to idx 2, we need to stop it on 1 and start if on 2,
-> otherwise we do not properly transfer its count, right?
-> 
-> With the below patch it does no such thing.
-> 
-> I did fix some funnies I observed with hw_perf_enable() while doing the
-> PEBS stuff, and -tip does it wrong differently from what you illustrate,
-> so while there defenately is something to fix, I doubt the below is
-> correct.
+Philippe De Muyter <phdm@macqel.be> writes:
 
-OK, so what happens is that we schedule badly like:
+>> > This is unavoidable.
+>
+> We could perhaps reduce the disadvantage by moving the logic (test first
+> with the trailing dots, and then without if needed) into fat_search_long
+> instead of putting it in vfat_find as my patch proposal does.  This way
+> the name to find would only be compared once to unrelated entries,
+> instead of possibly twice as my patch does.
+>
+> But therefore I need your help : fat_search_long isn't easy to read/modify.
+>
+> The logic could be modified as such :
+>     - if the searched name contains trailing dots, first compare
+> 	the truncated part to the same length of the directory entry
+>     - if they are the same, test the length of the rest of the directory entry
+> 	- if length_of_rest is 0, this could be the matching entry,
+> 	    but there could be a better one later; keep searching till the end.
+> 	- if length_of_rest is not 0, compare the rest with the trailing dots
+> 	    - if rests are equal, we have found it; return
+> 	    - if rests are unequal, continue searching
+>
+>> 
+>> We would be able to introduce new mount option to do it if needed.
+>
+> A new mount option should be the last programming option.  It is better to
+> automatically do the right thing than to require the user to figure out
+> he must add a mount option in /etc/fstab or whatever.  Remember this is
+> for hot-plug disks.
 
-<...>-1987  [019]   280.252808: x86_pmu_start: event-46/1300c0: idx: 0
-<...>-1987  [019]   280.252811: x86_pmu_start: event-47/1300c0: idx: 1
-<...>-1987  [019]   280.252812: x86_pmu_start: event-48/1300c0: idx: 2
-<...>-1987  [019]   280.252813: x86_pmu_start: event-49/1300c0: idx: 3
-<...>-1987  [019]   280.252814: x86_pmu_start: event-50/1300c0: idx: 32
-<...>-1987  [019]   280.252825: x86_pmu_stop: event-46/1300c0: idx: 0
-<...>-1987  [019]   280.252826: x86_pmu_stop: event-47/1300c0: idx: 1
-<...>-1987  [019]   280.252827: x86_pmu_stop: event-48/1300c0: idx: 2
-<...>-1987  [019]   280.252828: x86_pmu_stop: event-49/1300c0: idx: 3
-<...>-1987  [019]   280.252829: x86_pmu_stop: event-50/1300c0: idx: 32
-<...>-1987  [019]   280.252834: x86_pmu_start: event-47/1300c0: idx: 1
-<...>-1987  [019]   280.252834: x86_pmu_start: event-48/1300c0: idx: 2
-<...>-1987  [019]   280.252835: x86_pmu_start: event-49/1300c0: idx: 3
-<...>-1987  [019]   280.252836: x86_pmu_start: event-50/1300c0: idx: 32
-<...>-1987  [019]   280.252837: x86_pmu_start: event-51/1300c0: idx: 32 *FAIL*
+Sorry, but I'm not thinking this is primary one. So, requiring option
+for it to avoid disadvantage of normal users, it sounds good.
 
-This happens because we only iterate the n_running events in the first
-pass, and reset their index to -1 if they don't match to force a
-re-assignment.
+>> This changed vfat_find(), so, this patch will change the behavior of all
+>> callers more or less. And the behavior seems to be really strange, you
+>> can remove "a.", but you can't create it?
+>
+> Yes, you can remove any existing file, but if you want to create a file, 
+> the name creation rules are kept unchanged. So, creating "a." will
+> succeed, it will actually be called "a" on disk, but you can still refer
+> to it as "a." : that will succeed.  That's the strange part of the behavior
+> but that part is already present for compatibility reasons nor you nor me
+> can do anything about :(
+>
+>> The behavior sounds random, right?
+>
+> It's a compromise to avoid creating name entries that are not universally
+> accepted, but to allow accessing existing files and directories.
+>
+> The mount option could be useful then to allow the creation of file and
+> directory names with trailing dot, but consistency between getdents and
+> stat/open must be automatic.
 
-Now, in our RR example, n_running == 0 because we fully unscheduled, so
-event-50 will retain its idx==32, even though in scheduling it will have
-gotten idx=0, and we don't trigger the re-assign path.
+No, this breaks consistency. With this patch, unlink("a."), then
+open("a.", O_CREAT) and write(), the result depend on existent
+files. This patch is providing two files on one name.
 
-The easiest way to fix this is the below patch, which simply validates
-the full assignment in the second pass.
-
----
- arch/x86/kernel/cpu/perf_event.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index 4a0514d..a3aff76 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -787,7 +787,6 @@ void hw_perf_enable(void)
- 		 * step2: reprogram moved events into new counters
- 		 */
- 		for (i = 0; i < n_running; i++) {
--
- 			event = cpuc->event_list[i];
- 			hwc = &event->hw;
- 
-@@ -802,21 +801,16 @@ void hw_perf_enable(void)
- 				continue;
- 
- 			x86_pmu_stop(event);
--
--			hwc->idx = -1;
- 		}
- 
- 		for (i = 0; i < cpuc->n_events; i++) {
--
- 			event = cpuc->event_list[i];
- 			hwc = &event->hw;
- 
--			if (i < n_running &&
--			    match_prev_assignment(hwc, cpuc, i))
--				continue;
--
--			if (hwc->idx == -1)
-+			if (!match_prev_assignment(hwc, cpuc, i))
- 				x86_assign_hw_event(event, cpuc, i);
-+			else if (i < n_running)
-+				continue;
- 
- 			x86_pmu_start(event);
- 		}
-
-
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
