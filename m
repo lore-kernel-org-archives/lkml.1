@@ -1,91 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742Ab0CKKdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:33:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57124 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558Ab0CKKdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:33:45 -0500
-Date: Thu, 11 Mar 2010 10:33:21 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Viresh KUMAR <viresh.kumar@st.com>
-Cc: linux-arm-kernel@lists.infradead.org, rajeev-dlh.kumar@st.com,
-       shiraz.hashim@st.com, armando.visconti@st.com,
-       ashish.priyadarshi@st.com, linux-kernel@vger.kernel.org,
-       vipin.kumar@st.com, amit.goel@st.com, deepak.sikri@st.com
-Subject: Re: [PATCH 02/11] ST SPEAr: Added basic header files for SPEAr3xx
-	machine family
-Message-ID: <20100311103321.GB16376@n2100.arm.linux.org.uk>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com> <1267592861-26911-2-git-send-email-viresh.kumar@st.com> <1267592861-26911-3-git-send-email-viresh.kumar@st.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267592861-26911-3-git-send-email-viresh.kumar@st.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1756802Ab0CKKdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:33:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34793 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756747Ab0CKKdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:33:49 -0500
+Date: Thu, 11 Mar 2010 21:33:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michal Marek <mmarek@suse.cz>
+Cc: linux-kbuild@vger.kernel.org, Eric Miao <eric.y.miao@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: Do not unnecessarily regenerate modules.builtin
+Message-Id: <20100311213342.82494e22.sfr@canb.auug.org.au>
+In-Reply-To: <20100311081246.GA13932@sepie.suse.cz>
+References: <1268047222-13218-1-git-send-email-mmarek@suse.cz>
+	<20100311160326.bad1500e.sfr@canb.auug.org.au>
+	<20100311081246.GA13932@sepie.suse.cz>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__11_Mar_2010_21_33_42_+1100_2EIqKYGLWU_s3C=="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 10:37:32AM +0530, Viresh KUMAR wrote:
-> diff --git a/arch/arm/mach-spear3xx/include/mach/dma.h b/arch/arm/mach-spear3xx/include/mach/dma.h
-> new file mode 100644
-> index 0000000..9b93bc6
-> --- /dev/null
-> +++ b/arch/arm/mach-spear3xx/include/mach/dma.h
-> @@ -0,0 +1,18 @@
-> +/*
-> + * arch/arm/mach-spear3xx/include/mach/dma.h
-> + *
-> + * Generic DMA support for SPEAr3xx machine family
-> + *
-> + * Copyright (C) 2009 ST Microelectronics
-> + * Viresh Kumar<viresh.kumar@st.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2. This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + */
-> +
-> +#ifndef __ASM_ARCH_DMA_H
-> +#define __ASM_ARCH_DMA_H
-> +
-> +#endif /* __ASM_ARCH_DMA_H */
-> +
+--Signature=_Thu__11_Mar_2010_21_33_42_+1100_2EIqKYGLWU_s3C==
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You don't need to provide this file if you don't use it.
+Hi Michal,
 
-> diff --git a/arch/arm/mach-spear3xx/include/mach/vmalloc.h b/arch/arm/mach-spear3xx/include/mach/vmalloc.h
-> new file mode 100644
-> index 0000000..4f236f3
-> --- /dev/null
-> +++ b/arch/arm/mach-spear3xx/include/mach/vmalloc.h
-> @@ -0,0 +1,22 @@
-> +/*
-> + * arch/arm/mach-spear3xx/include/mach/vmalloc.h
-> + *
-> + * Defining Vmalloc area for SPEAr3xx machine family
-> + *
-> + * Copyright (C) 2009 ST Microelectronics
-> + * Viresh Kumar<viresh.kumar@st.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2. This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + */
-> +
-> +#ifndef __ASM_MACH_VMALLOC_H
-> +#define __ASM_MACH_VMALLOC_H
-> +
-> +#include <mach/memory.h>
-> +
-> +#define VMALLOC_SIZE		(0x30000000)
-> +#define VMALLOC_END		(PAGE_OFFSET + VMALLOC_SIZE)
+On Thu, 11 Mar 2010 09:12:46 +0100 Michal Marek <mmarek@suse.cz> wrote:
+>
+> On Thu, Mar 11, 2010 at 04:03:26PM +1100, Stephen Rothwell wrote:
+> > This breaks a "make modules modules_install" type build:
+> [...]
+> > $ make O=3D../ntest.obj INSTALL_MOD_PATH=3D../ -s modules modules_insta=
+ll
+> > cp: cannot stat `/home/sfr/kernels/ntest.obj/modules.builtin': No such =
+file or directory
+>=20
+> Andrew reported this yesterday, too. The followin patch should fix it
+> (added to the for-next branch):
 
-Don't define it like this - define VMALLOC_END to be the maximum virtual
-address which you can permit the vmalloc area to extend to - which is
-generally the start of your peripheral mappings.
+Great, thanks.
 
-It's rather pointless defining it in terms of PAGE_OFFSET, because this
-can vary, whereas the start of your peripheral mappings tends to be
-fixed.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__11_Mar_2010_21_33_42_+1100_2EIqKYGLWU_s3C==
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuYxwYACgkQjjKRsyhoI8x2oQCfRQLrExfiibiUq9oRuyUnmIZr
+9KsAoIdUoSHIiJ2Ijflq0IyQjyQfEC1W
+=Vpka
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__11_Mar_2010_21_33_42_+1100_2EIqKYGLWU_s3C==--
