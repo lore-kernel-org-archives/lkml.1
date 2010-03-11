@@ -1,48 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758549Ab0CKWWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 17:22:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39560 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757257Ab0CKWWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 17:22:18 -0500
-Message-ID: <4B996CE1.5010902@redhat.com>
-Date: Thu, 11 Mar 2010 17:21:21 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
-MIME-Version: 1.0
+	id S1758587Ab0CKWW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 17:22:27 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44942 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758560Ab0CKWWY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 17:22:24 -0500
+Date: Thu, 11 Mar 2010 19:22:15 -0300
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Dieter Ries <mail@dieterries.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] OPTPROBES: Don't default to y in Kconfig
-References: <1268089658-19919-1-git-send-email-mail@dieterries.net> <4B967000.5070904@redhat.com> <20100311131501.GB11837@elte.hu>
-In-Reply-To: <20100311131501.GB11837@elte.hu>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 6/6] perf report: Initial TUI using newt
+Message-ID: <20100311222215.GE28421@ghostprotocols.net>
+References: <1268345617-31863-1-git-send-email-acme@infradead.org>
+ <1268345617-31863-6-git-send-email-acme@infradead.org>
+ <20100311221529.GM14180@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100311221529.GM14180@ghostprotocols.net>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+Em Thu, Mar 11, 2010 at 07:15:29PM -0300, Arnaldo Carvalho de Melo escreveu:
+> Em Thu, Mar 11, 2010 at 07:13:37PM -0300, Arnaldo Carvalho de Melo escreveu:
+> > From: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > 
+> > Newt has widespread availability and provides a rather simple API as can be
+> > seen by the size of this patch.
+> > 
+> > The work needed to support it will benefit other frontends too.
+> > 
+> > In this initial patch it just checks if the output is a tty, if not it falls
+> > back to the previous behaviour, also if newt-devel/libnewt-dev is not installed
+> > the previous behaviour is maintaned.
 > 
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Dieter Ries wrote:
->>> CONFIG_OPTPROBES should not default to y while still being flagged
->>> EXPERIMENTAL.
->>
->> Hm, OK, indeed it still needs some more user tests.
->>
->> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Well, since this is a prime time optimization i'd rather see the Kconfig value 
-> eliminated and the optimization to become unconditional. (if it doesnt work 
-> somewhere then it should be fixed)
+> Argh, please don't consider this last patch (6/6), I messed up, will
+> repost just this one in a few moments.
 
-OK, that will be good for finding bugs. :) 
+Actually the problem was that 4/6 should be merged with 6/6, so I'm just
+sending the by now 5 patch series with a v2 tag in some jiffies.
 
-Thank you,
+Sorry for the confusion,
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+- Arnaldo
