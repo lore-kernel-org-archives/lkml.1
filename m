@@ -1,63 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707Ab0CKKAU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:00:20 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:33604 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756635Ab0CKKAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:00:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=o57TeXSAVIUx+QNJhtScKH93Vmw038Va4qAuxLA4X0dZj/HbXDTlXUzBM8zXpCIvSa
-         hzrR0YoxgbucPQMQvkDSDcPEYi0tHFcsqUAYSCRNApzMbYMPB25KAgfECAXuD98yChuA
-         Rp2y8reUjQK/57kDIl7912Bi9AidgCfxQF/M8=
-Date: Thu, 11 Mar 2010 12:59:40 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Julia Lawall <julia@diku.dk>, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: smatch_scripts/whitespace_only.sh
-Message-ID: <20100311095940.GK6321@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Joe Perches <joe@perches.com>, Julia Lawall <julia@diku.dk>,
-	linux-kernel@vger.kernel.org, gregkh@suse.de,
-	kernel-janitors@vger.kernel.org, devel@driverdev.osuosl.org
-References: <20100310101224.GC6321@bicker> <Pine.LNX.4.64.1003101113330.24684@ask.diku.dk> <20100310142759.GG6321@bicker> <Pine.LNX.4.64.1003101537040.27249@ask.diku.dk> <1268244709.1545.392.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268244709.1545.392.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756576Ab0CKKBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:01:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36462 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755457Ab0CKKBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:01:23 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/HuEBMxH7HQKDR/zcq2p+x6idaAc9WIUo/d7PoLg
+	oD8VakQuCggZ8M
+Subject: Re: [patch 11/12] sched: remove ASYM_GRAN feature
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1268300950.6785.27.camel@marge.simson.net>
+References: <1268300950.6785.27.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 11 Mar 2010 11:01:15 +0100
+Message-Id: <1268301675.6785.44.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46999999999999997
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 10:11:49AM -0800, Joe Perches wrote:
-> On Wed, 2010-03-10 at 15:38 +0100, Julia Lawall wrote:
-> > > > On Wed, 10 Mar 2010, Dan Carpenter wrote:
-> > > > > I wrote a script to check that a patch only changes white space.
-> 
-> Perhaps you could use #define __LINE__ 0 to avoid
-> any vertical line position comparison checks?
-> 
 
-I tried something similar to that at first but I found that line 
-numbers were used in other ways.  In the end, I added a -no-lineno to
-sparse so it thinks everything is on line 123456.
+sched: remove ASYM_GRAN feature
 
-It might be better to just right a perl script that strips out all the
-whitespace and compares the result blobs before and after the patch.  
-That would handle the #if 0 code as well.
+This features has been enabled for quite a while, after testing showed that
+easing preemption for light tasks was harmful to high priority threads.
 
-regards,
-dan carpenter
+Remove it.
 
-> > Maybe checkpatch could be changed to not complain about > 80 characters 
-> > when the line contains a string?
-> 
-> That's been at least partially done in commit
-> 691e669ba8c64d31ac08d87b1751e6acfa3ff65e
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
+---
+ kernel/sched_fair.c     |   28 +++++++++++-----------------
+ kernel/sched_features.h |    6 ------
+ 2 files changed, 11 insertions(+), 23 deletions(-)
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1582,24 +1582,18 @@ wakeup_gran(struct sched_entity *curr, s
+ 	/*
+ 	 * Since its curr running now, convert the gran from real-time
+ 	 * to virtual-time in his units.
++	 *
++	 * By using 'se' instead of 'curr' we penalize light tasks, so
++	 * they get preempted easier. That is, if 'se' < 'curr' then
++	 * the resulting gran will be larger, therefore penalizing the
++	 * lighter, if otoh 'se' > 'curr' then the resulting gran will
++	 * be smaller, again penalizing the lighter task.
++	 *
++	 * This is especially important for buddies when the leftmost
++	 * task is higher priority than the buddy.
+ 	 */
+-	if (sched_feat(ASYM_GRAN)) {
+-		/*
+-		 * By using 'se' instead of 'curr' we penalize light tasks, so
+-		 * they get preempted easier. That is, if 'se' < 'curr' then
+-		 * the resulting gran will be larger, therefore penalizing the
+-		 * lighter, if otoh 'se' > 'curr' then the resulting gran will
+-		 * be smaller, again penalizing the lighter task.
+-		 *
+-		 * This is especially important for buddies when the leftmost
+-		 * task is higher priority than the buddy.
+-		 */
+-		if (unlikely(se->load.weight != NICE_0_LOAD))
+-			gran = calc_delta_fair(gran, se);
+-	} else {
+-		if (unlikely(curr->load.weight != NICE_0_LOAD))
+-			gran = calc_delta_fair(gran, curr);
+-	}
++	if (unlikely(se->load.weight != NICE_0_LOAD))
++		gran = calc_delta_fair(gran, se);
+ 
+ 	return gran;
+ }
+Index: linux-2.6/kernel/sched_features.h
+===================================================================
+--- linux-2.6.orig/kernel/sched_features.h
++++ linux-2.6/kernel/sched_features.h
+@@ -17,12 +17,6 @@ SCHED_FEAT(START_DEBIT, 1)
+ SCHED_FEAT(WAKEUP_PREEMPT, 1)
+ 
+ /*
+- * When converting the wakeup granularity to virtual time, do it such
+- * that heavier tasks preempting a lighter task have an edge.
+- */
+-SCHED_FEAT(ASYM_GRAN, 1)
+-
+-/*
+  * Use the SYNC wakeup hint, pipes and the likes use this to indicate
+  * the remote end is likely to consume the data we just wrote, and
+  * therefore has cache benefit from being placed on the same cpu, see
+
+
