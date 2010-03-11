@@ -1,73 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663Ab0CKQ0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:26:53 -0500
-Received: from vms173017pub.verizon.net ([206.46.173.17]:37615 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599Ab0CKQ0t (ORCPT
+	id S933186Ab0CKQ3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:29:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42049 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932222Ab0CKQ3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:26:49 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: tytso@mit.edu, Nikanth Karthikesan <knikanth@suse.de>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-Date: Thu, 11 Mar 2010 11:26:32 -0500
-User-Agent: KMail/1.12.3 (Linux/2.6.33; KDE/4.3.3; i686; ; )
-References: <4B947393.2050002@kernel.org> <201003112035.26743.knikanth@suse.de>
- <20100311152551.GG1497@thunk.org>
-In-reply-to: <20100311152551.GG1497@thunk.org>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Message-id: <201003111126.32882.gene.heskett@verizon.net>
+	Thu, 11 Mar 2010 11:29:18 -0500
+Subject: Re: Q: select_fallback_rq() && cpuset_lock()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100311161909.GA16008@redhat.com>
+References: <20100309180615.GA11681@redhat.com>
+	 <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com>
+	 <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com>
+	 <20100311145248.GA12907@redhat.com> <1268321759.5037.113.camel@laptop>
+	 <20100311161909.GA16008@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 17:29:13 +0100
+Message-ID: <1268324953.5037.124.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 March 2010, tytso@mit.edu wrote:
->On Thu, Mar 11, 2010 at 08:35:26PM +0530, Nikanth Karthikesan wrote:
->> The real problem, here is just that partitioning-tools should create
->> partitions that can work with both XP as well as Windows7. May be distro
->> installers, should ask the user which compatibility he needs.
->
->4k aligned sectors will *work* with Windows XP, will it not?  It's
->just simply a matter of Windows XP, being really ancient, doesn't
->create properly alligned partitions by default.
->
->And how often are we going to see Windows XP systems with these new 4k
->physical sector drives anyway, where the first OS to touch the
->partition is Windows XP?  And in the case where this does happy, the
->resulting partition will be result in terribly performance for Windows
->XP as well as Linux.
->
->What's the specific scenario which you are trying to solve, and how
->likely is it to occur in real life?
+On Thu, 2010-03-11 at 17:19 +0100, Oleg Nesterov wrote:
 
-And potentially one more question from a list lurker, Ted.  Where are the 
-tools that allow us to check and/or adjust that?  I ask since I have 3 of 
-these terrabyte drives in this box now and have no clue how to either check 
-to see if we're off, or how to fix it if it is.  And I have called my self 
-following this discussion without noting if the tools have been specifically 
-named.
+> > > How can we fix this later? Perhaps we can change
+> > > cpuset_track_online_cpus(CPU_DEAD) to scan all affected cpusets and
+> > > fixup the tasks with the wrong ->cpus_allowed == cpu_possible_mask.
+> >
+> > Problem is, we can't really fix up tasks, wakeup must be able to find a
+> > suitable cpu.
+> 
+> Yes sure. I meant, wakeup()->select_fallback_rq() sets cpus_allowed =
+> cpu_possible_map as we discussed. Then cpuset_track_online_cpus(CPU_DEAD)
+> fixes the affected tasks.
 
-Thanks
+Ah, have that re-validate the p->cpus_allowed for all cpuset tasks, ok
+that might work.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+> > > At first glance this should work in try_to_wake_up(p) case, we can't
+> > > race with cpuset_change_cpumask()/etc because of TASK_WAKING logic.
+> >
+> > Well, cs->cpus_possible can still go funny on us.
+> 
+> What do you mean? Afaics, cpusets always uses set_cpus_allowed() to
+> change task->cpus_allowed.
 
-Authors are easy to get on with -- if you're fond of children.
-		-- Michael Joseph, "Observer"
+Confusion^2 ;-), I failed to grasp your fixup idea and got confused,
+which confused you.
+
+> > > But I am not sure how can we fix move_task_off_dead_cpu(). I think
+> > > __migrate_task_irq() itself is fine, but if select_fallback_rq() is
+> > > called from move_task_off_dead_cpu() nothing protects ->cpus_allowed.
+> >
+> > It has that retry loop in case the migration fails, right?
+> >
+> > > We can race with cpusets, or even with the plain set_cpus_allowed().
+> > > Probably nothing really bad can happen, if the resulting cpumask
+> > > doesn't have online cpus due to the racing memcpys, we should retry
+> > > after __migrate_task_irq() fails. Or we can take cpu_rq(cpu)-lock
+> > > around cpumask_copy(p->cpus_allowed, cpu_possible_mask).
+> >
+> > It does the retry thing.
+> 
+> Yes, I mentioned retry logic too. But it can't always help, even without
+> cpusets.
+> 
+> Suppose a task T is bound to the dead CPU, and move_task_off_dead_cpu()
+> races with set_cpus_allowed(new_mask). I think it is fine if T gets
+> either new_mask or cpu_possible_map in ->cpus_allowed. But, it can get
+> a "random" mix if 2 memcpy() run in parallel. And it is possible that
+> __migrate_task_irq() will not fail if dest_cpu falls into resulting mask.
+
+Ah indeed. One would almost construct a cpumask_assign that uses RCU
+atomic pointer assignment for all this stupid cpumask juggling :/
+
+> > > @@ -2289,10 +2289,9 @@ static int select_fallback_rq(int cpu, s
+> > >
+> > >  	/* No more Mr. Nice Guy. */
+> > >  	if (dest_cpu >= nr_cpu_ids) {
+> > > -		rcu_read_lock();
+> > > -		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+> > > -		rcu_read_unlock();
+> > > -		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
+> > > +		// XXX: take cpu_rq(cpu)->lock ???
+> > > +		cpumask_copy(&p->cpus_allowed, cpu_possible_mask);
+> > > +		dest_cpu = cpumask_any(cpu_active_mask);
+> >
+> >
+> > Right, this seems safe.
+> 
+> OK, I'll try to read this code a bit more and then send this patch.
+
+Thanks!
+
