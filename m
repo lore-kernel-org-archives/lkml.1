@@ -1,193 +1,279 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566Ab0CKVPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 16:15:47 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:60311 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370Ab0CKVPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:15:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mWqOmBK0vrBgIzkjBs8gyjz5vNBWpwqZg5hl5bwgoPGSQLQKxJCJ/fyD2i3iEiz/Wi
-         OABRCGlzFyXQb0H3+3cFyxzqzHjrgXhXmDzuQEmo8gD5Uk/ds7shL6ejKYHE0iysBSYk
-         ImOxD3uBtqyANBiIuqQY84YvMKE8YVph7IUME=
-Date: Fri, 12 Mar 2010 00:15:38 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lin Ming <ming.m.lin@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Stephane Eranian <eranian@google.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
-Message-ID: <20100311211538.GC25162@lenovo>
-References: <20100310183102.GC8070@lenovo> <1268274775.4996.16.camel@minggr.sh.intel.com> <20100311165439.GB5129@lenovo> <20100311181646.GA12235@elte.hu> <20100311183921.GA30249@elte.hu>
+	id S1753694Ab0CKVUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:20:43 -0500
+Received: from claw.goop.org ([74.207.240.146]:39721 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752772Ab0CKVUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 16:20:41 -0500
+Message-ID: <4B995EA6.8080105@goop.org>
+Date: Thu, 11 Mar 2010 13:20:38 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100311183921.GA30249@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+CC: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] [PATCH 2 of 5] early PV on HVM
+References: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop>
+In-Reply-To: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 07:39:21PM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-> > 
-> > > x86,perf: Implement minimal P4 PMU driver v15
-> > 
-> > tried it on a Pentium-D dual core CPU, and it boots fine:
-> 
-> an Athlon64 testbox was not as happy:
-> 
-> [    0.253338] calling  spawn_nmi_watchdog_task+0x0/0x63 @ 1
-> [    0.256675] NMI watchdog enabled, takes one hw-pmu counter.
-> [    0.260013] nmi_watchdog: hardware not available, trying software events
-> [    0.263380] BUG: unable to handle kernel NULL pointer dereference at (null)
-> [    0.266666] IP: [<(null)>] (null)
-> [    0.266666] *pde = 00000000
-> [    0.266666] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> [    0.266666] last sysfs file:
-> [    0.266666]
-> [    0.266666] Pid: 1, comm: swapper Not tainted 2.6.34-rc1-tip+ #20943 /
-> [    0.266666] EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 0
-> [    0.266666] EIP is at 0x0
-> [    0.266666] EAX: 434035b0 EBX: 00000000 ECX: 7f81fe08 EDX: 00000000
-> [    0.266666] ESI: 43406444 EDI: 7f82e004 EBP: 7f81ff14 ESP: 7f81fdf0
-> [    0.266666]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [    0.266666] Process swapper (pid: 1, ti=7f81f000 task=7f824000 task.ti=7f81f000)
-> 
-> config and full crashlog attached. I had to exclude tip:perf/x86 for now 
-> (reverting commit a072738e04 cured the crash), you can re-create that kernel 
-> by doing this:
-> 
->  git checkout tip/master
->  git merge tip/perf/x86
-> 
-> (and fixes would be nice to have as delta patches against perf/x86 as well.)
-> 
-> Thanks,
-> 
-> 	Ingo
+On 03/10/2010 07:47 AM, Stefano Stabellini wrote:
+> Hi all,
+> this patch:
+>
+> - adds a xen_guest_init hook in setup.c right after kvm_guest_init;
+>
+> - initializes basic pv on hvm features in xen_guest_init;
+>    
 
-Perhaps something like the patch below (tested with kvm)? With this patch
-we will actually waste ~4/8 bytes per PMU (intel,amd,p6) since this call
-hits on p4 only, so I think perhaps better to use one x86 scheduler hook
-instead of empty schedule_events() in PMU, hmm?
----
+Is this 64-bit specific like Sheng's version?
 
-x86,perf: Fix NULL deref on not assigned x86_pmu
+I also asked him to move the setup code out of enlighten.c into a new 
+file, though your version is a fair bit smaller.
 
-In case of not assigned x86_pmu and software events
-NULL dereference may being hit via x86_pmu::schedule_events
-method.
+> Signed-off-by: Stefano Stabellini<stefano.stabellini@eu.citrix.com>
+> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> Signed-off-by: Yaozu (Eddie) Dong<eddie.dong@intel.com>
+>
+> ---
+>
+> diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+> index d5b7e90..bbd3f65 100644
+> --- a/arch/x86/include/asm/xen/hypervisor.h
+> +++ b/arch/x86/include/asm/xen/hypervisor.h
+> @@ -33,6 +33,7 @@
+>   #ifndef _ASM_X86_XEN_HYPERVISOR_H
+>   #define _ASM_X86_XEN_HYPERVISOR_H
+>
+> +#ifdef CONFIG_XEN
+>   /* arch/i386/kernel/setup.c */
+>   extern struct shared_info *HYPERVISOR_shared_info;
+>   extern struct start_info *xen_start_info;
+> @@ -43,10 +44,11 @@ enum xen_domain_type {
+>   	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
+>   };
+>
+> -#ifdef CONFIG_XEN
+>   extern enum xen_domain_type xen_domain_type;
+> +extern void xen_guest_init(void);
+>   #else
+>   #define xen_domain_type		XEN_NATIVE
+> +#define xen_guest_init() do { } while (0)
+>   #endif
+>
+>   #define xen_domain()		(xen_domain_type != XEN_NATIVE)
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index e09f0e2..cb32e37 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -49,6 +49,7 @@
+>   #include<asm/pci-direct.h>
+>   #include<linux/init_ohci1394_dma.h>
+>   #include<linux/kvm_para.h>
+> +#include<asm/xen/hypervisor.h>
+>
+>   #include<linux/errno.h>
+>   #include<linux/kernel.h>
+> @@ -1007,6 +1008,7 @@ void __init setup_arch(char **cmdline_p)
+>   	probe_nr_irqs_gsi();
+>
+>   	kvm_guest_init();
+> +	xen_guest_init();
+>
+>   	e820_reserve_resources();
+>   	e820_mark_nosave_regions(max_low_pfn);
+> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> index 3439616..42135e8 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -32,6 +32,8 @@
+>   #include<xen/interface/version.h>
+>   #include<xen/interface/physdev.h>
+>   #include<xen/interface/vcpu.h>
+> +#include<xen/interface/memory.h>
+> +#include<xen/interface/hvm/hvm_op.h>
+>   #include<xen/features.h>
+>   #include<xen/page.h>
+>   #include<xen/hvc-console.h>
+> @@ -1179,3 +1181,86 @@ asmlinkage void __init xen_start_kernel(void)
+>   	x86_64_start_reservations((char *)__pa_symbol(&boot_params));
+>   #endif
+>   }
+> +
+> +static uint32_t xen_cpuid_base(void)
+> +{
+> +	uint32_t base, eax, ebx, ecx, edx;
+> +	char signature[13];
+> +
+> +	for (base = 0x40000000; base<  0x40010000; base += 0x100) {
+> +		cpuid(base,&eax,&ebx,&ecx,&edx);
+> +		*(uint32_t*)(signature + 0) = ebx;
+> +		*(uint32_t*)(signature + 4) = ecx;
+> +		*(uint32_t*)(signature + 8) = edx;
+> +		signature[12] = 0;
+> +
+> +		if (!strcmp("XenVMMXenVMM", signature)&&  ((eax - base)>= 2))
+> +			return base;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_hvm_pv_info(void)
+> +{
+> +	uint32_t eax, ebx, ecx, edx, pages, msr, base;
+> +	u64 pfn;
+> +
+> +	base = xen_cpuid_base();
+> +	if (!base)
+> +		return -EINVAL;
+> +
+> +	cpuid(base + 1,&eax,&ebx,&ecx,&edx);
+> +
+> +	printk(KERN_INFO "Xen version %d.%d.\n", eax>>  16, eax&  0xffff);
+> +
+> +	cpuid(base + 2,&pages,&msr,&ecx,&edx);
+> +
+> +	/* We only support 1 page of hypercall for now */
+> +	if (pages != 1)
+> +		return -ENOMEM;
+>    
 
-Fix it by calling x86_pmu::schedule_events only if we
-have one. Otherwise use general scheduler.
+There's no point testing this; if we don't use hypercalls beyond the 
+first page, it doesn't matter one way or the other.
 
-Also the former x86_schedule_events calls restored.
+> +
+> +	pfn = __pa(hypercall_page);
+> +	wrmsrl(msr, pfn);
+>    
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/cpu/perf_event.c       |   10 +++++++---
- arch/x86/kernel/cpu/perf_event_amd.c   |    1 -
- arch/x86/kernel/cpu/perf_event_intel.c |    2 --
- arch/x86/kernel/cpu/perf_event_p6.c    |    1 -
- 4 files changed, 7 insertions(+), 7 deletions(-)
+Use wrmsr_safe, just in case.
 
-Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
-@@ -604,6 +604,10 @@ static int x86_schedule_events(struct cp
- 	int i, j, w, wmax, num = 0;
- 	struct hw_perf_event *hwc;
- 
-+	/* the PMU has its own scheduler */
-+	if (unlikely(x86_pmu.schedule_events))
-+		return x86_pmu.schedule_events(cpuc, n, assign);
-+
- 	bitmap_zero(used_mask, X86_PMC_IDX_MAX);
- 
- 	for (i = 0; i < n; i++) {
-@@ -936,7 +940,7 @@ static int x86_pmu_enable(struct perf_ev
- 	if (n < 0)
- 		return n;
- 
--	ret = x86_pmu.schedule_events(cpuc, n, assign);
-+	ret = x86_schedule_events(cpuc, n, assign);
- 	if (ret)
- 		return ret;
- 	/*
-@@ -1268,7 +1272,7 @@ int hw_perf_group_sched_in(struct perf_e
- 	if (n0 < 0)
- 		return n0;
- 
--	ret = x86_pmu.schedule_events(cpuc, n0, assign);
-+	ret = x86_schedule_events(cpuc, n0, assign);
- 	if (ret)
- 		return ret;
- 
-@@ -1521,7 +1525,7 @@ static int validate_group(struct perf_ev
- 
- 	fake_cpuc->n_events = n;
- 
--	ret = x86_pmu.schedule_events(fake_cpuc, n, NULL);
-+	ret = x86_schedule_events(fake_cpuc, n, NULL);
- 
- out_free:
- 	kfree(fake_cpuc);
-Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event_amd.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event_amd.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/perf_event_amd.c
-@@ -364,7 +364,6 @@ static __initconst struct x86_pmu amd_pm
- 	.enable			= x86_pmu_enable_event,
- 	.disable		= x86_pmu_disable_event,
- 	.hw_config		= x86_hw_config,
--	.schedule_events	= x86_schedule_events,
- 	.eventsel		= MSR_K7_EVNTSEL0,
- 	.perfctr		= MSR_K7_PERFCTR0,
- 	.event_map		= amd_pmu_event_map,
-Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event_intel.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event_intel.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -750,7 +750,6 @@ static __initconst struct x86_pmu core_p
- 	.enable			= x86_pmu_enable_event,
- 	.disable		= x86_pmu_disable_event,
- 	.hw_config		= x86_hw_config,
--	.schedule_events	= x86_schedule_events,
- 	.eventsel		= MSR_ARCH_PERFMON_EVENTSEL0,
- 	.perfctr		= MSR_ARCH_PERFMON_PERFCTR0,
- 	.event_map		= intel_pmu_event_map,
-@@ -789,7 +788,6 @@ static __initconst struct x86_pmu intel_
- 	.enable			= intel_pmu_enable_event,
- 	.disable		= intel_pmu_disable_event,
- 	.hw_config		= x86_hw_config,
--	.schedule_events	= x86_schedule_events,
- 	.eventsel		= MSR_ARCH_PERFMON_EVENTSEL0,
- 	.perfctr		= MSR_ARCH_PERFMON_PERFCTR0,
- 	.event_map		= intel_pmu_event_map,
-Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event_p6.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event_p6.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/perf_event_p6.c
-@@ -110,7 +110,6 @@ static __initconst struct x86_pmu p6_pmu
- 	.enable			= p6_pmu_enable_event,
- 	.disable		= p6_pmu_disable_event,
- 	.hw_config		= x86_hw_config,
--	.schedule_events	= x86_schedule_events,
- 	.eventsel		= MSR_P6_EVNTSEL0,
- 	.perfctr		= MSR_P6_PERFCTR0,
- 	.event_map		= p6_pmu_event_map,
+> +
+> +	xen_setup_features();
+> +
+> +	pv_info = xen_info;
+> +	pv_info.kernel_rpl = 0;
+> +
+> +	xen_domain_type = XEN_HVM_DOMAIN;
+> +
+> +	return 0;
+> +}
+> +
+> +static void __init init_shared_info(void)
+> +{
+> +	struct xen_add_to_physmap xatp;
+> +	struct shared_info *shared_info_page;
+> +
+> +	shared_info_page = (struct shared_info *) alloc_bootmem_pages(PAGE_SIZE);
+> +	xatp.domid = DOMID_SELF;
+> +	xatp.idx = 0;
+> +	xatp.space = XENMAPSPACE_shared_info;
+> +	xatp.gpfn = __pa(shared_info_page)>>  PAGE_SHIFT;
+> +	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap,&xatp))
+> +		BUG();
+> +
+> +	HYPERVISOR_shared_info = (struct shared_info *)shared_info_page;
+> +
+> +	/* Don't do the full vcpu_info placement stuff until we have a
+> +	   possible map and a non-dummy shared_info. */
+> +	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
+> +}
+> +
+> +void __init xen_guest_init(void)
+> +{
+> +	int r;
+> +
+> +	r = init_hvm_pv_info();
+> +	if (r<  0)
+> +		return;
+> +
+> +	init_shared_info();
+> +}
+> +
+> diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+> index b115726..bfbb13b 100644
+> --- a/drivers/input/xen-kbdfront.c
+> +++ b/drivers/input/xen-kbdfront.c
+> @@ -342,6 +342,9 @@ static int __init xenkbd_init(void)
+>   	if (xen_initial_domain())
+>   		return -ENODEV;
+>
+> +	if (xen_hvm_domain())
+> +		return -ENODEV;
+>    
+
+I think you can combine these into the same if().  Also put it in a 
+separate patch.
+
+> +
+>   	return xenbus_register_frontend(&xenkbd_driver);
+>   }
+>
+> diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+> index 54cd916..9d74c14 100644
+> --- a/drivers/video/xen-fbfront.c
+> +++ b/drivers/video/xen-fbfront.c
+> @@ -687,6 +687,9 @@ static int __init xenfb_init(void)
+>   	if (xen_initial_domain())
+>   		return -ENODEV;
+>
+> +	if (xen_hvm_domain())
+> +		return -ENODEV;
+>    
+
+Ditto.
+
+> +
+>   	return xenbus_register_frontend(&xenfb_driver);
+>   }
+>
+> diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+> index d42e25d..586b8f8 100644
+> --- a/drivers/xen/xenbus/xenbus_probe.c
+> +++ b/drivers/xen/xenbus/xenbus_probe.c
+> @@ -53,6 +53,8 @@
+>   #include<xen/events.h>
+>   #include<xen/page.h>
+>
+> +#include<xen/hvm.h>
+> +
+>   #include "xenbus_comms.h"
+>   #include "xenbus_probe.h"
+>
+> @@ -803,10 +805,19 @@ static int __init xenbus_probe_init(void)
+>   		/* dom0 not yet supported */
+>   	} else {
+>   		xenstored_ready = 1;
+> -		xen_store_evtchn = xen_start_info->store_evtchn;
+> -		xen_store_mfn = xen_start_info->store_mfn;
+> +		if (xen_hvm_domain()) {
+> +			xen_store_evtchn =
+> +				hvm_get_parameter(HVM_PARAM_STORE_EVTCHN);
+> +			xen_store_mfn =
+> +				hvm_get_parameter(HVM_PARAM_STORE_PFN);
+> +			xen_store_interface =
+> +				ioremap(xen_store_mfn<<  PAGE_SHIFT, PAGE_SIZE);
+> +		} else {
+> +			xen_store_evtchn = xen_start_info->store_evtchn;
+> +			xen_store_mfn = xen_start_info->store_mfn;
+> +			xen_store_interface = mfn_to_virt(xen_store_mfn);
+> +		}
+>   	}
+> -	xen_store_interface = mfn_to_virt(xen_store_mfn);
+>
+>   	/* Initialize the interface to xenstore. */
+>   	err = xs_init();
+>
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
+>
+>    
+
