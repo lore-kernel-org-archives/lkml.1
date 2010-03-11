@@ -1,83 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751333Ab0CKBUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 20:20:36 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:56957 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843Ab0CKBUf convert rfc822-to-8bit (ORCPT
+	id S1751612Ab0CKBVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 20:21:13 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55011 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870Ab0CKBVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 20:20:35 -0500
-From: "Hans-Peter Jansen" <hpj@urpla.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: howto combat highly pathologic latencies on a server?
-Date: Thu, 11 Mar 2010 02:20:28 +0100
-User-Agent: KMail/1.9.10
-Cc: David Rees <drees76@gmail.com>
-References: <201003101817.42812.hpj@urpla.net> <72dbd3151003101544w18afc65ubbc85d5bfc435198@mail.gmail.com>
-In-Reply-To: <72dbd3151003101544w18afc65ubbc85d5bfc435198@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <201003110220.28535.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX18DqKa5l0V8wHg3PS1kqSdqntad9DllpSDeewR
- hkwrcDdGrNou8/9YaAp2chtkSUrew+AZ8vr3677UTNaRkHQ+i5
- Q/jYxjtlwF9yB1TuGh4pA==
+	Wed, 10 Mar 2010 20:21:11 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 11 Mar 2010 10:17:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Message-Id: <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
+	<20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 March 2010, 00:44:54 David Rees wrote:
-> On Wed, Mar 10, 2010 at 9:17 AM, Hans-Peter Jansen <hpj@urpla.net> wrote:
-> > While this system usually operates fine, it suffers from delays, that
-> > are displayed in latencytop as: "Writing page to disk:     8425,5 ms":
-> > ftp://urpla.net/lat-8.4sec.png, but we see them also in the 1.7-4.8 sec
-> > range: ftp://urpla.net/lat-1.7sec.png, ftp://urpla.net/lat-2.9sec.png,
-> > ftp://urpla.net/lat-4.6sec.png and ftp://urpla.net/lat-4.8sec.png.
-> >
-> > From other observations, this issue "feels" like it is induced by
-> > single syncronisation points in the block layer, eg. if I create heavy
-> > IO load on one RAID array, say resizing a VMware disk image, it can
-> > take up to a minute to log in by ssh, although the ssh login does not
-> > touch this area at all (different RAID arrays). Note, that the
-> > latencytop snapshots above are made during normal operation, not this
-> > kind of load..
-> >
-> > Might later kernels mitigate this problem? As this is a production
-> > system, that is used 6.5 days a week, I cannot do dangerous
-> > experiments, also switching to 64 bit is a problem due to the legacy
-> > stuff described above... OTOH, my users suffer from this, and anything
-> > helping in this respect is highly appreciated.
->
-> Seems like a 2.6.32 based kernel which has per-BDI writeback and "CFQ
-> low latency mode" changes might help a good deal.  I know that on one
-> of my bigger machines (similar in specs to yours) which has a lot of
-> processes which do a decent amount of IO, latency and load average has
-> gone down after going to a 2.6.32 kernel from a 2.6.31 kernel (Fedora
-> 11 system).
->
-> Like Chris suggested, I've also heard that using the noop IO scheduler
-> can work well on Areca controllers on some kernels and workloads.
-> It's worth a shot and you can even try changing it at run-time.
+On Thu, 11 Mar 2010 09:39:13 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > The performance overhead is not so huge in both solutions, but the impact on
+> > performance is even more reduced using a complicated solution...
+> > 
+> > Maybe we can go ahead with the simplest implementation for now and start to
+> > think to an alternative implementation of the page_cgroup locking and
+> > charge/uncharge of pages.
+> > 
+> 
+> maybe. But in this 2 years, one of our biggest concerns was the performance.
+> So, we do something complex in memcg. But complex-locking is , yes, complex.
+> Hmm..I don't want to bet we can fix locking scheme without something complex.
+> 
+But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
+will give us much benefit (of performance) than we lose by small overheads.
 
-Yes, already done. Hopefully my users will notice.. As I've upgraded this 
-server and the clients only two weeks ago, calming things down has highest 
-priority.
+IIUC, this series affects trgger for background-write-out.
 
-Switching kernel versions in production systems is always painful, thus I  
-try to avoid that, but this time I already needed to roll my own kernel for 
-the clients due to some aufs2 vs. apparmor disharmony. That led to the loss 
-of the latter - I can live without apparmor, but certainly not without a 
-reliable layered filesystem¹.
- 
-Anyway, thanks for your suggestion and confirmation, David. It is 
-appreciated.
+Could you show some score which dirty_ratio give us benefit in the cases of
 
-Cheers,
-Pete
+	- copying a file in a memcg which hits limit
+	  ex) copying a 100M file in 120MB limit.  etc..
 
-¹) In a way, this is my primary justification to also use Linux on the 
-desktops²! Install one, and get the rest (nearly) free.. 
-http://download.opensuse.org/repositories/home:/frispete:/aufs2 and below..
-²) Don't tell anybody, that I don't like the other OS ;-)
+	- kernel make performance in limited memcg.
+	  ex) making a kernel in 100MB limit (too large ?)
+    etc....(when an application does many write and hits memcg's limit.)
+
+But, please get enough ack for changes in generic codes of dirty_ratio.
+
+Thank you for your work.
+
+Regards,
+-Kame
+
