@@ -1,81 +1,129 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373Ab0CKNZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 08:25:56 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:51953 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751381Ab0CKNZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 08:25:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eeXJP1Fbhi9t5u7H5nt8mCvFIRR64FgskA0MBok6A70IwaXQ2HRa6ob0uhCpvfcQun
-         n0ilO5ti0Qz7q4vooiw0Yr/00XJzFD6NYQK0w0faMBgsnPIZTacwm5l4cNSrKAmSew0z
-         j7qQ74QoCM5UFPCvoUdJPqoW/d9lJuSFqtsCM=
-Message-ID: <4B98EF5D.5000609@warmcat.com>
-Date: Thu, 11 Mar 2010 13:25:49 +0000
-From: Andy Green <andy@warmcat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc14 Thunderbird/3.0.3
+	id S1757503Ab0CKN3Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 08:29:24 -0500
+Received: from mga11.intel.com ([192.55.52.93]:10533 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754555Ab0CKN3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 08:29:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,620,1262592000"; 
+   d="scan'208";a="779919385"
+Date: Thu, 11 Mar 2010 21:29:13 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ronald <intercommit@gmail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [RFC PATCH] Fix Readahead stalling by plugged device queues
+Message-ID: <20100311132913.GB6692@localhost>
+References: <4B979104.6010907@linux.vnet.ibm.com> <20100310130932.GB18509@localhost> <4B97AD52.7080201@linux.vnet.ibm.com> <20100311014542.GA8134@localhost> <4B98BEB0.6020800@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Cyril Hrubis <metan@ucw.cz>
-CC: Pavel Machek <pavel@ucw.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       dbaryshkov@gmail.com, arminlitzel@web.de,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       utx@penguin.cz, lenz@cs.wisc.edu, rpurdie@rpsys.net,
-       omegamoon@gmail.com, thommycheck@gmail.com,
-       zaurus-devel@www.linuxtogo.org,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: bit errors on spitz
-References: <20100305212708.GC21773@elf.ucw.cz>	<f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com>	<20100308072858.GA29939@atrey.karlin.mff.cuni.cz> <20100308082530.GA1982@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20100308082530.GA1982@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B98BEB0.6020800@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08/10 08:25, Somebody in the thread at some point said:
-> Hi!
->> dmesg would not be useful, it usually hits user programs. Like... mutt
->> suddenly displaying , instead of - in the header. Program failing to
->> start because function printg is not found (it was not exactly
->> printf->printg,  I don't remember exact symbol), ping complaining
->> about discarding corrupted packets, etc.
->>
->> (Or of course, kernel oopsing or not going from suspend at all. But as
->> even user data are being corrupted, oops is not likely to be
->> interesting and system is typically not in state to capture it any more.)
->>
->
-> Well I've seen empty lines when editing file with vim (these that are starting
-> with blue tilda) in the middle of file. And sometimes programs segfaults for no
-> good reason. Just today I've run "apt-get update" and got:
->
-> symbol lookup error: apt-get: undefined symbol: _ZN16pkgAcquireStatus4StopEv
->
-> While the correct symbol seems to be _ZN16pkgAcquireStatus4.
->
-> When running 'make' in kernel directory and closing the display sometimes
-> machine dies and nothing but reset under battery cover helps. I remeber waking
-> up in the morning, opening the device and reseting the device. And it seems to
-> be provoked much more by active CF wifi card.
+On Thu, Mar 11, 2010 at 05:58:08PM +0800, Christian Ehrhardt wrote:
+> Wu Fengguang wrote:
+> > On Wed, Mar 10, 2010 at 10:31:46PM +0800, Christian Ehrhardt wrote:
+> >>
+> >> Wu Fengguang wrote:
+> >> [...]
+> >>> Christian, did you notice this commit for 2.6.33?
+> >>>
+> >>> commit 65a80b4c61f5b5f6eb0f5669c8fb120893bfb388
+> >> [...]
+> >>
+> >> I didn't see that particular one, due to the fact that whatever the 
+> >> result is it needs to work .32
+> >>
+> >> Anyway I'll test it tomorrow and if that already accepted one fixes my 
+> >> issue as well I'll recommend distros older than 2.6.33 picking that one 
+> >> up in their on top patches.
+> > 
+> > OK, thanks!
+> 
+> That patch fixes my issue completely and is as we discussed less 
+> aggressive which is fine - thanks for pointing it out - Now I have 
+> something already upstream accepted to fix the issue, thats much better!
 
-I saw very similar failures for a long time on our iMX31 based device. 
-Eventually I found a Freescale errata where the RAM inside the USB2 
-macrocell started to make single bit errors below 1.38V Vcore; ours was 
-1.4V at that time but dipped on CPU load.
+That's great news, it works beyond my expectation.. :)
 
-I cranked up the Vcore to 1.6V and that solved it, we also added some 
-ceramic caps to Vcore to help with the dips.
+> >>> It should at least improve performance between .32 and .33, because
+> >>> once two readahead requests are merged into one single IO request,
+> >>> the PageUptodate() will be true at next readahead, and hence
+> >>> blk_run_backing_dev() get called to break out of the suboptimal
+> >>> situation.
+> >> As you saw from my blktrace thats already the case without that patch.
+> >> Once the second readahead comes in and merged it gets unplugged in 
+> >> 2.6.32 too - but still that is bad behavior as it denies my things like 
+> >> 68% throughput improvement :-).
+> > 
+> > I mean, when readahead windows A and B are submitted in one IO --
+> > let's call it AB -- commit 65a80b4c61 will explicitly unplug on doing
+> > readahead C.  While in your trace, the unplug appears on AB.
+> > 
+> > The 68% improvement is very impressive. Wondering if commit 65a80b4c61
+> > (the _conditional_ unplug) can achieve the same level of improvement :)
+> 
+> Yep it can !
+> We can post update the patch description to bigger numbers :-)
 
-So it might be worth looking at PMU arrangements for Vcore level / look 
-for dips with a 'scope (despite this isn't an iMX31).
+Andrew/Greg, shall we push the patch to .32 stable?
 
-A characteristic of it was it never caused kernel issues, since the 
-kernel didn't come over USB.  It only ever caused troubles on userspace 
-stuff.
+That would give us an opportunity to change the patch description ;)
 
--Andy
+> >>> Your patch does reduce the possible readahead submit latency to 0.
+> >> yeah and I think/hope that is fine, because as I stated:
+> >> - low utilized disk -> not an issue
+> >> - high utilized disk -> unplug is an noop
+> >>
+> >> At least personally I consider a case where merging of a readahead 
+> >> window with anything except its own sibling very rare - and therefore 
+> >> fair to unplug after and RA is submitted.
+> > 
+> > They are reasonable assumptions. However I'm not sure if this
+> > unconditional unplug will defeat CFQ's anticipatory logic -- if there
+> > are any. You know commit 65a80b4c61 is more about a *defensive*
+> > protection against the rare case that two readahead windows get
+> > merged.
+> > 
+> >>> Is your workload a simple dd on a single disk? If so, it sounds like
+> >>> something illogical hidden in the block layer.
+> >> It might still be illogical hidden as e.g. 2.6.27 unplugged after the 
+> >> first readahead as well :-)
+> >> But no my load is iozone running with different numbers of processes 
+> >> with one disk per process.
+> >> That neatly resembles e.g. nightly backup jobs which tend to take longer 
+> >> and longer in all time increasing customer scenarios. Such an 
+> >> improvement might banish the backups back to the night were they belong :-)
+> > 
+> > Exactly one process per disk? Are they doing sequential reads or more
+> > complicated access patterns?
+> 
+> Just sequential read where I see the win, but I also had sequential 
+> write, and random read/write as well as some mixed stuff like dbench.
+> It improved sequential read and did not impact the others which is fine.
 
+Ah OK.
+
+> Thank you for you quick replies!
+
+You are welcome~
+
+Thanks,
+Fengguang
