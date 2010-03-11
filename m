@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934154Ab0CKSW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:22:58 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:61349 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934076Ab0CKSWd (ORCPT
+	id S934180Ab0CKSXV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:23:21 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:52515 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934107Ab0CKSWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:22:33 -0500
+	Thu, 11 Mar 2010 13:22:51 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 07/27] drivers/char/of: don't use deprecated field in
+Subject: [PATCH 11/27] drivers/macintosh/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
@@ -20,8 +20,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:22:26 -0700
-Message-ID: <20100311182226.13103.62140.stgit@angua>
+Date: Thu, 11 Mar 2010 11:22:48 -0700
+Message-ID: <20100311182248.13103.6111.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 User-Agent: StGIT/0.14.2
@@ -38,84 +38,63 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/char/hw_random/n2-drv.c            |    7 +++++--
- drivers/char/hw_random/pasemi-rng.c        |    7 +++++--
- drivers/char/ipmi/ipmi_si_intf.c           |    7 +++++--
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |    5 ++---
- 4 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/macintosh/smu.c              |    7 +++++--
+ drivers/macintosh/therm_pm72.c       |    7 +++++--
+ drivers/macintosh/therm_windtunnel.c |    7 +++++--
+ 3 files changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
-index 4d05003..c82a571 100644
---- a/drivers/char/hw_random/n2-drv.c
-+++ b/drivers/char/hw_random/n2-drv.c
-@@ -751,8 +751,11 @@ static const struct of_device_id n2rng_match[] = {
- MODULE_DEVICE_TABLE(of, n2rng_match);
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index f96feeb..4e912b2 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -670,8 +670,11 @@ static const struct of_device_id smu_platform_match[] =
  
- static struct of_platform_driver n2rng_driver = {
--	.name		= "n2rng",
--	.match_table	= n2rng_match,
+ static struct of_platform_driver smu_of_platform_driver =
+ {
+-	.name 		= "smu",
+-	.match_table	= smu_platform_match,
 +	.driver = {
-+		.name = "n2rng",
++		.name = "smu",
 +		.owner = THIS_MODULE,
-+		.of_match_table = n2rng_match,
++		.of_match_table = smu_platform_match,
 +	},
- 	.probe		= n2rng_probe,
- 	.remove		= __devexit_p(n2rng_remove),
- };
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index b213855..261ba8f 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -140,8 +140,11 @@ static struct of_device_id rng_match[] = {
+ 	.probe		= smu_platform_probe,
  };
  
- static struct of_platform_driver rng_driver = {
--	.name		= "pasemi-rng",
--	.match_table	= rng_match,
+diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
+index f5b0f9e..c99f937 100644
+--- a/drivers/macintosh/therm_pm72.c
++++ b/drivers/macintosh/therm_pm72.c
+@@ -2221,8 +2221,11 @@ static const struct of_device_id fcu_match[] =
+ 
+ static struct of_platform_driver fcu_of_platform_driver = 
+ {
+-	.name 		= "temperature",
+-	.match_table	= fcu_match,
 +	.driver = {
-+		.name = "pasemi-rng",
++		.name = "temperature",
 +		.owner = THIS_MODULE,
-+		.of_match_table = rng_match,
++		.of_match_table = fcu_match,
 +	},
- 	.probe		= rng_probe,
- 	.remove		= rng_remove,
+ 	.probe		= fcu_of_probe,
+ 	.remove		= fcu_of_remove
  };
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 45305f2..012e63b 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2492,8 +2492,11 @@ static struct of_device_id ipmi_match[] =
+diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+index 7fb8b4d..dc6a47a 100644
+--- a/drivers/macintosh/therm_windtunnel.c
++++ b/drivers/macintosh/therm_windtunnel.c
+@@ -464,8 +464,11 @@ static const struct of_device_id therm_of_match[] = {{
  };
  
- static struct of_platform_driver ipmi_of_platform_driver = {
--	.name		= "ipmi",
--	.match_table	= ipmi_match,
+ static struct of_platform_driver therm_of_driver = {
+-	.name		= "temperature",
+-	.match_table	= therm_of_match,
 +	.driver = {
-+		.name = "ipmi",
++		.name = "temperature",
 +		.owner = THIS_MODULE,
-+		.of_match_table = ipmi_match,
++		.of_match_table = therm_of_match,
 +	},
- 	.probe		= ipmi_of_probe,
- 	.remove		= __devexit_p(ipmi_of_remove),
+ 	.probe		= therm_of_probe,
+ 	.remove		= therm_of_remove,
  };
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 4846d50..1fb8665 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -811,13 +811,12 @@ static const struct of_device_id __devinitconst hwicap_of_match[] = {
- MODULE_DEVICE_TABLE(of, hwicap_of_match);
- 
- static struct of_platform_driver hwicap_of_driver = {
--	.owner = THIS_MODULE,
--	.name = DRIVER_NAME,
--	.match_table = hwicap_of_match,
- 	.probe = hwicap_of_probe,
- 	.remove = __devexit_p(hwicap_of_remove),
- 	.driver = {
- 		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = hwicap_of_match,
- 	},
- };
- 
 
