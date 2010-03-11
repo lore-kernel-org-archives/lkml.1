@@ -1,87 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589Ab0CKJP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:15:58 -0500
-Received: from mga09.intel.com ([134.134.136.24]:25281 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753806Ab0CKJP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:15:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,619,1262592000"; 
-   d="scan'208";a="499756322"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Avi Kivity <avi@redhat.com>, Qing He <qing.he@intel.com>
-Subject: Re: [PATCH] x86/kvm: Show guest system/user cputime in cpustat
-Date: Thu, 11 Mar 2010 17:17:26 +0800
-User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
-Cc: Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-References: <1268292022-31352-1-git-send-email-sheng@linux.intel.com> <201003111546.44059.sheng@linux.intel.com> <4B98A0DE.1020006@redhat.com>
-In-Reply-To: <4B98A0DE.1020006@redhat.com>
+	id S1752618Ab0CKJ07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:26:59 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:44288 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335Ab0CKJ05 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 04:26:57 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
+References: <20100310123257.GA2899@frolo.macqel>
+	<87d3zc1bjo.fsf@devron.myhome.or.jp>
+	<20100310161429.GA16799@frolo.macqel>
+	<87hboow105.fsf@devron.myhome.or.jp>
+	<20100310235808.GA4353@frolo.macqel>
+Date: Thu, 11 Mar 2010 18:26:54 +0900
+In-Reply-To: <20100310235808.GA4353@frolo.macqel> (Philippe De Muyter's
+	message of "Thu, 11 Mar 2010 00:58:08 +0100")
+Message-ID: <87bpevryxt.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003111717.26475.sheng@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 March 2010 15:50:54 Avi Kivity wrote:
-> On 03/11/2010 09:46 AM, Sheng Yang wrote:
-> > On Thursday 11 March 2010 15:36:01 Avi Kivity wrote:
-> >> On 03/11/2010 09:20 AM, Sheng Yang wrote:
-> >>> Currently we can only get the cpu_stat of whole guest as one. This
-> >>> patch enhanced cpu_stat with more detail, has guest_system and
-> >>> guest_user cpu time statistics with a little overhead.
-> >>>
-> >>> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
-> >>> ---
-> >>>
-> >>> This draft patch based on KVM upstream to show the idea. I would split
-> >>> it into more kernel friendly version later.
-> >>>
-> >>> The overhead is, the cost of get_cpl() after each exit from guest.
-> >>
-> >> This can be very expensive in the nested virtualization case, so I
-> >> wouldn't like this to be in normal paths.  I think detailed profiling
-> >> like that can be left to 'perf kvm', which only has overhead if enabled
-> >> at runtime.
-> >
-> > Yes, that's my concern too(though nested vmcs/vmcb read already too
-> > expensive, they should be optimized...).
-> 
-> Any ideas on how to do that?  Perhaps use paravirt_ops to covert the
-> vmread into a memory read?  We store the vmwrites in the vmcs anyway.
+Philippe De Muyter <phdm@macqel.be> writes:
 
-When Qing(CCed) was working on nested VMX in the past, he found PV 
-vmread/vmwrite indeed works well(it would write to the virtual vmcs so vmwrite 
-can also benefit). Though compared to old machine(one our internal patch shows 
-improve more than 5%), NHM get less benefit due to the reduced vmexit cost.
+>> >> This introduces unneeded directory-parse to standard one.  And for
+>> >
+>> > No.  There will only be a second parse if someone is looking for a filename
+>> > with a trailing dot, and it is not found (*).  I there is no trailing dot in qname, only the first fat_search_long will be called, because len after vfat_striptail_len would be equal to qname->len.
+>> 
+>> Yes, I'm saying about trailing-dot filename case. Any disadvantage to
+>> standard one is unacceptable to workaround.
+>
+> This is unavoidable.
 
+We would be able to introduce new mount option to do it if needed.
+
+>> 	$ ls
+>>         a.. a. a
+>>         $ rm -rf *
+>> 
+>>         $ ls
+>>         a..
+>>         $ touch a.
+>>         $ touch a
+>> ...
+>> 
+>> I assumed you want to define "a." and "a" are different name on
+>> "mv a a.", and _totally_.
+>
+> For file creation and renaming, I want to introduce no change, because there
+> is no problem.  If one wants to create a "a." file on a IO-MEGA disk suing
+> linux and USB, it is currently called "a", and that will remain exactly the
+> same.
+
+This changed vfat_find(), so, this patch will change the behavior of all
+callers more or less. And the behavior seems to be really strange, you
+can remove "a.", but you can't create it? The behavior sounds random,
+right?
+
+Thanks.
 -- 
-regards
-Yang, Sheng
-
-> 
-> > The other concern is, perf alike mechanism would
-> > bring a lot more overhead compared to this.
-> 
-> Ordinarily users won't care if time is spent in guest kernel mode or
-> guest user mode.  They want to see which guest is imposing a load on a
-> system.  I consider a user profiling a guest from the host an advanced
-> and rarer use case, so it's okay to require tools and additional
-> overhead for this.
-> 
-> >> For example you can put the code to note the cpl in a tracepoint which
-> >> is enabled dynamically.
-> >
-> > Yanmin have already implement "perf kvm" to support this. We are just
-> > arguing if a normal top-alike mechanism is necessary.
-> >
-> > I am also considering to make it a feature that can be disabled. But
-> > seems it make things complicate and result in uncertain cpustat output.
-> 
-> I'm not even sure that guest time was a good idea.
-> 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
