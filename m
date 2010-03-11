@@ -1,101 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984Ab0CKW1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 17:27:08 -0500
-Received: from trinity.develer.com ([83.149.158.210]:60503 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860Ab0CKW1F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 17:27:05 -0500
-Date: Thu, 11 Mar 2010 23:27:01 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 4/5] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100311222701.GC2427@linux>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
- <1268175636-4673-5-git-send-email-arighi@develer.com>
- <20100310222338.GB3009@redhat.com>
+	id S1758461Ab0CKW2U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 17:28:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57492 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752693Ab0CKW2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 17:28:19 -0500
+Message-ID: <4B996E58.6010407@zytor.com>
+Date: Thu, 11 Mar 2010 14:27:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100310222338.GB3009@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Daniel Taylor <Daniel.Taylor@wdc.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition
+ for > 512B sector
+References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com>	<20100301141335.395dc4c3.akpm@linux-foundation.org>	<873a0h1p2c.fsf@devron.myhome.or.jp>	<876358iehd.fsf@devron.myhome.or.jp> <4B9430B6.701@zytor.com>	<87pr3fd68r.fsf@devron.myhome.or.jp> <4B9440FC.3090502@zytor.com>	<87zl2j9muz.fsf@devron.myhome.or.jp>	<87wrxkw52s.fsf_-_@devron.myhome.or.jp>	<87sk88w4xk.fsf_-_@devron.myhome.or.jp>	<3E0C3AE547FA504DA5E89EA5A24AC85803E2BD87@wdscexbe01.sc.wdc.com>	<873a07oyts.fsf@devron.myhome.or.jp>	<3E0C3AE547FA504DA5E89EA5A24AC85803E2BD8E@wdscexbe01.sc.wdc.com> <87vdd2fqpr.fsf@devron.myhome.or.jp>
+In-Reply-To: <87vdd2fqpr.fsf@devron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 10, 2010 at 05:23:39PM -0500, Vivek Goyal wrote:
-> On Wed, Mar 10, 2010 at 12:00:35AM +0100, Andrea Righi wrote:
-> 
-> [..]
-> 
-> > - * Currently used to update mapped file statistics, but the routine can be
-> > - * generalized to update other statistics as well.
-> > + * mem_cgroup_update_page_stat() - update memcg file cache's accounting
-> > + * @page:	the page involved in a file cache operation.
-> > + * @idx:	the particular file cache statistic.
-> > + * @charge:	true to increment, false to decrement the statistic specified
-> > + *		by @idx.
-> > + *
-> > + * Update memory cgroup file cache's accounting.
-> >   */
-> > -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> > +void mem_cgroup_update_page_stat(struct page *page,
-> > +			enum mem_cgroup_write_page_stat_item idx, bool charge)
-> >  {
-> > -	struct mem_cgroup *mem;
-> >  	struct page_cgroup *pc;
-> >  	unsigned long flags;
-> >  
-> > +	if (mem_cgroup_disabled())
-> > +		return;
-> >  	pc = lookup_page_cgroup(page);
-> > -	if (unlikely(!pc))
-> > +	if (unlikely(!pc) || !PageCgroupUsed(pc))
-> >  		return;
-> > -
-> >  	lock_page_cgroup(pc, flags);
-> > -	mem = pc->mem_cgroup;
-> > -	if (!mem)
-> > -		goto done;
-> > -
-> > -	if (!PageCgroupUsed(pc))
-> > -		goto done;
-> > -
-> > -	/*
-> > -	 * Preemption is already disabled. We can use __this_cpu_xxx
-> > -	 */
-> > -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> > -
-> > -done:
-> > +	__mem_cgroup_update_page_stat(pc, idx, charge);
-> >  	unlock_page_cgroup(pc, flags);
-> >  }
-> > +EXPORT_SYMBOL_GPL(mem_cgroup_update_page_stat_unlocked);
-> 
->   CC      mm/memcontrol.o
-> mm/memcontrol.c:1600: error: ‘mem_cgroup_update_page_stat_unlocked’
-> undeclared here (not in a function)
-> mm/memcontrol.c:1600: warning: type defaults to ‘int’ in declaration of
-> ‘mem_cgroup_update_page_stat_unlocked’
-> make[1]: *** [mm/memcontrol.o] Error 1
-> make: *** [mm] Error 2
+On 03/11/2010 02:17 PM, OGAWA Hirofumi wrote:
+>
+> Those are all about the first (1/2) patch, not this second patch.
+> Personally, I'm thinking we should apply the first patch as bugfix.
+>
+> I'm talking about only second (2/2) patch in here.
+>
 
-Thanks! Will fix in the next version.
+The 2/2 patch seems to be a bug fix too; it implements the intent of the 
+original code as far as I can see.
 
-(mmh... why I didn't see this? probably because I'm building a static kernel...)
-
--Andrea
+	-hpa
