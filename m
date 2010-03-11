@@ -1,75 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788Ab0CKViI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 16:38:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41275 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754316Ab0CKViE (ORCPT
+	id S1754871Ab0CKVkO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:40:14 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:35704 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316Ab0CKVkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:38:04 -0500
-Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
-From: Peter Zijlstra <peterz@infradead.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Stephane Eranian <eranian@google.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100311213128.GE25162@lenovo>
-References: <20100310183102.GC8070@lenovo>
-	 <1268274775.4996.16.camel@minggr.sh.intel.com>
-	 <20100311165439.GB5129@lenovo> <20100311181646.GA12235@elte.hu>
-	 <20100311183921.GA30249@elte.hu> <20100311211538.GC25162@lenovo>
-	 <1268342662.5037.143.camel@laptop>  <20100311213128.GE25162@lenovo>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Mar 2010 22:38:00 +0100
-Message-ID: <1268343480.5037.145.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+	Thu, 11 Mar 2010 16:40:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pE5iOHtFfYrXwiPRbJO5kGFMRQVbAFltk4+OeB+7eIEIAbBM5/AOgcKQD/uCdL2WKx
+         MkE1+mpPQAO/BEUHXF1etxKaclt5wwn2UNdBoFTqz/tKLiQxsuXS6gNxDKJPj/5kG9p4
+         NZHcBsvsr74x4X2+GtNkfNc75QxtF6OoRs4IQ=
+Message-ID: <4B996335.7070907@gmail.com>
+Date: Thu, 11 Mar 2010 22:40:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.2.2pre) Gecko/20100308 SUSE/3.1b1-5.1 Thunderbird/3.1b1
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Greg Thelen <gthelen@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.com
+Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
+References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <4B90C921.6060908@kernel.org> <4B90DC3C.1060000@gmail.com> <4B92FE9E.90600@kernel.org> <4B98CBC8.6080008@gmail.com> <4B994EC4.2050705@kernel.org>
+In-Reply-To: <4B994EC4.2050705@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 00:31 +0300, Cyrill Gorcunov wrote:
-> On Thu, Mar 11, 2010 at 10:24:22PM +0100, Peter Zijlstra wrote:
-> > On Fri, 2010-03-12 at 00:15 +0300, Cyrill Gorcunov wrote:
-> > 
-> > > Perhaps something like the patch below (tested with kvm)? With this patch
-> > > we will actually waste ~4/8 bytes per PMU (intel,amd,p6) since this call
-> > > hits on p4 only, so I think perhaps better to use one x86 scheduler hook
-> > > instead of empty schedule_events() in PMU, hmm?
-> > > ---
-> > > 
-> > > x86,perf: Fix NULL deref on not assigned x86_pmu
-> > > 
-> > > In case of not assigned x86_pmu and software events
-> > > NULL dereference may being hit via x86_pmu::schedule_events
-> > > method.
-> > > 
-> > > Fix it by calling x86_pmu::schedule_events only if we
-> > > have one. Otherwise use general scheduler.
-> > > 
-> > > Also the former x86_schedule_events calls restored.
-> > 
-> > Hrm,.. not sure that makes sense, sure it might not crash anymore, but
-> > its not making much sense to compute anything if we don't have an
-> > initialized x86_pmu.
-> > 
-> > Doesn't adding something like:
-> > 
-> >   if (!x86_pmu_initialized())
-> >    return;
-> > 
-> > to hw_perf_group_sched_in() make more sense? We seem to do that for all
-> > these weak things except this one.
-> > 
-> 
-> As far as I see it'll not update tstamp_running then (in x86_event_sched_in).
-> Or I miss somethig?
+On 03/11/2010 09:12 PM, Yinghai Lu wrote:
+> On 03/11/2010 02:54 AM, Jiri Slaby wrote:
+>> Hi, yes, it is 2.6.27.
+>
+> SLES 11?
 
-Have it return 0 and it will fallback to defaults. Since there is no
-initialized x86_pmu there's no point in doing anything x86 specific.
+Sorry I wrote that in haste. It is SLES 10 in the end. That means it is 
+2.6.16, not 2.6.27. Hence no sparsemem whatsoever. With SLES11 it should 
+be OK, we are using flatmem only for i386.
 
+Whatever, it should be no issue now, as flatmem currently (as of 2.6.25) 
+depends on i386.
+
+On the other hand I still considered the patch as applicable to 
+contemporary kernels since there might be weird bios e820 maps and huge 
+(and sparse) bootmem allocations/reservations (memory cgroups, initrd) 
+so that code requiring much memory below 4g (swiotlb) will fail then.
+
+Whatever, in the current kernel, the particular issue I was referring to 
+*is not reproducible*.
+
+thanks,
+-- 
+js
