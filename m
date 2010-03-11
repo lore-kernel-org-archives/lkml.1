@@ -1,142 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140Ab0CKMbK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 07:31:10 -0500
-Received: from mail-yw0-f188.google.com ([209.85.211.188]:38650 "EHLO
-	mail-yw0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323Ab0CKMbH (ORCPT
+	id S1756834Ab0CKMhz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 07:37:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44824 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344Ab0CKMhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 07:31:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=l6FYL/dFtxSqKEBiDpfWa4jZr1e126cUCAqFpf1eiluhPQd770bab068umTlV2jzkz
-         VgrigHHSeOiklAb4nDLiuRMOrGX14HcEFA7MmEvsOcx/L13VZ615DR6JCQSQLSWytbh/
-         hY8mLDMhD3ZIdGH4JTCM1A3Hx6mQf+k0UOfKE=
-Message-ID: <4B98E285.9090006@gmail.com>
-Date: Thu, 11 Mar 2010 07:31:01 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
-References: <4B98D592.6040301@gmail.com>
-In-Reply-To: <4B98D592.6040301@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050206010408020903000400"
+	Thu, 11 Mar 2010 07:37:53 -0500
+Subject: Re: [PATCH] perf_events: fix X86 bogus counts when multiplexing
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@google.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com, robert.richter@amd.com, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <1268296361.5279.901.camel@twins>
+References: <1268288259-4011-1-git-send-email-eranian@google.com>
+	 <1268296361.5279.901.camel@twins>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 13:37:49 +0100
+Message-ID: <1268311069.5037.31.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050206010408020903000400
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, 2010-03-11 at 09:32 +0100, Peter Zijlstra wrote:
+> On Wed, 2010-03-10 at 22:17 -0800, eranian@google.com wrote:
+> > This patch fixes a bug in 2.6.33 X86 event scheduling whereby
+> > all counts are bogus as soon as events need to be multiplexed
+> > because the PMU is overcommitted.
+> > 
+> > The code in hw_perf_enable() was causing multiplexed events
+> > to accumulate collected counts twice causing bogus results.
+> > 
+> > This is demonstrated on AMD Barcelona with the example
+> > below. First run, no conflict, you obtain the actual counts.
+> > Second run, PMU overcommitted, multiplexing, all events are
+> > over-counted. Third run, patch applied, you obtain the correct
+> > count through scaling.
+> > 
+> 
+> I'm a bit puzzled by this one, if we, during scheduling move an event
+> from idx 1 to idx 2, we need to stop it on 1 and start if on 2,
+> otherwise we do not properly transfer its count, right?
+> 
+> With the below patch it does no such thing.
+> 
+> I did fix some funnies I observed with hw_perf_enable() while doing the
+> PEBS stuff, and -tip does it wrong differently from what you illustrate,
+> so while there defenately is something to fix, I doubt the below is
+> correct.
 
-When accompanied by cookie option, Initiator (client) queues incoming
-SYNACK transaction data.
+OK, so what happens is that we schedule badly like:
 
-This is a straightforward re-implementation of an earlier (18 month old)
-patch that no longer applies cleanly, with permission of the original
-author (Adam Langley).  The patch was previously reviewed:
+<...>-1987  [019]   280.252808: x86_pmu_start: event-46/1300c0: idx: 0
+<...>-1987  [019]   280.252811: x86_pmu_start: event-47/1300c0: idx: 1
+<...>-1987  [019]   280.252812: x86_pmu_start: event-48/1300c0: idx: 2
+<...>-1987  [019]   280.252813: x86_pmu_start: event-49/1300c0: idx: 3
+<...>-1987  [019]   280.252814: x86_pmu_start: event-50/1300c0: idx: 32
+<...>-1987  [019]   280.252825: x86_pmu_stop: event-46/1300c0: idx: 0
+<...>-1987  [019]   280.252826: x86_pmu_stop: event-47/1300c0: idx: 1
+<...>-1987  [019]   280.252827: x86_pmu_stop: event-48/1300c0: idx: 2
+<...>-1987  [019]   280.252828: x86_pmu_stop: event-49/1300c0: idx: 3
+<...>-1987  [019]   280.252829: x86_pmu_stop: event-50/1300c0: idx: 32
+<...>-1987  [019]   280.252834: x86_pmu_start: event-47/1300c0: idx: 1
+<...>-1987  [019]   280.252834: x86_pmu_start: event-48/1300c0: idx: 2
+<...>-1987  [019]   280.252835: x86_pmu_start: event-49/1300c0: idx: 3
+<...>-1987  [019]   280.252836: x86_pmu_start: event-50/1300c0: idx: 32
+<...>-1987  [019]   280.252837: x86_pmu_start: event-51/1300c0: idx: 32 *FAIL*
 
-    http://thread.gmane.org/gmane.linux.network/102586
+This happens because we only iterate the n_running events in the first
+pass, and reset their index to -1 if they don't match to force a
+re-assignment.
 
-This function will also be used in subsequent patches that implement
-additional features.
+Now, in our RR example, n_running == 0 because we fully unscheduled, so
+event-50 will retain its idx==32, even though in scheduling it will have
+gotten idx=0, and we don't trigger the re-assign path.
 
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
+The easiest way to fix this is the below patch, which simply validates
+the full assignment in the second pass.
 
-Signed-off-by: William.Allen.Simpson@gmail.com
 ---
-  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
-  1 files changed, 25 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
---------------050206010408020903000400
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2e3+2.6.34-rc1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="TCPCT+2e3+2.6.34-rc1.patch"
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 5541d08..7371406 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -5409,6 +5409,12 @@ discard:
- 	return 0;
- }
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index 4a0514d..a3aff76 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -787,7 +787,6 @@ void hw_perf_enable(void)
+ 		 * step2: reprogram moved events into new counters
+ 		 */
+ 		for (i = 0; i < n_running; i++) {
+-
+ 			event = cpuc->event_list[i];
+ 			hwc = &event->hw;
  
-+/*
-+ * Returns:
-+ *	+1 on reset,
-+ *	0 success and/or SYNACK data,
-+ *	-1 on discard.
-+ */
- static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 					 struct tcphdr *th)
- {
-@@ -5417,6 +5423,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	struct tcp_cookie_values *cvp = tp->cookie_values;
- 	int saved_clamp = tp->rx_opt.mss_clamp;
-+	int queued = 0;
+@@ -802,21 +801,16 @@ void hw_perf_enable(void)
+ 				continue;
  
- 	tcp_parse_options(skb, &tp->rx_opt, &hash_location, 0);
- 
-@@ -5523,6 +5530,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 					- TCPOLEN_COOKIE_BASE;
- 			int cookie_pair_size = cookie_size
- 					     + cvp->cookie_desired;
-+			int tcp_header_len = tcp_header_len_th(th);
- 
- 			/* A cookie extension option was sent and returned.
- 			 * Note that each incoming SYNACK replaces the
-@@ -5538,6 +5546,19 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 				       hash_location, cookie_size);
- 				cvp->cookie_pair_size = cookie_pair_size;
- 			}
-+
-+			queued = skb->len - tcp_header_len;
-+			if (queued > 0) {
-+				/* Queue incoming transaction data. */
-+				__skb_pull(skb, tcp_header_len);
-+				__skb_queue_tail(&sk->sk_receive_queue, skb);
-+				skb_set_owner_r(skb, sk);
-+				sk->sk_data_ready(sk, 0);
-+				cvp->s_data_in = 1; /* true */
-+				tp->rcv_nxt = TCP_SKB_CB(skb)->end_seq;
-+				tp->rcv_wup = TCP_SKB_CB(skb)->end_seq;
-+				tp->copied_seq = TCP_SKB_CB(skb)->seq + 1;
-+			}
+ 			x86_pmu_stop(event);
+-
+-			hwc->idx = -1;
  		}
  
- 		smp_mb();
-@@ -5591,11 +5612,14 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 						  TCP_DELACK_MAX, TCP_RTO_MAX);
+ 		for (i = 0; i < cpuc->n_events; i++) {
+-
+ 			event = cpuc->event_list[i];
+ 			hwc = &event->hw;
  
- discard:
--			__kfree_skb(skb);
-+			if (queued <= 0)
-+				__kfree_skb(skb);
- 			return 0;
- 		} else {
- 			tcp_send_ack(sk);
+-			if (i < n_running &&
+-			    match_prev_assignment(hwc, cpuc, i))
+-				continue;
+-
+-			if (hwc->idx == -1)
++			if (!match_prev_assignment(hwc, cpuc, i))
+ 				x86_assign_hw_event(event, cpuc, i);
++			else if (i < n_running)
++				continue;
+ 
+ 			x86_pmu_start(event);
  		}
-+		if (queued > 0)
-+			return 0;
- 		return -1;
- 	}
- 
--- 
-1.6.3.3
 
 
---------------050206010408020903000400--
