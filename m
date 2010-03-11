@@ -1,47 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966Ab0CKJLI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:11:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44521 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752545Ab0CKJLD convert rfc822-to-8bit (ORCPT
+	id S1753879Ab0CKJOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:14:14 -0500
+Received: from mail.windriver.com ([147.11.1.11]:49588 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545Ab0CKJOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:11:03 -0500
-Subject: Re: [PATCH] perf: export perf_trace_regs and
- perf_arch_fetch_caller_regs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100311090248.GA10904@infradead.org>
-References: <4B989C1B.2090407@cn.fujitsu.com>
-	 <20100311090248.GA10904@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 11 Mar 2010 10:10:51 +0100
-Message-ID: <1268298651.5279.986.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 11 Mar 2010 04:14:12 -0500
+Date: Thu, 11 Mar 2010 17:13:39 +0800
+From: Yong Zhang <yong.zhang@windriver.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] IRQ: Fix oneshot irq race between
+ irq_finalize_oneshot and handle_level_irq
+Message-ID: <20100311091339.GD8389@windriver.com>
+Reply-To: Yong Zhang <yong.zhang@windriver.com>
+References: <1268092679-18070-1-git-send-email-lars@metafoo.de>
+ <alpine.LFD.2.00.1003091959080.22855@localhost.localdomain>
+ <20100310032102.GA2090@windriver.com>
+ <alpine.LFD.2.00.1003100848380.22855@localhost.localdomain>
+ <20100311025533.GB8389@windriver.com>
+ <alpine.LFD.2.00.1003110927450.22855@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1003110927450.22855@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 11 Mar 2010 09:13:40.0856 (UTC) FILETIME=[241B1780:01CAC0FB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 04:02 -0500, Christoph Hellwig wrote:
-> On Thu, Mar 11, 2010 at 03:30:35PM +0800, Xiao Guangrong wrote:
-> > Export perf_trace_regs and perf_arch_fetch_caller_regs since module will
-> > use these
+On Thu, Mar 11, 2010 at 09:41:45AM +0100, Thomas Gleixner wrote:
+> No, it is _NOT_ harmless. interrupt handlers are guaranteed _NOT_ to
+> be reentered. That's why we check the INPROGRESS flag. 
 > 
-> What modules exactly?  Uusually you add the export together with the
-> series adding the users.
+> And you totally miss the case which caused the disussion in the first
+> place: When the thread finishes _before_ the hard irq handler on the
+> other CPU has set IRQ_MASKED. So this patch solves nothing at all, it
+> just makes stuff worse than it was.
+> 
+> Here is the solution which solves the inconsistent lock state _AND_
+> the reentrancy race.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commit;h=0b1adaa031a55e44f5dd942f234bf09d28e8a0d6
+> 
+> The change log has a full explanation of the scenarios.
 
-Pretty much all modular tracepoint users I think, I just got this from a
-pp64_defconfig build:
+Yeah, I see. Thanks for your point.
+It will smooth the concerns.
 
-ERROR: "perf_trace_regs" [fs/xfs/xfs.ko] undefined!
-ERROR: ".perf_arch_fetch_caller_regs" [fs/xfs/xfs.ko] undefined!
-ERROR: "perf_trace_regs" [arch/powerpc/platforms/cell/spufs/spufs.ko] undefined!
-ERROR: ".perf_arch_fetch_caller_regs" [arch/powerpc/platforms/cell/spufs/spufs.ko] undefined!
-
+Thanks,
+Yong
