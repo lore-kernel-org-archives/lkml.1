@@ -1,85 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756433Ab0CKJ5c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:57:32 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60125 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755285Ab0CKJ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:57:31 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Wwmh0B75WTjiBPKTVO814s2Oswo0EWijkjo+hJd
-	fH4Bqpgg0UJzMN
-Subject: Re: [patch 7/12] sched: remove NORMALIZED_SLEEPER
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1268300950.6785.27.camel@marge.simson.net>
-References: <1268300950.6785.27.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 11 Mar 2010 10:57:27 +0100
-Message-Id: <1268301447.6785.38.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	id S1756525Ab0CKJ54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:57:56 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:43112 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756396Ab0CKJ5z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 04:57:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AHaqdVPQJDFx219s2JWNHN6UniIrZhqwn/iIfchU7i9GSZNTtwArPfydTOMfvjPh18
+         Vh+zFW6uBtHYNHS95JNaXuZPITOs2jvYoQ1RlkA8HMbyrvD6d6KX3lpta6EVNlulJqQm
+         PIR4iKfx8VngVdEggMkYCmoXiI6//QVOGmtBU=
+MIME-Version: 1.0
+In-Reply-To: <2375c9f91003101842g713bba07v146a53f12a15a8d7@mail.gmail.com>
+References: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>
+	 <4B977282.40505@cs.helsinki.fi>
+	 <alpine.DEB.2.00.1003100832200.17615@router.home>
+	 <2375c9f91003101842g713bba07v146a53f12a15a8d7@mail.gmail.com>
+Date: Thu, 11 Mar 2010 17:57:54 +0800
+Message-ID: <2375c9f91003110157y35d26e39odcd8efd9b44d83a1@mail.gmail.com>
+Subject: Re: 2.6.34-rc1: kernel BUG at mm/slab.c:2989!
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       roland@redhat.com, peterz@infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 11, 2010 at 10:42 AM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Wed, Mar 10, 2010 at 10:33 PM, Christoph Lameter
+> <cl@linux-foundation.org> wrote:
+>> On Wed, 10 Mar 2010, Pekka Enberg wrote:
+>>
+>>> > Please let me know if you need more info.
+>>>
+>>> Looks like regular SLAB corruption bug to me. Can you trigget it with SLUB?
+>>
+>> Run SLUB with CONFIG_SLUB_DEBUG_ON or specify slub_debug on the kernel
+>> command line to have all allocations checked.
+>>
+>>
+>
+> Ok, I will try it today.
+>
 
-sched: remove NORMALIZED_SLEEPER
-
-This feature hasn't been enabled in a long time, remove effectively dead code.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-
----
- kernel/sched_fair.c     |   10 ----------
- kernel/sched_features.h |    7 -------
- 2 files changed, 17 deletions(-)
-
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -741,16 +741,6 @@ place_entity(struct cfs_rq *cfs_rq, stru
- 		unsigned long thresh = sysctl_sched_latency;
- 
- 		/*
--		 * Convert the sleeper threshold into virtual time.
--		 * SCHED_IDLE is a special sub-class.  We care about
--		 * fairness only relative to other SCHED_IDLE tasks,
--		 * all of which have the same weight.
--		 */
--		if (sched_feat(NORMALIZED_SLEEPER) && (!entity_is_task(se) ||
--				 task_of(se)->policy != SCHED_IDLE))
--			thresh = calc_delta_fair(thresh, se);
--
--		/*
- 		 * Halve their sleep time's effect, to allow
- 		 * for a gentler effect of sleepers:
- 		 */
-Index: linux-2.6/kernel/sched_features.h
-===================================================================
---- linux-2.6.orig/kernel/sched_features.h
-+++ linux-2.6/kernel/sched_features.h
-@@ -13,13 +13,6 @@ SCHED_FEAT(FAIR_SLEEPERS, 1)
- SCHED_FEAT(GENTLE_FAIR_SLEEPERS, 1)
- 
- /*
-- * By not normalizing the sleep time, heavy tasks get an effective
-- * longer period, and lighter task an effective shorter period they
-- * are considered running.
-- */
--SCHED_FEAT(NORMALIZED_SLEEPER, 0)
--
--/*
-  * Place new tasks ahead so that they do not starve already running
-  * tasks
-  */
-
-
+Sorry, I can't trigger it today, either with SLAB or SLUB.
