@@ -1,105 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166Ab0CKULW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 15:11:22 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:29682 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758120Ab0CKUKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 15:10:48 -0500
-From: Marcelo Roberto Jimenez <mroberto@cpti.cetuc.puc-rio.br>
-To: linux@arm.linux.org.uk, mroberto@cpti.cetuc.puc-rio.br
-Cc: mad_soft@inbox.ru, rpjday@crashcourse.ca, jaswinderrajput@gmail.com,
-       kristoffer.ericson@gmail.com, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] ARM: mach-sa1100: Fix for a nasty initialization bug in the RTSR.
-Date: Thu, 11 Mar 2010 17:10:24 -0300
-Message-Id: <1268338225-32253-3-git-send-email-mroberto@cpti.cetuc.puc-rio.br>
-X-Mailer: git-send-email 1.7.0.1
-In-Reply-To: <1268338225-32253-1-git-send-email-mroberto@cpti.cetuc.puc-rio.br>
-References: <1268338225-32253-1-git-send-email-mroberto@cpti.cetuc.puc-rio.br>
+	id S1758135Ab0CKUNy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 15:13:54 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:35947 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756243Ab0CKUNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 15:13:53 -0500
+Message-ID: <4B994EFE.70005@msgid.tls.msk.ru>
+Date: Thu, 11 Mar 2010 23:13:50 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: linux-aio@kvack.org, Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: aio: compat_ioctl issue?
+References: <4B956E5B.9020302@msgid.tls.msk.ru>	<x497hpm8p69.fsf@segfault.boston.devel.redhat.com>	<4B957122.4060007@msgid.tls.msk.ru>	<x49mxyi78ob.fsf@segfault.boston.devel.redhat.com>	<4B957AF3.6040801@msgid.tls.msk.ru>	<4B957D20.4010904@msgid.tls.msk.ru>	<x49wrxij11s.fsf@segfault.boston.devel.redhat.com>	<4B994022.6030703@msgid.tls.msk.ru>	<4B994888.8020007@msgid.tls.msk.ru> <x49eijqiqcd.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49eijqiqcd.fsf@segfault.boston.devel.redhat.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=804465C5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a nasty initialization condition on the RTSR register.
-Sometimes, bit 1 will wake up set, sometimes not. This can be seen
-by checking the value of the RTSR by typing '$ cat /proc/driver/rtc',
-which has been provided by the previous patch.
+Jeff Moyer wrote:
+> Michael Tokarev <mjt@tls.msk.ru> writes:
+[]
+>> And when running real thing it crashes.   I tested it
+>> on 2.6.32 (trivial corrections to the patch required).
+> 
+> Could you just post your version of the patch so I can have a look?
 
-If this bit is set, the command '$ cat /dev/rtc0' will lock the system
-in an endless interrupt routine calling loop.
+I think there's no need since in 2.6.33 (where your patch applies
+without any offsets) it crashes in exactly the same way:
 
-This patch fixes the issue both at sa1100_rtc_probe(), where it avoids
-a spurious interrupt from happening, and at sa1100_rtc_interrupt(),
-which is the robust solution, though it does not avoid the first
-spurious interrupt.
+------
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+IP: [<ffffffff810bbf37>] generic_segment_checks+0x17/0xd0
+PGD 184f1c067 PUD 184cd1067 PMD 0
+Oops: 0000 [#1] SMP
+last sysfs file: /sys/devices/virtual/input/mice/uevent
+CPU 1
+Pid: 5182, comm: kvm Not tainted 2.6.33-amd64 #2.6.33.0 M3A78-EM/System Product Name
+RIP: 0010:[<ffffffff810bbf37>]  [<ffffffff810bbf37>] generic_segment_checks+0x17/0xd0
+RSP: 0000:ffff880184d71d30  EFLAGS: 00010202
+RAX: ffff88018f2eeed8 RBX: ffff880184d71da0 RCX: 0000000000000001
+RDX: ffff880184d71dd0 RSI: 0000000000000001 RDI: 0000000000000000
+RBP: ffff880184d71dd0 R08: ffffffffffffffea R09: ffff88018f2eef08
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: 0000000000000000 R14: ffff88018cff3e00 R15: ffff880184c49b00
+FS:  0000000000000000(0000) GS:ffff880028280000(0063) knlGS:00000000f6f75b70
+CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+CR2: 0000000000000008 CR3: 0000000184e9b000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process kvm (pid: 5182, threadinfo ffff880184d70000, task ffff880184d6a080)
+Stack:
+ ffff88018f2eee80 ffff88018f2eee80 ffffffff810be7a2 ffff880184c90a70
+<0> ffff88018f2eeed8 ffff880184c91680 ffff880184c91678 000000000000004f
+<0> ffffffff81403680 fffffffe7ffbfeff 0000000000000000 0000000000000000
+Call Trace:
+ [<ffffffff810be7a2>] ? generic_file_aio_read+0x52/0x620
+ [<ffffffff810f3296>] ? cache_alloc_refill+0x96/0x5e0
+ [<ffffffff810be750>] ? generic_file_aio_read+0x0/0x620
+ [<ffffffff81135634>] ? aio_rw_vect_retry+0x74/0x1f0
+ [<ffffffff81136e02>] ? aio_run_iocb+0x82/0x140
+ [<ffffffff8113777c>] ? do_io_submit+0x2cc/0x7b0
+ [<ffffffff81031412>] ? ia32_sysret+0x0/0x5
+Code: 82 40 2c 40 81 c3 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 55 45 31 d2 48 89 d5 53 48 89 f3 48 8b 36 48 85 f6 0f 84 84 00 00 00 <4c> 8b 57 08 4d 85 d2 0f 88 8c 00 00 00 48 8b 07 65 4c 8b 04 25
+RIP  [<ffffffff810bbf37>] generic_segment_checks+0x17/0xd0
+ RSP <ffff880184d71d30>
+CR2: 0000000000000008
+---[ end trace 78b5aba2446c4209 ]---
 
-Signed-off-by: Marcelo Roberto Jimenez <mroberto@cpti.cetuc.puc-rio.br>
----
- drivers/rtc/rtc-sa1100.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 41 insertions(+), 1 deletions(-)
+For 2.6.32, the differences were all in fs/aio.c, in 2
+places: include file (obvious),
 
-diff --git a/drivers/rtc/rtc-sa1100.c b/drivers/rtc/rtc-sa1100.c
-index b04c837..b0985f7 100644
---- a/drivers/rtc/rtc-sa1100.c
-+++ b/drivers/rtc/rtc-sa1100.c
-@@ -117,7 +117,23 @@ static irqreturn_t sa1100_rtc_interrupt(int irq, void *dev_id)
- 	rtsr = RTSR;
- 	/* clear interrupt sources */
- 	RTSR = 0;
--	RTSR = (RTSR_AL | RTSR_HZ) & (rtsr >> 2);
-+	/* Fix for a nasty initialization problem the in SA11xx RTSR register.
-+	 * See also the comments in sa1100_rtc_probe(). */
-+	if (rtsr & (RTSR_ALE | RTSR_HZE)) {
-+		/* This is the original code, before there was the if test
-+		 * above. This code does not clear interrupts that were not
-+		 * enabled. */
-+		RTSR = (RTSR_AL | RTSR_HZ) & (rtsr >> 2);
-+	} else {
-+		/* For some reason, it is possible to enter this routine
-+		 * without interruptions enabled, it has been tested with
-+		 * several units (Bug in SA11xx chip?).
-+		 *
-+		 * This situation leads to an infinite "loop" of interrupt
-+		 * routine calling and as a result the processor seems to
-+		 * lock on its first call to open(). */
-+		RTSR = RTSR_AL | RTSR_HZ;
-+	}
- 
- 	/* clear alarm interrupt if it has occurred */
- 	if (rtsr & RTSR_AL)
-@@ -382,6 +398,30 @@ static int sa1100_rtc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, rtc);
- 
-+	/* Fix for a nasty initialization problem the in SA11xx RTSR register.
-+	 * See also the comments in sa1100_rtc_interrupt().
-+	 *
-+	 * Sometimes bit 1 of the RTSR (RTSR_HZ) will wake up 1, which means an
-+	 * interrupt pending, even though interrupts were never enabled.
-+	 * In this case, this bit it must be reset before enabling
-+	 * interruptions to avoid a nonexistent interrupt to occur.
-+	 *
-+	 * In principle, the same problem would apply to bit 0, although it has
-+	 * never been observed to happen.
-+	 *
-+	 * This issue is addressed both here and in sa1100_rtc_interrupt().
-+	 * If the issue is not addressed here, in the times when the processor
-+	 * wakes up with the bit set there will be one spurious interrupt.
-+	 *
-+	 * The issue is also dealt with in sa1100_rtc_interrupt() to be on the
-+	 * safe side, once the condition that lead to this strange
-+	 * initialization is unknown and could in principle happen during
-+	 * normal processing.
-+	 *
-+	 * Notice that clearing bit 1 and 0 is accomplished by writting ONES to
-+	 * the corresponding bits in RTSR. */
-+	RTSR = RTSR_AL | RTSR_HZ;
-+
- 	return 0;
- }
- 
--- 
-1.7.0.1
+ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+                          struct iocb *iocb, struct hlist_head *batch_hash)
 
+in 2.6.32 it does not have the last 'batch_hash' parameter,
+and the only caller of this routine in io_submit() down in
+that file.  So the change is trivial and purely mechanical.
+
+But it is not here yet.  I'm trying to dig further...
+
+/mjt
