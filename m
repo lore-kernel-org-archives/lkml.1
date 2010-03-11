@@ -1,45 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935Ab0CKKtj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:49:39 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45580 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756774Ab0CKKti (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:49:38 -0500
-Message-ID: <4B98CAC0.5030009@cs.helsinki.fi>
-Date: Thu, 11 Mar 2010 12:49:36 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S1757005Ab0CKKxd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:53:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32936 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756670Ab0CKKxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:53:32 -0500
+Date: Thu, 11 Mar 2010 11:53:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH 1/4 v2] x86: remove rdc321x_defs.h
+Message-ID: <20100311105324.GA27207@elte.hu>
+References: <201003110942.06367.florian@openwrt.org>
 MIME-Version: 1.0
-To: "=?UTF-8?B?QW3DqXJpY28gV2FuZw==?=" <xiyou.wangcong@gmail.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       roland@redhat.com, peterz@infradead.org
-Subject: Re: 2.6.34-rc1: kernel BUG at mm/slab.c:2989!
-References: <2375c9f91003100029q7d64bbf7xce15eee97f7e2190@mail.gmail.com>	 <4B977282.40505@cs.helsinki.fi>	 <alpine.DEB.2.00.1003100832200.17615@router.home>	 <2375c9f91003101842g713bba07v146a53f12a15a8d7@mail.gmail.com> <2375c9f91003110157y35d26e39odcd8efd9b44d83a1@mail.gmail.com>
-In-Reply-To: <2375c9f91003110157y35d26e39odcd8efd9b44d83a1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201003110942.06367.florian@openwrt.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang kirjoitti:
-> On Thu, Mar 11, 2010 at 10:42 AM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
->> On Wed, Mar 10, 2010 at 10:33 PM, Christoph Lameter
->> <cl@linux-foundation.org> wrote:
->>> On Wed, 10 Mar 2010, Pekka Enberg wrote:
->>>
->>>>> Please let me know if you need more info.
->>>> Looks like regular SLAB corruption bug to me. Can you trigget it with SLUB?
->>> Run SLUB with CONFIG_SLUB_DEBUG_ON or specify slub_debug on the kernel
->>> command line to have all allocations checked.
->>>
->>>
->> Ok, I will try it today.
-> 
-> Sorry, I can't trigger it today, either with SLAB or SLUB.
 
-Is it the exact same version or is it a new git snapshot?
+* Florian Fainelli <florian@openwrt.org> wrote:
+
+> This file is going to be replaced with a cleaner version with the adding of 
+> a MFD driver for the southbridge.
+> 
+> Signed-off-by: Florian Fainelli <florian@openwrt.org>
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+Feel free to carry it in the driver tree that ends up picking up the other 
+patches. (the MTD tree?)
+
+Thanks,
+
+	Ingo
