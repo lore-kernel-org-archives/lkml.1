@@ -1,101 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740Ab0CKUfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 15:35:24 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:45795 "EHLO smtp.polymtl.ca"
+	id S1751595Ab0CKUqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 15:46:16 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55454 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752404Ab0CKUfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 15:35:22 -0500
-X-Greylist: delayed 2213 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 15:35:22 EST
-Message-ID: <4B994B5A.4020708@polymtl.ca>
-Date: Thu, 11 Mar 2010 14:58:18 -0500
-From: Michel Dagenais <michel.dagenais@polymtl.ca>
-Organization: Ecole Polytechnique Montreal
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751122Ab0CKUqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 15:46:15 -0500
+Message-ID: <4B99568D.30608@linux.vnet.ibm.com>
+Date: Thu, 11 Mar 2010 12:46:05 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Tasneem Brutch - SISA <t.brutch@sisa.samsung.com>
-CC: rostedt@goodmis.org, "Spear, Aaron" <aaron_spear@mentor.com>,
-       dsdp-tcf-dev@eclipse.org, ltt-dev@lists.casi.polymtl.ca,
-       Linux Tools developer discussions 
-	<linuxtools-dev@eclipse.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [linuxtools-dev] Standard	protocols/interfaces/formats
- forperformance tools (TCF, LTTng, ...)
-References: <D86DB60C62D82A4792CAEC7F58CA04E706C13BB6@NA1-MAIL.mgc.mentorg.com>	<20100224154021.GA9692@Krystal>	<D86DB60C62D82A4792CAEC7F58CA04E706C13E65@NA1-MAIL.mgc.mentorg.com>	<1267072349.24271.8209.camel@gandalf.stny.rr.com> <D75C33A4DAF4F347A09A09B97BF978B00D783231@SMAIL.sisa.samsung.com>
-In-Reply-To: <D75C33A4DAF4F347A09A09B97BF978B00D783231@SMAIL.sisa.samsung.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
+ event names to "perf stat"
+References: <4B8F1B58.5000702@linux.vnet.ibm.com> <4B8FFE55.5070008@linux.vnet.ibm.com> <20100311124608.GG31354@elte.hu> <4B993AAF.9050507@linux.vnet.ibm.com> <20100311191441.GA7593@elte.hu>
+In-Reply-To: <20100311191441.GA7593@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Poly-FromMTA: (saorge.dgi.polymtl.ca [132.207.169.35]) at Thu, 11 Mar 2010 19:58:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> I proposed, and currently chair the newly formed Multicore Association,
-> Tool Infrastructure work group (TIWG).  The work group welcomes
-> opportunities to better understand other efforts, that TIWG can
-> leverage, and learn from.  I will be at the Multicore Expo, where I am
-> presenting, and I also plan on attending the EclipseCon.  
 
-Great! it may be a good idea to start accumulating pointers, identified 
-shortcomings, ideas... in preparation for this and LinuxCon.
+On 3/11/2010 11:14 AM, Ingo Molnar wrote:
+>
+> * Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
+[snip]
+>> I'm not sure how that would work.  The issue I am trying to solve
+>> here is that Power arch chips have a large number of very
+>> hardware-specific events that are not generalizable.  Many of these
+>> events not only have names, but other user-configurable bits as well
+>> that select or narrow the scope of which exact events are recorded.
+>> This issue is dealt with nicely in libpfm4, as it has mechanisms for
+>> parsing event names and attributes (aka modifiers or unit masks),
+>> and then produces a usable config field for the perf_events_attr
+>> struct.
+>>
+>> Should I take it from the above that you are completely against the
+>> idea of using an external library for hardware-specific event and
+>> attribute naming?
+>
+> Could you give a few relevant examples of events in question, and the kind of
+> configurability/attributes they have on Power?
 
->>>> Along those lines, we (Mentor) have a need for a protocol 
->>> to connect to remote trace collectors and configure trace 
->>> triggering/collection, and then efficiently download lots of binary trace data.  
->>> Sound familiar?
-...
->>>> Mentor has a file format we use that was 
->>> inspired by LTTng's format but is optimized for extremely large real-time trace 
->>>> logs.  I intend to throw this into the mix.
-...
->>> It would be good to ask if the Ftrace team is interested to 
->>> participate in this standardization effort. Proposing 
->>> modifications to the Ftrace file format is on my roadmap.
+Here are a few examples for the Power A2 processor.  I've distorted the names 
+because PMU architecture isn't publicly released yet.
 
-This is indeed the problem I currently see with Ftrace, suitability for 
-huge live/realtime traces. For this you need an extremely compact format 
-and a good way to pass and update metadata along with the trace. 
-Otherwise, Ftrace and Perf offer a large number of exciting features.
+PM_DE_PMC_9:hrd_mask=0xff:hrd=0x22:pma_mask=0x3fff:pma=0x1b2d:culling_mode=3
+PM_EX_0x03:lane=2:vlane=1
+PM_OWE_ENG_MAC_FULL:usu=3
 
-In LTTng, following some feedback from Google among others, quite a bit 
-of information is implicit: per cpu files and scheduling events obviate 
-the need for pid and cpu id; event ids implicitly tells the event size 
-and format... Similarly, event ids are scoped by channel using little 
-space, and timestamps do not store all the most significant bits. Since 
-new modules may be loaded at any time with new event types, the dynamic 
-allocation of event ids and update of associated metadata is something 
-which must be handled properly.
+Note that the attribute fields shown above are fitted into the config field of 
+the perf_event_attr struct.
 
-Other approaches are possible to achieve the same result. Aaron Spear 
-mentioned "contexts" to qualify node/cpu/pid, I am eager to learn more 
-about that... You could have "define context" events, where a context id 
-would be associated with a number of attributes (CPU, pid, event 
-name...) and could be reused at any time simply by issuing another 
-"define context" event with the same id but different attributes. The 
-important part is that each event should use little more than its 
-specific payload (typical event has a payload of 4 bytes and occupies a 
-total of 8 to 12 bytes on LTTng). Ftrace currently has a large number of 
-common fields and was thus not optimised for this; this rapidly turns a 
-10GB trace into a 30GB one.
+>
+> Thanks,
+>
+> 	Ingo
 
-The second important missing feature is dynamic updates of the metadata 
-as new event types are added when modules are loaded. In LTTng, metadata 
-is received as events of a predefined type in a dedicated channel. I am 
-sure that something similar could be possible for Ftrace.
+Regards,
 
->> We believe that the future will be heavily multi-core, and it is
->> a difficult problem to solve figuring out graceful ways to partition a
->> complex "application" across these cores effectively.  E.g. a system
->> with SMP Linux on a couple of cores, a low level RTOS on another core,
->> and then some DSP's as well.  Today you often use totally different
->> tools for all of those cores.  How do you understand what the heck is
->> happening in this system, never mind figuring out how to optimize the
->> system as a whole...   I think a good first step is some level of
->> interoperability in data formats so that event data collected from
->> different sources and technologies (e.g. LTTng for Linux and real-time
->> trace for the DSP's) can be correlated and analyzed side by side. 
+- Corey
 
-We have some neat and fairly sophisticated tools in LTTV now to 
-correlate traces taken on distributed systems with non synchronized 
-clocks simply by looking at messages exchanges.
