@@ -1,65 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933350Ab0CKRAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 12:00:47 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43253 "EHLO mx2.suse.de"
+	id S933365Ab0CKRCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 12:02:50 -0500
+Received: from rere.qmqm.pl ([89.167.52.164]:39529 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933279Ab0CKRAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 12:00:46 -0500
-Date: Thu, 11 Mar 2010 16:08:51 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Please pull UDF updates for 2.6.34-rc1
-Message-ID: <20100311150851.GD4245@quack.suse.cz>
-References: <alpine.LFD.2.00.1003081204510.3669@localhost.localdomain>
- <20100309162804.GB7373@atrey.karlin.mff.cuni.cz>
- <20100309091313.c568ef5a.randy.dunlap@oracle.com>
+	id S933341Ab0CKRCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 12:02:49 -0500
+Date: Thu, 11 Mar 2010 18:02:48 +0100
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: Race condition in TTY ldisc layer in 2.6.33
+Message-ID: <20100311170248.GA2482@rere.qmqm.pl>
+References: <20100311133222.GA19884@rere.qmqm.pl> <20100311135009.GA8801@kroah.com> <20100311155015.GA25607@rere.qmqm.pl> <20100311160653.GA30832@rere.qmqm.pl> <20100311162930.GA18217@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20100309091313.c568ef5a.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100311162930.GA18217@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 09-03-10 09:13:13, Randy Dunlap wrote:
-> On Tue, 9 Mar 2010 17:28:04 +0100 Jan Kara wrote:
-> > > It's out there now. I still have a few trees I already got pull requests 
-> > > for, and that I want to look over a bit more (ceph, gdb tree etc), and 
-> > > it's possible that I've just overlooked some other pull request.
-> >   It seems you haven't pulled my UDF tree (requested on Thursday -
-> > http://lkml.indiana.edu/hypermail/linux/kernel/1003.0/02186.html).
-> >   I've rebased the tree on top of 2.6.34-rc1 so could you please pull
-> > now?
-> >   The full pull request for your convenience:
+On Thu, Mar 11, 2010 at 05:29:30PM +0100, Johan Hovold wrote:
+> On Thu, Mar 11, 2010 at 05:06:53PM +0100, Micha³ Miros³aw wrote:
+> > On Thu, Mar 11, 2010 at 04:50:15PM +0100, Micha³ Miros³aw wrote:
+> > > On Thu, Mar 11, 2010 at 05:50:09AM -0800, Greg KH wrote:
+> > > > On Thu, Mar 11, 2010 at 02:32:22PM +0100, Micha? Miros?aw wrote:
+> > > > > Looks like there's some race contition in switching ldiscs on USB serial
+> > > > > ports. The following warnings trigger sometimes after killing and restarting
+> > > > > process that changes ldisc and waits forever. In case you want to look at
+> > > > > the code, there it is: http://rere.qmqm.pl/~mirq/sermmc/
+> > > > If you apply git commit 638b9648ab51c9c549ff5735d3de519ef6199df3 to the
+> > > > 2.6.33 kernel, does it solve the issue for you?
+> > > I'm running with the patch now. After couple cycles of starting and killing
+> > > the ldisc-setting process I get no warnings. I'll get back to you when/if
+> > > I encounter them again.
+> > Hah. Just seconds after I sent that mail I hit this again. The stack traces
+> > are exactly the same (except for different starting address of
+> > flush_to_ldisc()).
 > > 
-> >   could you please pull from
+> > The warnings are triggered by:
 > > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
-> > 
-> >   to get:
-> > 
-> > Akinobu Mita (1):
-> >       udf: use ext2_find_next_bit
-> > 
-> > Jan Kara (2):
-> >       udf: Fix unalloc space handling in udf_update_inode
-> >       udf: Do not read inode before writing it
-> > 
-> > The diffstat is
-> > 
-> >  fs/udf/balloc.c |   49 +------------------------------------------------
-> >  fs/udf/inode.c  |   34 +++++++++++++++++-----------------
-> >  2 files changed, 18 insertions(+), 65 deletions(-)
-> 
-> I have no objections, fwiw, but please change the $subject line...
-  OK, changing the subject line to catch attention.
+> > 	struct usb_serial_port *port = tty->driver_data;
+> > 	...
+> > 	/* count is managed under the mutex lock for the tty so cannot
+> > 	   drop to zero until after the last close completes */
+> > 	WARN_ON(!port->port.count);
+> This is a false warning that was fixed by commit
+> 49d3380e3f1297ff7bdc700c0a7fe6c3a036b3ab.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Removing the WARN_ON()s will definitely keep them from triggering. ;)
+
+> > BTW, Couple of minutes earlier I got this message:
+> > [  201.629616] cp210x ttyUSB0: usb_serial_generic_resubmit_read_urb - failed resubmitting read urb, error -1
+> > But after that I disconnected and reconnected the device, so this is probably
+> > not relevant here.
+> You're right, it's unrelated. I submitted a patch a while ago that
+> removes this message (as it is not an error):
+> http://thread.gmane.org/gmane.linux.usb.general/28047/focus=28052
+
+I'll apply it then, if that's the case.
+
+Thanks for your help.
+
+Best Regards,
+Micha³ Miros³aw
