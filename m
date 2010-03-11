@@ -1,27 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876Ab0CKNhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 08:37:13 -0500
-Received: from mx01.tie.cl ([200.91.27.34]:30016 "EHLO ironport1-1T.isc.cl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756674Ab0CKNhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 08:37:11 -0500
-X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 08:37:10 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvdkAHN+mEusHx6N/2dsb2JhbACGPIgkgXSJLYFHA7M3iH2EegSDF4UhgxY
-Date: Thu, 11 Mar 2010 06:26:45 -0700
-Message-ID: <4B971E8A000007DB@ms1.isc.cl>
-From: "Irish Online News" <agest@tie.cl>
-Subject: Congratulations!
-Reply-To: sj_inldept@w.cn
+	id S1757888Ab0CKNlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 08:41:08 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60141 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757873Ab0CKNlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 08:41:04 -0500
+Date: Thu, 11 Mar 2010 14:40:57 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Ole Reier Ulland <ole.reier@netcom.no>, linux-kernel@vger.kernel.org
+Subject: Re: ZTE MF636 USB modem is not supported
+In-Reply-To: <201003111423.58440.linux@rainbow-software.org>
+Message-ID: <alpine.LNX.2.00.1003111440000.18642@pobox.suse.cz>
+References: <201003110008.58644.ole.reier@netcom.no> <alpine.LRH.2.00.1003111415230.12517@twin.jikos.cz> <201003111423.58440.linux@rainbow-software.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Mar 2010, Ondrej Zary wrote:
 
-You've won 891,934.00 pounds Send Necessary information:name,age,country
+> Not sure about MF636, but MF637 works with this udev rule:
+> SUBSYSTEM=="usb", SYSFS{idVendor}=="19d2", SYSFS{idProduct}=="2000", RUN+="/usr/sbin/usb_modeswitch --default-vendor 0x19d2 --default-product 0x2000 --message-content 55534243123456782000000080000c85010101180101010101000000000000"
 
+Yes, this works for most of the ZTE modems with exception for 628 IIRC, 
+which needs 5553424312345678000000000000061b000000030000000000000000000000 
+instead.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
