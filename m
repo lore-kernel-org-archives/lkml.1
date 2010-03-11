@@ -1,48 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670Ab0CKXll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 18:41:41 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:29846 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455Ab0CKXlk (ORCPT
+	id S1753060Ab0CKXmG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 18:42:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52137 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751455Ab0CKXmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 18:41:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qyrjaSK8Xi1wHMwMD49etfvHmiT2RHsvZjhc97Y6w0aY4Maq+hqZpQhWdHYn9+TZDc
-         shDGY+nHmY9LvynjTor8W0dbjBpQHCVvSfsCgFCy4pr000neOyBL2HAIK+hK+Cs+q4dF
-         gYJxu3Az2Ke5dVJV7RC0EcC+HJROK2P19bJLw=
-Message-ID: <4B997FB1.3000404@garzik.org>
-Date: Thu, 11 Mar 2010 18:41:37 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Andrew Benton <b3nton@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ata2: lost interrupt with kernel 2.6.34-rc1
-References: <4B992110.2090300@gmail.com>
-In-Reply-To: <4B992110.2090300@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 11 Mar 2010 18:42:03 -0500
+Date: Thu, 11 Mar 2010 15:41:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] Avoid the use of congestion_wait under zone
+ pressure
+Message-Id: <20100311154124.e1e23900.akpm@linux-foundation.org>
+In-Reply-To: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/2010 11:57 AM, Andrew Benton wrote:
-> Hello,
-> I'm not subscribed to this list, sorry if it's the wrong place to send
-> this.
-> I've been having problems with 2.6.34-rc1, when the system tries to
-> access a
-> lot of files (eg, if I recompile the kernel) it freezes for about 10
-> seconds
-> or so and then I get a message like this in the sys.log:
+On Mon,  8 Mar 2010 11:48:20 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Does 2.6.33 also have this behavior?
+> Under memory pressure, the page allocator and kswapd can go to sleep using
+> congestion_wait(). In two of these cases, it may not be the appropriate
+> action as congestion may not be the problem.
 
-	Jeff
+clear_bdi_congested() is called each time a write completes and the
+queue is below the congestion threshold.
 
+So if the page allocator or kswapd call congestion_wait() against a
+non-congested queue, they'll wake up on the very next write completion.
 
-
+Hence the above-quoted claim seems to me to be a significant mis-analysis and
+perhaps explains why the patchset didn't seem to help anything?
