@@ -1,302 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563Ab0CKJqh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:46:37 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43182 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755387Ab0CKJqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:46:34 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 11 Mar 2010 18:42:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-Id: <20100311184244.6735076a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
-	<20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
-	<1268298865.5279.997.camel@twins>
-	<20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1755578Ab0CKJtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:49:21 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51935 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755183Ab0CKJtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 04:49:19 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+wvIZiKxKwXKTE9oZxhjl8VKnkgQp2cxMDnbOC62
+	e0oOtd3jpJ98P6
+Subject: [patch 0/12] sched: fastpath cycle recovery
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 11 Mar 2010 10:49:10 +0100
+Message-Id: <1268300950.6785.27.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64000000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 18:25:00 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Then, it's not problem that check pc->mem_cgroup is root cgroup or not
-> without spinlock.
-> ==
-> void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> {
-> 	pc = lookup_page_cgroup(page);
-> 	if (unlikely(!pc) || mem_cgroup_is_root(pc->mem_cgroup))
-> 		return;	
-> 	...
-> }
-> ==
-> This can be handle in the same logic of "lock failure" path.
-> And we just do ignore accounting.
-> 
-> There are will be no spinlocks....to do more than this,
-> I think we have to use "struct page" rather than "struct page_cgroup".
-> 
-Hmm..like this ? The bad point of this patch is that this will corrupt FILE_MAPPED
-status in root cgroup. This kind of change is not very good.
-So, one way is to use this kind of function only for new parameters. Hmm.
-==
+Hi Peter,
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+The following patchlets take a pinned pipe-test context switch frequency
+in tip from 663KHZ to 694KHZ, and an unpinned instance from 450KHz to
+540KHz.  With these applied to tip.today, I have zero 31-12->today
+regressions, and even some modest progressions.
 
-Now, file-mapped is maintaiend. But more generic update function
-will be needed for dirty page accounting.
+The biggest difference is made by the first patch.  We have a problem
+with nohz when waking cross-cpu, which given select_idle_sibling(), we
+do quite a bit.  In testing netperf TCP_RR, hitting nohz code on every
+micro-idle was eating ~10% of throughput, making cross-cpu wakeup a
+loser.  These patchlets combined turned netperf TCP_RR cross-cpu vs
+affine from big loser into a winner.
 
-For accountig page status, we have to guarantee lock_page_cgroup()
-will be never called under tree_lock held.
-To guarantee that, we use trylock at updating status.
-By this, we do fuzyy accounting, but in almost all case, it's correct.
+All of these are trivial, mostly axe murder, but cycles add up.
 
-Changelog:
- - removed unnecessary preempt_disable()
- - added root cgroup check. By this, we do no lock/account in root cgroup.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/memcontrol.h  |    7 ++-
- include/linux/page_cgroup.h |   15 +++++++
- mm/memcontrol.c             |   92 +++++++++++++++++++++++++++++++++-----------
- mm/rmap.c                   |    4 -
- 4 files changed, 94 insertions(+), 24 deletions(-)
-
-Index: mmotm-2.6.34-Mar9/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.34-Mar9.orig/mm/memcontrol.c
-+++ mmotm-2.6.34-Mar9/mm/memcontrol.c
-@@ -1348,30 +1348,83 @@ bool mem_cgroup_handle_oom(struct mem_cg
-  * Currently used to update mapped file statistics, but the routine can be
-  * generalized to update other statistics as well.
-  */
--void mem_cgroup_update_file_mapped(struct page *page, int val)
-+void __mem_cgroup_update_stat(struct page_cgroup *pc, int idx, bool charge)
- {
- 	struct mem_cgroup *mem;
--	struct page_cgroup *pc;
--
--	pc = lookup_page_cgroup(page);
--	if (unlikely(!pc))
--		return;
-+	int val;
- 
--	lock_page_cgroup(pc);
- 	mem = pc->mem_cgroup;
--	if (!mem)
--		goto done;
-+	if (!mem || !PageCgroupUsed(pc))
-+		return;
- 
--	if (!PageCgroupUsed(pc))
--		goto done;
-+	if (charge)
-+		val = 1;
-+	else
-+		val = -1;
- 
-+	switch (idx) {
-+	case MEMCG_NR_FILE_MAPPED:
-+		if (charge) {
-+			if (!PageCgroupFileMapped(pc))
-+				SetPageCgroupFileMapped(pc);
-+			else
-+				val = 0;
-+		} else {
-+			if (PageCgroupFileMapped(pc))
-+				ClearPageCgroupFileMapped(pc);
-+			else
-+				val = 0;
-+		}
-+		idx = MEM_CGROUP_STAT_FILE_MAPPED;
-+		break;
-+	default:
-+		BUG();
-+		break;
-+	}
- 	/*
- 	 * Preemption is already disabled. We can use __this_cpu_xxx
- 	 */
--	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-+	__this_cpu_add(mem->stat->count[idx], val);
-+}
- 
--done:
--	unlock_page_cgroup(pc);
-+void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-+{
-+	struct page_cgroup *pc;
-+
-+	pc = lookup_page_cgroup(page);
-+	if (!pc || mem_cgroup_is_root(pc->mem_cgroup))
-+		return;
-+
-+	if (trylock_page_cgroup(pc)) {
-+		__mem_cgroup_update_stat(pc, idx, charge);
-+		unlock_page_cgroup(pc);
-+	}
-+	return;
-+}
-+
-+static void mem_cgroup_migrate_stat(struct page_cgroup *pc,
-+	struct mem_cgroup *from, struct mem_cgroup *to)
-+{
-+	if (PageCgroupFileMapped(pc)) {
-+		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-+		if (!mem_cgroup_is_root(to)) {
-+			__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-+		} else {
-+			ClearPageCgroupFileMapped(pc);
-+		}
-+	}
-+}
-+
-+static void
-+__mem_cgroup_stat_fixup(struct page_cgroup *pc, struct mem_cgroup *mem)
-+{
-+	if (mem_cgroup_is_root(mem))
-+		return;
-+	/* We'are in uncharge() and lock_page_cgroup */
-+	if (PageCgroupFileMapped(pc)) {
-+		__this_cpu_dec(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-+		ClearPageCgroupFileMapped(pc);
-+	}
- }
- 
- /*
-@@ -1810,13 +1863,7 @@ static void __mem_cgroup_move_account(st
- 	VM_BUG_ON(pc->mem_cgroup != from);
- 
- 	page = pc->page;
--	if (page_mapped(page) && !PageAnon(page)) {
--		/* Update mapped_file data for mem_cgroup */
--		preempt_disable();
--		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
--		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
--		preempt_enable();
--	}
-+	mem_cgroup_migrate_stat(pc, from, to);
- 	mem_cgroup_charge_statistics(from, pc, false);
- 	if (uncharge)
- 		/* This is not "cancel", but cancel_charge does all we need. */
-@@ -2208,6 +2255,9 @@ __mem_cgroup_uncharge_common(struct page
- 		__do_uncharge(mem, ctype);
- 	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
- 		mem_cgroup_swap_statistics(mem, true);
-+	if (unlikely(PCG_PageStatMask & pc->flags))
-+		__mem_cgroup_stat_fixup(pc, mem);
-+
- 	mem_cgroup_charge_statistics(mem, pc, false);
- 
- 	ClearPageCgroupUsed(pc);
-Index: mmotm-2.6.34-Mar9/include/linux/page_cgroup.h
-===================================================================
---- mmotm-2.6.34-Mar9.orig/include/linux/page_cgroup.h
-+++ mmotm-2.6.34-Mar9/include/linux/page_cgroup.h
-@@ -39,6 +39,8 @@ enum {
- 	PCG_CACHE, /* charged as cache */
- 	PCG_USED, /* this object is in use. */
- 	PCG_ACCT_LRU, /* page has been accounted for */
-+	/* for cache-status accounting */
-+	PCG_FILE_MAPPED,
- };
- 
- #define TESTPCGFLAG(uname, lname)			\
-@@ -57,6 +59,10 @@ static inline void ClearPageCgroup##unam
- static inline int TestClearPageCgroup##uname(struct page_cgroup *pc)	\
- 	{ return test_and_clear_bit(PCG_##lname, &pc->flags);  }
- 
-+/* Page/File stat flag mask */
-+#define PCG_PageStatMask	((1 << PCG_FILE_MAPPED))
-+
-+
- TESTPCGFLAG(Locked, LOCK)
- 
- /* Cache flag is set only once (at allocation) */
-@@ -73,6 +79,10 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
- TESTPCGFLAG(AcctLRU, ACCT_LRU)
- TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
- 
-+TESTPCGFLAG(FileMapped, FILE_MAPPED)
-+SETPCGFLAG(FileMapped, FILE_MAPPED)
-+CLEARPCGFLAG(FileMapped, FILE_MAPPED)
-+
- static inline int page_cgroup_nid(struct page_cgroup *pc)
- {
- 	return page_to_nid(pc->page);
-@@ -93,6 +103,11 @@ static inline void unlock_page_cgroup(st
- 	bit_spin_unlock(PCG_LOCK, &pc->flags);
- }
- 
-+static inline int trylock_page_cgroup(struct page_cgroup *pc)
-+{
-+	return bit_spin_trylock(PCG_LOCK, &pc->flags);
-+}
-+
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct page_cgroup;
- 
-Index: mmotm-2.6.34-Mar9/include/linux/memcontrol.h
-===================================================================
---- mmotm-2.6.34-Mar9.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.34-Mar9/include/linux/memcontrol.h
-@@ -124,7 +124,12 @@ static inline bool mem_cgroup_disabled(v
- 	return false;
- }
- 
--void mem_cgroup_update_file_mapped(struct page *page, int val);
-+enum mem_cgroup_page_stat_item {
-+	MEMCG_NR_FILE_MAPPED,
-+	MEMCG_NR_FILE_NSTAT,
-+};
-+
-+void mem_cgroup_update_stat(struct page *page, int idx, bool charge);
- unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
- 						gfp_t gfp_mask, int nid,
- 						int zid);
-Index: mmotm-2.6.34-Mar9/mm/rmap.c
-===================================================================
---- mmotm-2.6.34-Mar9.orig/mm/rmap.c
-+++ mmotm-2.6.34-Mar9/mm/rmap.c
-@@ -829,7 +829,7 @@ void page_add_file_rmap(struct page *pag
- {
- 	if (atomic_inc_and_test(&page->_mapcount)) {
- 		__inc_zone_page_state(page, NR_FILE_MAPPED);
--		mem_cgroup_update_file_mapped(page, 1);
-+		mem_cgroup_update_stat(page, MEMCG_NR_FILE_MAPPED, true);
- 	}
- }
- 
-@@ -861,7 +861,7 @@ void page_remove_rmap(struct page *page)
- 		__dec_zone_page_state(page, NR_ANON_PAGES);
- 	} else {
- 		__dec_zone_page_state(page, NR_FILE_MAPPED);
--		mem_cgroup_update_file_mapped(page, -1);
-+		mem_cgroup_update_stat(page, MEMCG_NR_FILE_MAPPED, false);
- 	}
- 	/*
- 	 * It would be tidy to reset the PageAnon mapping here,
+	-Mike
 
