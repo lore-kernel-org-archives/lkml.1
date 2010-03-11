@@ -1,77 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018Ab0CKDwg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 22:52:36 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:44845 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755321Ab0CKDwe (ORCPT
+	id S1756198Ab0CKEAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 23:00:33 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:53091 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756005Ab0CKEAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 22:52:34 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: Upstream first policy
-References: <alpine.LRH.2.00.1003080811220.30507@tundra.namei.org>
-	<20100308094647.GA14268@elte.hu>
-	<20100308173008.7ae389ab@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.1003080948060.3989@localhost.localdomain>
-	<20100308190857.400bde09@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.1003081115280.3989@localhost.localdomain>
-	<m1fx4apgch.fsf@fess.ebiederm.org>
-	<20100309224941.79511705@lxorguk.ukuu.org.uk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 10 Mar 2010 19:52:26 -0800
-In-Reply-To: <20100309224941.79511705@lxorguk.ukuu.org.uk> (Alan Cox's message of "Tue\, 9 Mar 2010 22\:49\:41 +0000")
-Message-ID: <m1d3zbecqt.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 10 Mar 2010 23:00:31 -0500
+Date: Thu, 11 Mar 2010 12:59:40 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC PATCH 6/6] sparc64: use early_res and nobootmem
+Message-ID: <20100311035940.GA15111@linux-sh.org>
+References: <4B9818CE.7090809@kernel.org> <20100310.141757.95833226.davem@davemloft.net> <4B981DBD.2060303@kernel.org> <20100310.143602.266086944.davem@davemloft.net> <1268264837.22204.688.camel@pasglop> <4B9832FF.9010004@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: alan@lxorguk.ukuu.org.uk, viro@ftp.linux.org.uk, kyle@mcmartin.ca, linux-kernel@vger.kernel.org, jmorris@namei.org, mingo@elte.hu, torvalds@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <4B9832FF.9010004@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 10, 2010 at 04:02:07PM -0800, Yinghai Lu wrote:
+> On 03/10/2010 03:47 PM, Benjamin Herrenschmidt wrote:
+> > On Wed, 2010-03-10 at 14:36 -0800, David Miller wrote:
+> >> LMB could do this too with minor modifications.
+> >>
+> >> Simply make the lmb.memory and lmb.reserved be pointers, and initially
+> >> they point into the static array(s).
+> >>
+> >> Later the pointers can be repositioned to point to dynamically
+> >> allocated memory.
+> >>
+> >> So please, for the third time, please show me how LMB with some minor
+> >> modifications is not able to satisfy your needs. 
+> > 
+> > So I was about to say the exact same stuff here...
+> > 
+> let see:
+> 1. if early_res + fw_memmap could be simplified...
+> 2. or let x86 to use lmb instead of early_res,then add more to lmb.
+> 
+I vote for LMB too, it's already used across multiple architectures and
+has proven to be quite versatile. If x86 is concerned about
+consolidation, then it's a good a place to start as any, particularly
+since it's not even that conceptually different from how the e820 maps
+are used.
 
-Weird.  Somehow I only got a copy of this from lkml.
-
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-
->> time.  If pathnames were not fundamentally important we could apply
->> a patch like the one below and allow unprivileged users to unshare
->> the mount namespace and mount filesystems wherever.  There is nothing
->> fundamental about those operations that require root privileges except
->> that you are manipulating the pathnames of objects.
->
-> And in a purely SELinux enviromnment your patch would work out because
-> you could use labels to control this stuff.
->  
->
->> -	if (!capable(CAP_SYS_ADMIN))
->> -		return -EPERM;
->> -
->
-> It does raise the question about whether you can do it if you had a
-> namespace property of "ignore suidness". I'm not sure thats enough
-> however.
-
-The long term plan is to change that to.
-
-	if (nscapable(mnt_ns->user_ns, CAP_SYS_ADMIN))
-		return -EPERM.
-
-That is.
-- Create a new user/credential namespace (ultimately an unprivileged operation).
-- Have the root user of the new user namespace create a new mount namespace.
-- Over that new mount namespace the root user of the new user namespace
-  has full control.
-
-It is a little convoluted but it maintains backwards compatibility.  Unfortunately
-there is still a long ways to go before we get there.
-
-Eric
+This may come as a surprise, but if this had actually been brought up on
+linux-arch instead of buried in -tip and magically showing up in -next
+everyone involved could have saved a lot of time.
