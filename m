@@ -1,203 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122Ab0CKIKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:10:37 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39274 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755029Ab0CKIK2 (ORCPT
+	id S1754897Ab0CKIMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:12:16 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53702 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753445Ab0CKIMP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:10:28 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 11 Mar 2010 17:06:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       Andrea Righi <arighi@develer.com>, linux-kernel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
- [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
- infrastructure)
-Message-Id: <20100311170646.13cf8f05.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100311165020.86ac904b.nishimura@mxp.nes.nec.co.jp>
-References: <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
-	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
-	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100309001252.GB13490@linux>
-	<20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
-	<20100309045058.GX3073@balbir.in.ibm.com>
-	<20100310104309.c5f9c9a9.nishimura@mxp.nes.nec.co.jp>
-	<20100310035624.GP3073@balbir.in.ibm.com>
-	<20100311133123.ab10183c.nishimura@mxp.nes.nec.co.jp>
-	<20100311134908.48d8b0fc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311135847.990eee62.nishimura@mxp.nes.nec.co.jp>
-	<20100311141300.90b85391.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311151511.579aa8d1.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311165020.86ac904b.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 11 Mar 2010 03:12:15 -0500
+Subject: Re: Patch for tracing c states (power_end) on x86
+From: Peter Zijlstra <peterz@infradead.org>
+To: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1268289377.3374.13.camel@localhost>
+References: <1266999573.3415.8.camel@localhost>
+	 <1267102320.12790.139.camel@laptop>  <1268289377.3374.13.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 11 Mar 2010 09:12:03 +0100
+Message-ID: <1268295123.5279.859.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 16:50:20 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Thu, 2010-03-11 at 07:36 +0100, Robert Schöne wrote:
+> Did anyone look at the problem described and checked the patch?
+> I still received no reply.
 
-> On Thu, 11 Mar 2010 15:15:11 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Thu, 11 Mar 2010 14:13:00 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Ingo, how about applying it and letting people complain when they don't
+agree? :-)
+
+> Am Donnerstag, den 25.02.2010, 13:52 +0100 schrieb Peter Zijlstra:
+> > On Wed, 2010-02-24 at 09:19 +0100, Robert Schöne wrote:
+> > > Hello,
+> > > 
+> > > Since noone replied to my last mail (Febr. 15th, 11:42), describing the
+> > > way to fix the missing c-state tracing, here's a patch.
+> > > Maybe its easier that way.
+> > > 
+> > > (I used the perf-fixes-for-linus git tree to obtain a
+> > > more-then-up-to-date version)
 > > 
-> > > On Thu, 11 Mar 2010 13:58:47 +0900
-> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > I'll consider yet another fix for race in account migration if I can.
-> > > > > 
-> > > > me too.
-> > > > 
-> > > 
-> > > How about this ? Assume that the race is very rare.
-> > > 
-> > > 	1. use trylock when updating statistics.
-> > > 	   If trylock fails, don't account it.
-> > > 
-> > > 	2. add PCG_FLAG for all status as
-> > > 
-> > > +	PCG_ACCT_FILE_MAPPED, /* page is accounted as file rss*/
-> > > +	PCG_ACCT_DIRTY, /* page is dirty */
-> > > +	PCG_ACCT_WRITEBACK, /* page is being written back to disk */
-> > > +	PCG_ACCT_WRITEBACK_TEMP, /* page is used as temporary buffer for FUSE */
-> > > +	PCG_ACCT_UNSTABLE_NFS, /* NFS page not yet committed to the server */
-> > > 
-> > > 	3. At reducing counter, check PCG_xxx flags by
-> > > 	TESTCLEARPCGFLAG()
-> > > 
-> > > This is similar to an _used_ method of LRU accounting. And We can think this
-> > > method's error-range never go too bad number. 
-> > > 
-> I agree with you. I've been thinking whether we can remove page cgroup lock
-> in update_stat as we do in lru handling codes.
-> 
-> > > I think this kind of fuzzy accounting is enough for writeback status.
-> > > Does anyone need strict accounting ?
+> > Arjan, any comments?, you seem skilled with this power stuff ;-)
+> > 
+> > > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> > > index 02d6780..b1cfb88 100644
+> > > --- a/arch/x86/kernel/process.c
+> > > +++ b/arch/x86/kernel/process.c
+> > > @@ -384,6 +384,7 @@ void default_idle(void)
+> > >                 else
+> > >                         local_irq_enable();
+> > >                 current_thread_info()->status |= TS_POLLING;
+> > > +               trace_power_end(1);
+> > >         } else {
+> > >                 local_irq_enable();
+> > >                 /* loop is done by the caller */
+> > > @@ -451,6 +452,7 @@ void mwait_idle_with_hints(unsigned long ax,
+> > > unsigned long cx)
+> > >                 if (!need_resched())
+> > >                         __mwait(ax, cx);
+> > >         }
+> > > +       trace_power_end((ax>>4)+1);
+> > >  }
+> > >  
+> > >  /* Default MONITOR/MWAIT with no hints, used for default C1 state */
+> > > @@ -467,6 +469,7 @@ static void mwait_idle(void)
+> > >                         __sti_mwait(0, 0);
+> > >                 else
+> > >                         local_irq_enable();
+> > > +               trace_power_end(1);
+> > >         } else
+> > >                 local_irq_enable();
+> > >  }
 > > > 
 > > 
-> IMHO, we don't need strict accounting.
-> 
-> > How this looks ?
-> I agree to this direction. One concern is we re-introduce "trylock" again..
-> 
-Yes, it's my concern, too.
-
-
-> Some comments are inlined.
-
-> > +	switch (idx) {
-> > +	case MEMCG_NR_FILE_MAPPED:
-> > +		if (charge) {
-> > +			if (!PageCgroupFileMapped(pc))
-> > +				SetPageCgroupFileMapped(pc);
-> > +			else
-> > +				val = 0;
-> > +		} else {
-> > +			if (PageCgroupFileMapped(pc))
-> > +				ClearPageCgroupFileMapped(pc);
-> > +			else
-> > +				val = 0;
-> > +		}
-> Using !TestSetPageCgroupFileMapped(pc) or TestClearPageCgroupFileMapped(pc) is better ?
-> 
-
-I used this style because we're under lock. (IOW, to show we're guarded by lock.)
-
-
-> > +		idx = MEM_CGROUP_STAT_FILE_MAPPED;
-> > +		break;
-> > +	default:
-> > +		BUG();
-> > +		break;
-> > +	}
-> >  	/*
-> >  	 * Preemption is already disabled. We can use __this_cpu_xxx
-> >  	 */
-> > -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> > +	__this_cpu_add(mem->stat->count[idx], val);
-> > +}
-> >  
-> > -done:
-> > -	unlock_page_cgroup(pc);
-> > +void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> > +{
-> > +	struct page_cgroup *pc;
-> > +
-> > +	pc = lookup_page_cgroup(page);
-> > +	if (unlikely(!pc))
-> > +		return;
-> > +
-> > +	if (trylock_page_cgroup(pc)) {
-> > +		__mem_cgroup_update_stat(pc, idx, charge);
-> > +		unlock_page_cgroup(pc);
-> > +	}
-> > +	return;
-> > +}
-> > +
-> > +static void mem_cgroup_migrate_stat(struct page_cgroup *pc,
-> > +	struct mem_cgroup *from, struct mem_cgroup *to)
-> > +{
-> > +	preempt_disable();
-> > +	if (PageCgroupFileMapped(pc)) {
-> > +		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > +		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > +	}
-> > +	preempt_enable();
-> > +}
-> > +
-> I think preemption is already disabled here too(by lock_page_cgroup()).
-> 
-Ah, yes. 
-
-
-> > +static void
-> > +__mem_cgroup_stat_fixup(struct page_cgroup *pc, struct mem_cgroup *mem)
-> > +{
-> > +	/* We'are in uncharge() and lock_page_cgroup */
-> > +	if (PageCgroupFileMapped(pc)) {
-> > +		__this_cpu_dec(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > +		ClearPageCgroupFileMapped(pc);
-> > +	}
-> >  }
-> >  
-> ditto.
-> 
-ok.
-
-> >  /*
-> > @@ -1810,13 +1859,7 @@ static void __mem_cgroup_move_account(st
-> >  	VM_BUG_ON(pc->mem_cgroup != from);
-> >  
-> >  	page = pc->page;
-> > -	if (page_mapped(page) && !PageAnon(page)) {
-> > -		/* Update mapped_file data for mem_cgroup */
-> > -		preempt_disable();
-> > -		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > -		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > -		preempt_enable();
-> > -	}
-> > +	mem_cgroup_migrate_stat(pc, from, to);
-> >  	mem_cgroup_charge_statistics(from, pc, false);
-> >  	if (uncharge)
-> >  		/* This is not "cancel", but cancel_charge does all we need. */
-> I welcome this fixup. IIUC, we have stat leak in current implementation.
-> 
-
-If necessary, I'd like to prepare fixed one as independent patch for mmotm.
-
-Thanks,
--Kame
-
