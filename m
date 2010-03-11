@@ -1,69 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932490Ab0CKOjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:39:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:37898 "EHLO mx2.suse.de"
+	id S932528Ab0CKOkF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:40:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35386 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758020Ab0CKOjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:39:44 -0500
-Subject: Re: ATA 4 KiB sector issues.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
-       Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-In-Reply-To: <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
-References: <4B947393.2050002@kernel.org>
-	 <4B97C6A5.4010209@tvk.rwth-aachen.de>
-	 <17BB1CC0-9B13-401D-B6AA-90365208A042@mit.edu>
-	 <201003111927.24829.knikanth@suse.de>
-	 <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Mar 2010 08:39:34 -0600
-Message-ID: <1268318374.2798.2.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S932506Ab0CKOj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:39:56 -0500
+Date: Thu, 11 Mar 2010 14:39:23 GMT
+From: tip-bot for Dan Carpenter <error27@gmail.com>
+Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, andreas.herrmann3@amd.com, peterz@infradead.org,
+       error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
+       linux-kernel@vger.kernel.org, error27@gmail.com,
+       andreas.herrmann3@amd.com, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20100306111752.GL4958@bicker>
+References: <20100306111752.GL4958@bicker>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Cleanup: remove unused variable in try_to_wake_up()
+Message-ID: <tip-ab3b3aa5dd01b3aaa6b15caee113b21b1b6520c4@git.kernel.org>
+Git-Commit-ID: ab3b3aa5dd01b3aaa6b15caee113b21b1b6520c4
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 14:39:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 09:28 -0500, Theodore Tso wrote:
-> On Mar 11, 2010, at 8:57 AM, Nikanth Karthikesan wrote:
-> > 
-> > I guess, what he meant was, to keep filesystem blocks aligned, even if the 
-> > partition is not. Say if the partition is mis-aligned by 512-bytes, let the 
-> > filesystem waste 4k-512bytes and keep it's blocks aligned. But it might be a 
-> > case of over-engineering, possibly requiring disk format change.
-> 
-> Ah, yes, I agree with you; that's probably what he meant.
-> 
-> Sure, that's theoretically possible, but it would mean changing every
-> single filesystem, and it would require a file system format change
-> --- or at least a file system format extension.
-> 
-> It would seem to be way easier to simply fix the partitioning tools to
-> do the right thing, though.
+Commit-ID:  ab3b3aa5dd01b3aaa6b15caee113b21b1b6520c4
+Gitweb:     http://git.kernel.org/tip/ab3b3aa5dd01b3aaa6b15caee113b21b1b6520c4
+Author:     Dan Carpenter <error27@gmail.com>
+AuthorDate: Sat, 6 Mar 2010 14:17:52 +0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 11 Mar 2010 13:59:59 +0100
 
-Actually, it's a layering violation.  The filesystem shouldn't need to
-probe the device layout ... particularly when there are complexities
-like is it logical 512 or physical, and if logical 512 on 4k does it
-have an offset exponent or not.
+sched: Cleanup: remove unused variable in try_to_wake_up()
 
-We can transmit certain abstractions of information up the stack (like
-stripe width for RAID arrays which should be the fs optimal write size),
-but for this type of alignment, which can be completely solved at the
-partition layer, the information should really stay there and the
-filesystem should "just work".
+We haven't used the "orig_rq" variable since
+055a00865d "Fix/add missing update_rq_clock() calls"
 
-James
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Cc: efault@gmx.de
+LKML-Reference: <20100306111752.GL4958@bicker>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6a212c9..2c1db81 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2359,7 +2359,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ {
+ 	int cpu, orig_cpu, this_cpu, success = 0;
+ 	unsigned long flags;
+-	struct rq *rq, *orig_rq;
++	struct rq *rq;
+ 
+ 	if (!sched_feat(SYNC_WAKEUPS))
+ 		wake_flags &= ~WF_SYNC;
+@@ -2367,7 +2367,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 	this_cpu = get_cpu();
+ 
+ 	smp_wmb();
+-	rq = orig_rq = task_rq_lock(p, &flags);
++	rq = task_rq_lock(p, &flags);
+ 	update_rq_clock(rq);
+ 	if (!(p->state & state))
+ 		goto out;
