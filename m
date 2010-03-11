@@ -1,39 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085Ab0CKJOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:14:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34148 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753799Ab0CKJOt (ORCPT
+	id S1754256Ab0CKJPI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:15:08 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55489 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754110Ab0CKJPE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:14:49 -0500
-Date: Thu, 11 Mar 2010 04:14:44 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf: export perf_trace_regs and
-	perf_arch_fetch_caller_regs
-Message-ID: <20100311091444.GA19699@infradead.org>
-References: <4B989C1B.2090407@cn.fujitsu.com> <20100311090248.GA10904@infradead.org> <1268298651.5279.986.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268298651.5279.986.camel@twins>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 11 Mar 2010 04:15:04 -0500
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+From: Peter Zijlstra <peterz@infradead.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
+	 <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 11 Mar 2010 10:14:25 +0100
+Message-ID: <1268298865.5279.997.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 10:10:51AM +0100, Peter Zijlstra wrote:
-> Pretty much all modular tracepoint users I think, I just got this from a
-> pp64_defconfig build:
+On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 11 Mar 2010 09:39:13 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > The performance overhead is not so huge in both solutions, but the impact on
+> > > performance is even more reduced using a complicated solution...
+> > > 
+> > > Maybe we can go ahead with the simplest implementation for now and start to
+> > > think to an alternative implementation of the page_cgroup locking and
+> > > charge/uncharge of pages.
 
-Interesting, that doesn't happen in mainline yet.
+FWIW bit spinlocks suck massive.
 
+> > 
+> > maybe. But in this 2 years, one of our biggest concerns was the performance.
+> > So, we do something complex in memcg. But complex-locking is , yes, complex.
+> > Hmm..I don't want to bet we can fix locking scheme without something complex.
+> > 
+> But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
+> will give us much benefit (of performance) than we lose by small overheads.
+
+Well, the !cgroup or root case should really have no performance impact.
+
+> IIUC, this series affects trgger for background-write-out.
+
+Not sure though, while this does the accounting the actual writeout is
+still !cgroup aware and can definately impact performance negatively by
+shrinking too much.
