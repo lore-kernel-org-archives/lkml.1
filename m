@@ -1,54 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903Ab0CKOdY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:33:24 -0500
-Received: from DMZ-MAILSEC-SCANNER-8.MIT.EDU ([18.7.68.37]:64505 "EHLO
-	dmz-mailsec-scanner-8.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756027Ab0CKOdX convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:33:23 -0500
-X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 09:33:22 EST
-X-AuditID: 12074425-b7d00ae000002295-7c-4b98fe05e28a
-Subject: Re: ATA 4 KiB sector issues.
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Theodore Tso <tytso@MIT.EDU>
-In-Reply-To: <201003111927.24829.knikanth@suse.de>
-Date: Thu, 11 Mar 2010 09:28:11 -0500
-Cc: Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-Content-Transfer-Encoding: 8BIT
-Message-Id: <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
-References: <4B947393.2050002@kernel.org> <4B97C6A5.4010209@tvk.rwth-aachen.de> <17BB1CC0-9B13-401D-B6AA-90365208A042@mit.edu> <201003111927.24829.knikanth@suse.de>
-To: Nikanth Karthikesan <knikanth@suse.de>
-X-Mailer: Apple Mail (2.1077)
-X-Brightmail-Tracker: AAAAAA==
+	id S1757948Ab0CKOh2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:37:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36278 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756027Ab0CKOh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:37:26 -0500
+Date: Thu, 11 Mar 2010 14:37:11 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <1267824230-23861-1-git-send-email-acme@infradead.org>
+References: <1267824230-23861-1-git-send-email-acme@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing: Update the comm field in the right variable in update_max_tr
+Message-ID: <tip-1acaa1b2d9b5904c9cce06122990a2d71046ce16@git.kernel.org>
+Git-Commit-ID: 1acaa1b2d9b5904c9cce06122990a2d71046ce16
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 14:37:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  1acaa1b2d9b5904c9cce06122990a2d71046ce16
+Gitweb:     http://git.kernel.org/tip/1acaa1b2d9b5904c9cce06122990a2d71046ce16
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Fri, 5 Mar 2010 18:23:50 -0300
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Fri, 5 Mar 2010 21:12:08 -0500
 
-On Mar 11, 2010, at 8:57 AM, Nikanth Karthikesan wrote:
-> 
-> I guess, what he meant was, to keep filesystem blocks aligned, even if the 
-> partition is not. Say if the partition is mis-aligned by 512-bytes, let the 
-> filesystem waste 4k-512bytes and keep it's blocks aligned. But it might be a 
-> case of over-engineering, possibly requiring disk format change.
+tracing: Update the comm field in the right variable in update_max_tr
 
-Ah, yes, I agree with you; that's probably what he meant.
+The latency output showed:
 
-Sure, that's theoretically possible, but it would mean changing every single filesystem, and it would require a file system format change --- or at least a file system format extension.
+ #    | task: -3 (uid:0 nice:0 policy:1 rt_prio:99)
 
-It would seem to be way easier to simply fix the partitioning tools to do the right thing, though.
+The comm is missing in the "task:" and it looks like a minus 3 is
+the output. The correct display should be:
 
--- Ted
+ #    | task: migration/0-3 (uid:0 nice:0 policy:1 rt_prio:99)
 
+The problem is that the comm is being stored in the wrong data
+structure. The max_tr.data[cpu] is what stores the comm, not the
+tr->data[cpu].
+
+Before this patch the max_tr.data[cpu]->comm was zeroed and the /debug/trace
+ended up showing just the '-' sign followed by the pid.
+
+Also remove a needless initialization of max_data.
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1267824230-23861-1-git-send-email-acme@infradead.org>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 032c57c..6efd5cb 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -592,7 +592,7 @@ static void
+ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
+ {
+ 	struct trace_array_cpu *data = tr->data[cpu];
+-	struct trace_array_cpu *max_data = tr->data[cpu];
++	struct trace_array_cpu *max_data;
+ 
+ 	max_tr.cpu = cpu;
+ 	max_tr.time_start = data->preempt_timestamp;
+@@ -602,7 +602,7 @@ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
+ 	max_data->critical_start = data->critical_start;
+ 	max_data->critical_end = data->critical_end;
+ 
+-	memcpy(data->comm, tsk->comm, TASK_COMM_LEN);
++	memcpy(max_data->comm, tsk->comm, TASK_COMM_LEN);
+ 	max_data->pid = tsk->pid;
+ 	max_data->uid = task_uid(tsk);
+ 	max_data->nice = tsk->static_prio - 20 - MAX_RT_PRIO;
