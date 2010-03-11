@@ -1,202 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933202Ab0CKQSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:18:05 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:39083 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933136Ab0CKQSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:18:01 -0500
-Date: Thu, 11 Mar 2010 10:17:00 -0600
-From: Robin Holt <holt@sgi.com>
-To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       x86@kernel.org
-Subject: [Patch] x86,pat Update the page flags for memtype atomically
- instead of using memtype_lock.
-Message-ID: <20100311161700.GC5685@sgi.com>
+	id S933214Ab0CKQU6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:20:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53763 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933204Ab0CKQU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 11:20:56 -0500
+Date: Thu, 11 Mar 2010 17:19:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Q: select_fallback_rq() && cpuset_lock()
+Message-ID: <20100311161909.GA16008@redhat.com>
+References: <20100309180615.GA11681@redhat.com> <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com> <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com> <20100311145248.GA12907@redhat.com> <1268321759.5037.113.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1268321759.5037.113.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 03/11, Peter Zijlstra wrote:
+>
+> On Thu, 2010-03-11 at 15:52 +0100, Oleg Nesterov wrote:
+>
+> > Btw, select_fallback_rq() takes
+> > rcu_read_lock around cpuset_cpus_allowed_locked(). Why? I must have
+> > missed something, but afaics this buys nothing.
+>
+> for task_cs() iirc.
 
-While testing an application using the xpmem (out of kernel) driver, we
-noticed a significant page fault rate reduction of x86_64 with respect
-to ia64.  For one test running with 32 cpus, one thread per cpu, it
-took 01:08 for each of the threads to vm_insert_pfn 2GB worth of pages.
-For the same test running on 256 cpus, one thread per cpu, it took 14:48
-to vm_insert_pfn 2 GB worth of pages.
+it should be stable under task_lock()... Never mind.
 
-The slowdown was tracked to lookup_memtype which acquires the
-spinlock memtype_lock.  This heavily contended lock was slowing down
-vm_insert_pfn().
+> > How can we fix this later? Perhaps we can change
+> > cpuset_track_online_cpus(CPU_DEAD) to scan all affected cpusets and
+> > fixup the tasks with the wrong ->cpus_allowed == cpu_possible_mask.
+>
+> Problem is, we can't really fix up tasks, wakeup must be able to find a
+> suitable cpu.
 
-With the cmpxchg on page->flags method, both the 32 cpu and 256 cpu
-cases take approx 00:01.3 seconds to complete.
+Yes sure. I meant, wakeup()->select_fallback_rq() sets cpus_allowed =
+cpu_possible_map as we discussed. Then cpuset_track_online_cpus(CPU_DEAD)
+fixes the affected tasks.
 
+> > At first glance this should work in try_to_wake_up(p) case, we can't
+> > race with cpuset_change_cpumask()/etc because of TASK_WAKING logic.
+>
+> Well, cs->cpus_possible can still go funny on us.
 
-To: Ingo Molnar <mingo@redhat.com>
-To: H. Peter Anvin <hpa@zytor.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Robin Holt <holt@sgi.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: x86@kernel.org
+What do you mean? Afaics, cpusets always uses set_cpus_allowed() to
+change task->cpus_allowed.
 
----
+> > But I am not sure how can we fix move_task_off_dead_cpu(). I think
+> > __migrate_task_irq() itself is fine, but if select_fallback_rq() is
+> > called from move_task_off_dead_cpu() nothing protects ->cpus_allowed.
+>
+> It has that retry loop in case the migration fails, right?
+>
+> > We can race with cpusets, or even with the plain set_cpus_allowed().
+> > Probably nothing really bad can happen, if the resulting cpumask
+> > doesn't have online cpus due to the racing memcpys, we should retry
+> > after __migrate_task_irq() fails. Or we can take cpu_rq(cpu)-lock
+> > around cpumask_copy(p->cpus_allowed, cpu_possible_mask).
+>
+> It does the retry thing.
 
-Changes since -V1:
-1) Introduce atomically setting and clearing the page flags and not
-using the global memtype_lock to protect page->flags.
+Yes, I mentioned retry logic too. But it can't always help, even without
+cpusets.
 
-2) This allowed me the opportunity to convert the rwlock back into a
-spinlock and not affect _MY_ tests performance as all the pages my test
-was utilizing are tracked by struct pages.
+Suppose a task T is bound to the dead CPU, and move_task_off_dead_cpu()
+races with set_cpus_allowed(new_mask). I think it is fine if T gets
+either new_mask or cpu_possible_map in ->cpus_allowed. But, it can get
+a "random" mix if 2 memcpy() run in parallel. And it is possible that
+__migrate_task_irq() will not fail if dest_cpu falls into resulting mask.
 
-3) Corrected the commit log.  The timings were for 32 cpus and not 256.
+> > @@ -2289,10 +2289,9 @@ static int select_fallback_rq(int cpu, s
+> >
+> >  	/* No more Mr. Nice Guy. */
+> >  	if (dest_cpu >= nr_cpu_ids) {
+> > -		rcu_read_lock();
+> > -		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+> > -		rcu_read_unlock();
+> > -		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
+> > +		// XXX: take cpu_rq(cpu)->lock ???
+> > +		cpumask_copy(&p->cpus_allowed, cpu_possible_mask);
+> > +		dest_cpu = cpumask_any(cpu_active_mask);
+>
+>
+> Right, this seems safe.
 
- arch/x86/include/asm/cacheflush.h |   43 +++++++++++++++++++++-----------------
- arch/x86/mm/pat.c                 |   10 --------
- 2 files changed, 25 insertions(+), 28 deletions(-)
+OK, I'll try to read this code a bit more and then send this patch.
 
-Index: memtype_lock_rwlock_V1/arch/x86/include/asm/cacheflush.h
-===================================================================
---- memtype_lock_rwlock_V1.orig/arch/x86/include/asm/cacheflush.h	2010-03-11 10:15:18.000000000 -0600
-+++ memtype_lock_rwlock_V1/arch/x86/include/asm/cacheflush.h	2010-03-11 10:15:20.000000000 -0600
-@@ -44,9 +44,6 @@ static inline void copy_from_user_page(s
- 	memcpy(dst, src, len);
- }
- 
--#define PG_WC				PG_arch_1
--PAGEFLAG(WC, WC)
--
- #ifdef CONFIG_X86_PAT
- /*
-  * X86 PAT uses page flags WC and Uncached together to keep track of
-@@ -55,16 +52,23 @@ PAGEFLAG(WC, WC)
-  * _PAGE_CACHE_UC_MINUS and fourth state where page's memory type has not
-  * been changed from its default (value of -1 used to denote this).
-  * Note we do not support _PAGE_CACHE_UC here.
-- *
-- * Caller must hold memtype_lock for atomicity.
-  */
-+
-+#define _PGMT_DEFAULT		0
-+#define _PGMT_WC		PG_arch_1
-+#define _PGMT_UC_MINUS		PG_uncached
-+#define _PGMT_WB		(PG_uncached | PG_arch_1)
-+#define _PGMT_MASK		(~(PG_uncached | PG_arch_1))
-+
- static inline unsigned long get_page_memtype(struct page *pg)
- {
--	if (!PageUncached(pg) && !PageWC(pg))
-+	unsigned long pg_flags = pg->flags & (PG_uncached | PG_arch_1);
-+
-+	if (pg_flags == _PGMT_DEFAULT)
- 		return -1;
--	else if (!PageUncached(pg) && PageWC(pg))
-+	else if (pg_flags == _PGMT_WC)
- 		return _PAGE_CACHE_WC;
--	else if (PageUncached(pg) && !PageWC(pg))
-+	else if (pg_flags == _PGMT_UC_MINUS)
- 		return _PAGE_CACHE_UC_MINUS;
- 	else
- 		return _PAGE_CACHE_WB;
-@@ -72,25 +76,26 @@ static inline unsigned long get_page_mem
- 
- static inline void set_page_memtype(struct page *pg, unsigned long memtype)
- {
-+	unsigned long memtype_flags = _PGMT_DEFAULT;
-+	unsigned long old_flags;
-+	unsigned long new_flags;
-+
- 	switch (memtype) {
- 	case _PAGE_CACHE_WC:
--		ClearPageUncached(pg);
--		SetPageWC(pg);
-+		memtype_flags = _PGMT_WC;
- 		break;
- 	case _PAGE_CACHE_UC_MINUS:
--		SetPageUncached(pg);
--		ClearPageWC(pg);
-+		memtype_flags = _PGMT_UC_MINUS;
- 		break;
- 	case _PAGE_CACHE_WB:
--		SetPageUncached(pg);
--		SetPageWC(pg);
--		break;
--	default:
--	case -1:
--		ClearPageUncached(pg);
--		ClearPageWC(pg);
-+		memtype_flags = _PGMT_WB;
- 		break;
- 	}
-+
-+	do {
-+		old_flags = pg->flags;
-+		new_flags = (old_flags & _PGMT_MASK) | memtype_flags;
-+	} while (cmpxchg(&pg->flags, old_flags, new_flags) != old_flags);
- }
- #else
- static inline unsigned long get_page_memtype(struct page *pg) { return -1; }
-Index: memtype_lock_rwlock_V1/arch/x86/mm/pat.c
-===================================================================
---- memtype_lock_rwlock_V1.orig/arch/x86/mm/pat.c	2010-03-11 10:15:18.000000000 -0600
-+++ memtype_lock_rwlock_V1/arch/x86/mm/pat.c	2010-03-11 10:15:20.000000000 -0600
-@@ -156,7 +156,7 @@ static char *cattr_name(unsigned long fl
-  * The data structure is a list that is also organized as an rbtree
-  * sorted on the start address of memtype range.
-  *
-- * memtype_lock protects both the linear list and rbtree.
-+ * memtype_lock protects the rbtree.
-  */
- 
- struct memtype {
-@@ -296,8 +296,6 @@ static int pat_pagerange_is_ram(unsigned
-  * Here we do two pass:
-  * - Find the memtype of all the pages in the range, look for any conflicts
-  * - In case of no conflicts, set the new memtype for pages in the range
-- *
-- * Caller must hold memtype_lock for atomicity.
-  */
- static int reserve_ram_pages_type(u64 start, u64 end, unsigned long req_type,
- 				  unsigned long *new_type)
-@@ -404,9 +402,7 @@ int reserve_memtype(u64 start, u64 end, 
- 	is_range_ram = pat_pagerange_is_ram(start, end);
- 	if (is_range_ram == 1) {
- 
--		spin_lock(&memtype_lock);
- 		err = reserve_ram_pages_type(start, end, req_type, new_type);
--		spin_unlock(&memtype_lock);
- 
- 		return err;
- 	} else if (is_range_ram < 0) {
-@@ -501,9 +497,7 @@ int free_memtype(u64 start, u64 end)
- 	is_range_ram = pat_pagerange_is_ram(start, end);
- 	if (is_range_ram == 1) {
- 
--		spin_lock(&memtype_lock);
- 		err = free_ram_pages_type(start, end);
--		spin_unlock(&memtype_lock);
- 
- 		return err;
- 	} else if (is_range_ram < 0) {
-@@ -583,10 +577,8 @@ static unsigned long lookup_memtype(u64 
- 
- 	if (pat_pagerange_is_ram(paddr, paddr + PAGE_SIZE)) {
- 		struct page *page;
--		spin_lock(&memtype_lock);
- 		page = pfn_to_page(paddr >> PAGE_SHIFT);
- 		rettype = get_page_memtype(page);
--		spin_unlock(&memtype_lock);
- 		/*
- 		 * -1 from get_page_memtype() implies RAM page is in its
- 		 * default state and not reserved, and hence of type WB
+Oleg.
+
