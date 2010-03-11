@@ -1,69 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752618Ab0CKJ07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:26:59 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:44288 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335Ab0CKJ05 (ORCPT
+	id S1754071Ab0CKJ2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:28:48 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39614 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484Ab0CKJ2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 04:26:57 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Philippe De Muyter <phdm@macqel.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
-References: <20100310123257.GA2899@frolo.macqel>
-	<87d3zc1bjo.fsf@devron.myhome.or.jp>
-	<20100310161429.GA16799@frolo.macqel>
-	<87hboow105.fsf@devron.myhome.or.jp>
-	<20100310235808.GA4353@frolo.macqel>
-Date: Thu, 11 Mar 2010 18:26:54 +0900
-In-Reply-To: <20100310235808.GA4353@frolo.macqel> (Philippe De Muyter's
-	message of "Thu, 11 Mar 2010 00:58:08 +0100")
-Message-ID: <87bpevryxt.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 11 Mar 2010 04:28:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 11 Mar 2010 18:25:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Message-Id: <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1268298865.5279.997.camel@twins>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
+	<20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
+	<1268298865.5279.997.camel@twins>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philippe De Muyter <phdm@macqel.be> writes:
+On Thu, 11 Mar 2010 10:14:25 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
->> >> This introduces unneeded directory-parse to standard one.  And for
->> >
->> > No.  There will only be a second parse if someone is looking for a filename
->> > with a trailing dot, and it is not found (*).  I there is no trailing dot in qname, only the first fat_search_long will be called, because len after vfat_striptail_len would be equal to qname->len.
->> 
->> Yes, I'm saying about trailing-dot filename case. Any disadvantage to
->> standard one is unacceptable to workaround.
->
-> This is unavoidable.
+> On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
+> > On Thu, 11 Mar 2010 09:39:13 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > The performance overhead is not so huge in both solutions, but the impact on
+> > > > performance is even more reduced using a complicated solution...
+> > > > 
+> > > > Maybe we can go ahead with the simplest implementation for now and start to
+> > > > think to an alternative implementation of the page_cgroup locking and
+> > > > charge/uncharge of pages.
+> 
+> FWIW bit spinlocks suck massive.
+> 
+> > > 
+> > > maybe. But in this 2 years, one of our biggest concerns was the performance.
+> > > So, we do something complex in memcg. But complex-locking is , yes, complex.
+> > > Hmm..I don't want to bet we can fix locking scheme without something complex.
+> > > 
+> > But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
+> > will give us much benefit (of performance) than we lose by small overheads.
+> 
+> Well, the !cgroup or root case should really have no performance impact.
+> 
+> > IIUC, this series affects trgger for background-write-out.
+> 
+> Not sure though, while this does the accounting the actual writeout is
+> still !cgroup aware and can definately impact performance negatively by
+> shrinking too much.
+> 
 
-We would be able to introduce new mount option to do it if needed.
+Ah, okay, your point is !cgroup (ROOT cgroup case.)
+I don't think accounting these file cache status against root cgroup is necessary.
 
->> 	$ ls
->>         a.. a. a
->>         $ rm -rf *
->> 
->>         $ ls
->>         a..
->>         $ touch a.
->>         $ touch a
->> ...
->> 
->> I assumed you want to define "a." and "a" are different name on
->> "mv a a.", and _totally_.
->
-> For file creation and renaming, I want to introduce no change, because there
-> is no problem.  If one wants to create a "a." file on a IO-MEGA disk suing
-> linux and USB, it is currently called "a", and that will remain exactly the
-> same.
 
-This changed vfat_find(), so, this patch will change the behavior of all
-callers more or less. And the behavior seems to be really strange, you
-can remove "a.", but you can't create it? The behavior sounds random,
-right?
+BTW, in other thread, I'm now proposing this style. 
+==
++void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
++{
++	struct page_cgroup *pc;
++
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return;
++
++	if (trylock_page_cgroup(pc)) {
++		__mem_cgroup_update_stat(pc, idx, charge);
++		unlock_page_cgroup(pc);
++	}
++	return;
+==
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Then, it's not problem that check pc->mem_cgroup is root cgroup or not
+without spinlock.
+==
+void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
+{
+	pc = lookup_page_cgroup(page);
+	if (unlikely(!pc) || mem_cgroup_is_root(pc->mem_cgroup))
+		return;	
+	...
+}
+==
+This can be handle in the same logic of "lock failure" path.
+And we just do ignore accounting.
+
+There are will be no spinlocks....to do more than this,
+I think we have to use "struct page" rather than "struct page_cgroup".
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
