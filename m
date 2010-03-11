@@ -1,70 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365Ab0CKRCu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 12:02:50 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:39529 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933341Ab0CKRCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 12:02:49 -0500
-Date: Thu, 11 Mar 2010 18:02:48 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: Race condition in TTY ldisc layer in 2.6.33
-Message-ID: <20100311170248.GA2482@rere.qmqm.pl>
-References: <20100311133222.GA19884@rere.qmqm.pl> <20100311135009.GA8801@kroah.com> <20100311155015.GA25607@rere.qmqm.pl> <20100311160653.GA30832@rere.qmqm.pl> <20100311162930.GA18217@localhost>
+	id S933368Ab0CKRNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 12:13:48 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:49883 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933340Ab0CKRNq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 12:13:46 -0500
+Message-ID: <4B992408.7040608@oracle.com>
+Date: Thu, 11 Mar 2010 09:10:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100311162930.GA18217@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: [PATCH -next] mtd/nand/r852: fix build for CONFIG_PCI disabled
+References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>	 <4B8C378B.2090400@oracle.com> <1267531329.10734.1.camel@maxim-laptop> <4B991A6F.1080006@oracle.com> <4B991B9B.8070809@oracle.com>
+In-Reply-To: <4B991B9B.8070809@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B9924AA.0020:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 05:29:30PM +0100, Johan Hovold wrote:
-> On Thu, Mar 11, 2010 at 05:06:53PM +0100, Micha³ Miros³aw wrote:
-> > On Thu, Mar 11, 2010 at 04:50:15PM +0100, Micha³ Miros³aw wrote:
-> > > On Thu, Mar 11, 2010 at 05:50:09AM -0800, Greg KH wrote:
-> > > > On Thu, Mar 11, 2010 at 02:32:22PM +0100, Micha? Miros?aw wrote:
-> > > > > Looks like there's some race contition in switching ldiscs on USB serial
-> > > > > ports. The following warnings trigger sometimes after killing and restarting
-> > > > > process that changes ldisc and waits forever. In case you want to look at
-> > > > > the code, there it is: http://rere.qmqm.pl/~mirq/sermmc/
-> > > > If you apply git commit 638b9648ab51c9c549ff5735d3de519ef6199df3 to the
-> > > > 2.6.33 kernel, does it solve the issue for you?
-> > > I'm running with the patch now. After couple cycles of starting and killing
-> > > the ldisc-setting process I get no warnings. I'll get back to you when/if
-> > > I encounter them again.
-> > Hah. Just seconds after I sent that mail I hit this again. The stack traces
-> > are exactly the same (except for different starting address of
-> > flush_to_ldisc()).
-> > 
-> > The warnings are triggered by:
-> > 
-> > 	struct usb_serial_port *port = tty->driver_data;
-> > 	...
-> > 	/* count is managed under the mutex lock for the tty so cannot
-> > 	   drop to zero until after the last close completes */
-> > 	WARN_ON(!port->port.count);
-> This is a false warning that was fixed by commit
-> 49d3380e3f1297ff7bdc700c0a7fe6c3a036b3ab.
+> 
+> Sorry, it's there, but there are still build errors.
+> I will look at those...
+> 
 
-Removing the WARN_ON()s will definitely keep them from triggering. ;)
 
-> > BTW, Couple of minutes earlier I got this message:
-> > [  201.629616] cp210x ttyUSB0: usb_serial_generic_resubmit_read_urb - failed resubmitting read urb, error -1
-> > But after that I disconnected and reconnected the device, so this is probably
-> > not relevant here.
-> You're right, it's unrelated. I submitted a patch a while ago that
-> removes this message (as it is not an error):
-> http://thread.gmane.org/gmane.linux.usb.general/28047/focus=28052
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I'll apply it then, if that's the case.
+r852 fails to build when CONFIG_PCI is not enabled since it uses
+pci_*() calls and is a PCI driver, so it should depend on PCI
+to prevent build errors.
+It should also #include <linux/pci.h>.
 
-Thanks for your help.
+drivers/mtd/nand/r852.c:1053: error: implicit declaration of function 'pci_prepare_to_sleep'
+drivers/mtd/nand/r852.c:1062: error: implicit declaration of function 'pci_back_from_sleep'
 
-Best Regards,
-Micha³ Miros³aw
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc:	David Woodhouse <dwmw2@infradead.org>
+Cc:	Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/mtd/nand/Kconfig |    1 +
+ drivers/mtd/nand/r852.c  |    1 +
+ 2 files changed, 2 insertions(+)
+
+--- linux-next-20100311.orig/drivers/mtd/nand/Kconfig
++++ linux-next-20100311/drivers/mtd/nand/Kconfig
+@@ -105,6 +105,7 @@ config MTD_NAND_IDS
+ config MTD_NAND_RICOH
+ 	tristate "Ricoh xD card reader"
+ 	default n
++	depends on PCI
+ 	select MTD_SM_COMMON
+ 	help
+ 	  Enable support for Ricoh R5C852 xD card reader
+--- linux-next-20100311.orig/drivers/mtd/nand/r852.c
++++ linux-next-20100311/drivers/mtd/nand/r852.c
+@@ -12,6 +12,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/workqueue.h>
+ #include <linux/interrupt.h>
++#include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/delay.h>
+ #include <asm/byteorder.h>
