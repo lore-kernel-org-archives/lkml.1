@@ -1,39 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066Ab0CKK3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:29:32 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59668 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857Ab0CKK3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:29:31 -0500
-Date: Thu, 11 Mar 2010 10:28:45 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Viresh KUMAR <viresh.kumar@st.com>
-Cc: linux-arm-kernel@lists.infradead.org, rajeev-dlh.kumar@st.com,
-       shiraz.hashim@st.com, armando.visconti@st.com,
-       ashish.priyadarshi@st.com, linux-kernel@vger.kernel.org,
-       vipin.kumar@st.com, amit.goel@st.com, deepak.sikri@st.com
-Subject: Re: [PATCH 05/11] ST SPEAr: Added clock framework for SPEAr
-	platform and machines
-Message-ID: <20100311102845.GA16376@n2100.arm.linux.org.uk>
-References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com> <1267592861-26911-2-git-send-email-viresh.kumar@st.com> <1267592861-26911-3-git-send-email-viresh.kumar@st.com> <1267592861-26911-4-git-send-email-viresh.kumar@st.com> <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <1267592861-26911-6-git-send-email-viresh.kumar@st.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267592861-26911-6-git-send-email-viresh.kumar@st.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1756535Ab0CKKcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:32:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:32798 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558Ab0CKKcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:32:16 -0500
+Date: Thu, 11 Mar 2010 21:32:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: build failure after merge of the pcmcia tree
+Message-Id: <20100311213205.424c16c5.sfr@canb.auug.org.au>
+In-Reply-To: <20100311081754.GB2757@isilmar.linta.de>
+References: <20100311132149.c6ef7616.sfr@canb.auug.org.au>
+	<20100311081754.GB2757@isilmar.linta.de>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__11_Mar_2010_21_32_05_+1100_AvsfcOZkqcedUaDU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 10:37:35AM +0530, Viresh KUMAR wrote:
-> +/* array of all spear 3xx clock lookups */
-> +static struct clk_lookup *spear_clk_lookups[] = {
-> +	/* root clks */
-> +	&osc_32k_cl,
-> +	&osc_24m_cl,
+--Signature=_Thu__11_Mar_2010_21_32_05_+1100_AvsfcOZkqcedUaDU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is rather wasteful - rather than defining structures, and then having
-a one-time-used set of pointers to the structures, why not just declare
-the whole lot as an array like most other implementations do?
+Hi Dominik,
+
+On Thu, 11 Mar 2010 09:17:54 +0100 Dominik Brodowski <linux@dominikbrodowsk=
+i.net> wrote:
+>
+> oops, I'm very sorry, seems like I pushed the wrong tree to master... fix=
+ed
+> it; so should be fine for tomorrow.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__11_Mar_2010_21_32_05_+1100_AvsfcOZkqcedUaDU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuYxqUACgkQjjKRsyhoI8x8RgCdEZX+srG5vKYXJ2E4aWY5Z7Bd
+fg8AnRD7maWPG84NR44I4wtzvSMLTQz1
+=J3BZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__11_Mar_2010_21_32_05_+1100_AvsfcOZkqcedUaDU--
