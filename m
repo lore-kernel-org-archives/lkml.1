@@ -1,279 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694Ab0CKVUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 16:20:43 -0500
-Received: from claw.goop.org ([74.207.240.146]:39721 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772Ab0CKVUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:20:41 -0500
-Message-ID: <4B995EA6.8080105@goop.org>
-Date: Thu, 11 Mar 2010 13:20:38 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
+	id S1753823Ab0CKVVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:21:44 -0500
+Received: from mail-wy0-f174.google.com ([74.125.82.174]:38131 "EHLO
+	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753645Ab0CKVVm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 16:21:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=SGk2lpXHA2ZbR6POh8vqEBwNO7xzyDbV7awKK21rrNIJNgaYS8rlBoaKAlCtlQHA5V
+         5RIRR+l0ZNQW+Kvw6iMfOMNUFGbTrvsRzTjWvLt+AkqR5KZDsPDQEPLWHmWCXEsHem8d
+         2yfMDIWFyR2D/4r1Q6A0tPHG9wl5gRsCd1kr4=
+Message-ID: <4B995EE1.1050609@warmcat.com>
+Date: Thu, 11 Mar 2010 21:21:37 +0000
+From: Andy Green <andy@warmcat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc14 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-CC: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-Subject: Re: [Xen-devel] [PATCH 2 of 5] early PV on HVM
-References: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop>
-In-Reply-To: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop>
+To: Stanislav Brabec <utx@penguin.cz>
+CC: Eric Miao <eric.y.miao@gmail.com>, dbaryshkov@gmail.com,
+       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       lenz@cs.wisc.edu, rpurdie@rpsys.net,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Pavel Machek <pavel@ucw.cz>, thommycheck@gmail.com,
+       zaurus-devel@www.linuxtogo.org, omegamoon@gmail.com
+Subject: Re: bit errors on spitz
+References: <20100305212708.GC21773@elf.ucw.cz>	<f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com>	<20100308072858.GA29939@atrey.karlin.mff.cuni.cz>	<20100308082530.GA1982@atrey.karlin.mff.cuni.cz>	<4B98EF5D.5000609@warmcat.com> <1268322155.3990.114.camel@hammer.suse.cz>
+In-Reply-To: <1268322155.3990.114.camel@hammer.suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10/2010 07:47 AM, Stefano Stabellini wrote:
-> Hi all,
-> this patch:
+On 03/11/10 15:42, Somebody in the thread at some point said:
+> Andy Green wrote:
 >
-> - adds a xen_guest_init hook in setup.c right after kvm_guest_init;
+>> I saw very similar failures for a long time on our iMX31 based device.
+>> Eventually I found a Freescale errata where the RAM inside the USB2
+>> macrocell started to make single bit errors below 1.38V Vcore; ours was
+>> 1.4V at that time but dipped on CPU load.
 >
-> - initializes basic pv on hvm features in xen_guest_init;
->    
+> Good tip. It seems that nobody ported driver for the voltage control
+> chip ISL6271 from 2.4 kernel, and bootloader probably does not set
+> correct values.
+>
+> Datasheet:
+> http://www.penguin.cz/~utx/zaurus/datasheets/power/Xscale/ISL6271.pdf
 
-Is this 64-bit specific like Sheng's version?
+Unless there's more to it in the way the zaurus using it that regulator 
+isn't programmable digitally.
 
-I also asked him to move the setup code out of enlighten.c into a new 
-file, though your version is a fair bit smaller.
+Reading about your CF Card WLAN related issues they suck down a good 
+amount of power when their radio is up, I would definitely suggest 
+monitoring with a 'scope the various rails (Vcore, RAM and whatever it 
+is the CF Card is powered by) while putting it under load.
 
-> Signed-off-by: Stefano Stabellini<stefano.stabellini@eu.citrix.com>
-> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
-> Signed-off-by: Yaozu (Eddie) Dong<eddie.dong@intel.com>
->
-> ---
->
-> diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
-> index d5b7e90..bbd3f65 100644
-> --- a/arch/x86/include/asm/xen/hypervisor.h
-> +++ b/arch/x86/include/asm/xen/hypervisor.h
-> @@ -33,6 +33,7 @@
->   #ifndef _ASM_X86_XEN_HYPERVISOR_H
->   #define _ASM_X86_XEN_HYPERVISOR_H
->
-> +#ifdef CONFIG_XEN
->   /* arch/i386/kernel/setup.c */
->   extern struct shared_info *HYPERVISOR_shared_info;
->   extern struct start_info *xen_start_info;
-> @@ -43,10 +44,11 @@ enum xen_domain_type {
->   	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
->   };
->
-> -#ifdef CONFIG_XEN
->   extern enum xen_domain_type xen_domain_type;
-> +extern void xen_guest_init(void);
->   #else
->   #define xen_domain_type		XEN_NATIVE
-> +#define xen_guest_init() do { } while (0)
->   #endif
->
->   #define xen_domain()		(xen_domain_type != XEN_NATIVE)
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index e09f0e2..cb32e37 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -49,6 +49,7 @@
->   #include<asm/pci-direct.h>
->   #include<linux/init_ohci1394_dma.h>
->   #include<linux/kvm_para.h>
-> +#include<asm/xen/hypervisor.h>
->
->   #include<linux/errno.h>
->   #include<linux/kernel.h>
-> @@ -1007,6 +1008,7 @@ void __init setup_arch(char **cmdline_p)
->   	probe_nr_irqs_gsi();
->
->   	kvm_guest_init();
-> +	xen_guest_init();
->
->   	e820_reserve_resources();
->   	e820_mark_nosave_regions(max_low_pfn);
-> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-> index 3439616..42135e8 100644
-> --- a/arch/x86/xen/enlighten.c
-> +++ b/arch/x86/xen/enlighten.c
-> @@ -32,6 +32,8 @@
->   #include<xen/interface/version.h>
->   #include<xen/interface/physdev.h>
->   #include<xen/interface/vcpu.h>
-> +#include<xen/interface/memory.h>
-> +#include<xen/interface/hvm/hvm_op.h>
->   #include<xen/features.h>
->   #include<xen/page.h>
->   #include<xen/hvc-console.h>
-> @@ -1179,3 +1181,86 @@ asmlinkage void __init xen_start_kernel(void)
->   	x86_64_start_reservations((char *)__pa_symbol(&boot_params));
->   #endif
->   }
-> +
-> +static uint32_t xen_cpuid_base(void)
-> +{
-> +	uint32_t base, eax, ebx, ecx, edx;
-> +	char signature[13];
-> +
-> +	for (base = 0x40000000; base<  0x40010000; base += 0x100) {
-> +		cpuid(base,&eax,&ebx,&ecx,&edx);
-> +		*(uint32_t*)(signature + 0) = ebx;
-> +		*(uint32_t*)(signature + 4) = ecx;
-> +		*(uint32_t*)(signature + 8) = edx;
-> +		signature[12] = 0;
-> +
-> +		if (!strcmp("XenVMMXenVMM", signature)&&  ((eax - base)>= 2))
-> +			return base;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int init_hvm_pv_info(void)
-> +{
-> +	uint32_t eax, ebx, ecx, edx, pages, msr, base;
-> +	u64 pfn;
-> +
-> +	base = xen_cpuid_base();
-> +	if (!base)
-> +		return -EINVAL;
-> +
-> +	cpuid(base + 1,&eax,&ebx,&ecx,&edx);
-> +
-> +	printk(KERN_INFO "Xen version %d.%d.\n", eax>>  16, eax&  0xffff);
-> +
-> +	cpuid(base + 2,&pages,&msr,&ecx,&edx);
-> +
-> +	/* We only support 1 page of hypercall for now */
-> +	if (pages != 1)
-> +		return -ENOMEM;
->    
-
-There's no point testing this; if we don't use hypercalls beyond the 
-first page, it doesn't matter one way or the other.
-
-> +
-> +	pfn = __pa(hypercall_page);
-> +	wrmsrl(msr, pfn);
->    
-
-Use wrmsr_safe, just in case.
-
-> +
-> +	xen_setup_features();
-> +
-> +	pv_info = xen_info;
-> +	pv_info.kernel_rpl = 0;
-> +
-> +	xen_domain_type = XEN_HVM_DOMAIN;
-> +
-> +	return 0;
-> +}
-> +
-> +static void __init init_shared_info(void)
-> +{
-> +	struct xen_add_to_physmap xatp;
-> +	struct shared_info *shared_info_page;
-> +
-> +	shared_info_page = (struct shared_info *) alloc_bootmem_pages(PAGE_SIZE);
-> +	xatp.domid = DOMID_SELF;
-> +	xatp.idx = 0;
-> +	xatp.space = XENMAPSPACE_shared_info;
-> +	xatp.gpfn = __pa(shared_info_page)>>  PAGE_SHIFT;
-> +	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap,&xatp))
-> +		BUG();
-> +
-> +	HYPERVISOR_shared_info = (struct shared_info *)shared_info_page;
-> +
-> +	/* Don't do the full vcpu_info placement stuff until we have a
-> +	   possible map and a non-dummy shared_info. */
-> +	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
-> +}
-> +
-> +void __init xen_guest_init(void)
-> +{
-> +	int r;
-> +
-> +	r = init_hvm_pv_info();
-> +	if (r<  0)
-> +		return;
-> +
-> +	init_shared_info();
-> +}
-> +
-> diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
-> index b115726..bfbb13b 100644
-> --- a/drivers/input/xen-kbdfront.c
-> +++ b/drivers/input/xen-kbdfront.c
-> @@ -342,6 +342,9 @@ static int __init xenkbd_init(void)
->   	if (xen_initial_domain())
->   		return -ENODEV;
->
-> +	if (xen_hvm_domain())
-> +		return -ENODEV;
->    
-
-I think you can combine these into the same if().  Also put it in a 
-separate patch.
-
-> +
->   	return xenbus_register_frontend(&xenkbd_driver);
->   }
->
-> diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
-> index 54cd916..9d74c14 100644
-> --- a/drivers/video/xen-fbfront.c
-> +++ b/drivers/video/xen-fbfront.c
-> @@ -687,6 +687,9 @@ static int __init xenfb_init(void)
->   	if (xen_initial_domain())
->   		return -ENODEV;
->
-> +	if (xen_hvm_domain())
-> +		return -ENODEV;
->    
-
-Ditto.
-
-> +
->   	return xenbus_register_frontend(&xenfb_driver);
->   }
->
-> diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-> index d42e25d..586b8f8 100644
-> --- a/drivers/xen/xenbus/xenbus_probe.c
-> +++ b/drivers/xen/xenbus/xenbus_probe.c
-> @@ -53,6 +53,8 @@
->   #include<xen/events.h>
->   #include<xen/page.h>
->
-> +#include<xen/hvm.h>
-> +
->   #include "xenbus_comms.h"
->   #include "xenbus_probe.h"
->
-> @@ -803,10 +805,19 @@ static int __init xenbus_probe_init(void)
->   		/* dom0 not yet supported */
->   	} else {
->   		xenstored_ready = 1;
-> -		xen_store_evtchn = xen_start_info->store_evtchn;
-> -		xen_store_mfn = xen_start_info->store_mfn;
-> +		if (xen_hvm_domain()) {
-> +			xen_store_evtchn =
-> +				hvm_get_parameter(HVM_PARAM_STORE_EVTCHN);
-> +			xen_store_mfn =
-> +				hvm_get_parameter(HVM_PARAM_STORE_PFN);
-> +			xen_store_interface =
-> +				ioremap(xen_store_mfn<<  PAGE_SHIFT, PAGE_SIZE);
-> +		} else {
-> +			xen_store_evtchn = xen_start_info->store_evtchn;
-> +			xen_store_mfn = xen_start_info->store_mfn;
-> +			xen_store_interface = mfn_to_virt(xen_store_mfn);
-> +		}
->   	}
-> -	xen_store_interface = mfn_to_virt(xen_store_mfn);
->
->   	/* Initialize the interface to xenstore. */
->   	err = xs_init();
->
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
->
->    
-
+-Andy
