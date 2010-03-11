@@ -1,71 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751050Ab0CKFEj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 00:04:39 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63418 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721Ab0CKFEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 00:04:38 -0500
-Message-ID: <4B9879E1.6000606@cn.fujitsu.com>
-Date: Thu, 11 Mar 2010 13:04:33 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
- and 	mems_allowed
-References: <4B8E3F77.6070201@cn.fujitsu.com>	 <6599ad831003050403v2e988723k1b6bf38d48707ab1@mail.gmail.com>	 <4B931068.70900@cn.fujitsu.com> <6599ad831003091142t38c9ffc9rea7d351742ecbd98@mail.gmail.com>
-In-Reply-To: <6599ad831003091142t38c9ffc9rea7d351742ecbd98@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751277Ab0CKFFE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 00:05:04 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:48299 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872Ab0CKFFA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 00:05:00 -0500
+Date: Thu, 11 Mar 2010 13:58:47 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       Andrea Righi <arighi@develer.com>, linux-kernel@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
+ [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
+ infrastructure)
+Message-Id: <20100311135847.990eee62.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100311134908.48d8b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
+	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
+	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309001252.GB13490@linux>
+	<20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
+	<20100309045058.GX3073@balbir.in.ibm.com>
+	<20100310104309.c5f9c9a9.nishimura@mxp.nes.nec.co.jp>
+	<20100310035624.GP3073@balbir.in.ibm.com>
+	<20100311133123.ab10183c.nishimura@mxp.nes.nec.co.jp>
+	<20100311134908.48d8b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2010-3-10 3:42, Paul Menage wrote:
-> On Sat, Mar 6, 2010 at 6:33 PM, Miao Xie <miaox@cn.fujitsu.com> wrote:
->>
->> Before applying this patch, cpuset updates task->mems_allowed just like
->> what you said. But the allocator is still likely to see an empty nodemask.
->> This problem have been pointed out by Nick Piggin.
->>
->> The problem is following:
->> The size of nodemask_t is greater than the size of long integer, so loading
->> and storing of nodemask_t are not atomic operations. If task->mems_allowed
->> don't intersect with new_mask, such as the first word of the mask is empty
->> and only the first word of new_mask is not empty. When the allocator
->> loads a word of the mask before
->>
->>        current->mems_allowed |= new_mask;
->>
->> and then loads another word of the mask after
->>
->>        current->mems_allowed = new_mask;
->>
->> the allocator gets an empty nodemask.
+On Thu, 11 Mar 2010 13:49:08 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 11 Mar 2010 13:31:23 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> Couldn't that be solved by having the reader read the nodemask twice
-> and compare them? In the normal case there's no race, so the second
-> read is straight from L1 cache and is very cheap. In the unlikely case
-> of a race, the reader would keep trying until it got two consistent
-> values in a row.
-
-I think this method can't fix the problem because we can guarantee the second
-read is after the update of mask completes.
-
-Thanks!
-Miao
-
+> > On Wed, 10 Mar 2010 09:26:24 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > * nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2010-03-10 10:43:09]:
 > 
-> Paul
+> > I made a patch(attached) using both local_irq_disable/enable and local_irq_save/restore.
+> > local_irq_save/restore is used only in mem_cgroup_update_file_mapped.
+> > 
+> > And I attached a histogram graph of 30 times kernel build in root cgroup for each.
+> > 
+> >   before_root: no irq operation(original)
+> >   after_root: local_irq_disable/enable for all
+> >   after2_root: local_irq_save/restore for all
+> >   after3_root: mixed version(attached)
+> > 
+> > hmm, there seems to be a tendency that before < after < after3 < after2 ?
+> > Should I replace save/restore version to mixed version ?
+> > 
 > 
+> IMHO, starting from after2_root version is the easist.
+> If there is a chance to call lock/unlock page_cgroup can be called in
+> interrupt context, we _have to_ disable IRQ, anyway.
+> And if we have to do this, I prefer migration_lock rather than this mixture.
 > 
+I see.
+
+> BTW, how big your system is ? Balbir-san's concern is for bigger machines.
+> But I'm not sure this change is affecte by the size of machines.
+> I'm sorry I have no big machine, now.
 > 
+My test machine have 8CPUs, and I run all the test with "make -j8".
+Sorry, I don't have easy access to huge machine either.
+
+> I'll consider yet another fix for race in account migration if I can.
+> 
+me too.
 
 
+Thanks,
+Daisuke Nishimura.
