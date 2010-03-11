@@ -1,68 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934092Ab0CKSUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:20:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55340
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933558Ab0CKSUY (ORCPT
+	id S934094Ab0CKSVb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:21:31 -0500
+Received: from node245.lenscrafters.com ([208.255.68.245]:37240 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933545Ab0CKSVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:20:24 -0500
-Date: Thu, 11 Mar 2010 10:20:43 -0800 (PST)
-Message-Id: <20100311.102043.40590962.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, sfr@canb.auug.org.au, jgarzik@pobox.com,
-       ben-linux@fluff.org, dwmw2@infradead.org, jeremy.kerr@canonical.com,
-       James.Bottomley@suse.de, broonie@opensource.wolfsonmicro.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org,
-       linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-       linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100311174830.4824.19820.stgit@angua>
-References: <20100311174830.4824.19820.stgit@angua>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 13:21:23 -0500
+X-Greylist: delayed 1140 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 13:21:22 EST
+From: Nathaniel McCallum <nathaniel@natemccallum.com>
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, smurf@smurf.noris.de,
+       gernot@hillier.de, r0bertz@gentoo.org, stern@rowland.harvard.edu,
+       Nathaniel McCallum <nathaniel@natemccallum.com>
+Subject: [PATCH 3/3] add support for a new CMOTECH device to usb/serial/option
+Date: Thu, 11 Mar 2010 13:01:18 -0500
+Message-Id: <1268330478-6689-3-git-send-email-nathaniel@natemccallum.com>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <y>
+References: <y>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 11 Mar 2010 11:03:47 -0700
+Signed-off-by: Nathaniel McCallum <nathaniel@natemccallum.com>
+---
+ drivers/usb/serial/option.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-> Currently on OF enabled platforms, the device node pointer is stored in
-> both device.archdata.of_node (.prom_node on sparc), and in of_device.node
-> OF device tree support is being generalized to work on any platform, so
-> instead of adding the of_node pointer to each platform's archdata
-> individually, this patch series moves the of_node pointer into struct
-> device proper and fixes up all users to reference the new location.
-> 
-> The last 3 patches in this series remove the old .archdata.of_node,
-> .archdata.prom_node and of_device.node instances.
-> 
-> This series has been compile tested on powerpc, sparc and microblaze,
-> (allmodconfig used on sparc and powerpc) and boot tested on an mpc5200
-> powerpc.  All known (or at least all I could find) in-tree users of the
-> old names have been removed.
-
-Three or four of the patches don't apply because only your tree
-has those "/* temporary */" comments, f.e. in arch/sparc/kernel/pci.c
-
-I took care of this when applying to my tree.
-
-> This series should also be fully bisectable.  After I collect acks, I
-> would like to get this whole series into linux-next to see if I've
-> missed any references, but I can probably hold off merging the last
-> three patches when the 2.6.35 merge window opens to give out of tree
-> users a bit more time to adapt.  In fact, I'd probably wait a few
-> extra days after pushing out the bulk of this series before I push the
-> last 3 patches into my linux-next branch to isolate the drivers that I
-> missed while fixing.
-
-I'd rather you just apply the sparc one immediately in 2.6.35 and
-not wait at all.
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index d949432..f26c3c5 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -289,6 +289,7 @@ static int  option_resume(struct usb_serial *serial);
+ #define QUALCOMM_VENDOR_ID			0x05C6
+ 
+ #define CMOTECH_VENDOR_ID			0x16d8
++#define CMOTECH_PRODUCT_6008			0x6008
+ #define CMOTECH_PRODUCT_6280			0x6280
+ 
+ #define TELIT_VENDOR_ID				0x1bc7
+@@ -549,6 +550,7 @@ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6000)}, /* ZTE AC8700 */
+ 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6613)}, /* Onda H600/ZTE MF330 */
+ 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6280) }, /* BP3-USB & BP3-EXT HSDPA */
++	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6008) },
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864E) },
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864G) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
+-- 
+1.7.0.1
 
