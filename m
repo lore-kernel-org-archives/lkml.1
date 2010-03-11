@@ -1,132 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467Ab0CKXqO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 18:46:14 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41641 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810Ab0CKXqN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 18:46:13 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 12 Mar 2010 08:42:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-Id: <20100312084230.850f331d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100311150307.GC29246@redhat.com>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
-	<20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
-	<1268298865.5279.997.camel@twins>
-	<20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311150307.GC29246@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1754346Ab0CKXsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 18:48:54 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38107 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754146Ab0CKXsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 18:48:53 -0500
+Date: Fri, 12 Mar 2010 10:48:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, benh@kernel.crashing.org,
+       davem@davemloft.net, jeremy.kerr@canonical.com, monstr@monstr.eu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] of/flattree: Make unflatten_device_tree() safe to
+ call from any arch
+Message-Id: <20100312104840.2128fe99.sfr@canb.auug.org.au>
+In-Reply-To: <20100311173203.4423.8733.stgit@angua>
+References: <20100311173024.4423.53178.stgit@angua>
+	<20100311173203.4423.8733.stgit@angua>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__12_Mar_2010_10_48_40_+1100_78MdD8qFEPUyYrv3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 10:03:07 -0500
-Vivek Goyal <vgoyal@redhat.com> wrote:
+--Signature=_Fri__12_Mar_2010_10_48_40_+1100_78MdD8qFEPUyYrv3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, Mar 11, 2010 at 06:25:00PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 11 Mar 2010 10:14:25 +0100
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
-> > > > On Thu, 11 Mar 2010 09:39:13 +0900
-> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > > > > The performance overhead is not so huge in both solutions, but the impact on
-> > > > > > performance is even more reduced using a complicated solution...
-> > > > > > 
-> > > > > > Maybe we can go ahead with the simplest implementation for now and start to
-> > > > > > think to an alternative implementation of the page_cgroup locking and
-> > > > > > charge/uncharge of pages.
-> > > 
-> > > FWIW bit spinlocks suck massive.
-> > > 
-> > > > > 
-> > > > > maybe. But in this 2 years, one of our biggest concerns was the performance.
-> > > > > So, we do something complex in memcg. But complex-locking is , yes, complex.
-> > > > > Hmm..I don't want to bet we can fix locking scheme without something complex.
-> > > > > 
-> > > > But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
-> > > > will give us much benefit (of performance) than we lose by small overheads.
-> > > 
-> > > Well, the !cgroup or root case should really have no performance impact.
-> > > 
-> > > > IIUC, this series affects trgger for background-write-out.
-> > > 
-> > > Not sure though, while this does the accounting the actual writeout is
-> > > still !cgroup aware and can definately impact performance negatively by
-> > > shrinking too much.
-> > > 
-> > 
-> > Ah, okay, your point is !cgroup (ROOT cgroup case.)
-> > I don't think accounting these file cache status against root cgroup is necessary.
-> > 
-> 
-> I think what peter meant was that with memory cgroups created we will do
-> writeouts much more aggressively.
-> 
-> In balance_dirty_pages()
-> 
-> 	if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> 		break;
-> 
-> Now with Andrea's patches, we are calculating bdi_thres per memory cgroup
-> (almost)
-hmm.
+Hi Grant,
 
-> 
-> bdi_thres ~= per_memory_cgroup_dirty * bdi_fraction
-> 
-> But bdi_nr_reclaimable and bdi_nr_writeback stats are still global.
-> 
-Why bdi_thresh of ROOT cgroup doesn't depend on global number ?
+On Thu, 11 Mar 2010 10:32:03 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> - If CONFIG_OF_FLATTREE is not set, then make unflatten_device_tree()
+>   an empty #define.
 
-> So for the same number of dirty pages system wide on this bdi, we will be
-> triggering writeouts much more aggressively if somebody has created few
-> memory cgroups and tasks are running in those cgroups.
-> 
-> I guess it might cause performance regressions in case of small file
-> writeouts because previously one could have written the file to cache and
-> be done with it but with this patch set, there are higher changes that
-> you will be throttled to write the pages back to disk.
-> 
-> I guess we need two pieces to resolve this.
-> 	- BDI stats per cgroup.
-> 	- Writeback of inodes from same cgroup.
-> 
-> I think BDI stats per cgroup will increase the complextiy.
-> 
-Thank you for clarification. IIUC, dirty_limit implemanation shoul assume
-there is I/O resource controller, maybe usual users will use I/O resource
-controller and memcg at the same time.
-Then, my question is what happens when used with I/O resource controller ?
+"an empty static inline funtion."
 
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index f0fdd1f..54399f1 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -99,6 +99,8 @@ extern int early_init_dt_scan_root(unsigned long node, =
+const char *uname,
+>  /* Other Prototypes */
+>  extern void unflatten_device_tree(void);
+>  extern void early_init_devtree(void *);
+> +#else /* CONFIG_OF_FLATTREE */
+> +static inline void define unflatten_device_tree(void) {}
+                      ^^^^^^
+You need to remove that.
 
-> I am still setting up the system to test whether we see any speedup in
-> writeout of large files with-in a memory cgroup with small memory limits.
-> I am assuming that we are expecting a speedup because we will start
-> writeouts early and background writeouts probably are faster than direct
-> reclaim?
-> 
-Yes. I think so. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks,
--Kame
+--Signature=_Fri__12_Mar_2010_10_48_40_+1100_78MdD8qFEPUyYrv3
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuZgVgACgkQjjKRsyhoI8xIfQCffmMd7zivdpAOUCKyMUTfwkRG
+UZwAoKelHuq+xFrCqlSQ1N5yRUrxfCxR
+=R7bC
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__12_Mar_2010_10_48_40_+1100_78MdD8qFEPUyYrv3--
