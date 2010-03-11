@@ -1,98 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933214Ab0CKQU6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:20:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53763 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933204Ab0CKQU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:20:56 -0500
-Date: Thu, 11 Mar 2010 17:19:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: Q: select_fallback_rq() && cpuset_lock()
-Message-ID: <20100311161909.GA16008@redhat.com>
-References: <20100309180615.GA11681@redhat.com> <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com> <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com> <20100311145248.GA12907@redhat.com> <1268321759.5037.113.camel@laptop>
+	id S933229Ab0CKQVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:21:15 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50750 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933204Ab0CKQVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 11:21:12 -0500
+Date: Thu, 11 Mar 2010 11:21:11 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+cc: Greg KH <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Race condition in TTY ldisc layer in 2.6.33
+In-Reply-To: <20100311160653.GA30832@rere.qmqm.pl>
+Message-ID: <Pine.LNX.4.44L0.1003111118360.1367-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268321759.5037.113.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11, Peter Zijlstra wrote:
->
-> On Thu, 2010-03-11 at 15:52 +0100, Oleg Nesterov wrote:
->
-> > Btw, select_fallback_rq() takes
-> > rcu_read_lock around cpuset_cpus_allowed_locked(). Why? I must have
-> > missed something, but afaics this buys nothing.
->
-> for task_cs() iirc.
+On Thu, 11 Mar 2010, [iso-8859-2] Micha³ Miros³aw wrote:
 
-it should be stable under task_lock()... Never mind.
+> On Thu, Mar 11, 2010 at 04:50:15PM +0100, Micha³ Miros³aw wrote:
+> > On Thu, Mar 11, 2010 at 05:50:09AM -0800, Greg KH wrote:
+> > > On Thu, Mar 11, 2010 at 02:32:22PM +0100, Micha? Miros?aw wrote:
+> > > > Looks like there's some race contition in switching ldiscs on USB serial
+> > > > ports. The following warnings trigger sometimes after killing and restarting
+> > > > process that changes ldisc and waits forever. In case you want to look at
+> > > > the code, there it is: http://rere.qmqm.pl/~mirq/sermmc/
+> > > If you apply git commit 638b9648ab51c9c549ff5735d3de519ef6199df3 to the
+> > > 2.6.33 kernel, does it solve the issue for you?
+> > I'm running with the patch now. After couple cycles of starting and killing
+> > the ldisc-setting process I get no warnings. I'll get back to you when/if
+> > I encounter them again.
+> 
+> Hah. Just seconds after I sent that mail I hit this again. The stack traces
+> are exactly the same (except for different starting address of
+> flush_to_ldisc()).
+> 
+> The warnings are triggered by:
+> 
+> 	struct usb_serial_port *port = tty->driver_data;
+> 	...
+> 	/* count is managed under the mutex lock for the tty so cannot
+> 	   drop to zero until after the last close completes */
+> 	WARN_ON(!port->port.count);
+> 
+> BTW, Couple of minutes earlier I got this message:
+> 
+> [  201.629616] cp210x ttyUSB0: usb_serial_generic_resubmit_read_urb - failed resubmitting read urb, error -1
+> 
+> But after that I disconnected and reconnected the device, so this is probably
+> not relevant here.
 
-> > How can we fix this later? Perhaps we can change
-> > cpuset_track_online_cpus(CPU_DEAD) to scan all affected cpusets and
-> > fixup the tasks with the wrong ->cpus_allowed == cpu_possible_mask.
->
-> Problem is, we can't really fix up tasks, wakeup must be able to find a
-> suitable cpu.
+It looks like Greg gave you the wrong commit ID.  You should use this
+one: 49d3380e3f1297ff7bdc700c0a7fe6c3a036b3ab.  It removes those
+WARN_ON statements entirely.
 
-Yes sure. I meant, wakeup()->select_fallback_rq() sets cpus_allowed =
-cpu_possible_map as we discussed. Then cpuset_track_online_cpus(CPU_DEAD)
-fixes the affected tasks.
+Actually, you should use both commits.
 
-> > At first glance this should work in try_to_wake_up(p) case, we can't
-> > race with cpuset_change_cpumask()/etc because of TASK_WAKING logic.
->
-> Well, cs->cpus_possible can still go funny on us.
-
-What do you mean? Afaics, cpusets always uses set_cpus_allowed() to
-change task->cpus_allowed.
-
-> > But I am not sure how can we fix move_task_off_dead_cpu(). I think
-> > __migrate_task_irq() itself is fine, but if select_fallback_rq() is
-> > called from move_task_off_dead_cpu() nothing protects ->cpus_allowed.
->
-> It has that retry loop in case the migration fails, right?
->
-> > We can race with cpusets, or even with the plain set_cpus_allowed().
-> > Probably nothing really bad can happen, if the resulting cpumask
-> > doesn't have online cpus due to the racing memcpys, we should retry
-> > after __migrate_task_irq() fails. Or we can take cpu_rq(cpu)-lock
-> > around cpumask_copy(p->cpus_allowed, cpu_possible_mask).
->
-> It does the retry thing.
-
-Yes, I mentioned retry logic too. But it can't always help, even without
-cpusets.
-
-Suppose a task T is bound to the dead CPU, and move_task_off_dead_cpu()
-races with set_cpus_allowed(new_mask). I think it is fine if T gets
-either new_mask or cpu_possible_map in ->cpus_allowed. But, it can get
-a "random" mix if 2 memcpy() run in parallel. And it is possible that
-__migrate_task_irq() will not fail if dest_cpu falls into resulting mask.
-
-> > @@ -2289,10 +2289,9 @@ static int select_fallback_rq(int cpu, s
-> >
-> >  	/* No more Mr. Nice Guy. */
-> >  	if (dest_cpu >= nr_cpu_ids) {
-> > -		rcu_read_lock();
-> > -		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
-> > -		rcu_read_unlock();
-> > -		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
-> > +		// XXX: take cpu_rq(cpu)->lock ???
-> > +		cpumask_copy(&p->cpus_allowed, cpu_possible_mask);
-> > +		dest_cpu = cpumask_any(cpu_active_mask);
->
->
-> Right, this seems safe.
-
-OK, I'll try to read this code a bit more and then send this patch.
-
-Oleg.
+Alan Stern
 
