@@ -1,58 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757865Ab0CKNYN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 08:24:13 -0500
-Received: from mail1-out1.atlantis.sk ([80.94.52.55]:54306 "EHLO
-	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757220Ab0CKNYH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 08:24:07 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: ZTE MF636 USB modem is not supported
-Date: Thu, 11 Mar 2010 14:23:57 +0100
-User-Agent: KMail/1.9.10
-Cc: Ole Reier Ulland <ole.reier@netcom.no>, linux-kernel@vger.kernel.org
-References: <201003110008.58644.ole.reier@netcom.no> <alpine.LRH.2.00.1003111415230.12517@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.1003111415230.12517@twin.jikos.cz>
+	id S1751994Ab0CKNYX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 08:24:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57166 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757856Ab0CKNYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 08:24:11 -0500
+Date: Thu, 11 Mar 2010 14:23:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Rientjes <rientjes@google.com>, Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: increase CONFIG_NODES_SHIFT max to 10
+Message-ID: <20100311132354.GA26600@elte.hu>
+References: <alpine.DEB.2.00.1003101537330.30724@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201003111423.58440.linux@rainbow-software.org>
+In-Reply-To: <alpine.DEB.2.00.1003101537330.30724@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 March 2010, Jiri Kosina wrote:
-> On Thu, 11 Mar 2010, Ole Reier Ulland wrote:
-> > I have reported this a while ago to the Mandriva bugzilla, but I cannot
-> > see if anyone is doing anything about it. So now I just want to send the
-> > link to this e-mail address to get a reply and some understanding.
-> >
-> > https://qa.mandriva.com/show_bug.cgi?id=57165
-> >
-> > [root@Dell_Dim Mine_Filer_1_FAT]# uname -a
-> > Linux Dell_Dim 2.6.31.12-desktop-1mnb #1 SMP Tue Jan 26 03:35:36 EST 2010
-> > i686 Intel(R) Pentium(R) 4 CPU 2.80GHz GNU/Linux
-> >
-> > Is it fixed already maybe? Is there another kernel that I can use?
-> >
-> > Is there anything else I can do to help this along?
->
-> It is likely that your modem will need to have been switched to "serial"
-> mode over from the default "storage" mode before it could be used
-> (usb_modemswitch is an userspace application to do that for many ZTE
-> modems).
 
-Not sure about MF636, but MF637 works with this udev rule:
-SUBSYSTEM=="usb", SYSFS{idVendor}=="19d2", SYSFS{idProduct}=="2000", RUN+="/usr/sbin/usb_modeswitch --default-vendor 0x19d2 --default-product 0x2000 --message-content 55534243123456782000000080000c85010101180101010101000000000000"
+* David Rientjes <rientjes@google.com> wrote:
 
-> Could you please post
->
-> 1) dmesg once your modem is plugged in
-> 2) lsusb -v output for this modem
+> Some larger systems require more than 512 nodes, so increase the maximum 
+> CONFIG_NODES_SHIFT to 10 for a new max of 1024 nodes.
+> 
+> This was tested with numa=fake=64M on systems with more than 64GB of RAM. A 
+> total of 1022 nodes were initialized.
+> 
+> Successfully builds with no additional warnings on x86_64 allyesconfig.
 
--- 
-Ondrej Zary
+Not so here:
+
+drivers/base/node.c:169: error: negative width in bit-field ?<anonymous>?
+
+>  Greg KH has queued up numa-fix-BUILD_BUG_ON-for-node_read_distance.patch
+>  for 2.6.35 to fix the build error when CONFIG_NODES_SHIFT is set to 10.
+>  See http://lkml.org/lkml/2010/3/10/390
+
+erm. Alas I cannot merge it in the x86 tree without that fix being upstream. 
+Why for v2.6.35 - shouldnt that be v2.6.34?
+
+	Ingo
