@@ -1,70 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934040Ab0CKSSc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:18:32 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:34774 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933606Ab0CKSEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:04:50 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 10/37] drivers/video: use .dev.of_node instead of .node in
-	struct of_device
-To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
-       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
-       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
-       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
-       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
-       alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:04:43 -0700
-Message-ID: <20100311180442.4824.14836.stgit@angua>
-In-Reply-To: <20100311174830.4824.19820.stgit@angua>
-References: <20100311174830.4824.19820.stgit@angua>
-User-Agent: StGIT/0.14.2
+	id S934047Ab0CKSTZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:19:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52161 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933606Ab0CKSTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 13:19:13 -0500
+Date: Thu, 11 Mar 2010 19:18:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg KH <gregkh@suse.de>
+Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: increase CONFIG_NODES_SHIFT max to 10
+Message-ID: <20100311181832.GB12235@elte.hu>
+References: <alpine.DEB.2.00.1003101537330.30724@chino.kir.corp.google.com>
+ <20100311132354.GA26600@elte.hu>
+ <20100311140623.GA9346@suse.de>
+ <20100311141533.GB31225@elte.hu>
+ <20100311175804.GA32333@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100311175804.GA32333@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.node is being removed
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+* Greg KH <gregkh@suse.de> wrote:
 
- drivers/video/cg6.c |    2 +-
- drivers/video/ffb.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> On Thu, Mar 11, 2010 at 03:15:33PM +0100, Ingo Molnar wrote:
+> > 
+> > * Greg KH <gregkh@suse.de> wrote:
+> > 
+> > > > erm. Alas I cannot merge it in the x86 tree without that fix being 
+> > > > upstream. Why for v2.6.35 - shouldnt that be v2.6.34?
+> > > 
+> > > If it needs to go in before .35, or it should go through Ingo's trees, I 
+> > > have no objection.
+> > 
+> > It does not 'need' to be in .34 but if the fix is trivial enough then you 
+> > could give it a try?
+> 
+> The fix is trivial, I'll queue it up.
 
-diff --git a/drivers/video/cg6.c b/drivers/video/cg6.c
-index 0d47c60..978c15f 100644
---- a/drivers/video/cg6.c
-+++ b/drivers/video/cg6.c
-@@ -741,7 +741,7 @@ static void cg6_unmap_regs(struct of_device *op, struct fb_info *info,
- static int __devinit cg6_probe(struct of_device *op,
- 				const struct of_device_id *match)
- {
--	struct device_node *dp = op->node;
-+	struct device_node *dp = op->dev.of_node;
- 	struct fb_info *info;
- 	struct cg6_par *par;
- 	int linebytes, err;
-diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
-index 9dbb964..be0c982 100644
---- a/drivers/video/ffb.c
-+++ b/drivers/video/ffb.c
-@@ -897,7 +897,7 @@ static void ffb_init_fix(struct fb_info *info)
- static int __devinit ffb_probe(struct of_device *op,
- 			       const struct of_device_id *match)
- {
--	struct device_node *dp = op->node;
-+	struct device_node *dp = op->dev.of_node;
- 	struct ffb_fbc __iomem *fbc;
- 	struct ffb_dac __iomem *dac;
- 	struct fb_info *info;
+Thanks Greg!
 
+	Ingo
