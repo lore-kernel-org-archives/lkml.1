@@ -1,54 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959Ab0CKOGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:06:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56128 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757937Ab0CKOG3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:06:29 -0500
-Date: Thu, 11 Mar 2010 11:06:15 -0300
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, h.mitake@gmail.com,
+	id S1757969Ab0CKOOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:14:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56150 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757939Ab0CKOOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:14:51 -0500
+Date: Thu, 11 Mar 2010 15:14:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: John Kacur <jkacur@redhat.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] perf: Make printing table easily
-Message-ID: <20100311140615.GD28421@ghostprotocols.net>
-References: <1268034910-12544-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <20100311125126.GI31354@elte.hu>
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Kyle McMartin <kyle@redhat.com>
+Subject: Re: [PATCH] perf: Make the install relative to DESTDIR if specified
+Message-ID: <20100311141438.GA31225@elte.hu>
+References: <1268312220-12880-1-git-send-email-jkacur@redhat.com>
+ <520f0cf11003110550v3ba245c1v6dc1c7511251ab66@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100311125126.GI31354@elte.hu>
-X-Url: http://acmel.wordpress.com
+In-Reply-To: <520f0cf11003110550v3ba245c1v6dc1c7511251ab66@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Mar 11, 2010 at 01:51:26PM +0100, Ingo Molnar escreveu:
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > Hi,
-> > 
-> > Making table of matrix by printf is painful work,
-> > but it can be found in perf here and there.
-> > So I'd like to propose semi-automation of making table.
-> > New files util/table.c provides stuffs for easy table printing.
-> 
-> Looks quite reasonable in theory. I suspect it would be useful to see a few 
-> table printing places converted to this facility, to see the simplification 
-> factor in practice.
 
-I'm going thru the printing routines now to get them usable by TUI/GUIs,
-starting with a libnewt based browser integrating initially report and
-annotate, after I get the first patch in shape for merging I'll revisit
-this table class of yours :-)
+* John Kacur <jkacur@redhat.com> wrote:
 
-- Arnaldo
+> On Thu, Mar 11, 2010 at 1:57 PM, John Kacur <jkacur@redhat.com> wrote:
+> > Without this change, the install path is relative to
+> > prefix/DESTDIR
+> > where prefix is automatically set to $HOME
+> >
+> > This can produce unexpected results. For example
+> >
+> > make -C tools/perf DESTDIR=/home/jkacur/tmp install-man
+> >
+> > creates the directory: ? ? ? ? ?/home/jkacur/home/jkacur/tmp/share/...
+> > instead of ?the expected: ? ? ? /home/jkacur/tmp/share/...
+> >
+> > Signed-off-by: John Kacur <jkacur@redhat.com>
+> > ---
+> > ?tools/perf/Documentation/Makefile | ? ?4 +++-
+> > ?tools/perf/Makefile ? ? ? ? ? ? ? | ? ?4 +++-
+> > ?2 files changed, 6 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/tools/perf/Documentation/Makefile b/tools/perf/Documentation/Makefile
+> > index bdd3b7e..bd498d4 100644
+> > --- a/tools/perf/Documentation/Makefile
+> > +++ b/tools/perf/Documentation/Makefile
+> > @@ -24,7 +24,10 @@ DOC_MAN1=$(patsubst %.txt,%.1,$(MAN1_TXT))
+> > ?DOC_MAN5=$(patsubst %.txt,%.5,$(MAN5_TXT))
+> > ?DOC_MAN7=$(patsubst %.txt,%.7,$(MAN7_TXT))
+> >
+> > +# Make the path relative to DESTDIR, not prefix
+> > +ifndef DESTDIR
+> > ?prefix?=$(HOME)
+> > +endif
+> > ?bindir?=$(prefix)/bin
+> > ?htmldir?=$(prefix)/share/doc/perf-doc
+> > ?pdfdir?=$(prefix)/share/doc/perf-doc
+> > @@ -32,7 +35,6 @@ mandir?=$(prefix)/share/man
+> > ?man1dir=$(mandir)/man1
+> > ?man5dir=$(mandir)/man5
+> > ?man7dir=$(mandir)/man7
+> > -# DESTDIR=
+> >
+> > ?ASCIIDOC=asciidoc
+> > ?ASCIIDOC_EXTRA = --unsafe
+> > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> > index 2d53738..5da0cd0 100644
+> > --- a/tools/perf/Makefile
+> > +++ b/tools/perf/Makefile
+> > @@ -216,7 +216,10 @@ STRIP ?= strip
+> > ?# runtime figures out where they are based on the path to the executable.
+> > ?# This can help installing the suite in a relocatable way.
+> >
+> > +# Make the path relative to DESTDIR, not to prefix
+> > +ifndef DESTDIR
+> > ?prefix = $(HOME)
+> > +endif
+> > ?bindir_relative = bin
+> > ?bindir = $(prefix)/$(bindir_relative)
+> > ?mandir = share/man
+> > @@ -233,7 +236,6 @@ sysconfdir = $(prefix)/etc
+> > ?ETC_PERFCONFIG = etc/perfconfig
+> > ?endif
+> > ?lib = lib
+> > -# DESTDIR=
+> >
+> > ?export prefix bindir sharedir sysconfdir
+> >
+> > --
+> > 1.6.6.1
+> 
+> Sorry, I'd like to withdraw this patch.
+> 
+> I see I can achieve my desired ends without changing the behaviour for
+> others who expect the old behaviour,
+
+The old behavior doesnt look very logical though, right?
+
+	Ingo
