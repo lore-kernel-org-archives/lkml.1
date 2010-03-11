@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571Ab0CKSad (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:30:33 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:64108 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755498Ab0CKSa0 (ORCPT
+	id S934194Ab0CKSXa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:23:30 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:58040 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934145Ab0CKSWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:30:26 -0500
+	Thu, 11 Mar 2010 13:22:47 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 05/27] drivers/usb/of: don't use deprecated field in
+Subject: [PATCH 10/27] drivers/input/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
@@ -20,8 +20,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:22:15 -0700
-Message-ID: <20100311182215.13103.45160.stgit@angua>
+Date: Thu, 11 Mar 2010 11:22:43 -0700
+Message-ID: <20100311182243.13103.2307.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 User-Agent: StGIT/0.14.2
@@ -38,137 +38,77 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/usb/gadget/fsl_qe_udc.c   |    7 +++++--
- drivers/usb/host/ehci-ppc-of.c    |    9 ++++-----
- drivers/usb/host/ehci-xilinx-of.c |    9 ++++-----
- drivers/usb/host/fhci-hcd.c       |    7 +++++--
- drivers/usb/host/isp1760-if.c     |    7 +++++--
- drivers/usb/host/ohci-ppc-of.c    |   13 ++++---------
- 6 files changed, 27 insertions(+), 25 deletions(-)
+ drivers/input/misc/sparcspkr.c      |   14 ++++++++++----
+ drivers/input/serio/i8042-sparcio.h |    7 +++++--
+ drivers/input/serio/xilinx_ps2.c    |    7 +++++--
+ 3 files changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index 3537d51..2928523 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -2768,8 +2768,11 @@ static const struct of_device_id qe_udc_match[] __devinitconst = {
- MODULE_DEVICE_TABLE(of, qe_udc_match);
+diff --git a/drivers/input/misc/sparcspkr.c b/drivers/input/misc/sparcspkr.c
+index b064419..11ad153 100644
+--- a/drivers/input/misc/sparcspkr.c
++++ b/drivers/input/misc/sparcspkr.c
+@@ -258,8 +258,11 @@ static const struct of_device_id bbc_beep_match[] = {
+ };
  
- static struct of_platform_driver udc_driver = {
--	.name           = (char *)driver_name,
--	.match_table    = qe_udc_match,
+ static struct of_platform_driver bbc_beep_driver = {
+-	.name		= "bbcbeep",
+-	.match_table	= bbc_beep_match,
 +	.driver = {
-+		.name = (char *)driver_name,
++		.name = "bbcbeep",
 +		.owner = THIS_MODULE,
-+		.of_match_table = qe_udc_match,
++		.of_match_table = bbc_beep_match,
 +	},
- 	.probe          = qe_udc_probe,
- 	.remove         = __devexit_p(qe_udc_remove),
- #ifdef CONFIG_PM
-diff --git a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
-index ad06623..5aec928 100644
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ b/drivers/usb/host/ehci-ppc-of.c
-@@ -274,13 +274,12 @@ MODULE_DEVICE_TABLE(of, ehci_hcd_ppc_of_match);
- 
- 
- static struct of_platform_driver ehci_hcd_ppc_of_driver = {
--	.name		= "ppc-of-ehci",
--	.match_table	= ehci_hcd_ppc_of_match,
- 	.probe		= ehci_hcd_ppc_of_probe,
- 	.remove		= ehci_hcd_ppc_of_remove,
- 	.shutdown	= ehci_hcd_ppc_of_shutdown,
--	.driver		= {
--		.name	= "ppc-of-ehci",
--		.owner	= THIS_MODULE,
-+	.driver = {
-+		.name = "ppc-of-ehci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ehci_hcd_ppc_of_match,
- 	},
+ 	.probe		= bbc_beep_probe,
+ 	.remove		= __devexit_p(bbc_remove),
+ 	.shutdown	= sparcspkr_shutdown,
+@@ -337,8 +340,11 @@ static const struct of_device_id grover_beep_match[] = {
  };
-diff --git a/drivers/usb/host/ehci-xilinx-of.c b/drivers/usb/host/ehci-xilinx-of.c
-index f603bb2..013972b 100644
---- a/drivers/usb/host/ehci-xilinx-of.c
-+++ b/drivers/usb/host/ehci-xilinx-of.c
-@@ -288,13 +288,12 @@ static const struct of_device_id ehci_hcd_xilinx_of_match[] = {
- MODULE_DEVICE_TABLE(of, ehci_hcd_xilinx_of_match);
  
- static struct of_platform_driver ehci_hcd_xilinx_of_driver = {
--	.name		= "xilinx-of-ehci",
--	.match_table	= ehci_hcd_xilinx_of_match,
- 	.probe		= ehci_hcd_xilinx_of_probe,
- 	.remove		= ehci_hcd_xilinx_of_remove,
- 	.shutdown	= ehci_hcd_xilinx_of_shutdown,
--	.driver		= {
--		.name	= "xilinx-of-ehci",
--		.owner	= THIS_MODULE,
+ static struct of_platform_driver grover_beep_driver = {
+-	.name		= "groverbeep",
+-	.match_table	= grover_beep_match,
 +	.driver = {
-+		.name = "xilinx-of-ehci",
++		.name = "groverbeep",
 +		.owner = THIS_MODULE,
-+		.of_match_table = ehci_hcd_xilinx_of_match,
- 	},
- };
-diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
-index 5dcfb3d..dba7af7 100644
---- a/drivers/usb/host/fhci-hcd.c
-+++ b/drivers/usb/host/fhci-hcd.c
-@@ -812,8 +812,11 @@ static const struct of_device_id of_fhci_match[] = {
- MODULE_DEVICE_TABLE(of, of_fhci_match);
- 
- static struct of_platform_driver of_fhci_driver = {
--	.name		= "fsl,usb-fhci",
--	.match_table	= of_fhci_match,
-+	.driver = {
-+		.name = "fsl,usb-fhci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_fhci_match,
++		.of_match_table = grover_beep_match,
 +	},
- 	.probe		= of_fhci_probe,
- 	.remove		= __devexit_p(of_fhci_remove),
- };
-diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
-index 36360e2..100d5fa 100644
---- a/drivers/usb/host/isp1760-if.c
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -121,8 +121,11 @@ static const struct of_device_id of_isp1760_match[] = {
- MODULE_DEVICE_TABLE(of, of_isp1760_match);
+ 	.probe		= grover_beep_probe,
+ 	.remove		= __devexit_p(grover_remove),
+ 	.shutdown	= sparcspkr_shutdown,
+diff --git a/drivers/input/serio/i8042-sparcio.h b/drivers/input/serio/i8042-sparcio.h
+index 29e1769..04e32f2 100644
+--- a/drivers/input/serio/i8042-sparcio.h
++++ b/drivers/input/serio/i8042-sparcio.h
+@@ -96,8 +96,11 @@ static const struct of_device_id sparc_i8042_match[] = {
+ MODULE_DEVICE_TABLE(of, sparc_i8042_match);
  
- static struct of_platform_driver isp1760_of_driver = {
--	.name           = "nxp-isp1760",
--	.match_table    = of_isp1760_match,
+ static struct of_platform_driver sparc_i8042_driver = {
+-	.name		= "i8042",
+-	.match_table	= sparc_i8042_match,
 +	.driver = {
-+		.name = "nxp-isp1760",
++		.name = "i8042",
 +		.owner = THIS_MODULE,
-+		.of_match_table = of_isp1760_match,
++		.of_match_table = sparc_i8042_match,
 +	},
- 	.probe          = of_isp1760_probe,
- 	.remove         = of_isp1760_remove,
+ 	.probe		= sparc_i8042_probe,
+ 	.remove		= __devexit_p(sparc_i8042_remove),
  };
-diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
-index 003aea2..df16591 100644
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -244,18 +244,13 @@ MODULE_DEVICE_TABLE(of, ohci_hcd_ppc_of_match);
+diff --git a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
+index f154153..e787053 100644
+--- a/drivers/input/serio/xilinx_ps2.c
++++ b/drivers/input/serio/xilinx_ps2.c
+@@ -361,8 +361,11 @@ static const struct of_device_id xps2_of_match[] __devinitconst = {
+ MODULE_DEVICE_TABLE(of, xps2_of_match);
  
- 
- static struct of_platform_driver ohci_hcd_ppc_of_driver = {
--	.name		= "ppc-of-ohci",
--	.match_table	= ohci_hcd_ppc_of_match,
- 	.probe		= ohci_hcd_ppc_of_probe,
- 	.remove		= ohci_hcd_ppc_of_remove,
- 	.shutdown 	= ohci_hcd_ppc_of_shutdown,
--#ifdef CONFIG_PM
--	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
--	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
--#endif
--	.driver		= {
--		.name	= "ppc-of-ohci",
--		.owner	= THIS_MODULE,
+ static struct of_platform_driver xps2_of_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= xps2_of_match,
 +	.driver = {
-+		.name = "ppc-of-ohci",
++		.name = DRIVER_NAME,
 +		.owner = THIS_MODULE,
-+		.of_match_table = ohci_hcd_ppc_of_match,
- 	},
++		.of_match_table = xps2_of_match,
++	},
+ 	.probe		= xps2_of_probe,
+ 	.remove		= __devexit_p(xps2_of_remove),
  };
- 
 
