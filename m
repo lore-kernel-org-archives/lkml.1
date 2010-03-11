@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933549Ab0CKSEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:04:12 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:34774 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933530Ab0CKSEH (ORCPT
+	id S933626Ab0CKSE5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:04:57 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:63703 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933595Ab0CKSEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:04:07 -0500
+	Thu, 11 Mar 2010 13:04:49 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 03/37] of/sparc: use dev->of_node instead of
-	dev->archdata.prom_node
+Subject: [PATCH 09/37] drivers/atm: use .dev.of_node instead of .node in
+	struct of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
        jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
@@ -20,8 +20,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:04:04 -0700
-Message-ID: <20100311180403.4824.90589.stgit@angua>
+Date: Thu, 11 Mar 2010 11:04:37 -0700
+Message-ID: <20100311180437.4824.86345.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 User-Agent: StGIT/0.14.2
@@ -32,82 +32,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The prom_node pointer is being moved out of archdata to dev->of_node.
-This patch changes users of prom_node to use the new location.
+.node is being removed
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/sparc/include/asm/fb.h      |    2 +-
- arch/sparc/kernel/of_device_32.c |    3 ++-
- arch/sparc/kernel/of_device_64.c |    3 ++-
- arch/sparc/kernel/pci.c          |    4 ++--
- 4 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/atm/fore200e.c |   16 +++++++++-------
+ 1 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/arch/sparc/include/asm/fb.h b/arch/sparc/include/asm/fb.h
-index b83e447..e834880 100644
---- a/arch/sparc/include/asm/fb.h
-+++ b/arch/sparc/include/asm/fb.h
-@@ -18,7 +18,7 @@ static inline int fb_is_primary_device(struct fb_info *info)
- 	struct device *dev = info->device;
- 	struct device_node *node;
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index f7d6eba..593a03a 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -789,7 +789,7 @@ static int __init fore200e_sba_map(struct fore200e *fore200e)
+ 	fore200e->bus->write(0x02, fore200e->regs.sba.isr); /* XXX hardwired interrupt level */
  
--	node = dev->archdata.prom_node;
-+	node = dev->of_node;
- 	if (node &&
- 	    node == of_console_device)
- 		return 1;
-diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
-index da527b3..5a5509c 100644
---- a/arch/sparc/kernel/of_device_32.c
-+++ b/arch/sparc/kernel/of_device_32.c
-@@ -345,8 +345,9 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
- 		return NULL;
+ 	/* get the supported DVMA burst sizes */
+-	bursts = of_getintprop_default(op->node->parent, "burst-sizes", 0x00);
++	bursts = of_getintprop_default(op->dev.of_node->parent, "burst-sizes", 0x00);
  
- 	sd = &op->dev.archdata;
--	sd->prom_node = dp;
-+	sd->prom_node = dp; /* temporary */
- 	sd->op = op;
-+	op->dev.of_node = dp;
+ 	if (sbus_can_dma_64bit())
+ 		sbus_set_sbus64(&op->dev, bursts);
+@@ -820,18 +820,20 @@ static int __init fore200e_sba_prom_read(struct fore200e *fore200e, struct prom_
+ 	const u8 *prop;
+ 	int len;
  
- 	op->node = dp;
+-	prop = of_get_property(op->node, "madaddrlo2", &len);
++	prop = of_get_property(op->dev.of_node, "madaddrlo2", &len);
+ 	if (!prop)
+ 		return -ENODEV;
+ 	memcpy(&prom->mac_addr[4], prop, 4);
  
-diff --git a/arch/sparc/kernel/of_device_64.c b/arch/sparc/kernel/of_device_64.c
-index b3d4cb5..9d30b07 100644
---- a/arch/sparc/kernel/of_device_64.c
-+++ b/arch/sparc/kernel/of_device_64.c
-@@ -640,9 +640,10 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
- 		return NULL;
+-	prop = of_get_property(op->node, "madaddrhi4", &len);
++	prop = of_get_property(op->dev.of_node, "madaddrhi4", &len);
+ 	if (!prop)
+ 		return -ENODEV;
+ 	memcpy(&prom->mac_addr[2], prop, 4);
  
- 	sd = &op->dev.archdata;
--	sd->prom_node = dp;
-+	sd->prom_node = dp; /* temporary */
- 	sd->op = op;
- 
-+	op->dev.of_node = dp;
- 	op->node = dp;
- 
- 	op->clock_freq = of_getintprop_default(dp, "clock-frequency",
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index cf73f43..40861ed 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -654,7 +654,7 @@ show_pciobppath_attr(struct device * dev, struct device_attribute * attr, char *
- 	struct device_node *dp;
- 
- 	pdev = to_pci_dev(dev);
--	dp = pdev->dev.archdata.prom_node;
-+	dp = pdev->dev.of_node;
- 
- 	return snprintf (buf, PAGE_SIZE, "%s\n", dp->full_name);
+-	prom->serial_number = of_getintprop_default(op->node, "serialnumber", 0);
+-	prom->hw_revision = of_getintprop_default(op->node, "promversion", 0);
++	prom->serial_number = of_getintprop_default(op->dev.of_node,
++						    "serialnumber", 0);
++	prom->hw_revision = of_getintprop_default(op->dev.of_node,
++						  "promversion", 0);
+     
+ 	return 0;
  }
-@@ -1023,7 +1023,7 @@ void arch_teardown_msi_irq(unsigned int virt_irq)
+@@ -841,10 +843,10 @@ static int fore200e_sba_proc_read(struct fore200e *fore200e, char *page)
+ 	struct of_device *op = fore200e->bus_dev;
+ 	const struct linux_prom_registers *regs;
  
- struct device_node *pci_device_to_OF_node(struct pci_dev *pdev)
- {
--	return pdev->dev.archdata.prom_node;
-+	return pdev->dev.of_node;
+-	regs = of_get_property(op->node, "reg", NULL);
++	regs = of_get_property(op->dev.of_node, "reg", NULL);
+ 
+ 	return sprintf(page, "   SBUS slot/device:\t\t%d/'%s'\n",
+-		       (regs ? regs->which_io : 0), op->node->name);
++		       (regs ? regs->which_io : 0), op->dev.of_node->name);
  }
- EXPORT_SYMBOL(pci_device_to_OF_node);
+ #endif /* CONFIG_SBUS */
  
 
