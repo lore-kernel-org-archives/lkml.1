@@ -1,130 +1,202 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463Ab0CKIk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:40:27 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57408 "EHLO song.cn.fujitsu.com"
+	id S1752788Ab0CKIkr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:40:47 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49793 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752278Ab0CKIk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:40:26 -0500
-Message-ID: <4B98ACB6.8070303@cn.fujitsu.com>
-Date: Thu, 11 Mar 2010 16:41:26 +0800
+	id S1751320Ab0CKIkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 03:40:46 -0500
+Message-ID: <4B98ACC9.4080504@cn.fujitsu.com>
+Date: Thu, 11 Mar 2010 16:41:45 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing: Update comments
-References: <4B98AC90.1020109@cn.fujitsu.com>
-In-Reply-To: <4B98AC90.1020109@cn.fujitsu.com>
+To: Chris Wilson <chris@chris-wilson.co.uk>, David Airlie <airlied@linux.ie>,
+       Eric Anholt <eric@anholt.net>
+CC: LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] drm/i915: Convert some trace events to DEFINE_TRACE
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make some comments consistent with the code.
+Use DECLARE_EVENT_CLASS to remove duplicate code:
+
+   text    data     bss     dec     hex filename
+  14655    2732      15   17402    43fa i915_trace_points.o.orig
+  11625    2732      10   14367    381f i915_trace_points.o
+
+8 events are converted:
+
+  i915_gem_object:  i915_gem_object_{unbind, destroy}
+  i915_gem_request: i915_gem_request_{complete, retire, wait_begin, wait_end}
+  i915_ring:        i915_ring_{wait_begin, wait_end}
+
+No functional change.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- include/trace/ftrace.h |   33 +++++++++++++++++++--------------
- 1 files changed, 19 insertions(+), 14 deletions(-)
+ drivers/gpu/drm/i915/i915_trace.h |   86 +++++++++++--------------------------
+ 1 files changed, 25 insertions(+), 61 deletions(-)
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 25ab56f..9d05eab 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -154,9 +154,11 @@
-  *
-  *	field = (typeof(field))entry;
-  *
-- *	p = get_cpu_var(ftrace_event_seq);
-+ *	p = &get_cpu_var(ftrace_event_seq);
-  *	trace_seq_init(p);
-- *	ret = trace_seq_printf(s, <TP_printk> "\n");
-+ *	ret = trace_seq_printf(s, "%s: ", <call>);
-+ *	if (ret)
-+ *		ret = trace_seq_printf(s, <TP_printk> "\n");
-  *	put_cpu();
-  *	if (!ret)
-  *		return TRACE_TYPE_PARTIAL_LINE;
-@@ -450,38 +452,38 @@ perf_trace_disable_##name(struct ftrace_event_call *unused)		\
-  *
-  * static void ftrace_raw_event_<call>(proto)
-  * {
-+ *	struct ftrace_data_offsets_<call> __maybe_unused __data_offsets;
-  *	struct ring_buffer_event *event;
-  *	struct ftrace_raw_<call> *entry; <-- defined in stage 1
-  *	struct ring_buffer *buffer;
-  *	unsigned long irq_flags;
-+ *	int __data_size;
-  *	int pc;
-  *
-  *	local_save_flags(irq_flags);
-  *	pc = preempt_count();
-  *
-+ *	__data_size = ftrace_get_offsets_<call>(&__data_offsets, args);
-+ *
-  *	event = trace_current_buffer_lock_reserve(&buffer,
-  *				  event_<call>.id,
-- *				  sizeof(struct ftrace_raw_<call>),
-+ *				  sizeof(*entry) + __data_size,
-  *				  irq_flags, pc);
-  *	if (!event)
-  *		return;
-  *	entry	= ring_buffer_event_data(event);
-  *
-- *	<assign>;  <-- Here we assign the entries by the __field and
-- *			__array macros.
-+ *	{ <assign>; }  <-- Here we assign the entries by the __field and
-+ *			   __array macros.
-  *
-- *	trace_current_buffer_unlock_commit(buffer, event, irq_flags, pc);
-+ *	if (!filter_current_check_discard(buffer, event_call, entry, event))
-+ *		trace_current_buffer_unlock_commit(buffer,
-+ *						   event, irq_flags, pc);
-  * }
-  *
-  * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *unused)
-  * {
-- *	int ret;
-- *
-- *	ret = register_trace_<call>(ftrace_raw_event_<call>);
-- *	if (!ret)
-- *		pr_info("event trace: Could not activate trace point "
-- *			"probe to <call>");
-- *	return ret;
-+ *	return register_trace_<call>(ftrace_raw_event_<call>);
-  * }
-  *
-  * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
-@@ -493,6 +495,8 @@ perf_trace_disable_##name(struct ftrace_event_call *unused)		\
-  *	.trace			= ftrace_raw_output_<call>, <-- stage 2
-  * };
-  *
-+ * static const char print_fmt_<call>[] = <TP_printk>;
-+ *
-  * static struct ftrace_event_call __used
-  * __attribute__((__aligned__(4)))
-  * __attribute__((section("_ftrace_events"))) event_<call> = {
-@@ -501,6 +505,8 @@ perf_trace_disable_##name(struct ftrace_event_call *unused)		\
-  *	.raw_init		= trace_event_raw_init,
-  *	.regfunc		= ftrace_reg_event_<call>,
-  *	.unregfunc		= ftrace_unreg_event_<call>,
-+ *	.print_fmt		= print_fmt_<call>,
-+ *	.define_fields		= ftrace_define_fields_<call>,
-  * }
-  *
-  */
-@@ -569,7 +575,6 @@ ftrace_raw_event_id_##call(struct ftrace_event_call *event_call,	\
- 		return;							\
- 	entry	= ring_buffer_event_data(event);			\
- 									\
--									\
- 	tstruct								\
- 									\
- 	{ assign; }							\
+diff --git a/drivers/gpu/drm/i915/i915_trace.h b/drivers/gpu/drm/i915/i915_trace.h
+index 01840d9..3038153 100644
+--- a/drivers/gpu/drm/i915/i915_trace.h
++++ b/drivers/gpu/drm/i915/i915_trace.h
+@@ -115,7 +115,7 @@ TRACE_EVENT(i915_gem_object_get_fence,
+ 		      __entry->obj, __entry->fence, __entry->tiling_mode)
+ );
+ 
+-TRACE_EVENT(i915_gem_object_unbind,
++DECLARE_EVENT_CLASS(i915_gem_object,
+ 
+ 	    TP_PROTO(struct drm_gem_object *obj),
+ 
+@@ -132,21 +132,18 @@ TRACE_EVENT(i915_gem_object_unbind,
+ 	    TP_printk("obj=%p", __entry->obj)
+ );
+ 
+-TRACE_EVENT(i915_gem_object_destroy,
++DEFINE_EVENT(i915_gem_object, i915_gem_object_unbind,
+ 
+ 	    TP_PROTO(struct drm_gem_object *obj),
+ 
+-	    TP_ARGS(obj),
++	    TP_ARGS(obj)
++);
+ 
+-	    TP_STRUCT__entry(
+-			     __field(struct drm_gem_object *, obj)
+-			     ),
++DEFINE_EVENT(i915_gem_object, i915_gem_object_destroy,
+ 
+-	    TP_fast_assign(
+-			   __entry->obj = obj;
+-			   ),
++	    TP_PROTO(struct drm_gem_object *obj),
+ 
+-	    TP_printk("obj=%p", __entry->obj)
++	    TP_ARGS(obj)
+ );
+ 
+ /* batch tracing */
+@@ -197,8 +194,7 @@ TRACE_EVENT(i915_gem_request_flush,
+ 		      __entry->flush_domains, __entry->invalidate_domains)
+ );
+ 
+-
+-TRACE_EVENT(i915_gem_request_complete,
++DECLARE_EVENT_CLASS(i915_gem_request,
+ 
+ 	    TP_PROTO(struct drm_device *dev, u32 seqno),
+ 
+@@ -217,64 +213,35 @@ TRACE_EVENT(i915_gem_request_complete,
+ 	    TP_printk("dev=%u, seqno=%u", __entry->dev, __entry->seqno)
+ );
+ 
+-TRACE_EVENT(i915_gem_request_retire,
++DEFINE_EVENT(i915_gem_request, i915_gem_request_complete,
+ 
+ 	    TP_PROTO(struct drm_device *dev, u32 seqno),
+ 
+-	    TP_ARGS(dev, seqno),
+-
+-	    TP_STRUCT__entry(
+-			     __field(u32, dev)
+-			     __field(u32, seqno)
+-			     ),
+-
+-	    TP_fast_assign(
+-			   __entry->dev = dev->primary->index;
+-			   __entry->seqno = seqno;
+-			   ),
+-
+-	    TP_printk("dev=%u, seqno=%u", __entry->dev, __entry->seqno)
++	    TP_ARGS(dev, seqno)
+ );
+ 
+-TRACE_EVENT(i915_gem_request_wait_begin,
++DEFINE_EVENT(i915_gem_request, i915_gem_request_retire,
+ 
+ 	    TP_PROTO(struct drm_device *dev, u32 seqno),
+ 
+-	    TP_ARGS(dev, seqno),
+-
+-	    TP_STRUCT__entry(
+-			     __field(u32, dev)
+-			     __field(u32, seqno)
+-			     ),
+-
+-	    TP_fast_assign(
+-			   __entry->dev = dev->primary->index;
+-			   __entry->seqno = seqno;
+-			   ),
+-
+-	    TP_printk("dev=%u, seqno=%u", __entry->dev, __entry->seqno)
++	    TP_ARGS(dev, seqno)
+ );
+ 
+-TRACE_EVENT(i915_gem_request_wait_end,
++DEFINE_EVENT(i915_gem_request, i915_gem_request_wait_begin,
+ 
+ 	    TP_PROTO(struct drm_device *dev, u32 seqno),
+ 
+-	    TP_ARGS(dev, seqno),
++	    TP_ARGS(dev, seqno)
++);
+ 
+-	    TP_STRUCT__entry(
+-			     __field(u32, dev)
+-			     __field(u32, seqno)
+-			     ),
++DEFINE_EVENT(i915_gem_request, i915_gem_request_wait_end,
+ 
+-	    TP_fast_assign(
+-			   __entry->dev = dev->primary->index;
+-			   __entry->seqno = seqno;
+-			   ),
++	    TP_PROTO(struct drm_device *dev, u32 seqno),
+ 
+-	    TP_printk("dev=%u, seqno=%u", __entry->dev, __entry->seqno)
++	    TP_ARGS(dev, seqno)
+ );
+ 
+-TRACE_EVENT(i915_ring_wait_begin,
++DECLARE_EVENT_CLASS(i915_ring,
+ 
+ 	    TP_PROTO(struct drm_device *dev),
+ 
+@@ -291,21 +258,18 @@ TRACE_EVENT(i915_ring_wait_begin,
+ 	    TP_printk("dev=%u", __entry->dev)
+ );
+ 
+-TRACE_EVENT(i915_ring_wait_end,
++DEFINE_EVENT(i915_ring, i915_ring_wait_begin,
+ 
+ 	    TP_PROTO(struct drm_device *dev),
+ 
+-	    TP_ARGS(dev),
++	    TP_ARGS(dev)
++);
+ 
+-	    TP_STRUCT__entry(
+-			     __field(u32, dev)
+-			     ),
++DEFINE_EVENT(i915_ring, i915_ring_wait_end,
+ 
+-	    TP_fast_assign(
+-			   __entry->dev = dev->primary->index;
+-			   ),
++	    TP_PROTO(struct drm_device *dev),
+ 
+-	    TP_printk("dev=%u", __entry->dev)
++	    TP_ARGS(dev)
+ );
+ 
+ #endif /* _I915_TRACE_H_ */
 -- 
 1.6.3
 
