@@ -1,62 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823Ab0CKVVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 16:21:44 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:38131 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753645Ab0CKVVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 16:21:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=SGk2lpXHA2ZbR6POh8vqEBwNO7xzyDbV7awKK21rrNIJNgaYS8rlBoaKAlCtlQHA5V
-         5RIRR+l0ZNQW+Kvw6iMfOMNUFGbTrvsRzTjWvLt+AkqR5KZDsPDQEPLWHmWCXEsHem8d
-         2yfMDIWFyR2D/4r1Q6A0tPHG9wl5gRsCd1kr4=
-Message-ID: <4B995EE1.1050609@warmcat.com>
-Date: Thu, 11 Mar 2010 21:21:37 +0000
-From: Andy Green <andy@warmcat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc14 Thunderbird/3.0.3
+	id S1753893Ab0CKVWK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 16:22:10 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55841 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753646Ab0CKVWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 16:22:08 -0500
+Date: Thu, 11 Mar 2010 15:21:57 -0600
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       tklauser@distanz.ch, jkosina@suse.cz
+Subject: Re: [PATCH] powerpc/BSR: fix device_create() return value check
+Message-ID: <20100311212157.GD5204@us.ibm.com>
+References: <1268324153-30345-1-git-send-email-ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
-To: Stanislav Brabec <utx@penguin.cz>
-CC: Eric Miao <eric.y.miao@gmail.com>, dbaryshkov@gmail.com,
-       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       lenz@cs.wisc.edu, rpurdie@rpsys.net,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Pavel Machek <pavel@ucw.cz>, thommycheck@gmail.com,
-       zaurus-devel@www.linuxtogo.org, omegamoon@gmail.com
-Subject: Re: bit errors on spitz
-References: <20100305212708.GC21773@elf.ucw.cz>	<f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com>	<20100308072858.GA29939@atrey.karlin.mff.cuni.cz>	<20100308082530.GA1982@atrey.karlin.mff.cuni.cz>	<4B98EF5D.5000609@warmcat.com> <1268322155.3990.114.camel@hammer.suse.cz>
-In-Reply-To: <1268322155.3990.114.camel@hammer.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268324153-30345-1-git-send-email-ext-jani.1.nikula@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/10 15:42, Somebody in the thread at some point said:
-> Andy Green wrote:
->
->> I saw very similar failures for a long time on our iMX31 based device.
->> Eventually I found a Freescale errata where the RAM inside the USB2
->> macrocell started to make single bit errors below 1.38V Vcore; ours was
->> 1.4V at that time but dipped on CPU load.
->
-> Good tip. It seems that nobody ported driver for the voltage control
-> chip ISL6271 from 2.4 kernel, and bootloader probably does not set
-> correct values.
->
-> Datasheet:
-> http://www.penguin.cz/~utx/zaurus/datasheets/power/Xscale/ISL6271.pdf
+On Thu, Mar 11, 2010 at 06:15:53PM +0200, Jani Nikula wrote:
+> From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+> 
+> Use IS_ERR() instead of comparing to NULL.
+> 
+> Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+> 
+> ---
+> 
+> NOTE: I'm afraid I'm unable to test this; please consider this more a
+> bug report than a complete patch.
+> ---
+>  drivers/char/bsr.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/bsr.c b/drivers/char/bsr.c
+> index c02db01..3b31f74 100644
+> --- a/drivers/char/bsr.c
+> +++ b/drivers/char/bsr.c
+> @@ -252,7 +252,7 @@ static int bsr_add_node(struct device_node *bn)
+> 
+>  		cur->bsr_device = device_create(bsr_class, NULL, cur->bsr_dev,
+>  						cur, cur->bsr_name);
+> -		if (!cur->bsr_device) {
+> +		if (IS_ERR(cur->bsr_device)) {
+>  			printk(KERN_ERR "device_create failed for %s\n",
+>  			       cur->bsr_name);
+>  			cdev_del(&cur->bsr_cdev);
+> -- 
+> 1.6.5.2
+> 
 
-Unless there's more to it in the way the zaurus using it that regulator 
-isn't programmable digitally.
+This looks fine to me, good catch.
 
-Reading about your CF Card WLAN related issues they suck down a good 
-amount of power when their radio is up, I would definitely suggest 
-monitoring with a 'scope the various rails (Vcore, RAM and whatever it 
-is the CF Card is powered by) while putting it under load.
+Acked-by: Sonny Rao <sonnyrao@us.ibm.com>
 
--Andy
