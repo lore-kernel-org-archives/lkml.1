@@ -1,38 +1,125 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751461Ab0CKIj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:39:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55401 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090Ab0CKIj1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:39:27 -0500
-Subject: Re: [PATCH] perf: export perf_trace_regs and
- perf_arch_fetch_caller_regs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
+	id S1751873Ab0CKIj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:39:58 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55783 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751090Ab0CKIj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 03:39:57 -0500
+Message-ID: <4B98AC90.1020109@cn.fujitsu.com>
+Date: Thu, 11 Mar 2010 16:40:48 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B989C1B.2090407@cn.fujitsu.com>
-References: <4B989C1B.2090407@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 11 Mar 2010 09:39:16 +0100
-Message-ID: <1268296756.5279.926.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Subject: [PATCH 1/2] tracing: Convert some signal events to DEFINE_TRACE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 15:30 +0800, Xiao Guangrong wrote:
->  #include "trace.h"
->  
->  DEFINE_PER_CPU(struct pt_regs, perf_trace_regs);
-> +EXPORT_SYMBOL_GPL(perf_trace_regs);
+Use DECLARE_EVENT_CLASS to remove duplicate code:
 
-Shouldn't that be:
+   text    data     bss     dec     hex filename
+  23639    6084       8   29731    7423 kernel/signal.o.orig
+  22727    6084       8   28819    7093 kernel/signal.o
 
-EXPORT_PER_CPU_SYMBOL_GPL(perf_trace_regs); ?
+2 events are converted:
+
+  signal_queue_overflow: signal_overflow_fail, signal_lose_info
+
+No functional change.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/trace/events/signal.h |   52 +++++++++++++++++-----------------------
+ 1 files changed, 22 insertions(+), 30 deletions(-)
+
+diff --git a/include/trace/events/signal.h b/include/trace/events/signal.h
+index a510b75..814566c 100644
+--- a/include/trace/events/signal.h
++++ b/include/trace/events/signal.h
+@@ -100,18 +100,7 @@ TRACE_EVENT(signal_deliver,
+ 		  __entry->sa_handler, __entry->sa_flags)
+ );
+ 
+-/**
+- * signal_overflow_fail - called when signal queue is overflow
+- * @sig: signal number
+- * @group: signal to process group or not (bool)
+- * @info: pointer to struct siginfo
+- *
+- * Kernel fails to generate 'sig' signal with 'info' siginfo, because
+- * siginfo queue is overflow, and the signal is dropped.
+- * 'group' is not 0 if the signal will be sent to a process group.
+- * 'sig' is always one of RT signals.
+- */
+-TRACE_EVENT(signal_overflow_fail,
++DECLARE_EVENT_CLASS(signal_queue_overflow,
+ 
+ 	TP_PROTO(int sig, int group, struct siginfo *info),
+ 
+@@ -135,6 +124,24 @@ TRACE_EVENT(signal_overflow_fail,
+ );
+ 
+ /**
++ * signal_overflow_fail - called when signal queue is overflow
++ * @sig: signal number
++ * @group: signal to process group or not (bool)
++ * @info: pointer to struct siginfo
++ *
++ * Kernel fails to generate 'sig' signal with 'info' siginfo, because
++ * siginfo queue is overflow, and the signal is dropped.
++ * 'group' is not 0 if the signal will be sent to a process group.
++ * 'sig' is always one of RT signals.
++ */
++DEFINE_EVENT(signal_queue_overflow, signal_overflow_fail,
++
++	TP_PROTO(int sig, int group, struct siginfo *info),
++
++	TP_ARGS(sig, group, info)
++);
++
++/**
+  * signal_lose_info - called when siginfo is lost
+  * @sig: signal number
+  * @group: signal to process group or not (bool)
+@@ -145,28 +152,13 @@ TRACE_EVENT(signal_overflow_fail,
+  * 'group' is not 0 if the signal will be sent to a process group.
+  * 'sig' is always one of non-RT signals.
+  */
+-TRACE_EVENT(signal_lose_info,
++DEFINE_EVENT(signal_queue_overflow, signal_lose_info,
+ 
+ 	TP_PROTO(int sig, int group, struct siginfo *info),
+ 
+-	TP_ARGS(sig, group, info),
+-
+-	TP_STRUCT__entry(
+-		__field(	int,	sig	)
+-		__field(	int,	group	)
+-		__field(	int,	errno	)
+-		__field(	int,	code	)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->sig	= sig;
+-		__entry->group	= group;
+-		TP_STORE_SIGINFO(__entry, info);
+-	),
+-
+-	TP_printk("sig=%d group=%d errno=%d code=%d",
+-		  __entry->sig, __entry->group, __entry->errno, __entry->code)
++	TP_ARGS(sig, group, info)
+ );
++
+ #endif /* _TRACE_SIGNAL_H */
+ 
+ /* This part must be outside protection */
+-- 
+1.6.3
+
