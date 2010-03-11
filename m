@@ -1,101 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933091Ab0CKPRI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 10:17:08 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36854 "EHLO e4.ny.us.ibm.com"
+	id S933084Ab0CKPXd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 10:23:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932813Ab0CKPRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 10:17:03 -0500
-Message-ID: <4B990966.3060607@austin.ibm.com>
-Date: Thu, 11 Mar 2010 09:16:54 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932643Ab0CKPXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 10:23:32 -0500
+Date: Thu, 11 Mar 2010 16:22:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Q: select_fallback_rq() && cpuset_lock()
+Message-ID: <20100311152201.GA13888@redhat.com>
+References: <20100309180615.GA11681@redhat.com> <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com> <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com> <20100311145248.GA12907@redhat.com>
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/6] arch/powerpc/platforms/pseries: Use kasprintf
-References: <Pine.LNX.4.64.1003102214430.1672@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.1003102214430.1672@ask.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100311145248.GA12907@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> kasprintf combines kmalloc and sprintf, and takes care of the size
-> calculation itself.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression a,flag;
-> expression list args;
-> statement S;
-> @@
-> 
->   a =
-> -  \(kmalloc\|kzalloc\)(...,flag)
-> +  kasprintf(flag,args)
->   <... when != a
->   if (a == NULL || ...) S
->   ...>
-> - sprintf(a,args);
-> // </smpl>
-> 
+On 03/11, Oleg Nesterov wrote:
+>
+> How can we fix this later? Perhaps we can change
+> cpuset_track_online_cpus(CPU_DEAD) to scan all affected cpusets and
+> fixup the tasks with the wrong ->cpus_allowed == cpu_possible_mask.
 
-Looks good, thanks.
+Wait. We need to fix the CPU_DEAD case anyway?
 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Acked-by: Nathan Fontenot <nfont@austin.ibm.com>
+Hmm. 6ad4c18884e864cf4c77f9074d3d1816063f99cd
+"sched: Fix balance vs hotplug race" did s/CPU_DEAD/CPU_DOWN_PREPARE/
+in cpuset_track_online_cpus(). This doesn't look exactly right to me,
+we shouldn't do remove_tasks_in_empty_cpuset() at CPU_DOWN_PREPARE
+stage, it can fail.
 
-> 
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c |    7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff -u -p a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -78,13 +78,12 @@ static struct device_node *dlpar_parse_c
->  	 * prepend this to the full_name.
->  	 */
->  	name = (char *)ccwa + ccwa->name_offset;
-> -	dn->full_name = kmalloc(strlen(name) + 2, GFP_KERNEL);
-> +	dn->full_name = kasprintf(GFP_KERNEL, "/%s", name);
->  	if (!dn->full_name) {
->  		kfree(dn);
->  		return NULL;
->  	}
->  
-> -	sprintf(dn->full_name, "/%s", name);
->  	return dn;
->  }
->  
-> @@ -409,15 +408,13 @@ static ssize_t dlpar_cpu_probe(const cha
->  	 * directory of the device tree.  CPUs actually live in the
->  	 * cpus directory so we need to fixup the full_name.
->  	 */
-> -	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus") + 1,
-> -			   GFP_KERNEL);
-> +	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
->  	if (!cpu_name) {
->  		dlpar_free_cc_nodes(dn);
->  		rc = -ENOMEM;
->  		goto out;
->  	}
->  
-> -	sprintf(cpu_name, "/cpus%s", dn->full_name);
->  	kfree(dn->full_name);
->  	dn->full_name = cpu_name;
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Otoh. This means that move_task_of_dead_cpu() can never see the
+task without active cpus in ->cpus_allowed, it is called later by
+CPU_DEAD. So, cpuset_lock() is not needed at all.
+
+Oleg.
+
