@@ -1,60 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984Ab0CKSdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:33:04 -0500
-Received: from mail1.perex.cz ([212.20.107.53]:34419 "EHLO mail1.perex.cz"
+	id S1756388Ab0CKSdO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:33:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40957 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756101Ab0CKScS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:32:18 -0500
-Date: Thu, 11 Mar 2010 19:32:14 +0100 (CET)
-From: Jaroslav Kysela <perex@perex.cz>
-To: VDR User <user.vdr@gmail.com>
-cc: Wu Fengguang <fengguang.wu@intel.com>, Wei Ni <wni@nvidia.com>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
-       Jaroslav Kysela <jkysela@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-In-Reply-To: <a3ef07921003111015x2386cc80x73a2a4bd679b1fe1@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1003111927570.4672@eeebox2.perex-int.cz>
-References: <s5htyswpb18.wl%tiwai@suse.de>  <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>  <20100308044614.GA29026@localhost>  <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>
-  <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>  <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>  <20100310125456.GA18509@localhost>  <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>  <alpine.LNX.2.00.1003110824390.4672@eeebox2.perex-int.cz>
- <a3ef07921003111015x2386cc80x73a2a4bd679b1fe1@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755379Ab0CKSdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 13:33:07 -0500
+Date: Thu, 11 Mar 2010 18:32:33 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1268301520.6785.40.camel@marge.simson.net>
+References: <1268301520.6785.40.camel@marge.simson.net>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Remove FAIR_SLEEPERS feature
+Message-ID: <tip-5ca9880c6f4ba4c84b517bc2fed5366adf63d191@git.kernel.org>
+Git-Commit-ID: 5ca9880c6f4ba4c84b517bc2fed5366adf63d191
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 18:32:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010, VDR User wrote:
+Commit-ID:  5ca9880c6f4ba4c84b517bc2fed5366adf63d191
+Gitweb:     http://git.kernel.org/tip/5ca9880c6f4ba4c84b517bc2fed5366adf63d191
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Thu, 11 Mar 2010 17:17:17 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 11 Mar 2010 18:32:52 +0100
 
-> On Wed, Mar 10, 2010 at 11:30 PM, Jaroslav Kysela <perex@perex.cz> wrote:
->> On Wed, 10 Mar 2010, VDR User wrote:
->>
->>> [pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
->>> pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
->>
->> -EPIPE means underrun condition.
->>
->> Try 'echo 101 > /proc/asound/card0/pcm0p/xrun_debug' and send dmesg output
->> to check if the ring buffer pointer in the hda-intel driver does not return
->> wrong values. Replace card0 and pcm0p with right identifiers (look to 'aplay
->> -l' for right numbers).
->>
->> More info: http://www.alsa-project.org/main/index.php/XRUN_Debug
->
-> Hi, thanks for your further reply.  However, I don't see
-> "CONFIG_SND_PCM_XRUN_DEBUG" anywhere in the kernel config (both in
-> menuconfig or .config).
+sched: Remove FAIR_SLEEPERS feature
 
-All these parameters should be set: CONFIG_SND_PCM_XRUN_DEBUG, 
-CONFIG_SND_VERBOSE_PROCFS, CONFIG_SND_DEBUG . I updated wiki.
+Our preemption model relies too heavily on sleeper fairness to disable it
+without dire consequences.  Remove the feature, and save a branch or two.
 
- 					Jaroslav
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1268301520.6785.40.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c     |    2 +-
+ kernel/sched_features.h |    7 -------
+ 2 files changed, 1 insertions(+), 8 deletions(-)
 
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
-
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index de98e2e..97682f9 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -738,7 +738,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 		vruntime += sched_vslice(cfs_rq, se);
+ 
+ 	/* sleeps up to a single latency don't count. */
+-	if (!initial && sched_feat(FAIR_SLEEPERS)) {
++	if (!initial) {
+ 		unsigned long thresh = sysctl_sched_latency;
+ 
+ 		/*
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index 4042883..850f980 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -1,11 +1,4 @@
+ /*
+- * Disregards a certain amount of sleep time (sched_latency_ns) and
+- * considers the task to be running during that period. This gives it
+- * a service deficit on wakeup, allowing it to run sooner.
+- */
+-SCHED_FEAT(FAIR_SLEEPERS, 1)
+-
+-/*
+  * Only give sleepers 50% of their service deficit. This allows
+  * them to run sooner, but does not allow tons of sleepers to
+  * rip the spread apart.
