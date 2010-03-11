@@ -1,101 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715Ab0CKKMq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:12:46 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:57114 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756573Ab0CKKMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:12:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=KKc7Hjhts8D0QRtOWlLUDgrR7Fpg24/d3Ww0IpacwQYg+trePAzzbi7VyOGOyRM3yW
-         a2/vk/a8WfhGxJf29GMfrT9lrsWuk3Z73v+RV2pg5nt5xMLji4BrCKm02PDhMCmk901n
-         JrJxBS9dKzpqn+of7NEItsajS+FCf3Pf3aZPU=
-Message-ID: <4B98C356.9090306@gmail.com>
-Date: Thu, 11 Mar 2010 18:17:58 +0800
-From: "Helight.Xu" <helight.xu@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
-MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, akpm@linux-foundation.org,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       James Morris <jmorris@namei.org>, Oleg Nesterov <oleg@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, "Helight.Xu" <helight.xu@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] proc: cleanup: remove unused assignments
-References: <20100306111859.GM4958@bicker>
-In-Reply-To: <20100306111859.GM4958@bicker>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756754Ab0CKKSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:18:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54735 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756640Ab0CKKST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:18:19 -0500
+From: Michal Marek <mmarek@suse.cz>
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kbuild: Really don't clean bounds.h and asm-offsets.h
+Date: Thu, 11 Mar 2010 11:18:10 +0100
+Message-Id: <1268302690-28218-1-git-send-email-mmarek@suse.cz>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Carpenter wrote:
-> I removed 3 unused assignments.  The first two get reset on the first
-> statement of their functions.  For "err" in root.c we don't return an 
-> error and we don't use the variable again.
->
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
->
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index a731084..875d636 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2434,7 +2434,7 @@ static struct dentry *proc_base_instantiate(struct inode *dir,
->  	const struct pid_entry *p = ptr;
->  	struct inode *inode;
->  	struct proc_inode *ei;
-> -	struct dentry *error = ERR_PTR(-EINVAL);
-> +	struct dentry *error;
->  
->  	/* Allocate the inode */
->  	error = ERR_PTR(-ENOMEM);
->   
-why not do it like this:
+Commit 7d3cc8b tried to keep bounds.h and asm-offsets.h during make
+clean by filtering these out of $(clean-files), but they are listed in
+$(targets) and $(always) and thus removed automatically. Introduce a new
+$(no-clean-files) variable to really skip such files in Makefile.clean.
 
-@@ -2434,7 +2434,7 @@ static struct dentry *proc_base_instantiate(struct inode *dir,
- 	const struct pid_entry *p = ptr;
- 	struct inode *inode;
- 	struct proc_inode *ei;
--	struct dentry *error = ERR_PTR(-EINVAL);
-+	struct dentry *error = ERR_PTR(-ENOMEM);
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ Documentation/kbuild/makefiles.txt |    7 +++++++
+ Kbuild                             |    4 ++--
+ scripts/Makefile.clean             |    2 ++
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+index 0135155..fcd1a98 100644
+--- a/Documentation/kbuild/makefiles.txt
++++ b/Documentation/kbuild/makefiles.txt
+@@ -779,6 +779,13 @@ This will delete the directory debian, including all subdirectories.
+ Kbuild will assume the directories to be in the same relative path as the
+ Makefile if no absolute path is specified (path does not start with '/').
  
- 	/* Allocate the inode */
--	error = ERR_PTR(-ENOMEM);
-
-
-
-> @@ -2784,7 +2784,7 @@ out:
->  
->  struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
->  {
-> -	struct dentry *result = ERR_PTR(-ENOENT);
-> +	struct dentry *result;
->  	struct task_struct *task;
->  	unsigned tgid;
->  	struct pid_namespace *ns;
-> diff --git a/fs/proc/root.c b/fs/proc/root.c
-> index 757c069..4258384 100644
-> --- a/fs/proc/root.c
-> +++ b/fs/proc/root.c
-> @@ -110,7 +110,6 @@ void __init proc_root_init(void)
->  	if (err)
->  		return;
->  	proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
-> -	err = PTR_ERR(proc_mnt);
->  	if (IS_ERR(proc_mnt)) {
->  		unregister_filesystem(&proc_fs_type);
->  		return;
->
->   
-
-
++To exclude certain files from make clean, use the $(no-clean-files) variable.
++This is only a special case used in the top level Kbuild file:
++
++	Example:
++		#Kbuild
++		no-clean-files := $(bounds-file) $(offsets-file)
++
+ Usually kbuild descends down in subdirectories due to "obj-* := dir/",
+ but in the architecture makefiles where the kbuild infrastructure
+ is not sufficient this sometimes needs to be explicit.
+diff --git a/Kbuild b/Kbuild
+index e3737ad..18a8bfb 100644
+--- a/Kbuild
++++ b/Kbuild
+@@ -94,5 +94,5 @@ PHONY += missing-syscalls
+ missing-syscalls: scripts/checksyscalls.sh FORCE
+ 	$(call cmd,syscalls)
+ 
+-# Delete all targets during make clean
+-clean-files := $(addprefix $(objtree)/,$(filter-out $(bounds-file) $(offsets-file),$(targets)))
++# Keep these two files during make clean
++no-clean-files := $(bounds-file) $(offsets-file)
+diff --git a/scripts/Makefile.clean b/scripts/Makefile.clean
+index 6f89fbb..686cb0d 100644
+--- a/scripts/Makefile.clean
++++ b/scripts/Makefile.clean
+@@ -45,6 +45,8 @@ __clean-files	:= $(extra-y) $(always)                  \
+ 		   $(host-progs)                         \
+ 		   $(hostprogs-y) $(hostprogs-m) $(hostprogs-)
+ 
++__clean-files   := $(filter-out $(no-clean-files), $(__clean-files))
++
+ # as clean-files is given relative to the current directory, this adds
+ # a $(obj) prefix, except for absolute paths
+ 
 -- 
-Zhenwen Xu - Seven Helight
-Home Page: http://zhwen.org
+1.6.6.1
 
