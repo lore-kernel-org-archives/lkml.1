@@ -1,168 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382Ab0CKNPm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 08:15:42 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:51515 "EHLO toro.web-alm.net"
+	id S932357Ab0CKNQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 08:16:49 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59527 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932334Ab0CKNP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 08:15:29 -0500
-X-Greylist: delayed 2706 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Mar 2010 08:15:26 EST
-Message-Id: <20100311122822.678489605@osadl.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 11 Mar 2010 13:24:55 +0100
-From: Carsten Emde <C.Emde@osadl.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Carsten Emde <C.Emde@osadl.org>
-Subject: [PATCH 1/1] fix-taskstates-in-sched_switch-trace.patch
-References: <20100311122454.585724424@osadl.org>
-Content-Disposition: inline; filename=fix-taskstates-in-sched_switch-trace.patch
+	id S932236Ab0CKNQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 08:16:47 -0500
+Date: Thu, 11 Mar 2010 14:16:32 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Ole Reier Ulland <ole.reier@netcom.no>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ZTE MF636 USB modem is not supported
+In-Reply-To: <201003110008.58644.ole.reier@netcom.no>
+Message-ID: <alpine.LRH.2.00.1003111415230.12517@twin.jikos.cz>
+References: <201003110008.58644.ole.reier@netcom.no>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sched_switch trace event displays erroneous character codes of task
-states, after a new task state was added in the scheduler code but
-omitted to add in the trace event code.
+On Thu, 11 Mar 2010, Ole Reier Ulland wrote:
 
-Define character codes of task states individually. In addition, define
-task state descriptions needed in /proc at the same place. This will
-help to keep the task state bits, characters and descriptions in sync
-should they ever need to be changed again.
+> I have reported this a while ago to the Mandriva bugzilla, but I cannot see if 
+> anyone is doing anything about it. So now I just want to send the link to this 
+> e-mail address to get a reply and some understanding.
+> 
+> https://qa.mandriva.com/show_bug.cgi?id=57165
+> 
+> [root@Dell_Dim Mine_Filer_1_FAT]# uname -a
+> Linux Dell_Dim 2.6.31.12-desktop-1mnb #1 SMP Tue Jan 26 03:35:36 EST 2010 i686 
+> Intel(R) Pentium(R) 4 CPU 2.80GHz GNU/Linux
+> 
+> Is it fixed already maybe? Is there another kernel that I can use?
+> 
+> Is there anything else I can do to help this along?
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+It is likely that your modem will need to have been switched to "serial" 
+mode over from the default "storage" mode before it could be used 
+(usb_modemswitch is an userspace application to do that for many ZTE 
+modems).
 
-Index: head/include/trace/events/sched.h
-===================================================================
---- head.orig/include/trace/events/sched.h
-+++ head/include/trace/events/sched.h
-@@ -161,11 +161,17 @@ TRACE_EVENT(sched_switch,
- 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
- 		__entry->prev_state ?
- 		  __print_flags(__entry->prev_state, "|",
--				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
--				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
--				{ 128, "W" }) : "R",
-+			{ 1, TASK_STATE_1} , { 2, TASK_STATE_2 },
-+			{ 4, TASK_STATE_4 }, { 8, TASK_STATE_8 },
-+			{ 16, TASK_STATE_16 }, { 32, TASK_STATE_32 },
-+			{ 64, TASK_STATE_64 }, { 128, TASK_STATE_128 },
-+			{ 256, TASK_STATE_256 }
-+			) : TASK_STATE_0,
- 		__entry->next_comm, __entry->next_pid, __entry->next_prio)
- );
-+#if TASK_STATE_MAX != 512
-+#error "Please add new task state array in __print_flags() above."
-+#endif
- 
- /*
-  * Tracepoint for a task being migrated:
-Index: head/include/linux/sched.h
-===================================================================
---- head.orig/include/linux/sched.h
-+++ head/include/linux/sched.h
-@@ -172,7 +172,9 @@ print_cfs_rq(struct seq_file *m, int cpu
- 
- /*
-  * Task state bitmask. NOTE! These bits are also
-- * encoded in fs/proc/array.c: get_task_state().
-+ * used in fs/proc/array.c: get_task_state() and
-+ * in include/trace/events/sched.h in the
-+ * sched_switch trace event.
-  *
-  * We have two separate sets of flags: task->state
-  * is about runnability, while task->exit_state are
-@@ -181,20 +183,52 @@ print_cfs_rq(struct seq_file *m, int cpu
-  * mistake.
-  */
- #define TASK_RUNNING		0
-+#define TASK_STATE_0		"R"
-+#define DESCR_TASK_STATE_0	"running"
-+
- #define TASK_INTERRUPTIBLE	1
-+#define TASK_STATE_1		"S"
-+#define DESCR_TASK_STATE_1	"sleeping"
-+
- #define TASK_UNINTERRUPTIBLE	2
-+#define TASK_STATE_2		"D"
-+#define DESCR_TASK_STATE_2	"disk sleep"
-+
- #define __TASK_STOPPED		4
-+#define TASK_STATE_4		"T"
-+#define DESCR_TASK_STATE_4	"stopped"
-+
- #define __TASK_TRACED		8
-+#define TASK_STATE_8		"t"
-+#define DESCR_TASK_STATE_8	"tracing stop"
-+
- /* in tsk->exit_state */
- #define EXIT_ZOMBIE		16
-+#define TASK_STATE_16		"Z"
-+#define DESCR_TASK_STATE_16	"zombie"
-+
- #define EXIT_DEAD		32
-+#define TASK_STATE_32		"X"
-+#define DESCR_TASK_STATE_32	"dead"
-+
- /* in tsk->state again */
- #define TASK_DEAD		64
-+#define TASK_STATE_64		"x"
-+#define DESCR_TASK_STATE_64	"dead"
-+
- #define TASK_WAKEKILL		128
-+#define TASK_STATE_128		"K"
-+#define DESCR_TASK_STATE_128	"wakekill"
-+
- #define TASK_WAKING		256
-+#define TASK_STATE_256		"W"
-+#define DESCR_TASK_STATE_256	"waking"
-+
- #define TASK_STATE_MAX		512
- 
--#define TASK_STATE_TO_CHAR_STR "RSDTtZXxKW"
-+#define TASK_STATE_TO_CHAR_STR \
-+  TASK_STATE_0 TASK_STATE_1 TASK_STATE_2 TASK_STATE_4 TASK_STATE_8 \
-+  TASK_STATE_16 TASK_STATE_32 TASK_STATE_64 TASK_STATE_128 TASK_STATE_256
- 
- extern char ___assert_task_state[1 - 2*!!(
- 		sizeof(TASK_STATE_TO_CHAR_STR)-1 != ilog2(TASK_STATE_MAX)+1)];
-Index: head/fs/proc/array.c
-===================================================================
---- head.orig/fs/proc/array.c
-+++ head/fs/proc/array.c
-@@ -129,21 +129,22 @@ static inline void task_name(struct seq_
- 
- /*
-  * The task state array is a strange "bitmap" of
-- * reasons to sleep. Thus "running" is zero, and
-- * you can test for combinations of others with
-+ * reasons to sleep. Thus, the first element is zero,
-+ * and you can test for combinations of others with
-  * simple bit tests.
-  */
-+#define TASK_STATE_X(num) TASK_STATE_##num " (" DESCR_TASK_STATE_##num ")"
- static const char *task_state_array[] = {
--	"R (running)",		/*   0 */
--	"S (sleeping)",		/*   1 */
--	"D (disk sleep)",	/*   2 */
--	"T (stopped)",		/*   4 */
--	"t (tracing stop)",	/*   8 */
--	"Z (zombie)",		/*  16 */
--	"X (dead)",		/*  32 */
--	"x (dead)",		/*  64 */
--	"K (wakekill)",		/* 128 */
--	"W (waking)",		/* 256 */
-+	TASK_STATE_X(0),
-+	TASK_STATE_X(1),
-+	TASK_STATE_X(2),
-+	TASK_STATE_X(4),
-+	TASK_STATE_X(8),
-+	TASK_STATE_X(16),
-+	TASK_STATE_X(32),
-+	TASK_STATE_X(64),
-+	TASK_STATE_X(128),
-+	TASK_STATE_X(256)
- };
- 
- static inline const char *get_task_state(struct task_struct *tsk)
+Could you please post
+
+1) dmesg once your modem is plugged in
+2) lsusb -v output for this modem
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
