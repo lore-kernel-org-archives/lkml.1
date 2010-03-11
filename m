@@ -1,69 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751595Ab0CKUqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 15:46:16 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:55454 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122Ab0CKUqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 15:46:15 -0500
-Message-ID: <4B99568D.30608@linux.vnet.ibm.com>
-Date: Thu, 11 Mar 2010 12:46:05 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
- event names to "perf stat"
-References: <4B8F1B58.5000702@linux.vnet.ibm.com> <4B8FFE55.5070008@linux.vnet.ibm.com> <20100311124608.GG31354@elte.hu> <4B993AAF.9050507@linux.vnet.ibm.com> <20100311191441.GA7593@elte.hu>
-In-Reply-To: <20100311191441.GA7593@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751896Ab0CKUu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 15:50:58 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:47679 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751523Ab0CKUu5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 15:50:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=EEHzym61TLhJgUvl8DI9ngfCyS7qkPulZSiHuGB8RoBUkKS57Fc4XN/RiATrcjMV+G
+         xBmGvJF7wkYrH32WiyWs2wWa8ICH2OWhCUEgK6V6itJkAF5z8t9cBk2v1jvsiRl0JKjy
+         ryvZg5fwMaUoWsUQyLhVlIwEMgRoh2yAgVVyU=
+Subject: [PATCH] kobject: Fix kobject_set_name_vargs()
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 21:50:52 +0100
+Message-ID: <1268340652.2845.10.camel@edumazet-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In case of kvasprintf() failure, we can leak old kobject name.
 
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 8115eb1..1247c57 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 		return 0;
+ 
+ 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+-	if (!kobj->name)
++	if (!kobj->name) {
++		kobj->name = old_name;
+ 		return -ENOMEM;
++	}
+ 
+ 	/* ewww... some of these buggers have '/' in the name ... */
+ 	while ((s = strchr(kobj->name, '/')))
 
-On 3/11/2010 11:14 AM, Ingo Molnar wrote:
->
-> * Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
-[snip]
->> I'm not sure how that would work.  The issue I am trying to solve
->> here is that Power arch chips have a large number of very
->> hardware-specific events that are not generalizable.  Many of these
->> events not only have names, but other user-configurable bits as well
->> that select or narrow the scope of which exact events are recorded.
->> This issue is dealt with nicely in libpfm4, as it has mechanisms for
->> parsing event names and attributes (aka modifiers or unit masks),
->> and then produces a usable config field for the perf_events_attr
->> struct.
->>
->> Should I take it from the above that you are completely against the
->> idea of using an external library for hardware-specific event and
->> attribute naming?
->
-> Could you give a few relevant examples of events in question, and the kind of
-> configurability/attributes they have on Power?
-
-Here are a few examples for the Power A2 processor.  I've distorted the names 
-because PMU architecture isn't publicly released yet.
-
-PM_DE_PMC_9:hrd_mask=0xff:hrd=0x22:pma_mask=0x3fff:pma=0x1b2d:culling_mode=3
-PM_EX_0x03:lane=2:vlane=1
-PM_OWE_ENG_MAC_FULL:usu=3
-
-Note that the attribute fields shown above are fitted into the config field of 
-the perf_event_attr struct.
-
->
-> Thanks,
->
-> 	Ingo
-
-Regards,
-
-- Corey
 
