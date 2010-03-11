@@ -1,49 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249Ab0CKQft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:35:49 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:52115 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756724Ab0CKQfr (ORCPT
+	id S933261Ab0CKQgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:36:16 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:47522 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933251Ab0CKQgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:35:47 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX182bgcXakAQeKfOJZZnHCyJ
-Date: Thu, 11 Mar 2010 08:37:01 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: "Govindraj.R" <govindraj.raja@ti.com>
-Cc: Greg KH <greg@kroah.com>, linux-serial@vger.kernel.org,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Olof Johansson <olof@lixom.net>, Alan Cox <alan@linux.intel.com>,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Reposting: [PATCH v1] serial: Add OMAP high-speed UART driver.
-Message-ID: <20100311163700.GC2900@atomide.com>
-References: <40015.192.168.10.89.1267707156.squirrel@dbdmail.itg.ti.com>
- <38271.10.24.255.17.1268313278.squirrel@dbdmail.itg.ti.com>
+	Thu, 11 Mar 2010 11:36:13 -0500
+Message-ID: <4B991B9B.8070809@oracle.com>
+Date: Thu, 11 Mar 2010 08:34:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <38271.10.24.255.17.1268313278.squirrel@dbdmail.itg.ti.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH -next] mtd/nand/r852: fix build for CONFIG_PM=n
+References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>	 <4B8C378B.2090400@oracle.com> <1267531329.10734.1.camel@maxim-laptop> <4B991A6F.1080006@oracle.com>
+In-Reply-To: <4B991A6F.1080006@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B991BC8.00A9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Govindraj.R <govindraj.raja@ti.com> [100311 05:11]:
+On 03/11/10 08:29, Randy Dunlap wrote:
+> On 03/02/10 04:02, Maxim Levitsky wrote:
+>> On Mon, 2010-03-01 at 13:54 -0800, Randy Dunlap wrote: 
+>>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>>
+>>> Fix r852 build for the case of CONFIG_PM=n.
+>>>
+>>> drivers/mtd/nand/r852.c:1039: error: implicit declaration of function 'pci_prepare_to_sleep'
+>>> drivers/mtd/nand/r852.c:1048: error: implicit declaration of function 'pci_back_from_sleep'
+>>>
+>>> This patch leaves r852_pm_ops untouched.
+>>>
+>>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>>> Cc: Maxim Levitsky <maximlevitsky@gmail.com>
+>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>>> Cc: David Woodhouse <dwmw2@infradead.org>
+>>> ---
+>>>  drivers/mtd/nand/r852.c |    5 +++++
+>>>  1 file changed, 5 insertions(+)
+>>>
+>>> --- linux-next-20100301.orig/drivers/mtd/nand/r852.c
+>>> +++ linux-next-20100301/drivers/mtd/nand/r852.c
+>>> @@ -1007,6 +1007,7 @@ void r852_shutdown(struct pci_dev *pci_d
+>>>  	pci_disable_device(pci_dev);
+>>>  }
+>>>  
+>>> +#ifdef CONFIG_PM
+>>>  int r852_suspend(struct device *device)
+>>>  {
+>>>  	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
+>>> @@ -1081,6 +1082,10 @@ int r852_resume(struct device *device)
+>>>  	r852_update_card_detect(dev);
+>>>  	return 0;
+>>>  }
+>>> +#else
+>>> +#define r852_suspend	NULL
+>>> +#define r852_resume	NULL
+>>> +#endif
+>>>  
+>>>  static const struct pci_device_id r852_pci_id_tbl[] = {
+>>>  
+>>>
+>> oops, I forgot about that case again..
+>> Acked-by: Maxim Levitsky <maximlevitsky@gmail.com>
 > 
-> Hi Greg,
-> 
-> Could you please have this patch into your tty tree now?
-> 
-> As I do not see any further comment in community on this
-> for quite long time now.
+> Ping.  can we get this added to linux-next, please?
 
-There are still outstanding comments. I've commented several
-times that this patch needs to be posted with the related
-patches so people can actually try it out.
+Sorry, it's there, but there are still build errors.
+I will look at those...
 
-Regards,
-
-Tony
+-- 
+~Randy
