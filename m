@@ -1,63 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119Ab0CKKyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 05:54:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:14424 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757033Ab0CKKyF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 05:54:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lY+ggT50El8TfOCfGS+Q389OWtrNTviS/sAWfNPRP0hu9X5H7CltokJr7FRa5Ea2gx
-         13XKvyVyIFF2PCJEMkdVr9SmhxeYZnTnUpO+YsUtbw9eJl7y+hKk7eARJdVYKreIxshR
-         T0Ea1l10xMAIToDVxYd5tf/1RgLH/DSN61zuA=
-Message-ID: <4B98CBC8.6080008@gmail.com>
-Date: Thu, 11 Mar 2010 11:54:00 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.2.2pre) Gecko/20100308 SUSE/3.1b1-5.1 Thunderbird/3.1b1
+	id S1757181Ab0CKK57 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 05:57:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35880 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756916Ab0CKK54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 05:57:56 -0500
+Date: Thu, 11 Mar 2010 11:56:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Robert Sch?ne <robert.schoene@tu-dresden.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Patch for tracing c states (power_end) on x86
+Message-ID: <20100311105654.GB27207@elte.hu>
+References: <1266999573.3415.8.camel@localhost>
+ <1267102320.12790.139.camel@laptop>
+ <1268289377.3374.13.camel@localhost>
+ <1268295123.5279.859.camel@twins>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Greg Thelen <gthelen@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.com
-Subject: Re: mmotm boot panic bootmem-avoid-dma32-zone-by-default.patch
-References: <49b004811003041321g2567bac8yb73235be32a27e7c@mail.gmail.com> <20100305032106.GA12065@cmpxchg.org> <4B90C921.6060908@kernel.org> <4B90DC3C.1060000@gmail.com> <4B92FE9E.90600@kernel.org>
-In-Reply-To: <4B92FE9E.90600@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268295123.5279.859.camel@twins>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/07/2010 02:17 AM, Yinghai Lu wrote:
-> On 03/05/2010 02:26 AM, Jiri Slaby wrote:
->> On 03/05/2010 10:04 AM, Yinghai Lu wrote:
->>> according to context
->>> http://patchwork.kernel.org/patch/73893/
->>>
->>> Jiri,
->>> please check current linus tree still have problem about mem_map is using that much low mem?
->>
->> Hi!
->>
->> Sorry, I don't have direct access to the machine. I might try to ask the
->> owners to do so.
->>
->>> on my 1024g system first node has 128G ram, [2g, 4g) are mmio range.
->>
->> So where gets your mem_map allocated (I suppose you're running flat model)?
->
-> what kernel version? 2.6.27?
 
-Hi, yes, it is 2.6.27.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> x86 64bit now only support SPARSEMEM.
+> On Thu, 2010-03-11 at 07:36 +0100, Robert Sch??ne wrote:
+> > Did anyone look at the problem described and checked the patch?
+> > I still received no reply.
+> 
+> Ingo, how about applying it and letting people complain when they don't 
+> agree? :-)
 
+We can do that. Robert, mind sending the patch with a changelog and with your 
+Signed-off-by and with Peter's Acked-by?
 
--- 
-js
+Thanks,
+
+	Ingo
