@@ -1,114 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018Ab0CKOjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:39:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35341 "EHLO hera.kernel.org"
+	id S932490Ab0CKOjs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:39:48 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37898 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932379Ab0CKOji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:39:38 -0500
-Date: Thu, 11 Mar 2010 14:39:07 GMT
-From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sivanich@sgi.com, davidsen@tmr.com, dmitry.adamushko@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu, avi@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       sivanich@sgi.com, davidsen@tmr.com, dmitry.adamushko@gmail.com,
-       tglx@linutronix.de, avi@redhat.com, mingo@elte.hu
-In-Reply-To: <20100305174203.GA19638@sgi.com>
-References: <20100305174203.GA19638@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/microcode] x86: Improve Intel microcode loader performance
-Message-ID: <tip-938179b4f8cf8a4f11234ebf2dff2eb48400acfe@git.kernel.org>
-Git-Commit-ID: 938179b4f8cf8a4f11234ebf2dff2eb48400acfe
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Mar 2010 14:39:08 +0000 (UTC)
+	id S1758020Ab0CKOjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:39:44 -0500
+Subject: Re: ATA 4 KiB sector issues.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: Nikanth Karthikesan <knikanth@suse.de>,
+       Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+In-Reply-To: <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
+References: <4B947393.2050002@kernel.org>
+	 <4B97C6A5.4010209@tvk.rwth-aachen.de>
+	 <17BB1CC0-9B13-401D-B6AA-90365208A042@mit.edu>
+	 <201003111927.24829.knikanth@suse.de>
+	 <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 08:39:34 -0600
+Message-ID: <1268318374.2798.2.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  938179b4f8cf8a4f11234ebf2dff2eb48400acfe
-Gitweb:     http://git.kernel.org/tip/938179b4f8cf8a4f11234ebf2dff2eb48400acfe
-Author:     Dimitri Sivanich <sivanich@sgi.com>
-AuthorDate: Fri, 5 Mar 2010 11:42:03 -0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 11 Mar 2010 13:49:06 +0100
+On Thu, 2010-03-11 at 09:28 -0500, Theodore Tso wrote:
+> On Mar 11, 2010, at 8:57 AM, Nikanth Karthikesan wrote:
+> > 
+> > I guess, what he meant was, to keep filesystem blocks aligned, even if the 
+> > partition is not. Say if the partition is mis-aligned by 512-bytes, let the 
+> > filesystem waste 4k-512bytes and keep it's blocks aligned. But it might be a 
+> > case of over-engineering, possibly requiring disk format change.
+> 
+> Ah, yes, I agree with you; that's probably what he meant.
+> 
+> Sure, that's theoretically possible, but it would mean changing every
+> single filesystem, and it would require a file system format change
+> --- or at least a file system format extension.
+> 
+> It would seem to be way easier to simply fix the partitioning tools to
+> do the right thing, though.
 
-x86: Improve Intel microcode loader performance
+Actually, it's a layering violation.  The filesystem shouldn't need to
+probe the device layout ... particularly when there are complexities
+like is it logical 512 or physical, and if logical 512 on 4k does it
+have an offset exponent or not.
 
-We've noticed that on large SGI UV system configurations,
-running microcode.ctl can take very long periods of time.  This
-is due to the large number of vmalloc/vfree calls made by the
-Intel generic_load_microcode() logic.
+We can transmit certain abstractions of information up the stack (like
+stripe width for RAID arrays which should be the fs optimal write size),
+but for this type of alignment, which can be completely solved at the
+partition layer, the information should really stay there and the
+filesystem should "just work".
 
-By reusing allocated space, the following patch reduces the time
-to run microcode.ctl on a 1024 cpu system from approximately 80
-seconds down to 1 or 2 seconds.
+James
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-Acked-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Bill Davidsen <davidsen@tmr.com>
-LKML-Reference: <20100305174203.GA19638@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/microcode_intel.c |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 85a343e..3561702 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -343,10 +343,11 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
- 				int (*get_ucode_data)(void *, const void *, size_t))
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
-+	u8 *ucode_ptr = data, *new_mc = NULL, *mc = NULL;
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover = size;
- 	enum ucode_state state = UCODE_OK;
-+	unsigned int curr_mc_size = 0;
- 
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
-@@ -361,9 +362,15 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
- 			break;
- 		}
- 
--		mc = vmalloc(mc_size);
--		if (!mc)
--			break;
-+		/* For performance reasons, reuse mc area when possible */
-+		if (!mc || mc_size > curr_mc_size) {
-+			if (mc)
-+				vfree(mc);
-+			mc = vmalloc(mc_size);
-+			if (!mc)
-+				break;
-+			curr_mc_size = mc_size;
-+		}
- 
- 		if (get_ucode_data(mc, ucode_ptr, mc_size) ||
- 		    microcode_sanity_check(mc) < 0) {
-@@ -376,13 +383,16 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
- 				vfree(new_mc);
- 			new_rev = mc_header.rev;
- 			new_mc  = mc;
--		} else
--			vfree(mc);
-+			mc = NULL;	/* trigger new vmalloc */
-+		}
- 
- 		ucode_ptr += mc_size;
- 		leftover  -= mc_size;
- 	}
- 
-+	if (mc)
-+		vfree(mc);
-+
- 	if (leftover) {
- 		if (new_mc)
- 			vfree(new_mc);
