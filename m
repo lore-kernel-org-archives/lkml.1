@@ -1,79 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715Ab0CKHvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 02:51:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29167 "EHLO mx1.redhat.com"
+	id S1753905Ab0CKHyG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 02:54:06 -0500
+Received: from tenax.loup.net ([209.169.16.66]:47858 "EHLO tenax.loup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187Ab0CKHvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 02:51:19 -0500
-Message-ID: <4B98A0DE.1020006@redhat.com>
-Date: Thu, 11 Mar 2010 09:50:54 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [PATCH] x86/kvm: Show guest system/user cputime in cpustat
-References: <1268292022-31352-1-git-send-email-sheng@linux.intel.com> <4B989D61.70906@redhat.com> <201003111546.44059.sheng@linux.intel.com>
-In-Reply-To: <201003111546.44059.sheng@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753666Ab0CKHyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 02:54:04 -0500
+Date: Thu, 11 Mar 2010 00:41:21 -0700
+Message-Id: <201003110741.o2B7fLTH011465@alien.loup.net>
+From: Mike Hayward <hayward@loup.net>
+To: mvds.00@gmail.com
+CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       linux-man@vger.kernel.org
+In-reply-to: <4B983E88.5080901@gmail.com> (message from M vd S on Thu, 11 Mar
+	2010 01:51:20 +0100)
+Subject: Re: O_NONBLOCK is NOOP on block devices
+References: <4B904D98.50602@gmail.com> <4B9060DE.4080104@gmail.com>	<4B96ECDD.1070006@gmail.com> <x494oko5n2o.fsf@segfault.boston.devel.redhat.com> <4B97D258.7060702@gmail.com> <201003102350.o2ANousd007794@alien.loup.net> <4B983E88.5080901@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/2010 09:46 AM, Sheng Yang wrote:
-> On Thursday 11 March 2010 15:36:01 Avi Kivity wrote:
->    
->> On 03/11/2010 09:20 AM, Sheng Yang wrote:
->>      
->>> Currently we can only get the cpu_stat of whole guest as one. This patch
->>> enhanced cpu_stat with more detail, has guest_system and guest_user cpu
->>> time statistics with a little overhead.
->>>
->>> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
->>> ---
->>>
->>> This draft patch based on KVM upstream to show the idea. I would split it
->>> into more kernel friendly version later.
->>>
->>> The overhead is, the cost of get_cpl() after each exit from guest.
->>>        
->> This can be very expensive in the nested virtualization case, so I
->> wouldn't like this to be in normal paths.  I think detailed profiling
->> like that can be left to 'perf kvm', which only has overhead if enabled
->> at runtime.
->>      
-> Yes, that's my concern too(though nested vmcs/vmcb read already too expensive,
-> they should be optimized...).
+Hi M,
 
-Any ideas on how to do that?  Perhaps use paravirt_ops to covert the 
-vmread into a memory read?  We store the vmwrites in the vmcs anyway.
+ > >  > > What you missed is that the native aio system calls require O_DIRECT.
+ > >  > >   
+ > >  > 
+ > >  > Thanks, that made it work. It seems without O_DIRECT it's just like 
+ > >  > aio_* but without the separate thread. But I now get the "benefits" of 
+ > >  > O_DIRECT for free...
+ > >
+ > > That is awesome news; I was worried.  I saw that about O_DIRECT in the
+ > > doc but assumed you were doing it.
+ > >
+ > >   
+ > Where did you see that? I reverted to the kernel source where indeed I 
+ > saw __generic_file_aio_read() in mm/filemap.c check for O_DIRECT.
+ >
+ > io_submit(3), io_setup(3) etc don't mention O_DIRECT. Even the example 
+ > in io(3) doesn't do O_DIRECT, so it must be broken. The example has no 
+ > means to see if it is in fact a non blocking system call. But io(3) 
+ > states "The  libaio  library defines a new set of I/O operations which 
+ > can significantly reduce the time an application spends waiting at I/O.  
+ > The new functions allow a program to initiate one or more I/O operations 
+ > and then immediately resume normal work while the I/O operations are 
+ > executed in parallel."
 
-> The other concern is, perf alike mechanism would
-> bring a lot more overhead compared to this.
->    
+Not in the linux man pages, but a few folks around have web pages I
+was able to google about actual behavior:
 
-Ordinarily users won't care if time is spent in guest kernel mode or 
-guest user mode.  They want to see which guest is imposing a load on a 
-system.  I consider a user profiling a guest from the host an advanced 
-and rarer use case, so it's okay to require tools and additional 
-overhead for this.
+http://lse.sourceforge.net/io/aio.html
 
->> For example you can put the code to note the cpl in a tracepoint which
->> is enabled dynamically.
->>      
-> Yanmin have already implement "perf kvm" to support this. We are just arguing
-> if a normal top-alike mechanism is necessary.
->
-> I am also considering to make it a feature that can be disabled. But seems it
-> make things complicate and result in uncertain cpustat output.
->    
+Like you, I trusted that the man pages actually described the behavior
+in my software design until the "nonblocking" read and writev calls
+choked off the nonblocking sockets :-)  Now I am writing extra test code
+for all system calls I consider using; not sure if there is actual public
+test code or not.
 
-I'm not even sure that guest time was a good idea.
+You are absolutely right, the blocking behavior of libaio without
+specifying O_DIRECT should also definitely be in the man pages.  Why
+isn't it an error to not specify O_DIRECT when that's the only way
+libaio to block devs is actual async io?  It seems a bit odd to go to
+the trouble to use libaio if synchronous behavior is expected?!
 
--- 
-error compiling committee.c: too many arguments to function
+You might want to wait and see if my man patch even gets applied
+before going to the trouble to make another one.  Alan Cox suggested I
+post a patch to spell out the actual behavior of the blocking
+"O_NONBLOCK" read and write class of calls.  I did that and a number
+of us vetted the patch before I posted it to linux-man like a week
+ago, but no feedback there from Michael Kerrisk or anyone else yet.
+Maybe he's on holiday, or maybe someone else can also carry the man
+page pumpkin, I don't know...
 
+Either way I imagine lkml sees this over and over again and fixing the
+man pages would go a long way toward cutting down on confusion.
+
+- Mike
