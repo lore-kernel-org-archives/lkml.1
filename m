@@ -1,114 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934194Ab0CKSXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:23:30 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:58040 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934145Ab0CKSWr (ORCPT
+	id S1755654Ab0CKSbE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:31:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55369
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934097Ab0CKSX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:22:47 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 10/27] drivers/input/of: don't use deprecated field in
-	of_platform_driver
-To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
-       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
-       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
-       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
-       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
-       alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:22:43 -0700
-Message-ID: <20100311182243.13103.2307.stgit@angua>
-In-Reply-To: <20100311181604.13103.30088.stgit@angua>
-References: <20100311181604.13103.30088.stgit@angua>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 11 Mar 2010 13:23:28 -0500
+Date: Thu, 11 Mar 2010 10:23:47 -0800 (PST)
+Message-Id: <20100311.102347.169562565.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, sfr@canb.auug.org.au, jgarzik@pobox.com,
+       ben-linux@fluff.org, dwmw2@infradead.org, jeremy.kerr@canonical.com,
+       James.Bottomley@suse.de, broonie@opensource.wolfsonmicro.com,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-ide@vger.kernel.org, netdev@vger.kernel.org,
+       linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+       linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100311.102043.40590962.davem@davemloft.net>
+References: <20100311174830.4824.19820.stgit@angua>
+	<20100311.102043.40590962.davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.name, .match_table and .owner are duplicated in both of_platform_driver
-and device_driver, so the of_platform_driver copies will be removed soon.
+From: David Miller <davem@davemloft.net>
+Date: Thu, 11 Mar 2010 10:20:43 -0800 (PST)
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> Three or four of the patches don't apply because only your tree
+> has those "/* temporary */" comments, f.e. in arch/sparc/kernel/pci.c
+> 
+> I took care of this when applying to my tree.
 
- drivers/input/misc/sparcspkr.c      |   14 ++++++++++----
- drivers/input/serio/i8042-sparcio.h |    7 +++++--
- drivers/input/serio/xilinx_ps2.c    |    7 +++++--
- 3 files changed, 20 insertions(+), 8 deletions(-)
+It also doesn't build, what the heck is this against
+Grant?
 
-diff --git a/drivers/input/misc/sparcspkr.c b/drivers/input/misc/sparcspkr.c
-index b064419..11ad153 100644
---- a/drivers/input/misc/sparcspkr.c
-+++ b/drivers/input/misc/sparcspkr.c
-@@ -258,8 +258,11 @@ static const struct of_device_id bbc_beep_match[] = {
- };
- 
- static struct of_platform_driver bbc_beep_driver = {
--	.name		= "bbcbeep",
--	.match_table	= bbc_beep_match,
-+	.driver = {
-+		.name = "bbcbeep",
-+		.owner = THIS_MODULE,
-+		.of_match_table = bbc_beep_match,
-+	},
- 	.probe		= bbc_beep_probe,
- 	.remove		= __devexit_p(bbc_remove),
- 	.shutdown	= sparcspkr_shutdown,
-@@ -337,8 +340,11 @@ static const struct of_device_id grover_beep_match[] = {
- };
- 
- static struct of_platform_driver grover_beep_driver = {
--	.name		= "groverbeep",
--	.match_table	= grover_beep_match,
-+	.driver = {
-+		.name = "groverbeep",
-+		.owner = THIS_MODULE,
-+		.of_match_table = grover_beep_match,
-+	},
- 	.probe		= grover_beep_probe,
- 	.remove		= __devexit_p(grover_remove),
- 	.shutdown	= sparcspkr_shutdown,
-diff --git a/drivers/input/serio/i8042-sparcio.h b/drivers/input/serio/i8042-sparcio.h
-index 29e1769..04e32f2 100644
---- a/drivers/input/serio/i8042-sparcio.h
-+++ b/drivers/input/serio/i8042-sparcio.h
-@@ -96,8 +96,11 @@ static const struct of_device_id sparc_i8042_match[] = {
- MODULE_DEVICE_TABLE(of, sparc_i8042_match);
- 
- static struct of_platform_driver sparc_i8042_driver = {
--	.name		= "i8042",
--	.match_table	= sparc_i8042_match,
-+	.driver = {
-+		.name = "i8042",
-+		.owner = THIS_MODULE,
-+		.of_match_table = sparc_i8042_match,
-+	},
- 	.probe		= sparc_i8042_probe,
- 	.remove		= __devexit_p(sparc_i8042_remove),
- };
-diff --git a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
-index f154153..e787053 100644
---- a/drivers/input/serio/xilinx_ps2.c
-+++ b/drivers/input/serio/xilinx_ps2.c
-@@ -361,8 +361,11 @@ static const struct of_device_id xps2_of_match[] __devinitconst = {
- MODULE_DEVICE_TABLE(of, xps2_of_match);
- 
- static struct of_platform_driver xps2_of_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= xps2_of_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = xps2_of_match,
-+	},
- 	.probe		= xps2_of_probe,
- 	.remove		= __devexit_p(xps2_of_remove),
- };
+drivers/of/device.c: In function 'of_match_device':
+drivers/of/device.c:24: error: 'const struct device' has no member named 'of_node'
+drivers/of/device.c:26: error: 'const struct device' has no member named 'of_node'
 
+Please make a patch set against Linus's vanilla tree so
+I and others can test this.
