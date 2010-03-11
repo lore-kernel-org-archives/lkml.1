@@ -1,50 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489Ab0CKHib (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 02:38:31 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53896 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106Ab0CKHia convert rfc822-to-8bit (ORCPT
+	id S1753622Ab0CKHpQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 02:45:16 -0500
+Received: from mga10.intel.com ([192.55.52.92]:52175 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753320Ab0CKHpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 02:38:30 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ole Reier Ulland <ole.reier@netcom.no>
-Subject: Re: ZTE MF636 USB modem is not supported
-Date: Thu, 11 Mar 2010 08:37:58 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.34-rc1-0.1-default; KDE/4.3.5; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
-References: <201003110008.58644.ole.reier@netcom.no>
-In-Reply-To: <201003110008.58644.ole.reier@netcom.no>
+	Thu, 11 Mar 2010 02:45:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,619,1262592000"; 
+   d="scan'208";a="779850012"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] x86/kvm: Show guest system/user cputime in cpustat
+Date: Thu, 11 Mar 2010 15:46:43 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+References: <1268292022-31352-1-git-send-email-sheng@linux.intel.com> <4B989D61.70906@redhat.com>
+In-Reply-To: <4B989D61.70906@redhat.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201003110837.58659.oliver@neukum.org>
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003111546.44059.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 11. März 2010 00:08:58 schrieb Ole Reier Ulland:
-> I have reported this a while ago to the Mandriva bugzilla, but I cannot see if 
-> anyone is doing anything about it. So now I just want to send the link to this 
-> e-mail address to get a reply and some understanding.
+On Thursday 11 March 2010 15:36:01 Avi Kivity wrote:
+> On 03/11/2010 09:20 AM, Sheng Yang wrote:
+> > Currently we can only get the cpu_stat of whole guest as one. This patch
+> > enhanced cpu_stat with more detail, has guest_system and guest_user cpu
+> > time statistics with a little overhead.
+> >
+> > Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> > ---
+> >
+> > This draft patch based on KVM upstream to show the idea. I would split it
+> > into more kernel friendly version later.
+> >
+> > The overhead is, the cost of get_cpl() after each exit from guest.
 > 
-> https://qa.mandriva.com/show_bug.cgi?id=57165
+> This can be very expensive in the nested virtualization case, so I
+> wouldn't like this to be in normal paths.  I think detailed profiling
+> like that can be left to 'perf kvm', which only has overhead if enabled
+> at runtime.
 
-Maybe Mandriva did not report it upstream.
- 
-> [root@Dell_Dim Mine_Filer_1_FAT]# uname -a
-> Linux Dell_Dim 2.6.31.12-desktop-1mnb #1 SMP Tue Jan 26 03:35:36 EST 2010 i686 
-> Intel(R) Pentium(R) 4 CPU 2.80GHz GNU/Linux
-> 
-> Is it fixed already maybe? Is there another kernel that I can use?
+Yes, that's my concern too(though nested vmcs/vmcb read already too expensive, 
+they should be optimized...). The other concern is, perf alike mechanism would 
+bring a lot more overhead compared to this. 
 
-Possible but unlikely. You should try the latest stable kernel.(2.6.33.x)
- 
-> Is there anything else I can do to help this along?
+> For example you can put the code to note the cpl in a tracepoint which
+> is enabled dynamically.
 
-Post "dmesg" from the moment you plug the modem in and "lsusb -v"
-And post them to the correct list, the USB list.
+Yanmin have already implement "perf kvm" to support this. We are just arguing 
+if a normal top-alike mechanism is necessary.
 
-	Regards
-		Oliver
+I am also considering to make it a feature that can be disabled. But seems it 
+make things complicate and result in uncertain cpustat output.
+
+-- 
+regards
+Yang, Sheng
