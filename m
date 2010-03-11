@@ -1,149 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006Ab0CKA3z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 19:29:55 -0500
-Received: from mga05.intel.com ([192.55.52.89]:53502 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757074Ab0CKA3y (ORCPT
+	id S933020Ab0CKAnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 19:43:07 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48440 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932973Ab0CKAnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 19:29:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,617,1262592000"; 
-   d="scan'208";a="779766011"
-Date: Thu, 11 Mar 2010 01:30:34 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Haojian Zhuang <haojian.zhuang@marvell.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
-Message-ID: <20100311003027.GA4588@sortiz.org>
-References: <alpine.DEB.2.00.0912152157330.27772@ayla.of.borg>
- <20091215221357.GA26024@opensource.wolfsonmicro.com>
- <10f740e81003091113j5b55edf7r7eec8728bcc87821@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <10f740e81003091113j5b55edf7r7eec8728bcc87821@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 10 Mar 2010 19:43:04 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 11 Mar 2010 09:39:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Message-Id: <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1268175636-4673-1-git-send-email-arighi@develer.com>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+On Wed, 10 Mar 2010 00:00:31 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
-On Tue, Mar 09, 2010 at 08:13:56PM +0100, Geert Uytterhoeven wrote:
-> On Tue, Dec 15, 2009 at 23:13, Mark Brown
-> <broonie@opensource.wolfsonmicro.com> wrote:
-> > On Tue, Dec 15, 2009 at 10:00:02PM +0100, Geert Uytterhoeven wrote:
-> >> From e2def3261a58e9c0e56b710b2020858df010a2c1 Mon Sep 17 00:00:00 2001
-> >> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> >> Date: Tue, 15 Dec 2009 21:49:57 +0100
-> >> Subject: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
-> >>
-> >> commit 5fb4d38b19d95a5f980f0a10adba798f5b92128c ("mfd: Move WM831x to generic
-> >> IRQ") didn't take into account that genirq support depends on GENERIC_HARDIRQS.
-> >>
-> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Control the maximum amount of dirty pages a cgroup can have at any given time.
 > 
-> This patch still hasn't made it. In addition, 3 more drivers started
-> to show the same problems
-> on architectures that don't use genirq yet, so I updated it.
-Oh, that one slipped through, sorry about it.
-Patch applied to my for-linus branch now, many thanks.
+> Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> will not be able to consume more than their designated share of dirty pages and
+> will be forced to perform write-out if they cross that limit.
+> 
+> The overall design is the following:
+> 
+>  - account dirty pages per cgroup
+>  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+>    and memory.dirty_background_ratio / memory.dirty_background_bytes in
+>    cgroupfs
+>  - start to write-out (background or actively) when the cgroup limits are
+>    exceeded
+> 
+> This feature is supposed to be strictly connected to any underlying IO
+> controller implementation, so we can stop increasing dirty pages in VM layer
+> and enforce a write-out before any cgroup will consume the global amount of
+> dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
+> /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
+> 
+> Changelog (v5 -> v6)
+> ~~~~~~~~~~~~~~~~~~~~~~
+>  * always disable/enable IRQs at lock/unlock_page_cgroup(): this allows to drop
+>    the previous complicated locking scheme in favor of a simpler locking, even
+>    if this obviously adds some overhead (see results below)
+>  * drop FUSE and NILFS2 dirty pages accounting for now (this depends on
+>    charging bounce pages per cgroup)
+> 
+> Results
+> ~~~~~~~
+> I ran some tests using a kernel build (2.6.33 x86_64_defconfig) on a
+> Intel Core 2 @ 1.2GHz as testcase using different kernels:
+>  - mmotm "vanilla"
+>  - mmotm with cgroup-dirty-memory using the previous "complex" locking scheme
+>    (my previous patchset + the fixes reported by Kame-san and Daisuke-san)
+>  - mmotm with cgroup-dirty-memory using the simple locking scheme
+>    (lock_page_cgroup() with IRQs disabled)
+> 
+> Following the results:
+> <before>
+>  - mmotm "vanilla", root  cgroup:			11m51.983s
+>  - mmotm "vanilla", child cgroup:			11m56.596s
+> 
+> <after>
+>  - mmotm, "complex" locking scheme, root  cgroup:	11m53.037s
+>  - mmotm, "complex" locking scheme, child cgroup:	11m57.896s
+> 
+>  - mmotm, lock_page_cgroup+irq_disabled, root  cgroup:	12m5.499s
+>  - mmotm, lock_page_cgroup+irq_disabled, child cgroup:	12m9.920s
+> 
+> With the "complex" locking solution, the overhead introduced by the
+> cgroup dirty memory accounting is minimal (0.14%), compared with the overhead
+> introduced by the lock_page_cgroup+irq_disabled solution (1.90%).
+> 
+Hmm....isn't this bigger than expected ?
 
-Cheers,
-Samuel.
 
+> The performance overhead is not so huge in both solutions, but the impact on
+> performance is even more reduced using a complicated solution...
+> 
+> Maybe we can go ahead with the simplest implementation for now and start to
+> think to an alternative implementation of the page_cgroup locking and
+> charge/uncharge of pages.
+> 
 
-> From a11ebba6c1a49bc97220bec57f7c8f4cddff0824 Mon Sep 17 00:00:00 2001
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> Date: Tue, 15 Dec 2009 21:49:57 +0100
-> Subject: [PATCH] mfd: Several MFD drivers should depend on GENERIC_HARDIRQS
-> 
-> commit 5fb4d38b19d95a5f980f0a10adba798f5b92128c ("mfd: Move WM831x to generic
-> IRQ") didn't take into account that genirq support depends on GENERIC_HARDIRQS.
-> 
-> Additionally, 2.6.34-rc1 added:
->   - commit 2afa62ea76027b00e472ddb672191e6e15425b43 ("mfd: Use genirq in
->     88pm860x").
->   - commit 760e4518788df6762700e6bb9dd8692379f11168 ("mfd: Convert WM8350 to
->     genirq").
->   - commit 1f1cf8f98cf6588365efeaab8e7e7758aaa77f6e ("mfd: Update irq handler
->     in max8925")
-> 
-> Make all of them depend on GENERIC_HARDIRQS to avoid compile errors on
-> architectures that don't support genirq yet.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/mfd/Kconfig |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 951fa9b..2a5a0b7 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -11,7 +11,7 @@ config MFD_CORE
-> 
->  config MFD_88PM860X
->  	bool "Support Marvell 88PM8606/88PM8607"
-> -	depends on I2C=y
-> +	depends on I2C=y && GENERIC_HARDIRQS
->  	select MFD_CORE
->  	help
->  	  This supports for Marvell 88PM8606/88PM8607 Power Management IC.
-> @@ -205,7 +205,7 @@ config PMIC_ADP5520
-> 
->  config MFD_MAX8925
->  	bool "Maxim Semiconductor MAX8925 PMIC Support"
-> -	depends on I2C=y
-> +	depends on I2C=y && GENERIC_HARDIRQS
->  	select MFD_CORE
->  	help
->  	  Say yes here to support for Maxim Semiconductor MAX8925. This is
-> @@ -226,7 +226,7 @@ config MFD_WM8400
->  config MFD_WM831X
->  	bool "Support Wolfson Microelectronics WM831x/2x PMICs"
->  	select MFD_CORE
-> -	depends on I2C=y
-> +	depends on I2C=y && GENERIC_HARDIRQS
->  	help
->  	  Support for the Wolfson Microelecronics WM831x and WM832x PMICs.
->  	  This driver provides common support for accessing the device,
-> @@ -235,6 +235,7 @@ config MFD_WM831X
-> 
->  config MFD_WM8350
->  	bool
-> +	depends on GENERIC_HARDIRQS
-> 
->  config MFD_WM8350_CONFIG_MODE_0
->  	bool
-> @@ -287,7 +288,7 @@ config MFD_WM8352_CONFIG_MODE_3
->  config MFD_WM8350_I2C
->  	bool "Support Wolfson Microelectronics WM8350 with I2C"
->  	select MFD_WM8350
-> -	depends on I2C=y
-> +	depends on I2C=y && GENERIC_HARDIRQS
->  	help
->  	  The WM8350 is an integrated audio and power management
->  	  subsystem with watchdog and RTC functionality for embedded
-> -- 
-> 1.6.0.4
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
+maybe. But in this 2 years, one of our biggest concerns was the performance.
+So, we do something complex in memcg. But complex-locking is , yes, complex.
+Hmm..I don't want to bet we can fix locking scheme without something complex.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Thanks,
+-Kame
+
