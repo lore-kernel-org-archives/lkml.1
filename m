@@ -1,59 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327Ab0CKCV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 21:21:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56269 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801Ab0CKCV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 21:21:56 -0500
-Date: Thu, 11 Mar 2010 13:21:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: build failure after merge of the pcmcia tree
-Message-Id: <20100311132149.c6ef7616.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Mar_2010_13_21_49_+1100_VUE2c5ZGQANmBw3B"
+	id S1753972Ab0CKCW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 21:22:28 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:56062 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178Ab0CKCW1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 21:22:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type;
+        b=tOE/SqHtYhaebdJwwT/EaLkJ6EDMD2ReMpczeR+4a9XBMJmESBOWtQa3BVPbzOE8EJ
+         01UmsqRb6r43f0TpvdvHUafJBcFt4MvSMAZ0jQLtmKReNW8jnIGJcTEORZ9lOHi2Z5b6
+         RgcQdU27bB9NddcU4f1MnWH+AaX4ZO2Jzydbk=
+MIME-Version: 1.0
+Date: Wed, 10 Mar 2010 21:22:23 -0500
+X-Google-Sender-Auth: 0762c0370a8ac41b
+Message-ID: <40ec3ea41003101822q1f44b393y198d693c59792969@mail.gmail.com>
+Subject: Re: [regression]: soft lockup in dmesg after suspend/resume
+From: Chase Douglas <chase.douglas@canonical.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Mar_2010_13_21_49_+1100_VUE2c5ZGQANmBw3B
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I wanted to ask about potential work arounds for the issue noted at
+[1]. I wasn't subscribed to this list when that thread was started, so
+unfortunately I can't reply directly. I also haven't found any follow
+up to the thread, but please point me in the right direction if there
+has been any.
 
-Hi Dominik,
+We're seeing a number of reports against Ubuntu Lucid caused by
+timestamps being highly warped coming out of suspend/resume. When a
+warp occurs, the TSC register is throwing off timestamps with the
+upper 32 bits set to 0xFFFFFFFF. I'm not terribly familiar with the
+TSC or x86 clocking in general, but such time stamps should be many
+many years into the future before we see them (unless I've done my
+math wrong :). So with that in mind, it seems that it should be
+possible to test for such outlandish values coming out of
+suspend/resume. If the values are warped, would it be safe to switch
+over to using jiffies in native_sched_clock by setting tsc_disable=1
+during runtime?
 
-After merging the pcmcia tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+Thanks,
+Chase
 
-drivers/pcmcia/pcmcia_resource.c:704:1: error: unterminated #ifdef
-
-Caused by commit 484f4b3fdd8f3de102b07a9b6d0d72342bcc1590 ("pcmcia:
-revert "irq probe can be done without risking an IRQ storm"") which has
-conflict resolution fragments still in it ...
-
-Please, please, read and build test this stuff ...
-
-I have used the version of the pcmcis tree from next-20100310 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__11_Mar_2010_13_21_49_+1100_VUE2c5ZGQANmBw3B
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuYU70ACgkQjjKRsyhoI8wUSgCghe50yJA6ySH1KSp4+Sz4sdPn
-5bwAn0PXa8xq6/9/6HDeQcbDr/G9cCHd
-=bxcP
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Mar_2010_13_21_49_+1100_VUE2c5ZGQANmBw3B--
+[1] http://lkml.org/lkml/2010/1/4/7
