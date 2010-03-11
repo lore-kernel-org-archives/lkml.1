@@ -1,50 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136Ab0CKHa0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 02:30:26 -0500
-Received: from mail1.perex.cz ([212.20.107.53]:54567 "EHLO mail1.perex.cz"
+	id S1753290Ab0CKHbi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 02:31:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19686 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753050Ab0CKHaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 02:30:25 -0500
-Date: Thu, 11 Mar 2010 08:30:21 +0100 (CET)
-From: Jaroslav Kysela <perex@perex.cz>
-To: VDR User <user.vdr@gmail.com>
-cc: Wu Fengguang <fengguang.wu@intel.com>, Wei Ni <wni@nvidia.com>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
-       Jaroslav Kysela <jkysela@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-In-Reply-To: <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1003110824390.4672@eeebox2.perex-int.cz>
-References: <s5htyswpb18.wl%tiwai@suse.de> <s5hvddcnlr6.wl%tiwai@suse.de>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD558@HKMAIL01.nvidia.com>  <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>
-  <20100308044614.GA29026@localhost>  <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>  <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>  <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>  <20100310125456.GA18509@localhost>
- <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1753106Ab0CKHbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 02:31:37 -0500
+Message-ID: <4B989C4A.1020003@redhat.com>
+Date: Thu, 11 Mar 2010 09:31:22 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kvm: cleanup kvm trace
+References: <4B977BDB.2090204@cn.fujitsu.com>
+In-Reply-To: <4B977BDB.2090204@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010, VDR User wrote:
+On 03/10/2010 01:00 PM, Xiao Guangrong wrote:
+> This patch does:
+>
+>   - no need call tracepoint_synchronize_unregister() when kvm module
+>     is unloaded since ftrace can handle it
+>
+>   - cleanup ftrace's macro
+>    
 
-> [pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
-> pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
+Applied, thanks.
 
--EPIPE means underrun condition.
-
-Try 'echo 101 > /proc/asound/card0/pcm0p/xrun_debug' and send dmesg 
-output to check if the ring buffer pointer in the hda-intel driver does 
-not return wrong values. Replace card0 and pcm0p with right identifiers 
-(look to 'aplay -l' for right numbers).
-
-More info: http://www.alsa-project.org/main/index.php/XRUN_Debug
-
- 					Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
+-- 
+error compiling committee.c: too many arguments to function
 
