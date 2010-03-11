@@ -1,43 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184Ab0CKElF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 23:41:05 -0500
-Received: from mail.perches.com ([173.55.12.10]:1637 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409Ab0CKElD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 23:41:03 -0500
-Subject: Re: [PATCH] Staging: arlan: fixed coding style issues in
- arlan-proc.c This is a patch to the arlan-proc.c file that fixes up
- multiple coding style errors and warnings found by the checkpatch.pl tool
- Signed-off-by: Andre Silva <andre.beat@gmail.com>
-From: Joe Perches <joe@perches.com>
-To: Greg KH <gregkh@suse.de>, git <git@vger.kernel.org>
-Cc: Andr? Silva <andre.beat@gmail.com>, linville@tuxdriver.com,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100311033248.GA3832@suse.de>
-References: <1268276306-14324-1-git-send-email-andre.beat@gmail.com>
-	 <1268278090.1674.37.camel@Joe-Laptop.home>  <20100311033248.GA3832@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Mar 2010 20:40:59 -0800
-Message-ID: <1268282459.1674.43.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+	id S1756360Ab0CKEpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 23:45:36 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:45953 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754191Ab0CKEpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 23:45:34 -0500
+Date: Thu, 11 Mar 2010 10:15:26 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Greg Thelen <gthelen@google.com>, Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] mm: fix typo in refill_stock() comment
+Message-ID: <20100311044526.GB17643@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1268255117-3280-1-git-send-email-gthelen@google.com>
+ <20100311093226.8f361e38.nishimura@mxp.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100311093226.8f361e38.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-10 at 19:32 -0800, Greg KH wrote:
-> He did, it's a "issue" with git-send-email that if you don't have empty
-> lines, it puts it all on the Subject: line.
+* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2010-03-11 09:32:26]:
 
-Hi Greg.
+> On Wed, 10 Mar 2010 13:05:17 -0800, Greg Thelen <gthelen@google.com> wrote:
+> > Change refill_stock() comment: s/consumt_stock()/consume_stock()/
+> > 
+> > Signed-off-by: Greg Thelen <gthelen@google.com>
+> Acked-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>
 
-Could you detail a bit more your problem description?
-I've not seen this problem nor understand what you mean.
-
-I've not seen a bug report on the git mailing list either.
-
-Thanks, Joe
-
-
+Thanks for catching and fixing this.
+ 
+-- 
+	Three Cheers,
+	Balbir
