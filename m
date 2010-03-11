@@ -1,39 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752564Ab0CLHlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 02:41:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7257 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104Ab0CLHlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 02:41:23 -0500
-Message-ID: <4B99F01A.2020103@redhat.com>
-Date: Fri, 12 Mar 2010 09:41:14 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/18][RFC] Nested Paging support for Nested SVM (aka NPT-Virtualization)
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com> <20100304144255.GA26657@amt.cnet> <20100304155820.GA6019@amd.com>
-In-Reply-To: <20100304155820.GA6019@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1752990Ab0CLHzO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 02:55:14 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:55344 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752998Ab0CLHzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 02:55:10 -0500
+Subject: Re: linux-next: build failure after merge of the final tree
+ (backlight related)
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg@redhat.com>,
+       Haojian Zhuang <haojian.zhuang@marvell.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+In-Reply-To: <20100310180343.c6305829.sfr@canb.auug.org.au>
+References: <20100310180343.c6305829.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Mar 2010 09:36:10 -0800
+Message-ID: <1268328970.1625.2.camel@rex>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/2010 05:58 PM, Joerg Roedel wrote:
->> You probably need to include a flag in base_role to differentiate
->> between l1 / l2 shadow tables (say if they use the same cr3 value).
->>      
-> Not sure if this is necessary. It may be necessary when large pages come
-> into play. Otherwise the host npt pages are distinguished by the shadow
-> npt pages by the direct-flag.
->    
+Hi,
 
-Hm, I think that direct maps for the same gfn can be shared.
+On Wed, 2010-03-10 at 18:03 +1100, Stephen Rothwell wrote:
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> drivers/video/backlight/88pm860x_bl.c: In function 'pm860x_backlight_probe':
+> drivers/video/backlight/88pm860x_bl.c:227: error: too few arguments to function 'backlight_device_register'
+> drivers/video/backlight/max8925_bl.c: In function 'max8925_backlight_probe':
+> drivers/video/backlight/max8925_bl.c:137: error: too few arguments to function 'backlight_device_register'
+> 
+> Caused by commit 85d0968607ab8c61de45a68c643b198020a1369d ("backlight:
+> Allow properties to be passed at registration") interacting with commits
+> d07e8bf83fd71567aaf9c27c3b133ab3cf8f3c4c ("backlight: Enable backlight in
+> 88pm860x") and 4f811ef0d40048ae80b6ea77080b814725bffc58 ("backlight:
+> Enable max8925 backlight") which are now in Linus' tree (via the mfd tree)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Sorry about that, I knew there were going to be issues with that patch
+and had meant to commit and test but not push until I fixed that issue.
+I've fixed up the tree now.
+
+Cheers,
+
+Richard
 
