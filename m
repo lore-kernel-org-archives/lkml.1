@@ -1,107 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967Ab0CKIVx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:21:53 -0500
-Received: from mga07.intel.com ([143.182.124.22]:39327 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754431Ab0CKIVw (ORCPT
+	id S1755346Ab0CKIbT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:31:19 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:63215 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910Ab0CKIbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:21:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,619,1262592000"; 
-   d="scan'208";a="253409018"
-Subject: Re: [PATCH] x86/kvm: Show guest system/user cputime in cpustat
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Sheng Yang <sheng@linux.intel.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, "Zhang, Yanmin" <yanmin.zhang@intel.com>
-In-Reply-To: <4B98A0DE.1020006@redhat.com>
-References: <1268292022-31352-1-git-send-email-sheng@linux.intel.com>
-	 <4B989D61.70906@redhat.com> <201003111546.44059.sheng@linux.intel.com>
-	 <4B98A0DE.1020006@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Thu, 11 Mar 2010 16:21:32 +0800
-Message-Id: <1268295692.1726.250.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 03:31:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=ILgpZLfP3Irp8mx64zur8SGSNT7qitHBVZJtVU1feK7lEYJJj7R6yE1kBbiSgLO0Bm
+         u7ka0B/Q0r035KkfCO1svKkhcQrNuvH1n4jT7tqFYo48SIUC0eG3VWvZ1KKSV9E2DuPO
+         QZR+jJRBSOWrJ4sPMhjWstfBRWwO28sGzDyw0=
+Date: Thu, 11 Mar 2010 00:31:11 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH] firmware loader: use statically initialized data attribute
+Message-ID: <20100311083111.GA11183@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 09:50 +0200, Avi Kivity wrote:
-> On 03/11/2010 09:46 AM, Sheng Yang wrote:
-> > On Thursday 11 March 2010 15:36:01 Avi Kivity wrote:
-> >    
-> >> On 03/11/2010 09:20 AM, Sheng Yang wrote:
-> >>  
+There is no reason why we are using a template for binary attribute
+and copying it into per-firmware data before registering. Using the
+original works as well and gets rid of the following lockdep
+compaint:
 
->     
-> >>> Currently we can only get the cpu_stat of whole guest as one. This patch
-> >>> enhanced cpu_stat with more detail, has guest_system and guest_user cpu
-> >>> time statistics with a little overhead.
-> >>>
-> >>> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
-It seems per-process guest cpu utilization is more useful than per-cpu's.
-
-
-> >>> ---
-> >>>
-> >>> This draft patch based on KVM upstream to show the idea. I would split it
-> >>> into more kernel friendly version later.
-> >>>
-> >>> The overhead is, the cost of get_cpl() after each exit from guest.
-> >>>        
-> >> This can be very expensive in the nested virtualization case, so I
-> >> wouldn't like this to be in normal paths.  I think detailed profiling
-> >> like that can be left to 'perf kvm', which only has overhead if enabled
-> >> at runtime.
-> >>      
-> > Yes, that's my concern too(though nested vmcs/vmcb read already too expensive,
-> > they should be optimized...).
-> 
-> Any ideas on how to do that?  Perhaps use paravirt_ops to covert the 
-> vmread into a memory read?  We store the vmwrites in the vmcs anyway.
-Another method is to add sysctl entry, such like /proc/sys/kernel/collect_guest_utilization,
-and we can set it off by default. Or add a /sys/kernel/debug/kvm/collect_guest_utilization.
-
-> 
-> > The other concern is, perf alike mechanism would
-> > bring a lot more overhead compared to this.
-> >    
-> 
-> Ordinarily users won't care if time is spent in guest kernel mode or 
-> guest user mode.  They want to see which guest is imposing a load on a 
-> system.  I consider a user profiling a guest from the host an advanced 
-> and rarer use case, so it's okay to require tools and additional 
-> overhead for this.
-Here is the story why Sheng worked out the patch. Some guys work on
-KVM performance. They want us to extend top to show guest utilization
-info, such like guest kernel and guest userspace cpu utilization. With
-the new tool, they could find which VM (mapping with qemu process id)
-consumes too much cpu time in host space (including kernel and userspace),
-and compare them with guest kernel/userspace. That information could provide
-a first-hand high-level overview about all VMs running in the system
-and help admin quickly find what the worst VM instance is.
-
-So we need per-process (guest) cpu utilization than per-cpu guest utilization.
-
-> 
-> >> For example you can put the code to note the cpl in a tracepoint which
-> >> is enabled dynamically.
-> >>      
-> > Yanmin have already implement "perf kvm" to support this. We are just arguing
-> > if a normal top-alike mechanism is necessary.
-perf kvm mostly is used to find hot functions which might cause more overhead.
-Sheng's patch has less overhead.
+ platform microcode: firmware: requesting intel-ucode/06-0f-0b
+ BUG: key ffff88011371be70 not in .data!
+ ------------[ cut here ]------------
+ WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x125/0x140()
+ Hardware name: Latitude D630
+ Modules linked in: ...
+ Pid: 738, comm: modprobe Tainted: P           2.6.34-rc1 #237
+ Call Trace:
+  [<ffffffff81048fb6>] warn_slowpath_common+0x76/0xb0
+  [<ffffffff81048fff>] warn_slowpath_null+0xf/0x20
+  [<ffffffff8107c915>] lockdep_init_map+0x125/0x140
+  [<ffffffff8118485a>] sysfs_add_file_mode+0x6a/0xc0
+  [<ffffffff811848bc>] sysfs_add_file+0xc/0x10
+  [<ffffffff811870e1>] sysfs_create_bin_file+0x21/0x30
+  [<ffffffff8130dff1>] fw_setup_device+0x81/0x120
+  [<ffffffff8130e14f>] _request_firmware+0xbf/0x270
+  [<ffffffff8130e38e>] request_firmware+0xe/0x10
+  [<ffffffffa0064be1>] request_microcode_fw+0x61/0xa0 [microcode]
+  [<ffffffffa00643b8>] microcode_init_cpu+0xb8/0xd0 [microcode]
+  [<ffffffffa0064426>] mc_sysdev_add+0x56/0x70 [microcode]
+  [<ffffffff813032ae>] sysdev_driver_register+0x9e/0x130
+  [<ffffffffa006a000>] ? microcode_init+0x0/0x12a [microcode]
+  [<ffffffffa006a0bd>] microcode_init+0xbd/0x12a [microcode]
+  [<ffffffff810001d7>] do_one_initcall+0x37/0x190
+  [<ffffffff8108d178>] sys_init_module+0xd8/0x250
+  [<ffffffff81002fab>] system_call_fastpath+0x16/0x1b
+ ---[ end trace 93c9f72439beee7f ]---
 
 
-> >
-> > I am also considering to make it a feature that can be disabled. But seems it
-> > make things complicate and result in uncertain cpustat output.
-> >    
-> 
-> I'm not even sure that guest time was a good idea.
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/base/firmware_class.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
 
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index d0dc26a..3f50b2e 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -41,7 +41,6 @@ static DEFINE_MUTEX(fw_lock);
+ struct firmware_priv {
+ 	char *fw_id;
+ 	struct completion completion;
+-	struct bin_attribute attr_data;
+ 	struct firmware *fw;
+ 	unsigned long status;
+ 	struct page **pages;
+@@ -344,8 +343,8 @@ out:
+ 	return retval;
+ }
+ 
+-static struct bin_attribute firmware_attr_data_tmpl = {
+-	.attr = {.name = "data", .mode = 0644},
++static struct bin_attribute firmware_attr_data = {
++	.attr = { .name = "data", .mode = 0644 },
+ 	.size = 0,
+ 	.read = firmware_data_read,
+ 	.write = firmware_data_write,
+@@ -390,7 +389,6 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
+ 	}
+ 
+ 	init_completion(&fw_priv->completion);
+-	fw_priv->attr_data = firmware_attr_data_tmpl;
+ 	fw_priv->fw_id = kstrdup(fw_name, GFP_KERNEL);
+ 	if (!fw_priv->fw_id) {
+ 		dev_err(device, "%s: Firmware name allocation failed\n",
+@@ -442,7 +440,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
+ 	fw_priv = dev_get_drvdata(f_dev);
+ 
+ 	fw_priv->fw = fw;
+-	retval = sysfs_create_bin_file(&f_dev->kobj, &fw_priv->attr_data);
++	retval = sysfs_create_bin_file(&f_dev->kobj, &firmware_attr_data);
+ 	if (retval) {
+ 		dev_err(device, "%s: sysfs_create_bin_file failed\n", __func__);
+ 		goto error_unreg;
+-- 
+Dmitry
