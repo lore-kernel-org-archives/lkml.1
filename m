@@ -1,141 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527Ab0CKH7h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 02:59:37 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35551 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754215Ab0CKH7f (ORCPT
+	id S1754779Ab0CKIAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:00:00 -0500
+Received: from mail-ew0-f216.google.com ([209.85.219.216]:41554 "EHLO
+	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752Ab0CKH76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 02:59:35 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 11 Mar 2010 16:55:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       kirill@shutemov.name
-Subject: [RFC][PATCH 1/3] memcg: wake up filter in oom waitqueue
-Message-Id: <20100311165559.3f9166b2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100311165315.c282d6d2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100311165315.c282d6d2.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 02:59:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YoLy1ozq9NAI7inhEl9aE3UtRYO2vJeyOL04UJSST1VnaAtr5SqWZQuSneVueWiPOn
+         wa2ZOHBlFwXVSX0BRkrOlf69WQ9FWSfEUA0A3mk1lst4t51Kerty4qSZbEXxNSxDOQ3g
+         SSC8LZg6cCUPzbKgAuM4ygke1+HPxwHjA0fkY=
+MIME-Version: 1.0
+In-Reply-To: <1268292100.11761.1.camel@Joe-Laptop.home>
+References: <1268261495-686-1-git-send-email-andy.shevchenko@gmail.com>
+	 <1268261495-686-2-git-send-email-andy.shevchenko@gmail.com>
+	 <1268261495-686-3-git-send-email-andy.shevchenko@gmail.com>
+	 <1268261495-686-4-git-send-email-andy.shevchenko@gmail.com>
+	 <1268261495-686-5-git-send-email-andy.shevchenko@gmail.com>
+	 <87aaufvk7w.fsf@devron.myhome.or.jp>
+	 <1268292100.11761.1.camel@Joe-Laptop.home>
+Date: Thu, 11 Mar 2010 09:59:57 +0200
+Message-ID: <5ec8ebd51003102359w277e6aadna483d44ee3ff856f@mail.gmail.com>
+Subject: Re: [PATCH 4/5] fs: fat: use hex_asc_lo/hex_asc_hi instead of custom 
+	one
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o2B80DmE024617
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-memcg's oom waitqueue is a system-wide wait_queue (for handling hierarchy.)
-So, it's better to add custom wake function and do flitering in wake up path.
-
-This patch adds a filtering feature for waking up oom-waiters.
-Hierarchy is properly handled.
-
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/memcontrol.c |   61 ++++++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 44 insertions(+), 17 deletions(-)
-
-Index: mmotm-2.6.34-Mar9/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.34-Mar9.orig/mm/memcontrol.c
-+++ mmotm-2.6.34-Mar9/mm/memcontrol.c
-@@ -1293,14 +1293,54 @@ static void mem_cgroup_oom_unlock(struct
- static DEFINE_MUTEX(memcg_oom_mutex);
- static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
- 
-+struct oom_wait_info {
-+	struct mem_cgroup *mem;
-+	wait_queue_t	wait;
-+};
-+
-+static int memcg_oom_wake_function(wait_queue_t *wait,
-+	unsigned mode, int sync, void *arg)
-+{
-+	struct mem_cgroup *wake_mem = (struct mem_cgroup *)arg;
-+	struct oom_wait_info *oom_wait_info;
-+
-+	/* both of oom_wait_info->mem and wake_mem are stable under us */
-+	oom_wait_info = container_of(wait, struct oom_wait_info, wait);
-+
-+	if (oom_wait_info->mem == wake_mem)
-+		goto wakeup;
-+	/* if no hierarchy, no match */
-+	if (!oom_wait_info->mem->use_hierarchy || !wake_mem->use_hierarchy)
-+		return 0;
-+	/* check hierarchy */
-+	if (!css_is_ancestor(&oom_wait_info->mem->css, &wake_mem->css) &&
-+	    !css_is_ancestor(&wake_mem->css, &oom_wait_info->mem->css))
-+		return 0;
-+
-+wakeup:
-+	return autoremove_wake_function(wait, mode, sync, arg);
-+}
-+
-+static void memcg_wakeup_oom(struct mem_cgroup *mem)
-+{
-+	/* for filtering, pass "mem" as argument. */
-+	__wake_up(&memcg_oom_waitq, TASK_NORMAL, 0, mem);
-+}
-+
- /*
-  * try to call OOM killer. returns false if we should exit memory-reclaim loop.
-  */
- bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
- {
--	DEFINE_WAIT(wait);
-+	struct oom_wait_info owait;
- 	bool locked;
- 
-+	owait.mem = mem;
-+	owait.wait.flags = 0;
-+	owait.wait.func = memcg_oom_wake_function;
-+	owait.wait.private = current;
-+	INIT_LIST_HEAD(&owait.wait.task_list);
-+
- 	/* At first, try to OOM lock hierarchy under mem.*/
- 	mutex_lock(&memcg_oom_mutex);
- 	locked = mem_cgroup_oom_lock(mem);
-@@ -1310,31 +1350,18 @@ bool mem_cgroup_handle_oom(struct mem_cg
- 	 * under OOM is always welcomed, use TASK_KILLABLE here.
- 	 */
- 	if (!locked)
--		prepare_to_wait(&memcg_oom_waitq, &wait, TASK_KILLABLE);
-+		prepare_to_wait(&memcg_oom_waitq, &owait.wait, TASK_KILLABLE);
- 	mutex_unlock(&memcg_oom_mutex);
- 
- 	if (locked)
- 		mem_cgroup_out_of_memory(mem, mask);
- 	else {
- 		schedule();
--		finish_wait(&memcg_oom_waitq, &wait);
-+		finish_wait(&memcg_oom_waitq, &owait.wait);
- 	}
- 	mutex_lock(&memcg_oom_mutex);
- 	mem_cgroup_oom_unlock(mem);
--	/*
--	 * Here, we use global waitq .....more fine grained waitq ?
--	 * Assume following hierarchy.
--	 * A/
--	 *   01
--	 *   02
--	 * assume OOM happens both in A and 01 at the same time. Tthey are
--	 * mutually exclusive by lock. (kill in 01 helps A.)
--	 * When we use per memcg waitq, we have to wake up waiters on A and 02
--	 * in addtion to waiters on 01. We use global waitq for avoiding mess.
--	 * It will not be a big problem.
--	 * (And a task may be moved to other groups while it's waiting for OOM.)
--	 */
--	wake_up_all(&memcg_oom_waitq);
-+	memcg_wakeup_oom(mem);
- 	mutex_unlock(&memcg_oom_mutex);
- 
- 	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
-
+On Thu, Mar 11, 2010 at 9:21 AM, Joe Perches <joe@perches.com> wrote:>> > + ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† *op++ = hex_asc_hi(ec >> 8);>> > + ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† *op++ = hex_asc_lo(ec >> 8);>> > + ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† *op++ = hex_asc_hi(ec);>> > + ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† ¬† *op++ = hex_asc_lo(ec);>> Why doesn't this use pack_hex_byte()?> or snprintfsprintf looks like overkill here.
+-- With Best Regards,Andy ShevchenkoˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
