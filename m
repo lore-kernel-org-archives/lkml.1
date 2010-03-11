@@ -1,43 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268Ab0CKWG7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 17:06:59 -0500
-Received: from mail-px0-f198.google.com ([209.85.216.198]:46862 "EHLO
-	mail-px0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758249Ab0CKWG5 (ORCPT
+	id S1758278Ab0CKWHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 17:07:23 -0500
+Received: from wdscspam1.wdc.com ([129.253.170.130]:23663 "EHLO
+	wdscspam1.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758249Ab0CKWHU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 17:06:57 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] usb/gadget: fix compile error on r8a66597-udc.c
-To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 11 Mar 2010 15:06:54 -0700
-Message-ID: <20100311220631.19163.98586.stgit@angua>
-User-Agent: StGIT/0.14.2
+	Thu, 11 Mar 2010 17:07:20 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition for > 512B sector
+Date: Thu, 11 Mar 2010 14:06:03 -0800
+Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD91@wdscexbe01.sc.wdc.com>
+In-Reply-To: <4B99677B.80001@zytor.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition for > 512B sector
+Thread-Index: AcrBZiESD+oSszhOTqOEbnJ+7fDlHgAABo5Q
+References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com><20100301141335.395dc4c3.akpm@linux-foundation.org><873a0h1p2c.fsf@devron.myhome.or.jp><876358iehd.fsf@devron.myhome.or.jp> <4B9430B6.701@zytor.com><87pr3fd68r.fsf@devron.myhome.or.jp> <4B9440FC.3090502@zytor.com><87zl2j9muz.fsf@devron.myhome.or.jp><87wrxkw52s.fsf_-_@devron.myhome.or.jp><87sk88w4xk.fsf_-_@devron.myhome.or.jp><3E0C3AE547FA504DA5E89EA5A24AC85803E2BD87@wdscexbe01.sc.wdc.com> <873a07oyts.fsf@devron.myhome.or.jp> <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD8E@wdscexbe01.sc.wdc.com> <4B99677B.80001@zytor.com>
+From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Mar 2010 22:07:01.0473 (UTC) FILETIME=[2D075D10:01CAC167]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-C file uses IS_ERR and PTR_ERR, but doesn't include <linux/err.h>
+ 
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> -----Original Message-----
+> From: H. Peter Anvin [mailto:hpa@zytor.com] 
+> Sent: Thursday, March 11, 2010 1:58 PM
+> To: Daniel Taylor
+> Cc: OGAWA Hirofumi; Andrew Morton; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 2/2] fs/partition/msdos: Fix unusable 
+> extended partition for > 512B sector
+> 
+> On 03/11/2010 01:25 PM, Daniel Taylor wrote:
+> >
+> > I have not yet tried booting from one of these disks.
+> >
+> > They are in USB-attached enclosures,
+> 
+> Right...
+> 
+> > attached well after boot, so the
+> > bootloader has never seen them.
+> 
+> Wrong.  A lot of BIOSes will attempt to boot from USB 
+> storage.  Worse, a 
+> fair number of BIOSes will hang during startup if a USB 
+> storage device 
+> that confuses them -- even if not the primary boot device.
 
- drivers/usb/gadget/r8a66597-udc.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/gadget/r8a66597-udc.c b/drivers/usb/gadget/r8a66597-udc.c
-index 8b45145..5e13d23 100644
---- a/drivers/usb/gadget/r8a66597-udc.c
-+++ b/drivers/usb/gadget/r8a66597-udc.c
-@@ -23,6 +23,7 @@
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/err.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
- #include <linux/clk.h>
-
+BIOS failures prior to loading the kernel are not Linux'
+responsibility.  Confused BIOS will still fail, even if the
+patch is not implemented,  so how does that effect the
+acceptance of a patch that fixes post-boot behavior?
+ 
+>> They simply refuse to mount to a running
+>> Linux system because, when the storage for partition size and start was
+>> expanded to 64-bit, no one bothered to fix the intermediate storage in
+>> msdos.c, so the kernel cannot locate the start nor figure the size of
+>> the partitions.
+>>
+>> Logically, this patch is not complicated.  The data types in msdos.c
+>> are flat-out wrong, given that the real stored data is of type sector_t.
+>> The intermediate variables should not be u32.
+> 
+> I would consider this a bugfix.  As such, it should be pushed outside 
+> the merge window.
+> 
+> 	-hpa
+> 
