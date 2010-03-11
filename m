@@ -1,155 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932948Ab0CKPEB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 10:04:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45577 "EHLO mx1.redhat.com"
+	id S933042Ab0CKPEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 10:04:14 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38932 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932657Ab0CKPEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 10:04:00 -0500
-Date: Thu, 11 Mar 2010 10:03:07 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
+	id S932954Ab0CKPEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 10:04:08 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: ATA 4 KiB sector issues.
+Date: Thu, 11 Mar 2010 20:35:26 +0530
+User-Agent: KMail/1.12.4 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.5; x86_64; ; )
+Cc: Theodore Tso <tytso@mit.edu>, Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
        Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-ID: <20100311150307.GC29246@redhat.com>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com> <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com> <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com> <1268298865.5279.997.camel@twins> <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+References: <4B947393.2050002@kernel.org> <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu> <1268318374.2798.2.camel@mulgrave.site>
+In-Reply-To: <1268318374.2798.2.camel@mulgrave.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003112035.26743.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 06:25:00PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 11 Mar 2010 10:14:25 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
+On Thursday 11 March 2010 20:09:34 James Bottomley wrote:
+> On Thu, 2010-03-11 at 09:28 -0500, Theodore Tso wrote:
+> > On Mar 11, 2010, at 8:57 AM, Nikanth Karthikesan wrote:
+> > > I guess, what he meant was, to keep filesystem blocks aligned, even if
+> > > the partition is not. Say if the partition is mis-aligned by 512-bytes,
+> > > let the filesystem waste 4k-512bytes and keep it's blocks aligned. But
+> > > it might be a case of over-engineering, possibly requiring disk format
+> > > change.
+> >
+> > Ah, yes, I agree with you; that's probably what he meant.
+> >
+> > Sure, that's theoretically possible, but it would mean changing every
+> > single filesystem, and it would require a file system format change
+> > --- or at least a file system format extension.
+> >
+> > It would seem to be way easier to simply fix the partitioning tools to
+> > do the right thing, though.
 > 
-> > On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
-> > > On Thu, 11 Mar 2010 09:39:13 +0900
-> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > > > The performance overhead is not so huge in both solutions, but the impact on
-> > > > > performance is even more reduced using a complicated solution...
-> > > > > 
-> > > > > Maybe we can go ahead with the simplest implementation for now and start to
-> > > > > think to an alternative implementation of the page_cgroup locking and
-> > > > > charge/uncharge of pages.
-> > 
-> > FWIW bit spinlocks suck massive.
-> > 
-> > > > 
-> > > > maybe. But in this 2 years, one of our biggest concerns was the performance.
-> > > > So, we do something complex in memcg. But complex-locking is , yes, complex.
-> > > > Hmm..I don't want to bet we can fix locking scheme without something complex.
-> > > > 
-> > > But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
-> > > will give us much benefit (of performance) than we lose by small overheads.
-> > 
-> > Well, the !cgroup or root case should really have no performance impact.
-> > 
-> > > IIUC, this series affects trgger for background-write-out.
-> > 
-> > Not sure though, while this does the accounting the actual writeout is
-> > still !cgroup aware and can definately impact performance negatively by
-> > shrinking too much.
-> > 
+> Actually, it's a layering violation.  The filesystem shouldn't need to
+> probe the device layout ... particularly when there are complexities
+> like is it logical 512 or physical, and if logical 512 on 4k does it
+> have an offset exponent or not.
 > 
-> Ah, okay, your point is !cgroup (ROOT cgroup case.)
-> I don't think accounting these file cache status against root cgroup is necessary.
+> We can transmit certain abstractions of information up the stack (like
+> stripe width for RAID arrays which should be the fs optimal write size),
+> but for this type of alignment, which can be completely solved at the
+> partition layer, the information should really stay there and the
+> filesystem should "just work".
 > 
 
-I think what peter meant was that with memory cgroups created we will do
-writeouts much more aggressively.
+Right. It would be layering violation and we have LVM to solve it already.
 
-In balance_dirty_pages()
-
-	if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-		break;
-
-Now with Andrea's patches, we are calculating bdi_thres per memory cgroup
-(almost)
-
-bdi_thres ~= per_memory_cgroup_dirty * bdi_fraction
-
-But bdi_nr_reclaimable and bdi_nr_writeback stats are still global.
-
-So for the same number of dirty pages system wide on this bdi, we will be
-triggering writeouts much more aggressively if somebody has created few
-memory cgroups and tasks are running in those cgroups.
-
-I guess it might cause performance regressions in case of small file
-writeouts because previously one could have written the file to cache and
-be done with it but with this patch set, there are higher changes that
-you will be throttled to write the pages back to disk.
-
-I guess we need two pieces to resolve this.
-	- BDI stats per cgroup.
-	- Writeback of inodes from same cgroup.
-
-I think BDI stats per cgroup will increase the complextiy.
-
-I am still setting up the system to test whether we see any speedup in
-writeout of large files with-in a memory cgroup with small memory limits.
-I am assuming that we are expecting a speedup because we will start
-writeouts early and background writeouts probably are faster than direct
-reclaim?
+The real problem, here is just that partitioning-tools should create 
+partitions that can work with both XP as well as Windows7. May be distro 
+installers, should ask the user which compatibility he needs.
 
 Thanks
-Vivek
-
-
-
-> 
-> BTW, in other thread, I'm now proposing this style. 
-> ==
-> +void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> +{
-> +	struct page_cgroup *pc;
-> +
-> +	pc = lookup_page_cgroup(page);
-> +	if (unlikely(!pc))
-> +		return;
-> +
-> +	if (trylock_page_cgroup(pc)) {
-> +		__mem_cgroup_update_stat(pc, idx, charge);
-> +		unlock_page_cgroup(pc);
-> +	}
-> +	return;
-> ==
-> 
-> Then, it's not problem that check pc->mem_cgroup is root cgroup or not
-> without spinlock.
-> ==
-> void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> {
-> 	pc = lookup_page_cgroup(page);
-> 	if (unlikely(!pc) || mem_cgroup_is_root(pc->mem_cgroup))
-> 		return;	
-> 	...
-> }
-> ==
-> This can be handle in the same logic of "lock failure" path.
-> And we just do ignore accounting.
-> 
-> There are will be no spinlocks....to do more than this,
-> I think we have to use "struct page" rather than "struct page_cgroup".
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> 
-> 
-> 
-> 
-> 
+Nikanth
