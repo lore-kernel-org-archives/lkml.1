@@ -1,91 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741Ab0CKMli (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 07:41:38 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:50132 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757571Ab0CKMlg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 07:41:36 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Philippe De Muyter <phdm@macqel.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
-References: <20100310123257.GA2899@frolo.macqel>
-	<87d3zc1bjo.fsf@devron.myhome.or.jp>
-	<20100310161429.GA16799@frolo.macqel>
-	<87hboow105.fsf@devron.myhome.or.jp>
-	<20100310235808.GA4353@frolo.macqel>
-	<87bpevryxt.fsf@devron.myhome.or.jp>
-	<20100311120214.GA23767@frolo.macqel>
-Date: Thu, 11 Mar 2010 21:41:33 +0900
-In-Reply-To: <20100311120214.GA23767@frolo.macqel> (Philippe De Muyter's
-	message of "Thu, 11 Mar 2010 13:02:14 +0100")
-Message-ID: <87y6hzni82.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
+	id S1757787Ab0CKMmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 07:42:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43026 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757595Ab0CKMmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 07:42:19 -0500
+Date: Thu, 11 Mar 2010 13:40:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/4][GIT PULL] tracing: updates and fixes
+Message-ID: <20100311124027.GF31354@elte.hu>
+References: <20100306022140.320536991@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100306022140.320536991@goodmis.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philippe De Muyter <phdm@macqel.be> writes:
 
->> > This is unavoidable.
->
-> We could perhaps reduce the disadvantage by moving the logic (test first
-> with the trailing dots, and then without if needed) into fat_search_long
-> instead of putting it in vfat_find as my patch proposal does.  This way
-> the name to find would only be compared once to unrelated entries,
-> instead of possibly twice as my patch does.
->
-> But therefore I need your help : fat_search_long isn't easy to read/modify.
->
-> The logic could be modified as such :
->     - if the searched name contains trailing dots, first compare
-> 	the truncated part to the same length of the directory entry
->     - if they are the same, test the length of the rest of the directory entry
-> 	- if length_of_rest is 0, this could be the matching entry,
-> 	    but there could be a better one later; keep searching till the end.
-> 	- if length_of_rest is not 0, compare the rest with the trailing dots
-> 	    - if rests are equal, we have found it; return
-> 	    - if rests are unequal, continue searching
->
->> 
->> We would be able to introduce new mount option to do it if needed.
->
-> A new mount option should be the last programming option.  It is better to
-> automatically do the right thing than to require the user to figure out
-> he must add a mount option in /etc/fstab or whatever.  Remember this is
-> for hot-plug disks.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Sorry, but I'm not thinking this is primary one. So, requiring option
-for it to avoid disadvantage of normal users, it sounds good.
+> Ingo,
+> 
+> Please pull the latest tip/tracing/core tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core
+> 
+> 
+> Arnaldo Carvalho de Melo (1):
+>       tracing: Update the comm field in the right variable in update_max_tr
+> 
+> Steven Rostedt (2):
+>       function-graph: Fix unused reference to ftrace_set_func()
+>       function-graph: Use comment notation for func names of dangling '}'
+> 
+> Tim Bird (1):
+>       function-graph: Add tracing_thresh support to function_graph tracer
+> 
+> ----
+>  kernel/trace/ftrace.c                |    6 ++----
+>  kernel/trace/trace.c                 |   24 ++++++++++++++++++++----
+>  kernel/trace/trace.h                 |    3 ++-
+>  kernel/trace/trace_functions_graph.c |   27 ++++++++++++++++++++++++---
+>  4 files changed, 48 insertions(+), 12 deletions(-)
 
->> This changed vfat_find(), so, this patch will change the behavior of all
->> callers more or less. And the behavior seems to be really strange, you
->> can remove "a.", but you can't create it?
->
-> Yes, you can remove any existing file, but if you want to create a file, 
-> the name creation rules are kept unchanged. So, creating "a." will
-> succeed, it will actually be called "a" on disk, but you can still refer
-> to it as "a." : that will succeed.  That's the strange part of the behavior
-> but that part is already present for compatibility reasons nor you nor me
-> can do anything about :(
->
->> The behavior sounds random, right?
->
-> It's a compromise to avoid creating name entries that are not universally
-> accepted, but to allow accessing existing files and directories.
->
-> The mount option could be useful then to allow the creation of file and
-> directory names with trailing dot, but consistency between getdents and
-> stat/open must be automatic.
+Pulled, thanks Steve!
 
-No, this breaks consistency. With this patch, unlink("a."), then
-open("a.", O_CREAT) and write(), the result depend on existent
-files. This patch is providing two files on one name.
-
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+	Ingo
