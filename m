@@ -1,28 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969Ab0CKOOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 09:14:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56150 "EHLO mx3.mail.elte.hu"
+	id S1757976Ab0CKOP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 09:15:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55869 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757939Ab0CKOOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 09:14:51 -0500
-Date: Thu, 11 Mar 2010 15:14:38 +0100
+	id S1757939Ab0CKOP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 09:15:56 -0500
+Date: Thu, 11 Mar 2010 15:15:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: John Kacur <jkacur@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Kyle McMartin <kyle@redhat.com>
-Subject: Re: [PATCH] perf: Make the install relative to DESTDIR if specified
-Message-ID: <20100311141438.GA31225@elte.hu>
-References: <1268312220-12880-1-git-send-email-jkacur@redhat.com>
- <520f0cf11003110550v3ba245c1v6dc1c7511251ab66@mail.gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: increase CONFIG_NODES_SHIFT max to 10
+Message-ID: <20100311141533.GB31225@elte.hu>
+References: <alpine.DEB.2.00.1003101537330.30724@chino.kir.corp.google.com>
+ <20100311132354.GA26600@elte.hu>
+ <20100311140623.GA9346@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <520f0cf11003110550v3ba245c1v6dc1c7511251ab66@mail.gmail.com>
+In-Reply-To: <20100311140623.GA9346@suse.de>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -35,80 +33,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* John Kacur <jkacur@redhat.com> wrote:
+* Greg KH <gregkh@suse.de> wrote:
 
-> On Thu, Mar 11, 2010 at 1:57 PM, John Kacur <jkacur@redhat.com> wrote:
-> > Without this change, the install path is relative to
-> > prefix/DESTDIR
-> > where prefix is automatically set to $HOME
-> >
-> > This can produce unexpected results. For example
-> >
-> > make -C tools/perf DESTDIR=/home/jkacur/tmp install-man
-> >
-> > creates the directory: ? ? ? ? ?/home/jkacur/home/jkacur/tmp/share/...
-> > instead of ?the expected: ? ? ? /home/jkacur/tmp/share/...
-> >
-> > Signed-off-by: John Kacur <jkacur@redhat.com>
-> > ---
-> > ?tools/perf/Documentation/Makefile | ? ?4 +++-
-> > ?tools/perf/Makefile ? ? ? ? ? ? ? | ? ?4 +++-
-> > ?2 files changed, 6 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/tools/perf/Documentation/Makefile b/tools/perf/Documentation/Makefile
-> > index bdd3b7e..bd498d4 100644
-> > --- a/tools/perf/Documentation/Makefile
-> > +++ b/tools/perf/Documentation/Makefile
-> > @@ -24,7 +24,10 @@ DOC_MAN1=$(patsubst %.txt,%.1,$(MAN1_TXT))
-> > ?DOC_MAN5=$(patsubst %.txt,%.5,$(MAN5_TXT))
-> > ?DOC_MAN7=$(patsubst %.txt,%.7,$(MAN7_TXT))
-> >
-> > +# Make the path relative to DESTDIR, not prefix
-> > +ifndef DESTDIR
-> > ?prefix?=$(HOME)
-> > +endif
-> > ?bindir?=$(prefix)/bin
-> > ?htmldir?=$(prefix)/share/doc/perf-doc
-> > ?pdfdir?=$(prefix)/share/doc/perf-doc
-> > @@ -32,7 +35,6 @@ mandir?=$(prefix)/share/man
-> > ?man1dir=$(mandir)/man1
-> > ?man5dir=$(mandir)/man5
-> > ?man7dir=$(mandir)/man7
-> > -# DESTDIR=
-> >
-> > ?ASCIIDOC=asciidoc
-> > ?ASCIIDOC_EXTRA = --unsafe
-> > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> > index 2d53738..5da0cd0 100644
-> > --- a/tools/perf/Makefile
-> > +++ b/tools/perf/Makefile
-> > @@ -216,7 +216,10 @@ STRIP ?= strip
-> > ?# runtime figures out where they are based on the path to the executable.
-> > ?# This can help installing the suite in a relocatable way.
-> >
-> > +# Make the path relative to DESTDIR, not to prefix
-> > +ifndef DESTDIR
-> > ?prefix = $(HOME)
-> > +endif
-> > ?bindir_relative = bin
-> > ?bindir = $(prefix)/$(bindir_relative)
-> > ?mandir = share/man
-> > @@ -233,7 +236,6 @@ sysconfdir = $(prefix)/etc
-> > ?ETC_PERFCONFIG = etc/perfconfig
-> > ?endif
-> > ?lib = lib
-> > -# DESTDIR=
-> >
-> > ?export prefix bindir sharedir sysconfdir
-> >
-> > --
-> > 1.6.6.1
+> > erm. Alas I cannot merge it in the x86 tree without that fix being 
+> > upstream. Why for v2.6.35 - shouldnt that be v2.6.34?
 > 
-> Sorry, I'd like to withdraw this patch.
-> 
-> I see I can achieve my desired ends without changing the behaviour for
-> others who expect the old behaviour,
+> If it needs to go in before .35, or it should go through Ingo's trees, I 
+> have no objection.
 
-The old behavior doesnt look very logical though, right?
+It does not 'need' to be in .34 but if the fix is trivial enough then you 
+could give it a try?
 
 	Ingo
