@@ -1,76 +1,163 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582Ab0CKJ6u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 04:58:50 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57541 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755746Ab0CKJ6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756567Ab0CKJ7F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 04:59:05 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:60285 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756564Ab0CKJ6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Mar 2010 04:58:48 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+m7C4bLT2mdOSW1OJFV0ZAnXwDsSFTH9ysiHTXv9
-	mG2BXmFMcZtpp6
-Subject: Re: [patch 8/12] sched: remove FAIR_SLEEPERS feature
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1268300950.6785.27.camel@marge.simson.net>
-References: <1268300950.6785.27.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 11 Mar 2010 10:58:40 +0100
-Message-Id: <1268301520.6785.40.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52000000000000002
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=lRECFRsdosUavgjmehrE6njBZyUlYAVeCLIQl2obM8yCK6vTFmez0Fl7Y4F3RHfZcu
+         PTUbKp1hV3XtThta2D7e8yj0TzAwvboku15zTXSjoGSB7oevXOmqZvYIfl4MeclX8Ss2
+         /HhsTwKtssRwXZ4AJOxWpz91nmJJyMcDqpd58=
+From: Stewart Malik <mali0037@gmail.com>
+To: dcbw@redhat.com
+Cc: libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stewart Malik <mali0037@gmail.com>
+Subject: [PATCH] DRIVER: Libertas: Fixed coding style in rx.c
+Date: Thu, 11 Mar 2010 20:28:29 +1030
+Message-Id: <1268301509-9247-1-git-send-email-mali0037@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-sched: remove FAIR_SLEEPERS feature
-
-Our preemption model relies too heavily on sleeper fairness to disable it
-without dire consequences.  Remove the feature, and save a branch or two.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-
 ---
- kernel/sched_fair.c     |    2 +-
- kernel/sched_features.h |    7 -------
- 2 files changed, 1 insertion(+), 8 deletions(-)
+ drivers/net/wireless/libertas/rx.c |   50 ++++++++++++++++++------------------
+ 1 files changed, 25 insertions(+), 25 deletions(-)
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -737,7 +737,7 @@ place_entity(struct cfs_rq *cfs_rq, stru
- 		vruntime += sched_vslice(cfs_rq, se);
+diff --git a/drivers/net/wireless/libertas/rx.c b/drivers/net/wireless/libertas/rx.c
+index 2daf8ff..7a867e3 100644
+--- a/drivers/net/wireless/libertas/rx.c
++++ b/drivers/net/wireless/libertas/rx.c
+@@ -38,10 +38,10 @@ static int process_rxed_802_11_packet(struct lbs_private *priv,
+ 	struct sk_buff *skb);
  
- 	/* sleeps up to a single latency don't count. */
--	if (!initial && sched_feat(FAIR_SLEEPERS)) {
-+	if (!initial) {
- 		unsigned long thresh = sysctl_sched_latency;
+ /**
+- *  @brief This function computes the avgSNR .
++ *  @brief	This function computes the avgSNR .
+  *
+- *  @param priv    A pointer to struct lbs_private structure
+- *  @return 	   avgSNR
++ *  @param	priv	A pointer to struct lbs_private structure
++ *  @return	avgSNR
+  */
+ static u8 lbs_getavgsnr(struct lbs_private *priv)
+ {
+@@ -56,10 +56,10 @@ static u8 lbs_getavgsnr(struct lbs_private *priv)
+ }
  
- 		/*
-Index: linux-2.6/kernel/sched_features.h
-===================================================================
---- linux-2.6.orig/kernel/sched_features.h
-+++ linux-2.6/kernel/sched_features.h
-@@ -1,11 +1,4 @@
- /*
-- * Disregards a certain amount of sleep time (sched_latency_ns) and
-- * considers the task to be running during that period. This gives it
-- * a service deficit on wakeup, allowing it to run sooner.
-- */
--SCHED_FEAT(FAIR_SLEEPERS, 1)
--
--/*
-  * Only give sleepers 50% of their service deficit. This allows
-  * them to run sooner, but does not allow tons of sleepers to
-  * rip the spread apart.
-
+ /**
+- *  @brief This function computes the AvgNF
++ *  @brief	This function computes the AvgNF
+  *
+- *  @param priv    A pointer to struct lbs_private structure
+- *  @return 	   AvgNF
++ *  @param	priv	A pointer to struct lbs_private structure
++ *  @return	AvgNF
+  */
+ static u8 lbs_getavgnf(struct lbs_private *priv)
+ {
+@@ -74,11 +74,11 @@ static u8 lbs_getavgnf(struct lbs_private *priv)
+ }
+ 
+ /**
+- *  @brief This function save the raw SNR/NF to our internel buffer
++ *  @brief	This function save the raw SNR/NF to our internel buffer
+  *
+- *  @param priv    A pointer to struct lbs_private structure
+- *  @param prxpd   A pointer to rxpd structure of received packet
+- *  @return 	   n/a
++ *  @param	priv	A pointer to struct lbs_private structure
++ *  @param	prxpd	A pointer to rxpd structure of received packet
++ *  @return	n/a
+  */
+ static void lbs_save_rawSNRNF(struct lbs_private *priv, struct rxpd *p_rx_pd)
+ {
+@@ -93,11 +93,11 @@ static void lbs_save_rawSNRNF(struct lbs_private *priv, struct rxpd *p_rx_pd)
+ }
+ 
+ /**
+- *  @brief This function computes the RSSI in received packet.
++ *  @brief	This function computes the RSSI in received packet.
+  *
+- *  @param priv    A pointer to struct lbs_private structure
+- *  @param prxpd   A pointer to rxpd structure of received packet
+- *  @return 	   n/a
++ *  @param	priv	A pointer to struct lbs_private structure
++ *  @param	prxpd	A pointer to rxpd structure of received packet
++ *  @return	n/a
+  */
+ static void lbs_compute_rssi(struct lbs_private *priv, struct rxpd *p_rx_pd)
+ {
+@@ -134,9 +134,9 @@ static void lbs_compute_rssi(struct lbs_private *priv, struct rxpd *p_rx_pd)
+  *  @brief This function processes received packet and forwards it
+  *  to kernel/upper layer
+  *
+- *  @param priv    A pointer to struct lbs_private
+- *  @param skb     A pointer to skb which includes the received packet
+- *  @return 	   0 or -1
++ *  @param	priv	A pointer to struct lbs_private
++ *  @param	skb		A pointer to skb which includes the received packet
++ *  @return	0 or -1
+  */
+ int lbs_process_rxed_packet(struct lbs_private *priv, struct sk_buff *skb)
+ {
+@@ -196,7 +196,7 @@ int lbs_process_rxed_packet(struct lbs_private *priv, struct sk_buff *skb)
+ 		 *    before the snap_type.
+ 		 */
+ 		p_ethhdr = (struct ethhdr *)
+-		    ((u8 *) & p_rx_pkt->eth803_hdr
++		    ((u8 *) &p_rx_pkt->eth803_hdr
+ 		     + sizeof(p_rx_pkt->eth803_hdr) + sizeof(p_rx_pkt->rfc1042_hdr)
+ 		     - sizeof(p_rx_pkt->eth803_hdr.dest_addr)
+ 		     - sizeof(p_rx_pkt->eth803_hdr.src_addr)
+@@ -213,7 +213,7 @@ int lbs_process_rxed_packet(struct lbs_private *priv, struct sk_buff *skb)
+ 		hdrchop = (u8 *)p_ethhdr - (u8 *)p_rx_pd;
+ 	} else {
+ 		lbs_deb_hex(LBS_DEB_RX, "RX Data: LLC/SNAP",
+-			(u8 *) & p_rx_pkt->rfc1042_hdr,
++			(u8 *) &p_rx_pkt->rfc1042_hdr,
+ 			sizeof(p_rx_pkt->rfc1042_hdr));
+ 
+ 		/* Chop off the rxpd */
+@@ -254,8 +254,8 @@ EXPORT_SYMBOL_GPL(lbs_process_rxed_packet);
+  *  @brief This function converts Tx/Rx rates from the Marvell WLAN format
+  *  (see Table 2 in Section 3.1) to IEEE80211_RADIOTAP_RATE units (500 Kb/s)
+  *
+- *  @param rate    Input rate
+- *  @return 	   Output Rate (0 if invalid)
++ *  @param	rate	Input rate
++ *  @return	Output Rate (0 if invalid)
+  */
+ static u8 convert_mv_rate_to_radiotap(u8 rate)
+ {
+@@ -294,9 +294,9 @@ static u8 convert_mv_rate_to_radiotap(u8 rate)
+  *  @brief This function processes a received 802.11 packet and forwards it
+  *  to kernel/upper layer
+  *
+- *  @param priv    A pointer to struct lbs_private
+- *  @param skb     A pointer to skb which includes the received packet
+- *  @return 	   0 or -1
++ *  @param	priv	A pointer to struct lbs_private
++ *  @param	skb		A pointer to skb which includes the received packet
++ *  @return	0 or -1
+  */
+ static int process_rxed_802_11_packet(struct lbs_private *priv,
+ 	struct sk_buff *skb)
+@@ -313,7 +313,7 @@ static int process_rxed_802_11_packet(struct lbs_private *priv,
+ 	p_rx_pkt = (struct rx80211packethdr *) skb->data;
+ 	prxpd = &p_rx_pkt->rx_pd;
+ 
+-	// lbs_deb_hex(LBS_DEB_RX, "RX Data: Before chop rxpd", skb->data, min(skb->len, 100));
++	/* lbs_deb_hex(LBS_DEB_RX, "RX Data: Before chop rxpd", skb->data, min(skb->len, 100)); */
+ 
+ 	if (skb->len < (ETH_HLEN + 8 + sizeof(struct rxpd))) {
+ 		lbs_deb_rx("rx err: frame received with bad length\n");
+-- 
+1.6.0.4
 
