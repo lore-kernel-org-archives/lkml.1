@@ -1,67 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752378Ab0CKXj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 18:39:29 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:39728 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414Ab0CKXj1 (ORCPT
+	id S1752670Ab0CKXll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 18:41:41 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:29846 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455Ab0CKXlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 18:39:27 -0500
-To: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Cc: linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] davinci: MMC: Pass number of SG segments as platform data
-References: <1268292756-5369-1-git-send-email-sudhakar.raj@ti.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 11 Mar 2010 15:39:24 -0800
-In-Reply-To: <1268292756-5369-1-git-send-email-sudhakar.raj@ti.com> (Sudhakar Rajashekhara's message of "Thu\, 11 Mar 2010 13\:02\:36 +0530")
-Message-ID: <87wrxia0nn.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 11 Mar 2010 18:41:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qyrjaSK8Xi1wHMwMD49etfvHmiT2RHsvZjhc97Y6w0aY4Maq+hqZpQhWdHYn9+TZDc
+         shDGY+nHmY9LvynjTor8W0dbjBpQHCVvSfsCgFCy4pr000neOyBL2HAIK+hK+Cs+q4dF
+         gYJxu3Az2Ke5dVJV7RC0EcC+HJROK2P19bJLw=
+Message-ID: <4B997FB1.3000404@garzik.org>
+Date: Thu, 11 Mar 2010 18:41:37 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Benton <b3nton@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: ata2: lost interrupt with kernel 2.6.34-rc1
+References: <4B992110.2090300@gmail.com>
+In-Reply-To: <4B992110.2090300@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sudhakar Rajashekhara <sudhakar.raj@ti.com> writes:
+On 03/11/2010 11:57 AM, Andrew Benton wrote:
+> Hello,
+> I'm not subscribed to this list, sorry if it's the wrong place to send
+> this.
+> I've been having problems with 2.6.34-rc1, when the system tries to
+> access a
+> lot of files (eg, if I recompile the kernel) it freezes for about 10
+> seconds
+> or so and then I get a message like this in the sys.log:
 
-> On some platforms like DM355, the number of EDMA parameter
-> slots available for EDMA_SLOT_ANY usage are few. In such cases,
-> if MMC/SD uses 16 slots for each instance of MMC controller,
-> then the number of slots available for other modules will be
-> very few.
->
-> By passing the number of EDMA slots to be used in MMC driver
-> from platform data, EDMA slots available for other purposes
-> can be controlled.
->
-> Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-> ---
->  arch/arm/mach-davinci/include/mach/mmc.h |    3 +++
->  drivers/mmc/host/davinci_mmc.c           |   22 +++++++++++++++-------
->  2 files changed, 18 insertions(+), 7 deletions(-)
->
+Does 2.6.33 also have this behavior?
 
-[...]
+	Jeff
 
-> @@ -1202,6 +1206,10 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
->  
->  	init_mmcsd_host(host);
->  
-> +	host->nr_sg = pdata->nr_sg - 1;
 
-If a board doesn't setup pdata->nr_sg it will be zero, leaving
-host->nr_sg = -1.
 
-> +	if (host->nr_sg > MAX_NR_SG || host->nr_sg == 0)
-> +		host->nr_sg = MAX_NR_SG;
-
-Since host->nr_sg is unsigned, you get lucky and fix it up here, but
-for readability, this not too clean and should be more thorough.
-
-Wrapping the above in 'if (pdata->nr_sg)' is a more standard way
-of handling optional platform_data paramaters.
-
-Kevin
