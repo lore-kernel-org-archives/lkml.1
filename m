@@ -1,82 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201Ab0CKHWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 02:22:18 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:37298 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125Ab0CKHWQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 02:22:16 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=sender:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Ds19b1LoTRnNSrjcni1IDJwP+K5Vge1TLxSCBM/5QLFVG2cUNV5dS/CtoENOw8KRO
-	eR0lzZOLTp0JYcs47w1EQ==
-Date: Thu, 11 Mar 2010 07:22:05 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Pekka Enberg <penberg@gmail.com>, andi@firstfloor.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] ramzswap: Eliminate stale data in compressed
- memory
-In-Reply-To: <d760cf2d1003050222m6e509ffaqa498645c52f7d98e@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.1003110706340.29854@sister.anvils>
-References: <d760cf2d1003050222m6e509ffaqa498645c52f7d98e@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1753136Ab0CKHa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 02:30:26 -0500
+Received: from mail1.perex.cz ([212.20.107.53]:54567 "EHLO mail1.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753050Ab0CKHaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 02:30:25 -0500
+Date: Thu, 11 Mar 2010 08:30:21 +0100 (CET)
+From: Jaroslav Kysela <perex@perex.cz>
+To: VDR User <user.vdr@gmail.com>
+cc: Wu Fengguang <fengguang.wu@intel.com>, Wei Ni <wni@nvidia.com>,
+       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
+       Jaroslav Kysela <jkysela@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
+Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+In-Reply-To: <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1003110824390.4672@eeebox2.perex-int.cz>
+References: <s5htyswpb18.wl%tiwai@suse.de> <s5hvddcnlr6.wl%tiwai@suse.de>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD558@HKMAIL01.nvidia.com>  <a3ef07921003071121r24979a0breac27e3b0475bbcb@mail.gmail.com>  <6B4D417B830BC44B8026029FD256F7F1C16B1AD562@HKMAIL01.nvidia.com>
+  <20100308044614.GA29026@localhost>  <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com>  <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz>  <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com>  <20100310125456.GA18509@localhost>
+ <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Mar 2010, Nitin Gupta wrote:
+On Wed, 10 Mar 2010, VDR User wrote:
 
-> ramzswap driver creates RAM based block devices which can be
-> used (only) as swap disks. Pages swapped to these disks are
-> compressed and stored in memory itself.
-> 
-> However, these devices do not get any notification when a swap
-> slot is freed (swap_map[i] reaches 0). So, we cannot free memory
-> allocated corresponding to this swap slot. Such stale data can
-> quickly accumulate in (compressed) memory defeating the whole
-> purpose of such devices.
-> 
-> To overcome this problem, we now add a callback in 'struct swap_info_struct'
-> which is called as soon as a swap slot is freed.
-> 
-> Adding handler for this callback:
-> 	swapon notifier --> set_swap_free_notify(swap_type, fn)
-> 
-> Removing handler:
-> 	swapoff notifier --> set_swap_free_notify(swap_type, NULL)
-> 
-> 
-> Alternative approaches:
-> 1) Add callback directly in 'struct block_device_operations' but
-> that is considered too hacky.
-> 2) Use swap discard mechanism: It involves unncessary overhead of
-> allocating 'discard bio' requests and its too slow to serve ramzswap
-> needs.
-> 
->  drivers/staging/ramzswap/ramzswap_drv.c   |   91 +++++++++++++++++++++++++++++
->  drivers/staging/ramzswap/ramzswap_drv.h   |    1 +
->  drivers/staging/ramzswap/ramzswap_ioctl.h |    1 +
->  include/linux/swap.h                      |   16 +++++-
->  mm/swapfile.c                             |   78 ++++++++++++++++++++++++
->  5 files changed, 185 insertions(+), 2 deletions(-)
+> [pid 22651] ioctl(21, 0x80044121, 0xb439d2cc) = -1 EPIPE (Broken pipe)
+> pcm_hw.c: snd_pcm_hw_delay() SNDRV_PCM_IOCTL_DELAY failed.
 
-This is one of the various solutions I disliked already, isn't it?
+-EPIPE means underrun condition.
 
-To me this is just a more convoluted and obscure variant of the
-block_device_operations swap_slot_free_notify patch you had in mmotm,
-which Linus has rejected.
+Try 'echo 101 > /proc/asound/card0/pcm0p/xrun_debug' and send dmesg 
+output to check if the ring buffer pointer in the hda-intel driver does 
+not return wrong values. Replace card0 and pcm0p with right identifiers 
+(look to 'aplay -l' for right numbers).
 
-I admit, I did not understand at all what Linus was proposing with
-readpage, writepage and address_space_operations: I kept quiet in
-the hope that you'd understand where I didn't!
+More info: http://www.alsa-project.org/main/index.php/XRUN_Debug
 
-Hugh
+ 					Jaroslav
+
+-----
+Jaroslav Kysela <perex@perex.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, Red Hat, Inc.
+
