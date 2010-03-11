@@ -1,51 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654Ab0CKSbE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:31:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55369
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934097Ab0CKSX2 (ORCPT
+	id S1755851Ab0CKSbP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:31:15 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:37677 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755735Ab0CKSbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:23:28 -0500
-Date: Thu, 11 Mar 2010 10:23:47 -0800 (PST)
-Message-Id: <20100311.102347.169562565.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, sfr@canb.auug.org.au, jgarzik@pobox.com,
-       ben-linux@fluff.org, dwmw2@infradead.org, jeremy.kerr@canonical.com,
-       James.Bottomley@suse.de, broonie@opensource.wolfsonmicro.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org,
-       linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-       linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100311.102043.40590962.davem@davemloft.net>
-References: <20100311174830.4824.19820.stgit@angua>
-	<20100311.102043.40590962.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 11 Mar 2010 13:31:06 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 09/27] drivers/atm/of: don't use deprecated field in
+	of_platform_driver
+To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
+       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
+       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
+       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
+       alsa-devel@alsa-project.org
+Date: Thu, 11 Mar 2010 11:22:37 -0700
+Message-ID: <20100311182237.13103.61327.stgit@angua>
+In-Reply-To: <20100311181604.13103.30088.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 11 Mar 2010 10:20:43 -0800 (PST)
+.name, .match_table and .owner are duplicated in both of_platform_driver
+and device_driver, so the of_platform_driver copies will be removed soon.
 
-> Three or four of the patches don't apply because only your tree
-> has those "/* temporary */" comments, f.e. in arch/sparc/kernel/pci.c
-> 
-> I took care of this when applying to my tree.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-It also doesn't build, what the heck is this against
-Grant?
+ drivers/atm/fore200e.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-drivers/of/device.c: In function 'of_match_device':
-drivers/of/device.c:24: error: 'const struct device' has no member named 'of_node'
-drivers/of/device.c:26: error: 'const struct device' has no member named 'of_node'
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index 593a03a..da8f176 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2695,8 +2695,11 @@ static const struct of_device_id fore200e_sba_match[] = {
+ MODULE_DEVICE_TABLE(of, fore200e_sba_match);
+ 
+ static struct of_platform_driver fore200e_sba_driver = {
+-	.name		= "fore_200e",
+-	.match_table	= fore200e_sba_match,
++	.driver = {
++		.name = "fore_200e",
++		.owner = THIS_MODULE,
++		.of_match_table = fore200e_sba_match,
++	},
+ 	.probe		= fore200e_sba_probe,
+ 	.remove		= __devexit_p(fore200e_sba_remove),
+ };
 
-Please make a patch set against Linus's vanilla tree so
-I and others can test this.
