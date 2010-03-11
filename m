@@ -1,46 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934165Ab0CKSi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 13:38:56 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58581
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758014Ab0CKSiR (ORCPT
+	id S934064Ab0CKSia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 13:38:30 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:49500 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934176Ab0CKSXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 13:38:17 -0500
-Date: Thu, 11 Mar 2010 10:38:36 -0800 (PST)
-Message-Id: <20100311.103836.13755632.davem@davemloft.net>
-To: sshtylyov@mvista.com
-Cc: grant.likely@secretlab.ca, monstr@monstr.eu, gregkh@suse.de,
-       benh@kernel.crashing.org, akpm@linux-foundation.org,
-       sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
-       dwmw2@infradead.org, jeremy.kerr@canonical.com, James.Bottomley@suse.de,
+	Thu, 11 Mar 2010 13:23:19 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 16/27] drivers/scsi/of: don't use deprecated field in
+	of_platform_driver
+To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
+       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
+       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
        broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
        sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Subject: Re: [PATCH 21/37] drivers/ata: use .dev.of_node instead of .node
- in struct of_device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B9936F2.3020105@ru.mvista.com>
-References: <20100311174830.4824.19820.stgit@angua>
-	<20100311180543.4824.70491.stgit@angua>
-	<4B9936F2.3020105@ru.mvista.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Date: Thu, 11 Mar 2010 11:23:16 -0700
+Message-ID: <20100311182316.13103.87138.stgit@angua>
+In-Reply-To: <20100311181604.13103.30088.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-Date: Thu, 11 Mar 2010 21:31:14 +0300
+.name, .match_table and .owner are duplicated in both of_platform_driver
+and device_driver, so the of_platform_driver copies will be removed soon.
 
->   Should probably have been 2 patches instead of one, as drivers/ata/
->   and drivers/ide/ are different subsystems...
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-No, he should consolidate these changes _MORE_ not less.
+ drivers/scsi/qlogicpti.c |    7 +++++--
+ drivers/scsi/sun_esp.c   |    7 +++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-The patch set is already too large to review at it is!
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index 7374fbe..16dc12e 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -1456,8 +1456,11 @@ static const struct of_device_id qpti_match[] = {
+ MODULE_DEVICE_TABLE(of, qpti_match);
+ 
+ static struct of_platform_driver qpti_sbus_driver = {
+-	.name		= "qpti",
+-	.match_table	= qpti_match,
++	.driver = {
++		.name = "qpti",
++		.owner = THIS_MODULE,
++		.of_match_table = qpti_match,
++	},
+ 	.probe		= qpti_sbus_probe,
+ 	.remove		= __devexit_p(qpti_sbus_remove),
+ };
+diff --git a/drivers/scsi/sun_esp.c b/drivers/scsi/sun_esp.c
+index 4369b76..10ba30a 100644
+--- a/drivers/scsi/sun_esp.c
++++ b/drivers/scsi/sun_esp.c
+@@ -632,8 +632,11 @@ static const struct of_device_id esp_match[] = {
+ MODULE_DEVICE_TABLE(of, esp_match);
+ 
+ static struct of_platform_driver esp_sbus_driver = {
+-	.name		= "esp",
+-	.match_table	= esp_match,
++	.driver = {
++		.name = "esp",
++		.owner = THIS_MODULE,
++		.of_match_table = esp_match,
++	},
+ 	.probe		= esp_sbus_probe,
+ 	.remove		= __devexit_p(esp_sbus_remove),
+ };
+
