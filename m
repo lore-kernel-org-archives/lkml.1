@@ -1,61 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757633Ab0CKL5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 06:57:41 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:42685 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757622Ab0CKL5j (ORCPT
+	id S1757680Ab0CKMAH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 07:00:07 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:40961 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757664Ab0CKMAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 06:57:39 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: "Daniel Taylor" <Daniel.Taylor@wdc.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] fs/partition/msdos: Fix unusable extended partition for > 512B sector
-References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com>
-	<20100301141335.395dc4c3.akpm@linux-foundation.org>
-	<873a0h1p2c.fsf@devron.myhome.or.jp>
-	<876358iehd.fsf@devron.myhome.or.jp> <4B9430B6.701@zytor.com>
-	<87pr3fd68r.fsf@devron.myhome.or.jp> <4B9440FC.3090502@zytor.com>
-	<87zl2j9muz.fsf@devron.myhome.or.jp>
-	<87wrxkw52s.fsf_-_@devron.myhome.or.jp>
-	<87sk88w4xk.fsf_-_@devron.myhome.or.jp>
-	<3E0C3AE547FA504DA5E89EA5A24AC85803E2BD87@wdscexbe01.sc.wdc.com>
-Date: Thu, 11 Mar 2010 20:57:35 +0900
-In-Reply-To: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD87@wdscexbe01.sc.wdc.com>
-	(Daniel Taylor's message of "Wed, 10 Mar 2010 15:16:59 -0800")
-Message-ID: <873a07oyts.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.93 (gnu/linux)
+	Thu, 11 Mar 2010 07:00:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kJytTUCKDQ9+hZLlrjyfE1Mz+hDPna/d6S6E41qgdRcaL461ZNIEeACM9Rwi+cpLVW
+         +PEetMVt4Ff2Xx3W2N9lU3Mx9ssIu2Toq9itH2RqUZQCTCF265qVHg4AbZmpRzBKhs/X
+         /88IKdvSzAmuyiBZ6YliZhts6w7fXPPCn2430=
+Message-ID: <4B98D9A2.8060603@gmail.com>
+Date: Thu, 11 Mar 2010 06:53:06 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Michael Chan <mchan@broadcom.com>
+Subject: [PATCH v4 2/7] net: remove old tcp_optlen function
+References: <4B98D592.6040301@gmail.com>
+In-Reply-To: <4B98D592.6040301@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Daniel Taylor" <Daniel.Taylor@wdc.com> writes:
+The tcp_optlen() function returns a potential *negative* unsigned.
 
-> In the near future, WD will be releasing products that need this patch.
->
-> Wouldn't it be a better Linux user experience to never have the problem,
-> rather than wait for a bug-fix cycle on the kernel?
+In the only two existing files using the old tcp_optlen() function,
+clean up confusing and inconsistent mixing of both byte and word
+offsets, and other coding style issues.  Document assumptions.
 
-Of course, if we can fix, it's better.
+Quoth David Miller:
+    This is transmit, and the packets can only come from the Linux
+    TCP stack, not some external entity.
 
-However, probably, users of this patch would be only boot loader,
-because this is a first sector on extended-partition itself, not
-logical-partitions in extended-partition.
+    You're being way too anal here, and adding these checks to
+    drivers would be just a lot of rediculious bloat. [sic]
 
-So, maybe this wouldn't be so major problem for normal users, and what
-is needed actually is not sure to me for now (I guess it might be
-depending to BIOS, if boot loader is using BIOS call.).
+Therefore, there are *no* checks for bad TCP and IP header sizes, nor
+any semantic changes.  The drivers should function exactly as existing,
+although usage of int should ameliorate the issues.
 
-So, this patch provides one logical sector, but it's just guess.
+No response from testers in 21+ weeks.
 
-> OTOH, it would be reasonable to wait until someone else had a chance to
-> test the change.  We are awaiting NDAs from RedHat, Canonical, and
-> Novell/SUSE to send them the affected products for library/application
-> development.
+[removed comment references to commit log]
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Requires:
+   net: tcp_header_len_th and tcp_option_len_th
+
+Signed-off-by: William.Allen.Simpson@gmail.com
+CC: Michael Chan <mchan@broadcom.com>
+---
+  drivers/net/bnx2.c  |   29 +++++++++++++-----------
+  drivers/net/tg3.c   |   60 +++++++++++++++++++++++---------------------------
+  include/linux/tcp.h |    5 ----
+  3 files changed, 44 insertions(+), 50 deletions(-)
