@@ -1,57 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751338Ab0CKFQJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 00:16:09 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55363 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025Ab0CKFQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 00:16:05 -0500
-Date: Thu, 11 Mar 2010 16:15:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Marek <mmarek@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: build failure after merge of the kbuild tree
-Message-Id: <20100311161559.fcdfc6dc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+	id S1751440Ab0CKFQr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 00:16:47 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59842 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041Ab0CKFQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 00:16:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 11 Mar 2010 14:13:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       Andrea Righi <arighi@develer.com>, linux-kernel@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH mmotm 2.5/4] memcg: disable irq at page cgroup lock (Re:
+ [PATCH -mmotm 3/4] memcg: dirty pages accounting and limiting
+ infrastructure)
+Message-Id: <20100311141300.90b85391.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100311135847.990eee62.nishimura@mxp.nes.nec.co.jp>
+References: <20100308105641.e2e714f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308111724.3e48aee3.nishimura@mxp.nes.nec.co.jp>
+	<20100308113711.d7a249da.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100308170711.4d8b02f0.nishimura@mxp.nes.nec.co.jp>
+	<20100308173100.b5997fd4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309001252.GB13490@linux>
+	<20100309091914.4b5f6661.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100309102928.9f36d2bb.nishimura@mxp.nes.nec.co.jp>
+	<20100309045058.GX3073@balbir.in.ibm.com>
+	<20100310104309.c5f9c9a9.nishimura@mxp.nes.nec.co.jp>
+	<20100310035624.GP3073@balbir.in.ibm.com>
+	<20100311133123.ab10183c.nishimura@mxp.nes.nec.co.jp>
+	<20100311134908.48d8b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100311135847.990eee62.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Mar_2010_16_15_59_+1100_eurSYPiOY/gOTaeq"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Mar_2010_16_15_59_+1100_eurSYPiOY/gOTaeq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 11 Mar 2010 13:58:47 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > I'll consider yet another fix for race in account migration if I can.
+> > 
+> me too.
+> 
 
-Hi Michal,
+How about this ? Assume that the race is very rare.
 
-After merging the kbuild tree, a build like
-"make modules modules_install" failed like this:
+	1. use trylock when updating statistics.
+	   If trylock fails, don't account it.
 
-cp: cannot stat `/home/sfr/kernels/ntest.obj/modules.builtin': No such file=
- or directory
+	2. add PCG_FLAG for all status as
 
-Caused by commit a6c366324cacd5f71107dd01362b995a1c67b1ad ("kbuild: Do
-not unnecessarily regenerate modules.builtin").  I have reverted that
-commit for today.
++	PCG_ACCT_FILE_MAPPED, /* page is accounted as file rss*/
++	PCG_ACCT_DIRTY, /* page is dirty */
++	PCG_ACCT_WRITEBACK, /* page is being written back to disk */
++	PCG_ACCT_WRITEBACK_TEMP, /* page is used as temporary buffer for FUSE */
++	PCG_ACCT_UNSTABLE_NFS, /* NFS page not yet committed to the server */
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	3. At reducing counter, check PCG_xxx flags by
+	TESTCLEARPCGFLAG()
 
---Signature=_Thu__11_Mar_2010_16_15_59_+1100_eurSYPiOY/gOTaeq
-Content-Type: application/pgp-signature
+This is similar to an _used_ method of LRU accounting. And We can think this
+method's error-range never go too bad number. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+I think this kind of fuzzy accounting is enough for writeback status.
+Does anyone need strict accounting ?
 
-iEYEARECAAYFAkuYfI8ACgkQjjKRsyhoI8ySJQCfYu4XIjZrjd8h6xxjoKCnP/rc
-bi8AnAyoTGsXtvNkgvaZnDodzDbMNW0y
-=0hAS
------END PGP SIGNATURE-----
+Thanks,
+-Kame
 
---Signature=_Thu__11_Mar_2010_16_15_59_+1100_eurSYPiOY/gOTaeq--
