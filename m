@@ -1,336 +1,167 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078Ab0CKTVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 14:21:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59667 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757997Ab0CKTVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 14:21:52 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Document Linux's circular buffering capabilities [ver #2]
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: sgruszka@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Date: Thu, 11 Mar 2010 19:20:48 +0000
-Message-ID: <20100311192048.10222.49892.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1758093Ab0CKTV7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 14:21:59 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:57951 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758042Ab0CKTVz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 14:21:55 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=byzpNgiD+8rqFsRSKyEGVyeLvUcs/ab03sMFQnjT8s3udFPmaE09d2TTJMqtkLSIe
+	4rLhUfSjok6YkDAOx5RRg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100310203155.GA3009@redhat.com>
+References: <4B906BB6.3080104@cn.fujitsu.com>
+	 <e98e18941003081139v7a84a979mf8fa49f4744060ea@mail.gmail.com>
+	 <20100308230905.GB3614@redhat.com> <4B95A9C6.9060504@cn.fujitsu.com>
+	 <20100309190340.GD8663@redhat.com> <4B96E8CC.9080803@cn.fujitsu.com>
+	 <20100310153032.GB10738@redhat.com>
+	 <1786ab031003100938x19e7c054ieba6c34ebd939ad6@mail.gmail.com>
+	 <20100310180336.GC10738@redhat.com> <20100310203155.GA3009@redhat.com>
+Date: Thu, 11 Mar 2010 11:21:50 -0800
+Message-ID: <23904f641003111121i15550251v471ccf2446492ef5@mail.gmail.com>
+Subject: Re: [PATCH 1/2 V3] io-controller: Add a new interface "weight_device" 
+	for IO-Controller
+From: Manuel Benitez <rickyb@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Chad Talbott <ctalbott@google.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Nauman Rafique <nauman@google.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the circular buffering capabilities available in Linux.
+On a closely related topic, I've just recently made a change to one of
+my branches that exposes the blkio.time and blkio.sectors information
+for the root cgroup. These stats would not show because the major and
+minor information for the root blkio_croup structures is zero. This
+information is not available at the when the root blkio_cgroup
+structures are instantiated, so they are left without major and minor
+information.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+I have a simple fix that updates the major and minor information for
+the root structures at a later time. It looks something like this:
 
- Documentation/circular-buffers.txt |  231 ++++++++++++++++++++++++++++++++++++
- Documentation/memory-barriers.txt  |   20 +++
- include/linux/circ_buf.h           |    4 +
- 3 files changed, 255 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/circular-buffers.txt
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index cd79be0..b34c952 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -956,6 +956,11 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *c
+                return NULL;;
 
+        cfqg = cfqg_of_blkg(blkiocg_lookup_group(blkcg, key));
++       if (cfqg && !cfqg->blkg.dev && bdi->dev && dev_name(bdi->dev)) {
++               sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
++               cfqg->blkg.dev = MKDEV(major, minor);
++               goto done;
++       }
+        if (cfqg || !create)
+                goto done;
 
-diff --git a/Documentation/circular-buffers.txt b/Documentation/circular-buffers.txt
-new file mode 100644
-index 0000000..cde764c
---- /dev/null
-+++ b/Documentation/circular-buffers.txt
-@@ -0,0 +1,231 @@
-+			       ================
-+			       CIRCULAR BUFFERS
-+			       ================
-+
-+By: David Howells <dhowells@redhat.com>
-+    Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-+
-+
-+Linux provides a number of features that can be used to implement circular
-+buffering.  There are two sets of such features:
-+
-+ (1) Convenience functions for determining information about power-of-2 sized
-+     buffers.
-+
-+ (2) Memory barriers for when the producer and the consumer of objects in the
-+     buffer don't want to share a lock.
-+
-+To use these facilities, as discussed below, there needs to be just one
-+producer and just one consumer.  It is possible to handle multiple producers by
-+serialising them, and to handle multiple consumers by serialising them.
-+
-+
-+Contents:
-+
-+ (*) What is a circular buffer?
-+
-+ (*) Measuring power-of-2 buffers.
-+
-+ (*) Using memory barriers with circular buffers.
-+     - The producer.
-+     - The consumer.
-+
-+
-+==========================
-+WHAT IS A CIRCULAR BUFFER?
-+==========================
-+
-+First of all, what is a circular buffer?  A circular buffer is a buffer of
-+fixed, finite size into which there are two indices:
-+
-+ (1) A 'head' index - the point at which the producer inserts items into the
-+     buffer.
-+
-+ (2) A 'tail' index - the point at which the consumer finds the next item in
-+     the buffer.
-+
-+Typically when the tail pointer is equal to the head pointer, the buffer is
-+empty; and the buffer is full when the head pointer is one less than the tail
-+pointer.
-+
-+The head index is incremented when items are added, and the tail index when
-+items are removed.  The tail index should never jump the head index, and both
-+indices should be wrapped to 0 when they reach the end of the buffer, thus
-+allowing an infinite amount of data to flow through the buffer.
-+
-+Typically, items will all be of the same unit size, but this isn't strictly
-+required to use the techniques below.  The indices can be increased by more
-+than 1 if multiple items or variable-sized items are to be included in the
-+buffer, provided that neither index overtakes the other.  The implementer must
-+be careful, however, as a region more than one unit in size may wrap the end of
-+the buffer and be broken into two segments.
-+
-+
-+============================
-+MEASURING POWER-OF-2 BUFFERS
-+============================
-+
-+Circular buffers that are of a size that is an exact power of two can have
-+their item count and buffer space assessed really quickly through the use of a
-+bitwise-AND instruction.  Non-power-of-2 sized buffers must use a modulus
-+(divide) instruction instead which is likely to be very slow.
-+
-+There are a set of macros to do this in Linux, that can be made use of by:
-+
-+	#include <linux/circ_buf.h>
-+
-+These are:
-+
-+ (*) Measure the remaining capacity of a buffer:
-+
-+	CIRC_SPACE(head_index, tail_index, buffer_size);
-+
-+     This returns the amount of space left in the buffer[1] into which items can
-+     be inserted.
-+
-+
-+ (*) Measure the maximum consecutive immediate space in a buffer:
-+
-+	CIRC_SPACE_TO_END(head_index, tail_index, buffer_size);
-+
-+     This returns the amount of consecutive space left in the buffer[1] into which
-+     items can be immediately inserted without having to wrap back to the
-+     beginning of the buffer.
-+
-+
-+ (*) Measure the occupancy of a buffer:
-+
-+	CIRC_CNT(head_index, tail_index, buffer_size);
-+
-+     This returns the number of items currently occupying a buffer.
-+
-+
-+ (*) Measure the non-wrapping occupancy of a buffer:
-+
-+	CIRC_CNT_TO_END(head_index, tail_index, buffer_size);
-+
-+     This returns the number of consecutive items that can be extracted from
-+     the buffer without having to wrap back to the beginning of the buffer.
-+
-+
-+Each of these macros will nominally return a value between 0 and buffer_size-1,
-+however:
-+
-+ [1] CIRC_SPACE*() are intended to be used in the producer.  To the producer
-+     they will return a lower bound as the producer controls the head index,
-+     but the consumer may still be depleting the buffer on another CPU and
-+     moving the tail index.
-+
-+     To the consumer it will show an upper bound as the producer may be busy
-+     depleting the space.
-+
-+ [2] CIRC_CNT*() are intended to be used in the consumer.  To the consumer they
-+     will return a lower bound as the consumer controls the tail index, but the
-+     producer may still be filling the buffer on andother CPU and moving the
-+     head index.
-+
-+     To the producer it will show an upper bound as the consumer may be busy
-+     emptying the buffer.
-+
-+ [3] To a third party, the order in which the writes to the indices by the
-+     producer and consumer become visible cannot be guaranteed as they are
-+     independent and may be made on different CPUs - so the result in such a
-+     situation will merely be a guess, and may even be negative.
-+
-+
-+===========================================
-+USING MEMORY BARRIERS WITH CIRCULAR BUFFERS
-+===========================================
-+
-+By using memory barriers in conjunction with circular buffers, you can avoid
-+the need to:
-+
-+ (1) use a single lock to govern access to both ends of the buffer, thus
-+     allowing the buffer to be filled and emptied at the same time; and
-+
-+ (2) use atomic counter operations.
-+
-+There are two sides to this: the producer that fills the buffer, and the
-+consumer that empties it.  Only one thing should be filling a buffer at any one
-+time, and only one thing should be emptying a buffer at any one time, but the
-+two sides can operate simultaneously.
-+
-+
-+THE PRODUCER
-+------------
-+
-+The producer will look something like this:
-+
-+	spin_lock(&producer_lock);
-+
-+	unsigned long head = buffer->head;
-+	unsigned long tail = ACCESS_ONCE(buffer->tail);
-+
-+	if (CIRC_SPACE(head, tail, buffer->size) >= 1) {
-+		/* insert one item into the buffer */
-+		struct item *item = buffer[head];
-+
-+		produce_item(item);
-+
-+		smp_wmb(); /* commit the item before incrementing the head */
-+
-+		buffer->head = (head + 1) & (buffer->size - 1);
-+
-+		/* wake_up() will make sure that the head is committed before
-+		 * waking anyone up */
-+		wake_up(consumer);
-+	}
-+
-+	spin_unlock(&producer_lock);
-+
-+This will instruct the CPU that the contents of the new item must be written
-+before the head index makes it available to the consumer and then instructs the
-+CPU that the revised head index must be written before the consumer is woken.
-+
-+Note that wake_up() doesn't have to be the exact mechanism used, but whatever
-+is used must guarantee a (write) memory barrier between the update of the head
-+index and the change of state of the consumer, if a change of state occurs.
-+
-+
-+THE CONSUMER
-+------------
-+
-+The consumer will look something like this:
-+
-+	spin_lock(&consumer_lock);
-+
-+	unsigned long head = ACCESS_ONCE(buffer->head);
-+	unsigned long tail = buffer->tail;
-+
-+	if (CIRC_CNT(head, tail, buffer->size) >= 1) {
-+		/* read index before reading contents at that index */
-+		smp_read_barrier_depends();
-+
-+		/* extract one item from the buffer */
-+		struct item *item = buffer[tail];
-+
-+		consume_item(item);
-+
-+		smp_mb(); /* finish reading descriptor before incrementing tail */
-+
-+		buffer->tail = (tail + 1) & (buffer->size - 1);
-+	}
-+
-+	spin_unlock(&consumer_lock);
-+
-+This will instruct the CPU to make sure the index is up to date before reading
-+the new item, and then it shall make sure the CPU has finished reading the item
-+before it writes the new tail pointer, which will erase the item.
-+
-+
-+Note the use of ACCESS_ONCE() in both algorithms to read the opposition index.
-+This prevents the compiler from discarding and reloading its cached value -
-+which some compilers will do, even after an implied compiler barrier.
-+
-+
-+===============
-+FURTHER READING
-+===============
-+
-+See also Documentation/memory-barriers.txt for a description of Linux's memory
-+barrier facilities.
-diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-index 7f5809e..631ad2f 100644
---- a/Documentation/memory-barriers.txt
-+++ b/Documentation/memory-barriers.txt
-@@ -3,6 +3,7 @@
- 			 ============================
- 
- By: David Howells <dhowells@redhat.com>
-+    Paul E. McKenney <paulmck@linux.vnet.ibm.com>
- 
- Contents:
- 
-@@ -60,6 +61,10 @@ Contents:
- 
-      - And then there's the Alpha.
- 
-+ (*) Example uses.
-+
-+     - Circular buffers.
-+
-  (*) References.
- 
- 
-@@ -2226,6 +2231,21 @@ The Alpha defines the Linux kernel's memory barrier model.
- See the subsection on "Cache Coherency" above.
- 
- 
-+============
-+EXAMPLE USES
-+============
-+
-+CIRCULAR BUFFERS
-+----------------
-+
-+Memory barriers can be used to implement circular buffering without the need
-+of a lock to serialise the producer with the consumer.  See:
-+
-+	Documentation/circular-buffers.txt
-+
-+for details.
-+
-+
- ==========
- REFERENCES
- ==========
-diff --git a/include/linux/circ_buf.h b/include/linux/circ_buf.h
-index a2ed059..90f2471 100644
---- a/include/linux/circ_buf.h
-+++ b/include/linux/circ_buf.h
-@@ -1,3 +1,7 @@
-+/*
-+ * See Documentation/circular-buffers.txt for more information.
-+ */
-+
- #ifndef _LINUX_CIRC_BUF_H
- #define _LINUX_CIRC_BUF_H 1
- 
+If folks think that this would be of interest, I can submit a formal
+patch. If someone can suggest a better way to do it that doesn't
+require extensive changes elsewhere, I'm open to working that up as
+well.
 
+-Ricky
+
+On Wed, Mar 10, 2010 at 12:31 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Wed, Mar 10, 2010 at 01:03:36PM -0500, Vivek Goyal wrote:
+>> On Wed, Mar 10, 2010 at 09:38:35AM -0800, Chad Talbott wrote:
+>> > On Wed, Mar 10, 2010 at 7:30 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>> > > This still leaves the issue of reaching a gendisk object from request
+>> > > queue. Looking into it.
+>> >
+>> > It looks like we have that pairing way back in blk_register_queue()
+>> > which takes a gendisk.  Is there any reason we don't hold onto the
+>> > gendisk there?  Eyeballing add_disk() and unlink_gendisk() seems to
+>> > confirm that gendisk lifetime spans request_queue.
+>> >
+>>
+>> Yes, looking at the code, it looks like gendisk and request_queue object's
+>> lifetime is same and probably we can store a pointer to gendisk in
+>> request_queue at blk_register_queue() time. And then use this pointer to
+>> retrieve gendisk->disk_name to report stats.
+>>
+>
+> Well, gendisk and request_queue have little different life span. Following
+> seems to be the sequence a block driver follows.
+>
+>        blk_init_queue()
+>        alloc_disk() and add_disk()
+>        device_removed
+>        del_gendisk()
+>        blk_cleanup_queue()
+>
+> So first we cleaup the gendisk structure and later driver calls to cleanup
+> the request queue.
+>
+>> > Nauman and I were also wondering why blkio_group and blkio_policy_node
+>> > store a dev_t, rather than a direct pointer to gendisk.  dev_t seems
+>> > more like a userspace<->kernel interface than an inside-the-kernel
+>> > interface.
+>> >
+>>
+>> blkio_policy_node currently can't store a pointer to gendisk because there
+>> is no mechanism to call back into blkio if device is removed. So if we
+>> implement something so that once device is removed, blkio layer gets a
+>> callback and we cleanup any state/rules associated with that device, then
+>> I think we should be able to store the pointer to gendisk.
+>>
+>> I am still trying to figure out how elevator/ioscheduler state is cleaned
+>> up if a device is removed while some IO is happening to it.
+>>
+>
+> So blk_cleanup_queue() will do this. That means few things.
+>
+> - We can't store pointers to gendisk in blkio_policy_node or blkio_group
+>  because gendisk might have gone away but request queue is still there.
+>  May be one can try saving a pointer and taking a reference, but I guess
+>  that becomes littles complicated.
+>
+> - If we are using disk name for rules and reporting stats, then we also
+>  need to make sure that these rules are cleared from cgroups once device
+>  has disappeared. Otherwise, following might happen.
+>
+>        - Create a rule for sda (x,y) for cgroup test1. x,y are major and
+>          minor numbers.
+>        - sda goes away. Rules still remains in blkio cgroup.
+>        - Another device gets plugged in and i guess following can happen.
+>                - device name is different but dev_t is same as sda.
+>                - device name is same (sda) but device number is
+>                  different.
+>
+>                In both the cases a user will be confused with stale rules
+>                in cgroups.
+>
+>  Cleaning up cgroups rules can get little complicated. I guess we need to
+>  create a function in blkio-cgroup.c to traverse through all the cgroups
+>  and cleanup any blkio_policy_nodes belonging to device going away.
+>
+> In a nutshell, it probably is doable. You are welcome to write a patch. At
+> the same time I am not against deivce major/minor number based interface,
+> because it keeps things little simple.
+>
+> Thanks
+> Vivek
+>
+> -
+>> OTOH, Gui, may be one can use blk_lookup_devt() to lookup the dev_t of a
+>> device using the disk name (sda). I just noticed it while reading the
+>> code.
+>>
+>> Thanks
+>> Vivek
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
