@@ -1,84 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933261Ab0CKQgQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 11:36:16 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:47522 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933251Ab0CKQgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 11:36:13 -0500
-Message-ID: <4B991B9B.8070809@oracle.com>
-Date: Thu, 11 Mar 2010 08:34:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S933268Ab0CKQh6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 11:37:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59135 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933240Ab0CKQhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 11:37:55 -0500
+Message-ID: <4B991B5F.6050302@zytor.com>
+Date: Thu, 11 Mar 2010 08:33:35 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH -next] mtd/nand/r852: fix build for CONFIG_PM=n
-References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>	 <4B8C378B.2090400@oracle.com> <1267531329.10734.1.camel@maxim-laptop> <4B991A6F.1080006@oracle.com>
-In-Reply-To: <4B991A6F.1080006@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nikanth Karthikesan <knikanth@suse.de>
+CC: Theodore Tso <tytso@mit.edu>, Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <4B97C6A5.4010209@tvk.rwth-aachen.de> <17BB1CC0-9B13-401D-B6AA-90365208A042@mit.edu> <201003111927.24829.knikanth@suse.de>
+In-Reply-To: <201003111927.24829.knikanth@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B991BC8.00A9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/10 08:29, Randy Dunlap wrote:
-> On 03/02/10 04:02, Maxim Levitsky wrote:
->> On Mon, 2010-03-01 at 13:54 -0800, Randy Dunlap wrote: 
->>> From: Randy Dunlap <randy.dunlap@oracle.com>
->>>
->>> Fix r852 build for the case of CONFIG_PM=n.
->>>
->>> drivers/mtd/nand/r852.c:1039: error: implicit declaration of function 'pci_prepare_to_sleep'
->>> drivers/mtd/nand/r852.c:1048: error: implicit declaration of function 'pci_back_from_sleep'
->>>
->>> This patch leaves r852_pm_ops untouched.
->>>
->>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->>> Cc: Maxim Levitsky <maximlevitsky@gmail.com>
->>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->>> Cc: David Woodhouse <dwmw2@infradead.org>
->>> ---
->>>  drivers/mtd/nand/r852.c |    5 +++++
->>>  1 file changed, 5 insertions(+)
->>>
->>> --- linux-next-20100301.orig/drivers/mtd/nand/r852.c
->>> +++ linux-next-20100301/drivers/mtd/nand/r852.c
->>> @@ -1007,6 +1007,7 @@ void r852_shutdown(struct pci_dev *pci_d
->>>  	pci_disable_device(pci_dev);
->>>  }
->>>  
->>> +#ifdef CONFIG_PM
->>>  int r852_suspend(struct device *device)
->>>  {
->>>  	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
->>> @@ -1081,6 +1082,10 @@ int r852_resume(struct device *device)
->>>  	r852_update_card_detect(dev);
->>>  	return 0;
->>>  }
->>> +#else
->>> +#define r852_suspend	NULL
->>> +#define r852_resume	NULL
->>> +#endif
->>>  
->>>  static const struct pci_device_id r852_pci_id_tbl[] = {
->>>  
->>>
->> oops, I forgot about that case again..
->> Acked-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> 
-> Ping.  can we get this added to linux-next, please?
+On 03/11/2010 05:57 AM, Nikanth Karthikesan wrote:
+>
+> I guess, what he meant was, to keep filesystem blocks aligned, even if the
+> partition is not. Say if the partition is mis-aligned by 512-bytes, let the
+> filesystem waste 4k-512bytes and keep it's blocks aligned. But it might be a
+> case of over-engineering, possibly requiring disk format change.
+>
 
-Sorry, it's there, but there are still build errors.
-I will look at those...
+That's basically what you end up having to do for FAT filesystems to be 
+aligned.
 
--- 
-~Randy
+	-hpa
