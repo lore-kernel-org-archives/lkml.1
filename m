@@ -1,58 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933611Ab0CKT2G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 14:28:06 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:48329 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758102Ab0CKT2C (ORCPT
+	id S933787Ab0CKTe6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 14:34:58 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47047 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758096Ab0CKTez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 14:28:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=uHxhgv5IvrKfuaAZr5Tu/UQ+TSDwmwLsqvjw4cK8JoCgsddsfoSNFaDvLVMT4XL0EG
-         Tx525SXZImWZ137lhGNqy14s/FqyvA1k9iPe7C40DQvVXCDcO0CwBYwoDhTowWJVWp2c
-         m1vJK4dT98b/XQoNf6aC0YzmRPibe95VolK2w=
-Date: Thu, 11 Mar 2010 20:27:12 +0100
-From: Paolo Ornati <ornati@gmail.com>
-To: Anca Emanuel <anca.emanuel@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.24 Through Linux 2.6.33 Benchmarks
-Message-ID: <20100311202712.58e4d444@gmail.com>
-In-Reply-To: <c1fb08351003101034h17957f4ele0a6cbec085fc434@mail.gmail.com>
-References: <c1fb08351003101034h17957f4ele0a6cbec085fc434@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 14:34:55 -0500
+Date: Thu, 11 Mar 2010 19:34:58 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
+       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
+       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-ide@vger.kernel.org, netdev@vger.kernel.org,
+       linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+       linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org,
+       timur@freescale.com, lrg@slimlogic.co.uk
+Subject: Re: [PATCH 33/37] sound/soc: use .dev.of_node instead of .node in
+ struct of_device
+Message-ID: <20100311193458.GA13289@opensource.wolfsonmicro.com>
+References: <20100311174830.4824.19820.stgit@angua>
+ <20100311180649.4824.10368.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100311180649.4824.10368.stgit@angua>
+X-Cookie: It's all in the mind, ya know.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Mar 2010 20:34:12 +0200
-Anca Emanuel <anca.emanuel@gmail.com> wrote:
+On Thu, Mar 11, 2010 at 11:06:50AM -0700, Grant Likely wrote:
+> .node is being removed
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-> In fact, the Linux 2.6.30 kernel
-> was 770% faster than its predecessor was and it remained that way with
-> the Linux 2.6.31 kernel and then regressed only slightly with the
-> Linux 2.6.32 kernel. With the new Linux 2.6.33 kernel, however, the
-> PostgreSQL performance atop the EXT3 file-system has fallen off a
-> cliff.
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-The extra performance was just a "bug":
+but please ensure that Liam and especially Timur also check this (both
+CCed).
 
-http://www.mail-archive.com/pgsql-performance@postgresql.org/msg34841.html
+For enormous patch serieses like this it's really nice if you can ensure
+that each person is only CCed on the patches that they need to review.
+Much less stuff in the inbox.
 
-"[This change] is required for safe behavior with volatile write caches
-on drives. You could mount with -o nobarrier and [the performance drop]
-would go away, but a sequence like write->fsync->lose power->reboot may
-well find your file without the data that you synced, if the drive had
-write caches enabled. If you know you have no write cache, or that it
-is safely battery backed, then you can mount with -o nobarrier, and not
-incur this penalty."
-
--- 
-	Paolo Ornati
-	Linux 2.6.33-00001-gbaac35c on x86_64
+> ---
+> 
+>  sound/soc/fsl/mpc8610_hpcd.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+> index ef67d1c..d7e1b9a 100644
+> --- a/sound/soc/fsl/mpc8610_hpcd.c
+> +++ b/sound/soc/fsl/mpc8610_hpcd.c
+> @@ -202,7 +202,7 @@ static struct snd_soc_ops mpc8610_hpcd_ops = {
+>  static int mpc8610_hpcd_probe(struct of_device *ofdev,
+>  	const struct of_device_id *match)
+>  {
+> -	struct device_node *np = ofdev->node;
+> +	struct device_node *np = ofdev->dev.of_node;
+>  	struct device_node *codec_np = NULL;
+>  	struct device_node *guts_np = NULL;
+>  	struct device_node *dma_np = NULL;
+> 
