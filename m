@@ -1,113 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346Ab0CKIbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 03:31:19 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:63215 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910Ab0CKIbS (ORCPT
+	id S1756326Ab0CKIc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 03:32:59 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52445 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765Ab0CKIc6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 03:31:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ILgpZLfP3Irp8mx64zur8SGSNT7qitHBVZJtVU1feK7lEYJJj7R6yE1kBbiSgLO0Bm
-         u7ka0B/Q0r035KkfCO1svKkhcQrNuvH1n4jT7tqFYo48SIUC0eG3VWvZ1KKSV9E2DuPO
-         QZR+jJRBSOWrJ4sPMhjWstfBRWwO28sGzDyw0=
-Date: Thu, 11 Mar 2010 00:31:11 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] firmware loader: use statically initialized data attribute
-Message-ID: <20100311083111.GA11183@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Thu, 11 Mar 2010 03:32:58 -0500
+Subject: Re: [PATCH] perf_events: fix X86 bogus counts when multiplexing
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@google.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com, robert.richter@amd.com, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <1268288259-4011-1-git-send-email-eranian@google.com>
+References: <1268288259-4011-1-git-send-email-eranian@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 11 Mar 2010 09:32:41 +0100
+Message-ID: <1268296361.5279.901.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no reason why we are using a template for binary attribute
-and copying it into per-firmware data before registering. Using the
-original works as well and gets rid of the following lockdep
-compaint:
+On Wed, 2010-03-10 at 22:17 -0800, eranian@google.com wrote:
+> This patch fixes a bug in 2.6.33 X86 event scheduling whereby
+> all counts are bogus as soon as events need to be multiplexed
+> because the PMU is overcommitted.
+> 
+> The code in hw_perf_enable() was causing multiplexed events
+> to accumulate collected counts twice causing bogus results.
+> 
+> This is demonstrated on AMD Barcelona with the example
+> below. First run, no conflict, you obtain the actual counts.
+> Second run, PMU overcommitted, multiplexing, all events are
+> over-counted. Third run, patch applied, you obtain the correct
+> count through scaling.
+> 
 
- platform microcode: firmware: requesting intel-ucode/06-0f-0b
- BUG: key ffff88011371be70 not in .data!
- ------------[ cut here ]------------
- WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x125/0x140()
- Hardware name: Latitude D630
- Modules linked in: ...
- Pid: 738, comm: modprobe Tainted: P           2.6.34-rc1 #237
- Call Trace:
-  [<ffffffff81048fb6>] warn_slowpath_common+0x76/0xb0
-  [<ffffffff81048fff>] warn_slowpath_null+0xf/0x20
-  [<ffffffff8107c915>] lockdep_init_map+0x125/0x140
-  [<ffffffff8118485a>] sysfs_add_file_mode+0x6a/0xc0
-  [<ffffffff811848bc>] sysfs_add_file+0xc/0x10
-  [<ffffffff811870e1>] sysfs_create_bin_file+0x21/0x30
-  [<ffffffff8130dff1>] fw_setup_device+0x81/0x120
-  [<ffffffff8130e14f>] _request_firmware+0xbf/0x270
-  [<ffffffff8130e38e>] request_firmware+0xe/0x10
-  [<ffffffffa0064be1>] request_microcode_fw+0x61/0xa0 [microcode]
-  [<ffffffffa00643b8>] microcode_init_cpu+0xb8/0xd0 [microcode]
-  [<ffffffffa0064426>] mc_sysdev_add+0x56/0x70 [microcode]
-  [<ffffffff813032ae>] sysdev_driver_register+0x9e/0x130
-  [<ffffffffa006a000>] ? microcode_init+0x0/0x12a [microcode]
-  [<ffffffffa006a0bd>] microcode_init+0xbd/0x12a [microcode]
-  [<ffffffff810001d7>] do_one_initcall+0x37/0x190
-  [<ffffffff8108d178>] sys_init_module+0xd8/0x250
-  [<ffffffff81002fab>] system_call_fastpath+0x16/0x1b
- ---[ end trace 93c9f72439beee7f ]---
+I'm a bit puzzled by this one, if we, during scheduling move an event
+from idx 1 to idx 2, we need to stop it on 1 and start if on 2,
+otherwise we do not properly transfer its count, right?
+
+With the below patch it does no such thing.
+
+I did fix some funnies I observed with hw_perf_enable() while doing the
+PEBS stuff, and -tip does it wrong differently from what you illustrate,
+so while there defenately is something to fix, I doubt the below is
+correct.
+
+> 	Signed-off-by: Stephane Eranian <eranian@google.com>
+> --
+>  perf_event.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+> index 97cddbf..ef5d63f 100644
+> --- a/arch/x86/kernel/cpu/perf_event.c
+> +++ b/arch/x86/kernel/cpu/perf_event.c
+> @@ -818,8 +818,6 @@ void hw_perf_enable(void)
+>  			    match_prev_assignment(hwc, cpuc, i))
+>  				continue;
+>  
+> -			x86_pmu_stop(event);
+> -
+>  			hwc->idx = -1;
+>  		}
 
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
 
- drivers/base/firmware_class.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
-
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index d0dc26a..3f50b2e 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -41,7 +41,6 @@ static DEFINE_MUTEX(fw_lock);
- struct firmware_priv {
- 	char *fw_id;
- 	struct completion completion;
--	struct bin_attribute attr_data;
- 	struct firmware *fw;
- 	unsigned long status;
- 	struct page **pages;
-@@ -344,8 +343,8 @@ out:
- 	return retval;
- }
- 
--static struct bin_attribute firmware_attr_data_tmpl = {
--	.attr = {.name = "data", .mode = 0644},
-+static struct bin_attribute firmware_attr_data = {
-+	.attr = { .name = "data", .mode = 0644 },
- 	.size = 0,
- 	.read = firmware_data_read,
- 	.write = firmware_data_write,
-@@ -390,7 +389,6 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
- 	}
- 
- 	init_completion(&fw_priv->completion);
--	fw_priv->attr_data = firmware_attr_data_tmpl;
- 	fw_priv->fw_id = kstrdup(fw_name, GFP_KERNEL);
- 	if (!fw_priv->fw_id) {
- 		dev_err(device, "%s: Firmware name allocation failed\n",
-@@ -442,7 +440,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
- 	fw_priv = dev_get_drvdata(f_dev);
- 
- 	fw_priv->fw = fw;
--	retval = sysfs_create_bin_file(&f_dev->kobj, &fw_priv->attr_data);
-+	retval = sysfs_create_bin_file(&f_dev->kobj, &firmware_attr_data);
- 	if (retval) {
- 		dev_err(device, "%s: sysfs_create_bin_file failed\n", __func__);
- 		goto error_unreg;
--- 
-Dmitry
