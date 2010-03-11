@@ -1,363 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550Ab0CKFgk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 00:36:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39246 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046Ab0CKFgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 00:36:37 -0500
-Date: Thu, 11 Mar 2010 16:36:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 11
-Message-Id: <20100311163631.1ebf8d98.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Mar_2010_16_36_31_+1100_oMritTyNwOe6HRzf"
+	id S1751682Ab0CKFqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 00:46:20 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32882 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751401Ab0CKFqS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 00:46:18 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpuset: current_cpuset_is_being_rebound() need rcu lock
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20100311142035.94FD.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 11 Mar 2010 14:46:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Mar_2010_16_36_31_+1100_oMritTyNwOe6HRzf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+rcu lockdep detected cpuset have wrong rcu usage.
+the fixing is trivial. but I wonder why don't cpuset_being_rebound assignment
+and read need a memory barrier pairing?
 
-Hi all,
 
-Changes since 20100310:
+=============== CUT HERE ==========================================
+Subject: [PATCH] cpuset: current_cpuset_is_being_rebound() need rcu lock.
 
-Dropped tree: tmio-mmc (long unresolved conflicts and unable to fetch)
+Currently, rcu-lockdep display following warning.
+because current_cpuset_is_being_rebound() call task_cs(), but it isn't
+protected by rcu lock.
 
-My fixes tree contains:
-	a patch for a pktcdvd build error from Arnd Bergmann
-	two fixes for i2c-xii.c
+This patch fixes it.
 
-The kbuild tree gained a build failure for which I reverted a commit.
+===================================================
+[ INFO: suspicious rcu_dereference_check() usage. ]
+---------------------------------------------------
+include/linux/cgroup.h:534 invoked rcu_dereference_check() without
+protection!
 
-The wireless tree lost its build failure but gained a conflict against
-the wireless-current tree..
+other info that might help us debug this:
 
-The pcmcia tree gained a build failure so I used the version from
-next-20100310.
+no locks held by swapper/0.
 
-The omap_dss2 tree gained a conflict against the omap tree.
+stack backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.34-rc1-mm1+ #94
+Call Trace:
+ [<ffffffff81086961>] lockdep_rcu_dereference+0xa1/0xb0
+ [<ffffffff810a8cba>] current_cpuset_is_being_rebound+0x7a/0x80
+ [<ffffffff8112ae0a>] __mpol_dup+0x3a/0xa0
+ [<ffffffff8143b9e9>] ? sub_preempt_count+0x9/0xa0
+ [<ffffffff81438105>] ? _raw_spin_unlock+0x35/0x60
+ [<ffffffff810a29dd>] ? cgroup_fork+0x4d/0x70
+ [<ffffffff8104d1b0>] copy_process+0x530/0x1360
+ [<ffffffff8104e067>] do_fork+0x87/0x470
+ [<ffffffff8100a8a7>] ? native_sched_clock+0x27/0x80
+ [<ffffffff81078adf>] ? cpu_clock+0x4f/0x60
+ [<ffffffff81435b2e>] ? mutex_unlock+0xe/0x10
+ [<ffffffff81084c09>] ? trace_hardirqs_off_caller+0x29/0xe0
+ [<ffffffff8143b9e9>] ? sub_preempt_count+0x9/0xa0
+ [<ffffffff8108579e>] ? put_lock_stats+0xe/0x30
+ [<ffffffff8100b5c1>] kernel_thread+0x71/0x80
+ [<ffffffff81b465b3>] ? kernel_init+0x0/0x253
+ [<ffffffff81003f10>] ? kernel_thread_helper+0x0/0x10
+ [<ffffffff8106ea24>] ? rcu_scheduler_starting+0x24/0x60
+ [<ffffffff8141c6a6>] rest_init+0x26/0x110
+ [<ffffffff81b46dea>] start_kernel+0x3b9/0x3c5
+ [<ffffffff81b46310>] x86_64_start_reservations+0x120/0x124
+ [<ffffffff81b463f8>] x86_64_start_kernel+0xe4/0xeb
 
-----------------------------------------------------------------------------
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Miao Xie <miaox@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>
+---
+ kernel/cpuset.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index b15c01c..4d44f76 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1129,7 +1129,14 @@ done:
+ 
+ int current_cpuset_is_being_rebound(void)
+ {
+-	return task_cs(current) == cpuset_being_rebound;
++	int being_rebound = 0;
++
++	rcu_read_lock();
++	if (task_cs(current) == cpuset_being_rebound)
++		being_rebound = 1;
++	rcu_read_unlock();
++
++	return being_rebound;
+ }
+ 
+ static int update_relax_domain_level(struct cpuset *cs, s64 val)
+-- 
+1.6.5.2
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
 
-Below is a summary of the state of the merge.
 
-We are up to 158 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Applying: ar9170: fix for driver-core ABI change
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging i.MX/for-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-CONFLICT (content): Merge conflict in arch/microblaze/include/asm/prom.h
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/alchemy/common/platform.c
-CONFLICT (content): Merge conflict in arch/mips/alchemy/common/setup.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/db1200/pl=
-atform.c
-CONFLICT (content): Merge conflict in arch/mips/alchemy/devboards/db1x00/bo=
-ard_setup.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/db1x00/pl=
-atform.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/pb1100/pl=
-atform.c
-CONFLICT (content): Merge conflict in arch/mips/alchemy/devboards/pb1200/pl=
-atform.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/pb1500/pl=
-atform.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/pb1550/pl=
-atform.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/platform.c
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/devboards/platform.h
-CONFLICT (add/add): Merge conflict in arch/mips/alchemy/xxs1500/platform.c
-CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/octeon-irq.c
-CONFLICT (content): Merge conflict in arch/mips/configs/db1200_defconfig
-CONFLICT (content): Merge conflict in arch/mips/include/asm/mach-au1x00/au1=
-000.h
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Kconfig
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Makefile
-CONFLICT (content): Merge conflict in drivers/pcmcia/au1000_generic.h
-CONFLICT (add/add): Merge conflict in drivers/pcmcia/db1xxx_ss.c
-CONFLICT (add/add): Merge conflict in drivers/pcmcia/xxs1500_ss.c
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.c deleted in HEAD an=
-d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
- drivers/staging/sm7xx/smtc2d.c left in tree.
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.h deleted in HEAD an=
-d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
- drivers/staging/sm7xx/smtc2d.h left in tree.
-$ git rm -f drivers/staging/sm7xx/smtc2d.c drivers/staging/sm7xx/smtc2d.h
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging genesis/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-CONFLICT (content): Merge conflict in fs/gfs2/super.c
-CONFLICT (content): Merge conflict in fs/nfs/inode.c
-CONFLICT (content): Merge conflict in fs/ufs/inode.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_super.c
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/namei.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4xdr.c
-CONFLICT (content): Merge conflict in security/tomoyo/realpath.c
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/dvb-usb/af9015.c
-CONFLICT (add/add): Merge conflict in drivers/media/dvb/dvb-usb/az6027.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/dvb-usb/dvb-usb-ids=
-.h
-CONFLICT (content): Merge conflict in drivers/media/dvb/frontends/stv090x.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/frontends/stv6110x.c
-CONFLICT (add/add): Merge conflict in drivers/media/dvb/ngene/ngene-core.c
-CONFLICT (content): Merge conflict in drivers/media/video/cx88/cx88-dvb.c
-CONFLICT (content): Merge conflict in drivers/media/video/em28xx/em28xx-car=
-ds.c
-CONFLICT (content): Merge conflict in drivers/media/video/em28xx/em28xx-dvb=
-.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/gspca/cpia1.c
-CONFLICT (content): Merge conflict in drivers/media/video/gspca/ov534.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/gspca/sn9c2028.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/tlg2300/pd-dvb.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/tlg2300/pd-main.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/tlg2300/pd-radio.c
-CONFLICT (add/add): Merge conflict in drivers/media/video/tlg2300/pd-video.c
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/acpi/processor_core.c
-CONFLICT (content): Merge conflict in lib/vsprintf.c
-Applying: cpufreq: merge fixup for processor_core.c rename
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging ibft/master
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in drivers/net/wireless/ath/ath5k/phy.c
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/nand/sh_flctl.c
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.c
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.h
-CONFLICT (content): Merge conflict in drivers/char/virtio_console.c
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-$ git reset --hard HEAD^
-Merging refs/next/20100310/pcmcia
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Applying: backlight: update for API change
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in Documentation/filesystems/proc.txt
-CONFLICT (content): Merge conflict in arch/arm/mach-u300/include/mach/debug=
--macro.S
-CONFLICT (content): Merge conflict in drivers/net/qlge/qlge_ethtool.c
-CONFLICT (content): Merge conflict in drivers/net/qlge/qlge_main.c
-CONFLICT (content): Merge conflict in drivers/net/typhoon.c
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
-CONFLICT (content): Merge conflict in include/linux/fsnotify.h
-CONFLICT (content): Merge conflict in kernel/audit_tree.c
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-CONFLICT (content): Merge conflict in drivers/video/omap2/vram.c
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-[master eaac02b] Revert "kbuild: Do not unnecessarily regenerate modules.bu=
-iltin"
-
---Signature=_Thu__11_Mar_2010_16_36_31_+1100_oMritTyNwOe6HRzf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuYgV8ACgkQjjKRsyhoI8zqpgCeMpFdfrvQaRS210YSobyAs0Jo
-TYMAn2SGO2jdYygHCcHzuw/522x2yS//
-=sq88
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Mar_2010_16_36_31_+1100_oMritTyNwOe6HRzf--
