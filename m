@@ -1,145 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547Ab0CKX1O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 18:27:14 -0500
-Received: from trinity.develer.com ([83.149.158.210]:49876 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682Ab0CKX1N (ORCPT
+	id S1751630Ab0CKXaF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 18:30:05 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41591 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999Ab0CKXaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 18:27:13 -0500
-Date: Fri, 12 Mar 2010 00:27:09 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-ID: <20100311232708.GE2427@linux>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
- <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
- <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
- <1268298865.5279.997.camel@twins>
- <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
- <20100311150307.GC29246@redhat.com>
+	Thu, 11 Mar 2010 18:30:04 -0500
+Date: Thu, 11 Mar 2010 20:29:53 -0300
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Clark Williams <williams@redhat.com>,
+       Luis Claudio =?iso-8859-1?Q?R=2E_Gon=E7alves?= 
+	<lclaudio@redhat.com>
+Subject: Re: [PATCH v2 5/5] perf report: Initial TUI using newt
+Message-ID: <20100311232952.GF28421@ghostprotocols.net>
+References: <1268349164-5822-1-git-send-email-acme@infradead.org>
+ <1268349164-5822-5-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100311150307.GC29246@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1268349164-5822-5-git-send-email-acme@infradead.org>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 10:03:07AM -0500, Vivek Goyal wrote:
-> On Thu, Mar 11, 2010 at 06:25:00PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 11 Mar 2010 10:14:25 +0100
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Thu, 2010-03-11 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
-> > > > On Thu, 11 Mar 2010 09:39:13 +0900
-> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > > > > The performance overhead is not so huge in both solutions, but the impact on
-> > > > > > performance is even more reduced using a complicated solution...
-> > > > > > 
-> > > > > > Maybe we can go ahead with the simplest implementation for now and start to
-> > > > > > think to an alternative implementation of the page_cgroup locking and
-> > > > > > charge/uncharge of pages.
-> > > 
-> > > FWIW bit spinlocks suck massive.
-> > > 
-> > > > > 
-> > > > > maybe. But in this 2 years, one of our biggest concerns was the performance.
-> > > > > So, we do something complex in memcg. But complex-locking is , yes, complex.
-> > > > > Hmm..I don't want to bet we can fix locking scheme without something complex.
-> > > > > 
-> > > > But overall patch set seems good (to me.) And dirty_ratio and dirty_background_ratio
-> > > > will give us much benefit (of performance) than we lose by small overheads.
-> > > 
-> > > Well, the !cgroup or root case should really have no performance impact.
-> > > 
-> > > > IIUC, this series affects trgger for background-write-out.
-> > > 
-> > > Not sure though, while this does the accounting the actual writeout is
-> > > still !cgroup aware and can definately impact performance negatively by
-> > > shrinking too much.
-> > > 
-> > 
-> > Ah, okay, your point is !cgroup (ROOT cgroup case.)
-> > I don't think accounting these file cache status against root cgroup is necessary.
-> > 
+Em Thu, Mar 11, 2010 at 08:12:44PM -0300, Arnaldo Carvalho de Melo escreveu:
+> From: Arnaldo Carvalho de Melo <acme@redhat.com>
 > 
-> I think what peter meant was that with memory cgroups created we will do
-> writeouts much more aggressively.
+> Newt has widespread availability and provides a rather simple API as can be
+> seen by the size of this patch.
 > 
-> In balance_dirty_pages()
+> The work needed to support it will benefit other frontends too.
 > 
-> 	if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> 		break;
+> In this initial patch it just checks if the output is a tty, if not it falls
+> back to the previous behaviour, also if newt-devel/libnewt-dev is not installed
+> the previous behaviour is maintaned.
 > 
-> Now with Andrea's patches, we are calculating bdi_thres per memory cgroup
-> (almost)
-> 
-> bdi_thres ~= per_memory_cgroup_dirty * bdi_fraction
-> 
-> But bdi_nr_reclaimable and bdi_nr_writeback stats are still global.
+> Pressing enter on a symbol will annotate it, ESC in the annotation window will
+> return to the report symbol list.
 
-Correct. More exactly:
+For those not so curious as to apply and try it out, here is a
+screenshot of it in action:
 
- bdi_thresh = memcg dirty memory limit * BDI's share of the global dirty memory
+http://tglx.de/~acme/perf-newt.png
 
-Before:
+:-)
 
- bdi_thresh = global dirty memory limit * BDI's share of the global dirty memory
-
-> 
-> So for the same number of dirty pages system wide on this bdi, we will be
-> triggering writeouts much more aggressively if somebody has created few
-> memory cgroups and tasks are running in those cgroups.
-
-Right, if we don't touch per-cgroup dirty limits.
-
-> 
-> I guess it might cause performance regressions in case of small file
-> writeouts because previously one could have written the file to cache and
-> be done with it but with this patch set, there are higher changes that
-> you will be throttled to write the pages back to disk.
-> 
-> I guess we need two pieces to resolve this.
-> 	- BDI stats per cgroup.
-> 	- Writeback of inodes from same cgroup.
-> 
-> I think BDI stats per cgroup will increase the complextiy.
-
-There'll be the opposite problem I think, the number of dirty pages
-(system-wide) will increase, because in this way we'll consider BDI
-shares of memcg dirty memory. So I think we need both: per memcg BDI
-stats and system-wide BDI stats, then we need to take the min of the two
-when evaluating bdi_thresh. Maybe... I'm not really sure about this, and
-need to figure better this part. So I started with the simplest
-implementation: global BDI stats, and per-memcg dirty memory.
-
-I totally agree about the other point, writeback of inodes per cgroup is
-another feature that we need.
-
-> I am still setting up the system to test whether we see any speedup in
-> writeout of large files with-in a memory cgroup with small memory limits.
-> I am assuming that we are expecting a speedup because we will start
-> writeouts early and background writeouts probably are faster than direct
-> reclaim?
-
-mmh... speedup? I think with a large file write + reduced dirty limits
-you'll get a more uniform write-out (more frequent small writes),
-respect to few and less frequent large writes. The system will be more
-reactive, but I don't think you'll be able to see a speedup in the large
-write itself.
-
-Thanks,
--Andrea
+- Arnaldo
