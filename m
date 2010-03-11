@@ -1,47 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080Ab0CKC6s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 21:58:48 -0500
-Received: from home.einfach.org ([80.86.92.145]:49052 "EHLO home.einfach.org"
+	id S1754989Ab0CKC7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 21:59:38 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50962 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754837Ab0CKC6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 21:58:43 -0500
-X-Greylist: delayed 1212 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Mar 2010 21:58:43 EST
-From: Bruno Randolf <br1@einfach.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the wireless tree with the wireless-current tree
-Date: Thu, 11 Mar 2010 11:38:11 +0900
-User-Agent: KMail/1.13.1 (Linux/2.6.31-20-generic; KDE/4.4.1; x86_64; ; )
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20100311131500.1057b6c5.sfr@canb.auug.org.au>
-In-Reply-To: <20100311131500.1057b6c5.sfr@canb.auug.org.au>
+	id S1754265Ab0CKC7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Mar 2010 21:59:37 -0500
+Date: Wed, 10 Mar 2010 18:59:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       geert@linux-m68k.org, elendil@planet.nl, cloos@jhcloos.com
+Subject: Re: [PATCH 0/2] v4 kconfig: place git SHA1 in .config output if in
+	SCM
+Message-ID: <20100311025933.GC6767@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100305194305.GA23009@linux.vnet.ibm.com> <4B951143.1050807@suse.cz>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003111138.12070.br1@einfach.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B951143.1050807@suse.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 March 2010 11:15:00 Stephen Rothwell wrote:
-> Hi John,
+On Mon, Mar 08, 2010 at 04:01:23PM +0100, Michal Marek wrote:
+> On 5.3.2010 20:43, Paul E. McKenney wrote:
+> > This patch appends the localversion string to the Linux kernel version.
+> > For example, in a git tree with uncommitted changes, the .config file
+> > might start as follows (but with leading hash marks):
+> > 
+> > 	Automatically generated make config: don't edit
+> > 	Linux kernel version: 2.6.33-01836-g90a6501-dirty
+> > 	Mon Mar  1 17:05:59 2010
+> > 
+> > The "-01836-g90a6501-dirty" string is added by this patch.
 > 
-> Today's linux-next merge of the wireless tree got a conflict in
-> drivers/net/wireless/ath/ath5k/phy.c between commit
-> 86415d43efd4f7093979cfa8a80232114266f1a4 ("ath5k: fix I/Q calibration
-> (for real)") from the wireless-current tree and commit
-> 49a85d211a63ad1d565842ebc535c5168d85d86a ("ath5k: IQ calibration for
-> AR5211 is slightly different") from the wireless tree.
+> kbuild in linux-next already has
+> commit 85a256d8e0116c8f5ad276730830f5d4d473344d
+> Author: David Rientjes <rientjes@google.com>
+> Date:   Wed Jan 13 13:01:05 2010 -0800
 > 
-> I fixed it up (I think - see below) and can carry the fix for a while.
+>     kbuild: improve version string logic
+> 
+> which results in a scripts/setlocalversion call during each build. And
+> with CONFIG_LOCALVERSION_AUTO, it stores exactly the string you want in
+> include/config/kernel.release. So we could change kconfig to read that
+> file instead of building the version string again. To also cover the
+> !CONFIG_LOCALVERSION_AUTO case, we can add a
+> include/config/kernel.release.full file to hold the full string each time.
+> 
+> Sorry for jumping in so late in the discussion, I had a bit of backlog
+> in mail directed to me and linux-kbuild@vger.kernel.org, let alone LKML ;).
 
-not sure what happened...
+Thank you for the pointer, I will take a look.
 
-but wireless-next-2.6.git 86415d43efd4f7093979cfa8a80232114266f1a4 is an older 
-version of my patch. i have sent one which applies cleanly later on.
-
-your fix is correct, though.
-
-bruno
+							Thanx, Paul
