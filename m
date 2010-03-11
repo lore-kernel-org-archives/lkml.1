@@ -1,148 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407Ab0CKEBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Mar 2010 23:01:25 -0500
-Received: from mail-qy0-f204.google.com ([209.85.221.204]:38755 "EHLO
-	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756245Ab0CKEBX (ORCPT
+	id S1756374Ab0CKEM5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Mar 2010 23:12:57 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:33842 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756173Ab0CKEMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Mar 2010 23:01:23 -0500
+	Wed, 10 Mar 2010 23:12:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=n+RFaT7BjQCDRMQtCJxqsDuFhsevl2HYnw0/TWJghkphJb5HCnJhqMfqt/ryQxlLZ6
-         AGCrTncT4Q8/s7DhzugU/YZ1jDswo/w/cUg03W6wScIkdeNX2tUkoZNOid0zkc2K1LRj
-         qaBQsGaic4paGgDLcB8WuiU1Qa3znhku8ARHU=
-From: Bruno Bigras <bigras.bruno@gmail.com>
-To: jeremy@xensource.com
-Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       linux-kernel@vger.kernel.org, Bruno Bigras <bigras.bruno@gmail.com>
-Subject: [PATCH 2/2] xen: events: Fix checkpatch issues
-Date: Wed, 10 Mar 2010 23:00:54 -0500
-Message-Id: <1268280054-16170-2-git-send-email-bigras.bruno@gmail.com>
-X-Mailer: git-send-email 1.7.0.2
-In-Reply-To: <1268280054-16170-1-git-send-email-bigras.bruno@gmail.com>
-References: <1268280054-16170-1-git-send-email-bigras.bruno@gmail.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=BrO7yR6RFTZtqDD2x5FQ2HcTPqdrLNESwOOPqOe99jUm5u5LoMIRjovPOuSavIhnxC
+         ED+28gt1tOZcsW3EAjHazImTaJEIvLSxrVnp6jQnzREDPzxo6Cqjtb9EQLDmBn7c3LDG
+         UIoIV7gUkPh4JuQk3tvdWB2vFKFnlEDy4b9Vc=
+MIME-Version: 1.0
+In-Reply-To: <1268274775.4996.16.camel@minggr.sh.intel.com>
+References: <20100310183102.GC8070@lenovo>
+	 <1268274775.4996.16.camel@minggr.sh.intel.com>
+Date: Thu, 11 Mar 2010 07:12:52 +0300
+X-Google-Sender-Auth: a9a76fe23b9b7798
+Message-ID: <aa79d98a1003102012i6709e5c5vf2be45dbab2ded2@mail.gmail.com>
+Subject: Re: [RFC] x86,perf: Implement minimal P4 PMU driver v14
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Stephane Eranian <eranian@google.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/xen/events.c:31: WARNING: Use #include <linux/ptrace.h> instead of <asm/ptrace.h>
-drivers/xen/events.c:76: ERROR: open brace '{' following struct go on the same line
-drivers/xen/events.c:509: WARNING: line over 80 characters
-drivers/xen/events.c:581: ERROR: space required before the open parenthesis '('
-drivers/xen/events.c:585: ERROR: space required before the open parenthesis '('
-drivers/xen/events.c:590: ERROR: space required before the open parenthesis '('
-drivers/xen/events.c:595: ERROR: space required before the open parenthesis '('
-drivers/xen/events.c:625: ERROR: code indent should use tabs where possible
-drivers/xen/events.c:625: WARNING: please, no space before tabs
-drivers/xen/events.c:666: ERROR: space required before the open parenthesis '('
-drivers/xen/events.c:802: ERROR: do not use assignment in if condition
-drivers/xen/events.c:831: ERROR: do not use assignment in if condition
-
-Signed-off-by: Bruno Bigras <bigras.bruno@gmail.com>
----
- drivers/xen/events.c |   26 ++++++++++++++------------
- 1 files changed, 14 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 2f84137..e86841c 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -27,8 +27,8 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/bootmem.h>
-+#include <linux/ptrace.h>
- 
--#include <asm/ptrace.h>
- #include <asm/irq.h>
- #include <asm/idle.h>
- #include <asm/sync_bitops.h>
-@@ -72,8 +72,7 @@ enum xen_irq_type {
-  *    IPI - IPI vector
-  *    EVTCHN -
-  */
--struct irq_info
--{
-+struct irq_info {
- 	enum xen_irq_type type;	/* type */
- 	unsigned short evtchn;	/* event channel */
- 	unsigned short cpu;	/* cpu bound */
-@@ -506,7 +505,8 @@ EXPORT_SYMBOL_GPL(bind_evtchn_to_irqhandler);
- 
- int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
- 			    irq_handler_t handler,
--			    unsigned long irqflags, const char *devname, void *dev_id)
-+			    unsigned long irqflags, const char *devname,
-+			    void *dev_id)
- {
- 	unsigned int irq;
- 	int retval;
-@@ -578,21 +578,21 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id)
- 			v->evtchn_pending_sel);
- 	}
- 	printk("pending:\n   ");
--	for(i = ARRAY_SIZE(sh->evtchn_pending)-1; i >= 0; i--)
-+	for (i = ARRAY_SIZE(sh->evtchn_pending)-1; i >= 0; i--)
- 		printk("%08lx%s", sh->evtchn_pending[i],
- 			i % 8 == 0 ? "\n   " : " ");
- 	printk("\nmasks:\n   ");
--	for(i = ARRAY_SIZE(sh->evtchn_mask)-1; i >= 0; i--)
-+	for (i = ARRAY_SIZE(sh->evtchn_mask)-1; i >= 0; i--)
- 		printk("%08lx%s", sh->evtchn_mask[i],
- 			i % 8 == 0 ? "\n   " : " ");
- 
- 	printk("\nunmasked:\n   ");
--	for(i = ARRAY_SIZE(sh->evtchn_mask)-1; i >= 0; i--)
-+	for (i = ARRAY_SIZE(sh->evtchn_mask)-1; i >= 0; i--)
- 		printk("%08lx%s", sh->evtchn_pending[i] & ~sh->evtchn_mask[i],
- 			i % 8 == 0 ? "\n   " : " ");
- 
- 	printk("\npending list:\n");
--	for(i = 0; i < NR_EVENT_CHANNELS; i++) {
-+	for (i = 0; i < NR_EVENT_CHANNELS; i++) {
- 		if (sync_test_bit(i, sh->evtchn_pending)) {
- 			printk("  %d: event %d -> irq %d\n",
- 			       cpu_from_evtchn(i), i,
-@@ -622,7 +622,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 	struct shared_info *s = HYPERVISOR_shared_info;
- 	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
-- 	unsigned count;
-+	unsigned count;
- 
- 	exit_idle();
- 	irq_enter();
-@@ -663,7 +663,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
- 
- 		count = __get_cpu_var(xed_nesting_count);
- 		__get_cpu_var(xed_nesting_count) = 0;
--	} while(count != 1);
-+	} while (count != 1);
- 
- out:
- 	irq_exit();
-@@ -799,7 +799,8 @@ static void restore_cpu_virqs(unsigned int cpu)
- 	int virq, irq, evtchn;
- 
- 	for (virq = 0; virq < NR_VIRQS; virq++) {
--		if ((irq = per_cpu(virq_to_irq, cpu)[virq]) == -1)
-+		irq = per_cpu(virq_to_irq, cpu)[virq];
-+		if (irq == -1)
- 			continue;
- 
- 		BUG_ON(virq_from_irq(irq) != virq);
-@@ -828,7 +829,8 @@ static void restore_cpu_ipis(unsigned int cpu)
- 	int ipi, irq, evtchn;
- 
- 	for (ipi = 0; ipi < XEN_NR_IPIS; ipi++) {
--		if ((irq = per_cpu(ipi_to_irq, cpu)[ipi]) == -1)
-+		irq = per_cpu(ipi_to_irq, cpu)[ipi];
-+		if (irq == -1)
- 			continue;
- 
- 		BUG_ON(ipi_from_irq(irq) != ipi);
--- 
-1.7.0.2
-
+On 3/11/10, Lin Ming <ming.m.lin@intel.com> wrote:
+> On Thu, 2010-03-11 at 02:31 +0800, Cyrill Gorcunov wrote:
+>> +static __initconst struct x86_pmu p4_pmu = {
+>> +       .name                   = "Netburst P4/Xeon",
+>> +       .handle_irq             = p4_pmu_handle_irq,
+>> +       .disable_all            = p4_pmu_disable_all,
+>> +       .enable_all             = p4_pmu_enable_all,
+>> +       .enable                 = p4_pmu_enable_event,
+>> +       .disable                = p4_pmu_disable_event,
+>> +       .eventsel               = MSR_P4_BPU_CCCR0,
+>> +       .perfctr                = MSR_P4_BPU_PERFCTR0,
+>> +       .event_map              = p4_pmu_event_map,
+>> +       .raw_event              = p4_pmu_raw_event,
+>> +       .max_events             = ARRAY_SIZE(p4_event_map),
+>> +       /*
+>> +        * IF HT disabled we may need to use all
+>> +        * ARCH_P4_MAX_CCCR counters simulaneously
+>> +        * though leave it restricted at moment assuming
+>> +        * HT is on
+>> +        */
+>> +       .num_events             = ARCH_P4_MAX_CCCR,
+>> +       .apic                   = 1,
+>> +       .event_bits             = 40,
+>> +       .event_mask             = (1ULL << 40) - 1,
+>> +       .max_period             = (1ULL << 39) - 1,
+>> +       .hw_config              = p4_hw_config,
+>> +       .schedule_events        = p4_pmu_schedule_events,
+>> +};
+>
+> commit ca03770(perf, x86: Add PEBS infrastructure) introduces a new
+> function validate_event that calls x86_pmu.get_event_constraints.
+>
+> static int validate_event(struct perf_event *event)
+> {
+> 	...
+> 	c = x86_pmu.get_event_constraints(fake_cpuc, event);
+> 	...
+> }
+>
+> So we need to add .get_event_constraints to p4_pmu.
+>
+> diff --git a/arch/x86/kernel/cpu/perf_event_p4.c
+> b/arch/x86/kernel/cpu/perf_event_p4.c
+> index 4eb79b1..99a2a7c 100644
+> --- a/arch/x86/kernel/cpu/perf_event_p4.c
+> +++ b/arch/x86/kernel/cpu/perf_event_p4.c
+> @@ -586,6 +586,7 @@ static __initconst struct x86_pmu p4_pmu = {
+>  	.max_period		= (1ULL << 39) - 1,
+>  	.hw_config		= p4_hw_config,
+>  	.schedule_events	= p4_pmu_schedule_events,
+> +	.get_event_constraints  = x86_get_event_constraints,
+>  };
+>
+>  static __init int p4_pmu_init(void)
+>
+> ---
+> Lin Ming
+>
+>
+>
+Thanks, Ming! This snippet somehow escaped me. Will update.
