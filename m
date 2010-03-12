@@ -1,148 +1,793 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758769Ab0CLWHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:07:05 -0500
-Received: from lucidpixels.com ([75.144.35.66]:54179 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758725Ab0CLWHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:07:03 -0500
-Date: Fri, 12 Mar 2010 17:07:02 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous
- reboots
-In-Reply-To: <201003121459.29793.bjorn.helgaas@hp.com>
-Message-ID: <alpine.DEB.2.00.1003121700290.6929@p34.internal.lan>
-References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan> <86802c441003121144y24e763e6n16f237928df1f676@mail.gmail.com> <alpine.DEB.2.00.1003121520120.6929@p34.internal.lan> <201003121459.29793.bjorn.helgaas@hp.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1758748Ab0CLWJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:09:35 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:65072 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758694Ab0CLWJe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 17:09:34 -0500
+To: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, Miguel Aguilar <miguel.aguilar@ridgerun.com>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Samuel Ortiz <sameo@linux.intel.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RTC: DaVinci RTC driver
+References: <1268420914-6731-1-git-send-email-khilman@deeprootsystems.com>
+	<20100312202454.2a94b6d4@linux.lan.towertech.it>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Fri, 12 Mar 2010 14:09:29 -0800
+In-Reply-To: <20100312202454.2a94b6d4@linux.lan.towertech.it> (Alessandro Zummo's message of "Fri\, 12 Mar 2010 20\:24\:54 +0100")
+Message-ID: <873a058a5i.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-800327987-1268431622=:6929"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Alessandro Zummo <a.zummo@towertech.it> writes:
 
----1463747160-800327987-1268431622=:6929
-Content-Type: TEXT/PLAIN; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> On Fri, 12 Mar 2010 11:08:33 -0800
+> Kevin Hilman <khilman@deeprootsystems.com> wrote:
+>
+>> This driver was tested on a DM365 EVM by using the rtc-test application
+>> from the Documentation/rtc.txt.
+>> 
+>> Signed-off-by: Miguel Aguilar <miguel.aguilar@ridgerun.com>
+>> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+>
+>  Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+>
+>  Please add an email in MODULE_AUTHOR
+
+Done.  updated version below with your ack added.
+
+Will you merge this via RTC subsystem, or should I merge it via
+the davinci platform tree?
+
+Kevin
 
 
+>From 9a058a643fd2df4b391871cf1932eef76a5cf2fd Mon Sep 17 00:00:00 2001
+From: Miguel Aguilar <miguel.aguilar@ridgerun.com>
+Date: Thu, 5 Nov 2009 08:51:34 -0600
+Subject: [PATCH] RTC: DaVinci RTC driver
 
-On Fri, 12 Mar 2010, Bjorn Helgaas wrote:
+This driver features:
 
-> On Friday 12 March 2010 01:32:17 pm Justin Piszcz wrote:
->
->>>> Even with all boards removed:
->>>> [ =A0 =A00.133537] pci 0000:00:00.0: address space collision: [mem
->>>> 0xe0000000-0xffffffff 64bit] already in use
->>>>
->>>> 00:00.0 Host bridge: ATI Technologies Inc RD790 Northbridge only dual =
-slot
->>>> PCI-e_GFX and HT3 K8 part
->>>
->>> how about current linus' tree with pci=3Dnocrs or pci=3Duse_crs?
->>
->> Hi, I saw your second e-mail, so it sounds like a bad board or something
->> that Linux does not have a quirk for yet, but in any case, per your
->> recommendations:
->>
->> pci=3Dnocrs:
->> http://home.comcast.net/~jpiszcz/20100312/dmesg-pci-nocrs.txt
->>
->> pci=3Duse_crs:
->> http://home.comcast.net/~jpiszcz/20100312/dmesg-use-crs.txt
->>
->> No collision when pci=3Duse_crs is used, BUT the system still crashes.
->>
->> Instead of collision, it says this:
->>
->> [    0.133598] PCI: pci_cache_line_size set to 64 bytes
->> [    0.133603] pci 0000:00:00.0: BAR 3: reserving [mem 0xe0000000-0xffff=
-ffff flags 0x120204] (d=3D0, p=3D0)
->> [    0.133606] pci 0000:00:00.0: no compatible bridge window for [mem 0x=
-e0000000-0xffffffff 64bit]
->> [    0.133610] pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xfffffff=
-f 64bit]
->> [    0.133617] pci 0000:00:11.0: BAR 0: reserving [io  0xff00-0xff07 fla=
-gs 0x20101] (d=3D0, p=3D0)
->>
->> [    0.133735] Expanded resource reserved due to conflict with PCI Bus 0=
-000:00
->
-> Let's look at some of these messages:
->
->  pci_root PNP0A03:00: host bridge window [mem 0x40000000-0xfed0ffff]
->
-> That looks normal to me.  If you could boot a current upstream kernel,
-> e.g., 2.6.34-rc1, I think it might print more information about your
-> AMD PCI address space routing.  BTW, it looks like you have four CPUs,
-> but your kernel is only compiled to support two.
-The latest e-mail shows similar messages (2.6.34-rc1).
+* Alarm support.
+* Periodic interrupt by using a timer include into the RTC module.
+* The update interrupt is not supported by this RTC module.
 
->
->  pci 0000:00:00.0: reg 1c: [mem 0xe0000000-0xffffffff 64bit]
->  pci 0000:00:00.0: no compatible bridge window for [mem 0xe0000000-0xffff=
-ffff 64bit]
->  pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xffffffff 64bit]
->
-> These are just telling us that the device BAR 0xe0000000-0xffffffff
-> doesn't fit inside the bridge window of 0x40000000-0xfed0ffff.  I don't
-> know why the device has that weird-looking BAR, but that by itself
-> shouldn't be fatal because we don't have any drivers that try to use
-> that BAR.
-OK- btw, keep in mind all boards have been removed from the system, also,
-the serial port, 1394, some other things, floppy, etc, have been disabled
-in the motherboard, to free up IRQs if that was the cause, no difference.
-Also tried many pci=3D options, noapic, acpi=3Doff, nothing helps.
+This driver was tested on a DM365 EVM by using the rtc-test application
+from the Documentation/rtc.txt.
 
->
->  Expanded resource reserved due to conflict with PCI Bus 0000:00
->
-> This comes from e820_reserve_resources_late().  I wish it were a
-> more useful message and showed the actual conflict and what was
-> expanded, but I don't think it's a problem in itself.
-Ok..
+Signed-off-by: Miguel Aguilar <miguel.aguilar@ridgerun.com>
+Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+---
+ drivers/rtc/Kconfig       |   10 +
+ drivers/rtc/Makefile      |    1 +
+ drivers/rtc/rtc-davinci.c |  673 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 684 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-davinci.c
 
->
->  pnp 00:0a: disabling [mem 0x000f0000-0x000f3fff] because it overlaps 000=
-0:00:00.0 BAR 3 [mem 0x00000000-0x1fffffff 64bit]
->
-> We failed to reserve the 0xe0000000-0xffffffff region above, so we just
-> cleared out the resource.  It keeps the same size, so it ends up at
-> 0x00000000-0x1fffffff, where it appears to conflict with a lot of PNP
-> devices.  But this isn't a real conflict; it's just Linux being stupid
-> because we don't handle that PCI resource correctly.
-Ok..
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 6a13037..50ac047 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -620,6 +620,16 @@ config RTC_DRV_NUC900
+ 
+ comment "on-CPU RTC drivers"
+ 
++config RTC_DRV_DAVINCI
++	tristate "TI DaVinci RTC"
++	depends on ARCH_DAVINCI_DM365
++	help
++	  If you say yes here you get support for the RTC on the
++	  DaVinci platforms (DM365).
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-davinci.
++
+ config RTC_DRV_OMAP
+ 	tristate "TI OMAP1"
+ 	depends on ARCH_OMAP15XX || ARCH_OMAP16XX || ARCH_OMAP730 || ARCH_DAVINCI_DA8XX
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 44ef194..245311a 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -27,6 +27,7 @@ obj-$(CONFIG_RTC_DRV_BQ32K)	+= rtc-bq32k.o
+ obj-$(CONFIG_RTC_DRV_BQ4802)	+= rtc-bq4802.o
+ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc-cmos.o
+ obj-$(CONFIG_RTC_DRV_COH901331)	+= rtc-coh901331.o
++obj-$(CONFIG_RTC_DRV_DAVINCI)	+= rtc-davinci.o
+ obj-$(CONFIG_RTC_DRV_DM355EVM)	+= rtc-dm355evm.o
+ obj-$(CONFIG_RTC_DRV_DS1216)	+= rtc-ds1216.o
+ obj-$(CONFIG_RTC_DRV_DS1286)	+= rtc-ds1286.o
+diff --git a/drivers/rtc/rtc-davinci.c b/drivers/rtc/rtc-davinci.c
+new file mode 100644
+index 0000000..92a8f6c
+--- /dev/null
++++ b/drivers/rtc/rtc-davinci.c
+@@ -0,0 +1,673 @@
++/*
++ * DaVinci Power Management and Real Time Clock Driver for TI platforms
++ *
++ * Copyright (C) 2009 Texas Instruments, Inc
++ *
++ * Author: Miguel Aguilar <miguel.aguilar@ridgerun.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/delay.h>
++#include <linux/spinlock.h>
++#include <linux/rtc.h>
++#include <linux/bcd.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
++
++/*
++ * The DaVinci RTC is a simple RTC with the following
++ * Sec: 0 - 59 : BCD count
++ * Min: 0 - 59 : BCD count
++ * Hour: 0 - 23 : BCD count
++ * Day: 0 - 0x7FFF(32767) : Binary count ( Over 89 years )
++ */
++
++/* PRTC interface registers */
++#define DAVINCI_PRTCIF_PID		0x00
++#define PRTCIF_CTLR			0x04
++#define PRTCIF_LDATA			0x08
++#define PRTCIF_UDATA			0x0C
++#define PRTCIF_INTEN			0x10
++#define PRTCIF_INTFLG			0x14
++
++/* PRTCIF_CTLR bit fields */
++#define PRTCIF_CTLR_BUSY		BIT(31)
++#define PRTCIF_CTLR_SIZE		BIT(25)
++#define PRTCIF_CTLR_DIR			BIT(24)
++#define PRTCIF_CTLR_BENU_MSB		BIT(23)
++#define PRTCIF_CTLR_BENU_3RD_BYTE	BIT(22)
++#define PRTCIF_CTLR_BENU_2ND_BYTE	BIT(21)
++#define PRTCIF_CTLR_BENU_LSB		BIT(20)
++#define PRTCIF_CTLR_BENU_MASK		(0x00F00000)
++#define PRTCIF_CTLR_BENL_MSB		BIT(19)
++#define PRTCIF_CTLR_BENL_3RD_BYTE	BIT(18)
++#define PRTCIF_CTLR_BENL_2ND_BYTE	BIT(17)
++#define PRTCIF_CTLR_BENL_LSB		BIT(16)
++#define PRTCIF_CTLR_BENL_MASK		(0x000F0000)
++
++/* PRTCIF_INTEN bit fields */
++#define PRTCIF_INTEN_RTCSS		BIT(1)
++#define PRTCIF_INTEN_RTCIF		BIT(0)
++#define PRTCIF_INTEN_MASK		(PRTCIF_INTEN_RTCSS \
++					| PRTCIF_INTEN_RTCIF)
++
++/* PRTCIF_INTFLG bit fields */
++#define PRTCIF_INTFLG_RTCSS		BIT(1)
++#define PRTCIF_INTFLG_RTCIF		BIT(0)
++#define PRTCIF_INTFLG_MASK		(PRTCIF_INTFLG_RTCSS \
++					| PRTCIF_INTFLG_RTCIF)
++
++/* PRTC subsystem registers */
++#define PRTCSS_RTC_INTC_EXTENA1		(0x0C)
++#define PRTCSS_RTC_CTRL			(0x10)
++#define PRTCSS_RTC_WDT			(0x11)
++#define PRTCSS_RTC_TMR0			(0x12)
++#define PRTCSS_RTC_TMR1			(0x13)
++#define PRTCSS_RTC_CCTRL		(0x14)
++#define PRTCSS_RTC_SEC			(0x15)
++#define PRTCSS_RTC_MIN			(0x16)
++#define PRTCSS_RTC_HOUR			(0x17)
++#define PRTCSS_RTC_DAY0			(0x18)
++#define PRTCSS_RTC_DAY1			(0x19)
++#define PRTCSS_RTC_AMIN			(0x1A)
++#define PRTCSS_RTC_AHOUR		(0x1B)
++#define PRTCSS_RTC_ADAY0		(0x1C)
++#define PRTCSS_RTC_ADAY1		(0x1D)
++#define PRTCSS_RTC_CLKC_CNT		(0x20)
++
++/* PRTCSS_RTC_INTC_EXTENA1 */
++#define PRTCSS_RTC_INTC_EXTENA1_MASK	(0x07)
++
++/* PRTCSS_RTC_CTRL bit fields */
++#define PRTCSS_RTC_CTRL_WDTBUS		BIT(7)
++#define PRTCSS_RTC_CTRL_WEN		BIT(6)
++#define PRTCSS_RTC_CTRL_WDRT		BIT(5)
++#define PRTCSS_RTC_CTRL_WDTFLG		BIT(4)
++#define PRTCSS_RTC_CTRL_TE		BIT(3)
++#define PRTCSS_RTC_CTRL_TIEN		BIT(2)
++#define PRTCSS_RTC_CTRL_TMRFLG		BIT(1)
++#define PRTCSS_RTC_CTRL_TMMD		BIT(0)
++
++/* PRTCSS_RTC_CCTRL bit fields */
++#define PRTCSS_RTC_CCTRL_CALBUSY	BIT(7)
++#define PRTCSS_RTC_CCTRL_DAEN		BIT(5)
++#define PRTCSS_RTC_CCTRL_HAEN		BIT(4)
++#define PRTCSS_RTC_CCTRL_MAEN		BIT(3)
++#define PRTCSS_RTC_CCTRL_ALMFLG		BIT(2)
++#define PRTCSS_RTC_CCTRL_AIEN		BIT(1)
++#define PRTCSS_RTC_CCTRL_CAEN		BIT(0)
++
++static DEFINE_SPINLOCK(davinci_rtc_lock);
++
++struct davinci_rtc {
++	struct rtc_device 		*rtc;
++	void __iomem			*base;
++	resource_size_t			pbase;
++	size_t				base_size;
++	int				irq;
++};
++
++static inline void rtcif_write(struct davinci_rtc *davinci_rtc,
++			       u32 val, u32 addr)
++{
++	writel(val, davinci_rtc->base + addr);
++}
++
++static inline u32 rtcif_read(struct davinci_rtc *davinci_rtc, u32 addr)
++{
++	return readl(davinci_rtc->base + addr);
++}
++
++static inline void rtcif_wait(struct davinci_rtc *davinci_rtc)
++{
++	while (rtcif_read(davinci_rtc, PRTCIF_CTLR) & PRTCIF_CTLR_BUSY)
++		cpu_relax();
++}
++
++static inline void rtcss_write(struct davinci_rtc *davinci_rtc,
++			       unsigned long val, u8 addr)
++{
++	rtcif_wait(davinci_rtc);
++
++	rtcif_write(davinci_rtc, PRTCIF_CTLR_BENL_LSB | addr, PRTCIF_CTLR);
++	rtcif_write(davinci_rtc, val, PRTCIF_LDATA);
++
++	rtcif_wait(davinci_rtc);
++}
++
++static inline u8 rtcss_read(struct davinci_rtc *davinci_rtc, u8 addr)
++{
++	rtcif_wait(davinci_rtc);
++
++	rtcif_write(davinci_rtc, PRTCIF_CTLR_DIR | PRTCIF_CTLR_BENL_LSB | addr,
++		    PRTCIF_CTLR);
++
++	rtcif_wait(davinci_rtc);
++
++	return rtcif_read(davinci_rtc, PRTCIF_LDATA);
++}
++
++static inline void davinci_rtcss_calendar_wait(struct davinci_rtc *davinci_rtc)
++{
++	while (rtcss_read(davinci_rtc, PRTCSS_RTC_CCTRL) &
++	       PRTCSS_RTC_CCTRL_CALBUSY)
++		cpu_relax();
++}
++
++static irqreturn_t davinci_rtc_interrupt(int irq, void *class_dev)
++{
++	struct davinci_rtc *davinci_rtc = class_dev;
++	unsigned long events = 0;
++	u32 irq_flg;
++	u8 alm_irq, tmr_irq;
++	u8 rtc_ctrl, rtc_cctrl;
++	int ret = IRQ_NONE;
++
++	irq_flg = rtcif_read(davinci_rtc, PRTCIF_INTFLG) &
++		  PRTCIF_INTFLG_RTCSS;
++
++	alm_irq = rtcss_read(davinci_rtc, PRTCSS_RTC_CCTRL) &
++		  PRTCSS_RTC_CCTRL_ALMFLG;
++
++	tmr_irq = rtcss_read(davinci_rtc, PRTCSS_RTC_CTRL) &
++		  PRTCSS_RTC_CTRL_TMRFLG;
++
++	if (irq_flg) {
++		if (alm_irq) {
++			events |= RTC_IRQF | RTC_AF;
++			rtc_cctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CCTRL);
++			rtc_cctrl |=  PRTCSS_RTC_CCTRL_ALMFLG;
++			rtcss_write(davinci_rtc, rtc_cctrl, PRTCSS_RTC_CCTRL);
++		} else if (tmr_irq) {
++			events |= RTC_IRQF | RTC_PF;
++			rtc_ctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CTRL);
++			rtc_ctrl |=  PRTCSS_RTC_CTRL_TMRFLG;
++			rtcss_write(davinci_rtc, rtc_ctrl, PRTCSS_RTC_CTRL);
++		}
++
++		rtcif_write(davinci_rtc, PRTCIF_INTFLG_RTCSS,
++				    PRTCIF_INTFLG);
++		rtc_update_irq(davinci_rtc->rtc, 1, events);
++
++		ret = IRQ_HANDLED;
++	}
++
++	return ret;
++}
++
++static int
++davinci_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	u8 rtc_ctrl;
++	unsigned long flags;
++	int ret = 0;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	rtc_ctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CTRL);
++
++	switch (cmd) {
++	case RTC_WIE_ON:
++		rtc_ctrl |= PRTCSS_RTC_CTRL_WEN | PRTCSS_RTC_CTRL_WDTFLG;
++		break;
++	case RTC_WIE_OFF:
++		rtc_ctrl &= ~PRTCSS_RTC_CTRL_WEN;
++		break;
++	case RTC_UIE_OFF:
++	case RTC_UIE_ON:
++		ret = -ENOTTY;
++		break;
++	default:
++		ret = -ENOIOCTLCMD;
++	}
++
++	rtcss_write(davinci_rtc, rtc_ctrl, PRTCSS_RTC_CTRL);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return ret;
++}
++
++static int convertfromdays(u16 days, struct rtc_time *tm)
++{
++	int tmp_days, year, mon;
++
++	for (year = 2000;; year++) {
++		tmp_days = rtc_year_days(1, 12, year);
++		if (days >= tmp_days)
++			days -= tmp_days;
++		else {
++			for (mon = 0;; mon++) {
++				tmp_days = rtc_month_days(mon, year);
++				if (days >= tmp_days) {
++					days -= tmp_days;
++				} else {
++					tm->tm_year = year - 1900;
++					tm->tm_mon = mon;
++					tm->tm_mday = days + 1;
++					break;
++				}
++			}
++			break;
++		}
++	}
++	return 0;
++}
++
++static int convert2days(u16 *days, struct rtc_time *tm)
++{
++	int i;
++	*days = 0;
++
++	/* epoch == 1900 */
++	if (tm->tm_year < 100 || tm->tm_year > 199)
++		return -EINVAL;
++
++	for (i = 2000; i < 1900 + tm->tm_year; i++)
++		*days += rtc_year_days(1, 12, i);
++
++	*days += rtc_year_days(tm->tm_mday, tm->tm_mon, 1900 + tm->tm_year);
++
++	return 0;
++}
++
++static int davinci_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	u16 days = 0;
++	u8 day0, day1;
++	unsigned long flags;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	tm->tm_sec = bcd2bin(rtcss_read(davinci_rtc, PRTCSS_RTC_SEC));
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	tm->tm_min = bcd2bin(rtcss_read(davinci_rtc, PRTCSS_RTC_MIN));
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	tm->tm_hour = bcd2bin(rtcss_read(davinci_rtc, PRTCSS_RTC_HOUR));
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	day0 = rtcss_read(davinci_rtc, PRTCSS_RTC_DAY0);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	day1 = rtcss_read(davinci_rtc, PRTCSS_RTC_DAY1);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	days |= day1;
++	days <<= 8;
++	days |= day0;
++
++	if (convertfromdays(days, tm) < 0)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int davinci_rtc_set_time(struct device *dev, struct rtc_time *tm)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	u16 days;
++	u8 rtc_cctrl;
++	unsigned long flags;
++
++	if (convert2days(&days, tm) < 0)
++		return -EINVAL;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, bin2bcd(tm->tm_sec), PRTCSS_RTC_SEC);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, bin2bcd(tm->tm_min), PRTCSS_RTC_MIN);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, bin2bcd(tm->tm_hour), PRTCSS_RTC_HOUR);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, days & 0xFF, PRTCSS_RTC_DAY0);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, (days & 0xFF00) >> 8, PRTCSS_RTC_DAY1);
++
++	rtc_cctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CCTRL);
++	rtc_cctrl |= PRTCSS_RTC_CCTRL_CAEN;
++	rtcss_write(davinci_rtc, rtc_cctrl, PRTCSS_RTC_CCTRL);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return 0;
++}
++
++static int davinci_rtc_alarm_irq_enable(struct device *dev,
++					unsigned int enabled)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	unsigned long flags;
++	u8 rtc_cctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CCTRL);
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	if (enabled)
++		rtc_cctrl |= PRTCSS_RTC_CCTRL_DAEN |
++			     PRTCSS_RTC_CCTRL_HAEN |
++			     PRTCSS_RTC_CCTRL_MAEN |
++			     PRTCSS_RTC_CCTRL_ALMFLG |
++			     PRTCSS_RTC_CCTRL_AIEN;
++	else
++		rtc_cctrl &= ~PRTCSS_RTC_CCTRL_AIEN;
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, rtc_cctrl, PRTCSS_RTC_CCTRL);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return 0;
++}
++
++static int davinci_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alm)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	u16 days = 0;
++	u8 day0, day1;
++	unsigned long flags;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	alm->time.tm_min = bcd2bin(rtcss_read(davinci_rtc, PRTCSS_RTC_AMIN));
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	alm->time.tm_hour = bcd2bin(rtcss_read(davinci_rtc, PRTCSS_RTC_AHOUR));
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	day0 = rtcss_read(davinci_rtc, PRTCSS_RTC_ADAY0);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	day1 = rtcss_read(davinci_rtc, PRTCSS_RTC_ADAY1);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++	days |= day1;
++	days <<= 8;
++	days |= day0;
++
++	if (convertfromdays(days, &alm->time) < 0)
++		return -EINVAL;
++
++	alm->pending = !!(rtcss_read(davinci_rtc,
++			  PRTCSS_RTC_CCTRL) &
++			PRTCSS_RTC_CCTRL_AIEN);
++	alm->enabled = alm->pending && device_may_wakeup(dev);
++
++	return 0;
++}
++
++static int davinci_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	unsigned long flags;
++	u16 days;
++
++	if (alm->time.tm_mday <= 0 && alm->time.tm_mon < 0
++	    && alm->time.tm_year < 0) {
++		struct rtc_time tm;
++		unsigned long now, then;
++
++		davinci_rtc_read_time(dev, &tm);
++		rtc_tm_to_time(&tm, &now);
++
++		alm->time.tm_mday = tm.tm_mday;
++		alm->time.tm_mon = tm.tm_mon;
++		alm->time.tm_year = tm.tm_year;
++		rtc_tm_to_time(&alm->time, &then);
++
++		if (then < now) {
++			rtc_time_to_tm(now + 24 * 60 * 60, &tm);
++			alm->time.tm_mday = tm.tm_mday;
++			alm->time.tm_mon = tm.tm_mon;
++			alm->time.tm_year = tm.tm_year;
++		}
++	}
++
++	if (convert2days(&days, &alm->time) < 0)
++		return -EINVAL;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, bin2bcd(alm->time.tm_min), PRTCSS_RTC_AMIN);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, bin2bcd(alm->time.tm_hour), PRTCSS_RTC_AHOUR);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, days & 0xFF, PRTCSS_RTC_ADAY0);
++
++	davinci_rtcss_calendar_wait(davinci_rtc);
++	rtcss_write(davinci_rtc, (days & 0xFF00) >> 8, PRTCSS_RTC_ADAY1);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return 0;
++}
++
++static int davinci_rtc_irq_set_state(struct device *dev, int enabled)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	unsigned long flags;
++	u8 rtc_ctrl;
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	rtc_ctrl = rtcss_read(davinci_rtc, PRTCSS_RTC_CTRL);
++
++	if (enabled) {
++		while (rtcss_read(davinci_rtc, PRTCSS_RTC_CTRL)
++		       & PRTCSS_RTC_CTRL_WDTBUS)
++			cpu_relax();
++
++		rtc_ctrl |= PRTCSS_RTC_CTRL_TE;
++		rtcss_write(davinci_rtc, rtc_ctrl, PRTCSS_RTC_CTRL);
++
++		rtcss_write(davinci_rtc, 0x0, PRTCSS_RTC_CLKC_CNT);
++
++		rtc_ctrl |= PRTCSS_RTC_CTRL_TIEN |
++			    PRTCSS_RTC_CTRL_TMMD |
++			    PRTCSS_RTC_CTRL_TMRFLG;
++	} else
++		rtc_ctrl &= ~PRTCSS_RTC_CTRL_TIEN;
++
++	rtcss_write(davinci_rtc, rtc_ctrl, PRTCSS_RTC_CTRL);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return 0;
++}
++
++static int davinci_rtc_irq_set_freq(struct device *dev, int freq)
++{
++	struct davinci_rtc *davinci_rtc = dev_get_drvdata(dev);
++	unsigned long flags;
++	u16 tmr_counter = (0x8000 >> (ffs(freq) - 1));
++
++	spin_lock_irqsave(&davinci_rtc_lock, flags);
++
++	rtcss_write(davinci_rtc, tmr_counter & 0xFF, PRTCSS_RTC_TMR0);
++	rtcss_write(davinci_rtc, (tmr_counter & 0xFF00) >> 8, PRTCSS_RTC_TMR1);
++
++	spin_unlock_irqrestore(&davinci_rtc_lock, flags);
++
++	return 0;
++}
++
++static struct rtc_class_ops davinci_rtc_ops = {
++	.ioctl			= davinci_rtc_ioctl,
++	.read_time		= davinci_rtc_read_time,
++	.set_time		= davinci_rtc_set_time,
++	.alarm_irq_enable	= davinci_rtc_alarm_irq_enable,
++	.read_alarm		= davinci_rtc_read_alarm,
++	.set_alarm		= davinci_rtc_set_alarm,
++	.irq_set_state		= davinci_rtc_irq_set_state,
++	.irq_set_freq		= davinci_rtc_irq_set_freq,
++};
++
++static int __init davinci_rtc_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct davinci_rtc *davinci_rtc;
++	struct resource *res, *mem;
++	int ret = 0;
++
++	davinci_rtc = kzalloc(sizeof(struct davinci_rtc), GFP_KERNEL);
++	if (!davinci_rtc) {
++		dev_dbg(dev, "could not allocate memory for private data\n");
++		return -ENOMEM;
++	}
++
++	davinci_rtc->irq = platform_get_irq(pdev, 0);
++	if (davinci_rtc->irq < 0) {
++		dev_err(dev, "no RTC irq\n");
++		ret = davinci_rtc->irq;
++		goto fail1;
++	}
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(dev, "no mem resource\n");
++		ret = -EINVAL;
++		goto fail1;
++	}
++
++	davinci_rtc->pbase = res->start;
++	davinci_rtc->base_size = resource_size(res);
++
++	mem = request_mem_region(davinci_rtc->pbase, davinci_rtc->base_size,
++				 pdev->name);
++	if (!mem) {
++		dev_err(dev, "RTC registers at %08x are not free\n",
++			davinci_rtc->pbase);
++		ret = -EBUSY;
++		goto fail1;
++	}
++
++	davinci_rtc->base = ioremap(davinci_rtc->pbase, davinci_rtc->base_size);
++	if (!davinci_rtc->base) {
++		dev_err(dev, "unable to ioremap MEM resource\n");
++		ret = -ENOMEM;
++		goto fail2;
++	}
++
++	davinci_rtc->rtc = rtc_device_register(pdev->name, &pdev->dev,
++				    &davinci_rtc_ops, THIS_MODULE);
++	if (IS_ERR(davinci_rtc->rtc)) {
++		dev_err(dev, "unable to register RTC device, err %ld\n",
++				PTR_ERR(davinci_rtc->rtc));
++		goto fail3;
++	}
++
++	rtcif_write(davinci_rtc, PRTCIF_INTFLG_RTCSS, PRTCIF_INTFLG);
++	rtcif_write(davinci_rtc, 0, PRTCIF_INTEN);
++	rtcss_write(davinci_rtc, 0, PRTCSS_RTC_INTC_EXTENA1);
++
++	rtcss_write(davinci_rtc, 0, PRTCSS_RTC_CTRL);
++	rtcss_write(davinci_rtc, 0, PRTCSS_RTC_CCTRL);
++
++	ret = request_irq(davinci_rtc->irq, davinci_rtc_interrupt,
++			  IRQF_DISABLED, "davinci_rtc", davinci_rtc);
++	if (ret < 0) {
++		dev_err(dev, "unable to register davinci RTC interrupt\n");
++		goto fail4;
++	}
++
++	/* Enable interrupts */
++	rtcif_write(davinci_rtc, PRTCIF_INTEN_RTCSS, PRTCIF_INTEN);
++	rtcss_write(davinci_rtc, PRTCSS_RTC_INTC_EXTENA1_MASK,
++			    PRTCSS_RTC_INTC_EXTENA1);
++
++	rtcss_write(davinci_rtc, PRTCSS_RTC_CCTRL_CAEN, PRTCSS_RTC_CCTRL);
++
++	platform_set_drvdata(pdev, davinci_rtc);
++
++	device_init_wakeup(&pdev->dev, 0);
++
++	return 0;
++
++fail4:
++	rtc_device_unregister(davinci_rtc->rtc);
++fail3:
++	iounmap(davinci_rtc->base);
++fail2:
++	release_mem_region(davinci_rtc->pbase, davinci_rtc->base_size);
++fail1:
++	kfree(davinci_rtc);
++
++	return ret;
++}
++
++static int __devexit davinci_rtc_remove(struct platform_device *pdev)
++{
++	struct davinci_rtc *davinci_rtc = platform_get_drvdata(pdev);
++
++	device_init_wakeup(&pdev->dev, 0);
++
++	rtcif_write(davinci_rtc, 0, PRTCIF_INTEN);
++
++	free_irq(davinci_rtc->irq, davinci_rtc);
++
++	rtc_device_unregister(davinci_rtc->rtc);
++
++	iounmap(davinci_rtc->base);
++	release_mem_region(davinci_rtc->pbase, davinci_rtc->base_size);
++
++	platform_set_drvdata(pdev, NULL);
++
++	kfree(davinci_rtc);
++
++	return 0;
++}
++
++static struct platform_driver davinci_rtc_driver = {
++	.probe		= davinci_rtc_probe,
++	.remove		= __devexit_p(davinci_rtc_remove),
++	.driver		= {
++		.name = "rtc_davinci",
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init rtc_init(void)
++{
++	return platform_driver_probe(&davinci_rtc_driver, davinci_rtc_probe);
++}
++module_init(rtc_init);
++
++static void __exit rtc_exit(void)
++{
++	platform_driver_unregister(&davinci_rtc_driver);
++}
++module_exit(rtc_exit);
++
++MODULE_AUTHOR("Miguel Aguilar <miguel.aguilar@ridgerun.com>");
++MODULE_DESCRIPTION("Texas Instruments DaVinci PRTC Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.0.2
 
->
-> So the messages *look* alarming, but I don't see anything there that
-> should cause a spontaneous reboot.
-The system stays up for 5min, 10min, 1-2hrs sometimes and then the box
-will reboot, even with various kernel debugging enabled, nothing is capture=
-d,
-have not setup netconsole for this server yet, but I don't think that would
-get anything either due to how this error occurs.  It is a brand new=20
-motherboard/memory/etc.  What is interesting is running stress, there are
-no issues, but I was able to make it crash by reading all of the drives
-on the system and running lilo at the same time, that was the only time I
-made it crash on-demand, or "reboot"- as there are no logs/etc of the crash=
-=2E
->
-> Is this a regression?  Did the system ever work reliably with any
-> Linux kernel?  If not, I'd suspect a hardware problem like bad memory.
-The memory has been tested, latest memtest from the latest System Rescue
-CD, it has 1 stick of memory (1GB), it passed the memory test successfuly,
-there were no errors.
-
->
-> Bjorn
-
-Thanks for the response..
-
-Justin.
-
----1463747160-800327987-1268431622=:6929--
