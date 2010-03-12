@@ -1,29 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934608Ab0CLU6A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 15:58:00 -0500
-Received: from ist.d-labs.de ([213.239.218.44]:50144 "EHLO mx01.d-labs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932729Ab0CLU56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 15:57:58 -0500
-Date: Fri, 12 Mar 2010 21:57:43 +0100
-From: Florian Mickler <florian@mickler.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 2/2] enhance sysfs rfkill interface
-Message-ID: <20100312215743.7671d173@schatten.dmk.lab>
-In-Reply-To: <20100312182209.GB8736@core.coreip.homeip.net>
-References: <1268416988-24862-1-git-send-email-florian@mickler.org>
-	<1268416988-24862-2-git-send-email-florian@mickler.org>
-	<1268416988-24862-3-git-send-email-florian@mickler.org>
-	<20100312182209.GB8736@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+	id S934613Ab0CLVHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 16:07:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35286 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933167Ab0CLVHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 16:07:41 -0500
+Date: Fri, 12 Mar 2010 13:07:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
+Message-Id: <20100312130723.43308ccd.akpm@linux-foundation.org>
+In-Reply-To: <20100205203236.GC1475@oksana.dev.rtsoft.ru>
+References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,27 +29,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010 10:22:09 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Fri, 5 Feb 2010 23:32:36 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-> On Fri, Mar 12, 2010 at 07:03:08PM +0100, florian@mickler.org wrote:
-> >  
-> > +static ssize_t rfkill_hard_show(struct device *dev,
-> > +				 struct device_attribute *attr,
-> > +				 char *buf)
-> > +{
-> > +	struct rfkill *rfkill = to_rfkill(dev);
-> > +	unsigned long flags;
-> > +	u32 state;
-> > +
-> > +	spin_lock_irqsave(&rfkill->lock, flags);
-> > +	state = rfkill->state;
-> > +	spin_unlock_irqrestore(&rfkill->lock, flags);
+> This patch implements GPIOLIB notifier hooks, and thus makes device-enabled
+> GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatically
+> attached to the OpenFirmware subsystem. Which means that now we can handle
+> I2C and SPI GPIO chips almost* transparently.
 > 
-> Why exactly is this lock needed?
+> ...
+>
+> +static int of_gpiochip_register_simple(struct gpio_chip *chip,
+> +				       struct device_node *np)
 
-The rfkill state is updated from multiple contexts... Am I overlooking
-smth obvious here?
+Why is this called "register_simple" but the unregistration function
+isn't called "unregister_simple"?
 
-cheers,
-Flo
+> +{
+> +	struct of_gpio_chip *of_gc;
+> +
+> +	if (np->data) {
+> +		WARN_ON(1);
+> +		return -EBUSY;
+> +	}
+> +
+> +	of_gc = kzalloc(sizeof(*of_gc), GFP_KERNEL);
+> +	if (!of_gc)
+> +		return -ENOMEM;
+> +
+> +	of_gc->gpio_cells = 2;
+> +	of_gc->xlate = of_gpio_simple_xlate;
+> +	of_gc->chip = chip;
+> +	np->data = of_gc;
+> +	of_node_get(np);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(of_gpiochip_register_simple);
+
+Makes no sense to export a static symbol and to provide no declaration
+of it in a .h file.  I assume the export was unintended.
+
+
+My plot is somewhat lost.  Grant, could you please summarise in
+easy-for-akpm-to-understand terms what your issues are with this
+patchset and how you think we should proceed?
+
+Thanks.
