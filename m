@@ -1,55 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008Ab0CLUo2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 15:44:28 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:35017 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757208Ab0CLUo1 (ORCPT
+	id S1758671Ab0CLUpr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 15:45:47 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:56596 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757208Ab0CLUpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 15:44:27 -0500
-Date: Fri, 12 Mar 2010 20:44:20 +0000
-From: Ben Hutchings <ben@decadent.org.uk>
+	Fri, 12 Mar 2010 15:45:46 -0500
+Date: Fri, 12 Mar 2010 15:45:35 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
 To: akpm@linux-foundation.org
-Cc: ken_kawasaki@spring.nifty.jp, linux-kernel@vger.kernel.org
-Subject: Re: +
-	firmware-correct-attribution-of-sierra-wireless-cis-files.patch
-	added to -mm tree
-Message-ID: <20100312204420.GO2763@decadent.org.uk>
-References: <201003122035.o2CKZdoD006510@imap1.linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, oleg@redhat.com, andi@firstfloor.org,
+       nhorman@tuxdriver.com
+Subject: [PATCH 0/2] exec: Rediff wrecked bits of usermodehelper overhaul
+Message-ID: <20100312204535.GA6723@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201003122035.o2CKZdoD006510@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Spam-Score: -4.1 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 12:35:39PM -0800, akpm@linux-foundation.org wrote:
-> 
-> The patch titled
->      firmware: correct attribution of Sierra Wireless CIS files
-> has been added to the -mm tree.  Its filename is
->      firmware-correct-attribution-of-sierra-wireless-cis-files.patch
-[...]
-> +Driver: SERIAL_8250_CS - Serial PCMCIA adapter
-> +
-> +File: cis/SW_555_SER.cis
-> +File: cis/SW_7xx_SER.cis
-> +File: cis/SW_8xx_SER.cis
-> +
-> +Licence: Unknown
-[...]
+Hey, so I've rediffed and tested the user mode helper bits from my previous
+patch set that got wrecked when the rcustring bits got pulled.  I've got he
+origional summary below, and the patches follwoing.  Note, their just my
+changes, rediffed to work without Andis patch set.  The other umh call sites can
+still use plain old call_usermodehelper as they did previously.  I'll submit
+patches as needed for other callers to make use of the init/cleanup functions as
+I have the time/ability to test those changes properly.  The changes below I've
+been able to test and verify myself.
 
-The licence actually appears to be GPLv3, so this patch should be replaced
-with the version in <http://article.gmane.org/gmane.linux.kernel/958246/raw>.
- 
-Ben.
+Hey all-
+        So, about 6 months ago, I made a set of changes to how the
+core-dump-to-a-pipe feature in the kernel works.  We had reports of several
+races, including some reports of apps bypassing our recursion check so that a
+process that was forked as part of a core_pattern setup could infinitely crash
+and refork until the system crashed.
 
--- 
-Ben Hutchings
-If God had intended Man to program,
-we'd have been born with serial I/O ports.
+        We fixes those by improving our recursion checks.  The new check
+basically refuses to fork a process if its core limit is zero, which works well.
+
+        Unfortunately, I've been getting grief from maintainer of user space
+programs that are inserted as the forked process of core_pattern.  They contend
+that in order for their programs (such as abrt and apport) to work, all the
+running processes in a system must have their core limits set to a non-zero
+value, to which I say 'yes'.  I did this by design, and think thats the right
+way to do things.
+
+        But I've been asked to ease this burden on user space enough times that
+I thought I would take a look at it.  The first suggestion was to make the
+recursion check fail on a non-zero 'special' number, like one.  That way the
+core collector process could set its core size ulimit to 1, and enable the
+kernel's recursion detection.  This isn't a bad idea on the surface, but I don't
+like it since its opt-in, in that if a program like abrt or apport has a bug and
+fails to set such a core limit, we're left with a recursively crashing system
+again.
+
+        So I've come up with this.  What I've done is modify the
+call_usermodehelper api such that an extra parameter is added, a function
+pointer which will be called by the user helper task, after it forks, but before
+it exec's the required process.  This will give the caller the opportunity to
+get a call back in the processes context, allowing it to do whatever it needs to
+to the process in the kernel prior to exec-ing the user space code.  In the case
+of do_coredump, this callback is ues to set the core ulimit of the helper
+process to 1.  This elimnates the opt-in problem that I had above, as it allows
+the ulimit for core sizes to be set to the value of 1, which is what the
+recursion check looks for in do_coredump.
+
+        This patch has been tested successfully by me.
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+CC: Oleg Nesterov <oleg@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org?
+
+
