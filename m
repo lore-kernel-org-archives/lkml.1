@@ -1,42 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932605Ab0CLKZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:25:57 -0500
-Received: from lucidpixels.com ([75.144.35.66]:46808 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932482Ab0CLKZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:25:56 -0500
-Date: Fri, 12 Mar 2010 05:25:53 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous
- reboots
-Message-ID: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	id S932637Ab0CLK0P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:26:15 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:59880 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932482Ab0CLK0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 05:26:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Ftezo0qMwL8qmKutx5cWVCKIytXYo3rADg9Wa/gWaOKSzqjKyrCZhbSYsLOw1wfD76
+         cpiS2x513hoYCY+66b2B+iF69qG8vUglikTDyOeAPbAEspx5jMndAl6UQoecGCdHjG/g
+         6gnnQrPmDYTIcYWNJIsvNeoJmMKrskmf08Sq4=
+From: revent82@gmail.com
+To: gregkh@suse.de, andre@bitwigglers.org, peterhuewe@gmx.de,
+       ak@linux.intel.com, eugeni@mandriva.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       revent <revent@router.Premier>
+Subject: [PATCH] Staging:asus_oled: Fixed problem of style tabs in asus_oled.c
+Date: Fri, 12 Mar 2010 15:26:06 +0500
+Message-Id: <1268389566-26737-1-git-send-email-revent82@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: revent <revent@router.Premier>
 
-I am trying to figure out why a particular host using a Gigabyte motherboard
-(AMD) continues to crash, memory/CPU OK, voltages normal, I see this in
-the kernel log:
+---
+ drivers/staging/asus_oled/asus_oled.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[    0.138774] PCI: Using ACPI for IRQ routing
-[    0.138825] PCI: pci_cache_line_size set to 64 bytes
-[    0.138830] pci 0000:00:00.0: address space collision: [mem 0xe0000000-0xffffffff 64bit] already in use
-
-If memory gets mapped into this space somehow, can that cause a spontaenous
-reboot?  What is the workaround for this problem?
-
-There are no PCI cards in this system, only a graphics card.
-
-I suppose the next things to try:
-apic=off
-lapic=off
-
-Justin.
+diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+index 7ebecc9..5b279fb 100644
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
+ };
+ 
+ static CLASS_ATTR_STRING(version, S_IRUGO,
+-		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
++			ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
+ 
+ static int __init asus_oled_init(void)
+ {
+-- 
+1.5.6.5
 
