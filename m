@@ -1,56 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934720Ab0CLXOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 18:14:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41650 "EHLO mx1.redhat.com"
+	id S934711Ab0CLXYw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 18:24:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58943 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279Ab0CLXOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 18:14:11 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 3/3] [BUGFIX] perf probe: Set need_dwarf if lazy matching
-	is used
-To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Date: Fri, 12 Mar 2010 18:22:24 -0500
-Message-ID: <20100312232224.2017.54550.stgit@localhost6.localdomain6>
-In-Reply-To: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
-References: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S933475Ab0CLXYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 18:24:51 -0500
+Subject: Re: [PATCH] enclosure: fix error path - actually return ERR_PTR()
+ on error
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1268401858-9213-1-git-send-email-ext-jani.1.nikula@nokia.com>
+References: <1268401858-9213-1-git-send-email-ext-jani.1.nikula@nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 16:14:42 -0600
+Message-ID: <1268432082.2802.401.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set need_dwarf if lazy matching pattern is specified, because
-lazy matching requires real source path for which we must use
-debuginfo.
+On Fri, 2010-03-12 at 15:50 +0200, Jani Nikula wrote:
+> Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+> 
+> ---
+> 
+> NOTE: I'm afraid I'm unable to test this; please consider this more a
+> bug report than a complete patch.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+It's a good bug report, thanks.  It looks like there's an unreleased
+cdev pointer along that path too, so this should be the final fix.
+
+James
+
 ---
 
- tools/perf/util/probe-event.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 53181db..7c004b6 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -242,7 +242,7 @@ void parse_perf_probe_event(const char *str, struct probe_point *pp,
+diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
+index 1eac626..68e4cd7 100644
+--- a/drivers/misc/enclosure.c
++++ b/drivers/misc/enclosure.c
+@@ -284,8 +284,11 @@ enclosure_component_register(struct enclosure_device *edev,
+ 	cdev->groups = enclosure_groups;
  
- 	/* Parse probe point */
- 	parse_perf_probe_probepoint(argv[0], pp);
--	if (pp->file || pp->line)
-+	if (pp->file || pp->line || pp->lazy_line)
- 		*need_dwarf = true;
+ 	err = device_register(cdev);
+-	if (err)
+-		ERR_PTR(err);
++	if (err) {
++		ecomp->number = -1;
++		put_device(cdev);
++		return ERR_PTR(err);
++	}
  
- 	/* Copy arguments and ensure return probe has no C argument */
+ 	return ecomp;
+ }
 
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+
