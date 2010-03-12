@@ -1,184 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349Ab0CLHBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 02:01:51 -0500
-Received: from mga11.intel.com ([192.55.52.93]:61130 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057Ab0CLHBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 02:01:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,625,1262592000"; 
-   d="scan'208";a="780192544"
-Subject: [BUGFIX] Fix AES-NI CTR optimization compiling failure with gas
- 2.16.1
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Mar 2010 15:01:47 +0800
-Message-ID: <1268377307.1640.491.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1754674Ab0CLHB5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 02:01:57 -0500
+Received: from mtagate5.uk.ibm.com ([194.196.100.165]:35363 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754414Ab0CLHBy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 02:01:54 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: tytso@mit.edu
+Subject: [PATCH resend] ext4: allow defrag (EXT4_IOC_MOVE_EXT) in 32bit compat mode
+Date: Fri, 12 Mar 2010 08:01:51 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.34-rc1-self-dirty; KDE/4.3.4; x86_64; ; )
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Akira Fujita <a-fujita@rs.jp.nec.com>,
+       Eric Sandeen <sandeen@redhat.com>
+References: <201003072132.10579.borntraeger@de.ibm.com>
+In-Reply-To: <201003072132.10579.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003120801.51249.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton reported that AES-NI CTR optimization failed to compile
-with gas 2.16.1, the error message is as follow:
+Ted, can you consider this patch for ext4?
 
-arch/x86/crypto/aesni-intel_asm.S: Assembler messages:
-arch/x86/crypto/aesni-intel_asm.S:752: Error: suffix or operands invalid for `movq'
-arch/x86/crypto/aesni-intel_asm.S:753: Error: suffix or operands invalid for `movq'
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-To fix this, a gas macro is defined to assemble movq with 64bit
-general purpose registers and XMM registers. The macro will generate
-the raw .byte sequence for needed instructions.
+I have an x86_64 kernel with i386 userspace. e4defrag fails on the
+EXT4_IOC_MOVE_EXT ioctl because it is not wired up for the compat
+case. It seems that 
+struct move_extent is compat save, only types with fixed widths are used.
+{
+        __u32 reserved;         /* should be zero */
+        __u32 donor_fd;         /* donor file descriptor */
+        __u64 orig_start;       /* logical start offset in block for orig */
+        __u64 donor_start;      /* logical start offset in block for donor */
+        __u64 len;              /* block length to be moved */
+        __u64 moved_len;        /* moved block length */
+};
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Reviewed-by: Eric Sandeen <sandeen@redhat.com>
+Acked-by: Akira Fujita <a-fujita@rs.jp.nec.com> 
+
 ---
- arch/x86/crypto/aesni-intel_asm.S |    4 -
- arch/x86/include/asm/inst.h       |   96 ++++++++++++++++++++++++++++++++++++--
- 2 files changed, 95 insertions(+), 5 deletions(-)
+ fs/ext4/ioctl.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/x86/crypto/aesni-intel_asm.S
-+++ b/arch/x86/crypto/aesni-intel_asm.S
-@@ -749,8 +749,8 @@ _aesni_inc_init:
- 	movaps IV, CTR
- 	PSHUFB_XMM BSWAP_MASK CTR
- 	mov $1, TCTR_LOW
--	movq TCTR_LOW, INC
--	movq CTR, TCTR_LOW
-+	MOVQ_R64_XMM TCTR_LOW INC
-+	MOVQ_R64_XMM CTR TCTR_LOW
- 	ret
- 
- /*
---- a/arch/x86/include/asm/inst.h
-+++ b/arch/x86/include/asm/inst.h
-@@ -7,7 +7,66 @@
- 
- #ifdef __ASSEMBLY__
- 
-+#define REG_NUM_INVALID		100
-+
-+#define REG_TYPE_R64		0
-+#define REG_TYPE_XMM		1
-+#define REG_TYPE_INVALID	100
-+
-+	.macro R64_NUM opd r64
-+	\opd = REG_NUM_INVALID
-+	.ifc \r64,%rax
-+	\opd = 0
-+	.endif
-+	.ifc \r64,%rcx
-+	\opd = 1
-+	.endif
-+	.ifc \r64,%rdx
-+	\opd = 2
-+	.endif
-+	.ifc \r64,%rbx
-+	\opd = 3
-+	.endif
-+	.ifc \r64,%rsp
-+	\opd = 4
-+	.endif
-+	.ifc \r64,%rbp
-+	\opd = 5
-+	.endif
-+	.ifc \r64,%rsi
-+	\opd = 6
-+	.endif
-+	.ifc \r64,%rdi
-+	\opd = 7
-+	.endif
-+	.ifc \r64,%r8
-+	\opd = 8
-+	.endif
-+	.ifc \r64,%r9
-+	\opd = 9
-+	.endif
-+	.ifc \r64,%r10
-+	\opd = 10
-+	.endif
-+	.ifc \r64,%r11
-+	\opd = 11
-+	.endif
-+	.ifc \r64,%r12
-+	\opd = 12
-+	.endif
-+	.ifc \r64,%r13
-+	\opd = 13
-+	.endif
-+	.ifc \r64,%r14
-+	\opd = 14
-+	.endif
-+	.ifc \r64,%r15
-+	\opd = 15
-+	.endif
-+	.endm
-+
- 	.macro XMM_NUM opd xmm
-+	\opd = REG_NUM_INVALID
- 	.ifc \xmm,%xmm0
- 	\opd = 0
- 	.endif
-@@ -58,13 +117,25 @@
- 	.endif
- 	.endm
- 
-+	.macro REG_TYPE type reg
-+	R64_NUM reg_type_r64 \reg
-+	XMM_NUM reg_type_xmm \reg
-+	.if reg_type_r64 != REG_NUM_INVALID
-+	\type = REG_TYPE_R64
-+	.elseif reg_type_xmm != REG_NUM_INVALID
-+	\type = REG_TYPE_XMM
-+	.else
-+	\type = REG_TYPE_INVALID
-+	.endif
-+	.endm
-+
- 	.macro PFX_OPD_SIZE
- 	.byte 0x66
- 	.endm
- 
--	.macro PFX_REX opd1 opd2
--	.if (\opd1 | \opd2) & 8
--	.byte 0x40 | ((\opd1 & 8) >> 3) | ((\opd2 & 8) >> 1)
-+	.macro PFX_REX opd1 opd2 W=0
-+	.if ((\opd1 | \opd2) & 8) || \W
-+	.byte 0x40 | ((\opd1 & 8) >> 3) | ((\opd2 & 8) >> 1) | (\W << 3)
- 	.endif
- 	.endm
- 
-@@ -145,6 +216,25 @@
- 	.byte 0x0f, 0x38, 0xdf
- 	MODRM 0xc0 aesdeclast_opd1 aesdeclast_opd2
- 	.endm
-+
-+	.macro MOVQ_R64_XMM opd1 opd2
-+	REG_TYPE movq_r64_xmm_opd1_type \opd1
-+	.if movq_r64_xmm_opd1_type == REG_TYPE_XMM
-+	XMM_NUM movq_r64_xmm_opd1 \opd1
-+	R64_NUM movq_r64_xmm_opd2 \opd2
-+	.else
-+	R64_NUM movq_r64_xmm_opd1 \opd1
-+	XMM_NUM movq_r64_xmm_opd2 \opd2
-+	.endif
-+	PFX_OPD_SIZE
-+	PFX_REX movq_r64_xmm_opd1 movq_r64_xmm_opd2 1
-+	.if movq_r64_xmm_opd1_type == REG_TYPE_XMM
-+	.byte 0x0f, 0x7e
-+	.else
-+	.byte 0x0f, 0x6e
-+	.endif
-+	MODRM 0xc0 movq_r64_xmm_opd1 movq_r64_xmm_opd2
-+	.endm
- #endif
- 
- #endif
-
+--- a/fs/ext4/ioctl.c
++++ b/fs/ext4/ioctl.c
+@@ -375,6 +375,8 @@ long ext4_compat_ioctl(struct file *file
+ 		break;
+ 	case EXT4_IOC_GROUP_ADD:
+ 		break;
++	case EXT4_IOC_MOVE_EXT:
++		break;
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
 
