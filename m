@@ -1,90 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932460Ab0CLWsi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:48:38 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56330 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932205Ab0CLWsh (ORCPT
+	id S933188Ab0CLWtI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:49:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42798 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932205Ab0CLWtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:48:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=u+JaeF2vojh81xgkmARbZcn9I0RYnxwyZ0xdG7p1QU3fDD6QYthtYAiRYbQDR6sgMB
-         EDV2dNEONLHI0gxhYpfAi1jaAtd+OajiWcGuxcSX6hOQhB08R2+0bUJSD/3EA/6Zhh7/
-         hqjhvRcDp3XYDIB/PC89ACAxH7DgqVMt+yjps=
-Date: Fri, 12 Mar 2010 14:48:28 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Florian Mickler <florian@mickler.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 2/2] enhance sysfs rfkill interface
-Message-ID: <20100312224828.GA18618@core.coreip.homeip.net>
-References: <1268416988-24862-1-git-send-email-florian@mickler.org>
- <1268416988-24862-2-git-send-email-florian@mickler.org>
- <1268416988-24862-3-git-send-email-florian@mickler.org>
- <20100312182209.GB8736@core.coreip.homeip.net>
- <20100312215743.7671d173@schatten.dmk.lab>
- <20100312212025.GA17712@core.coreip.homeip.net>
- <20100312233925.74effc7d@schatten.dmk.lab>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100312233925.74effc7d@schatten.dmk.lab>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Fri, 12 Mar 2010 17:49:05 -0500
+Date: Fri, 12 Mar 2010 14:48:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marco Stornelli <marco.stornelli@gmail.com>
+Cc: Yuasa Yoichi <yuasa@linux-mips.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>
+Subject: Re: [PATCH v2] char drivers: Ram oops/panic logger
+Message-Id: <20100312144854.cb94d9b4.akpm@linux-foundation.org>
+In-Reply-To: <2ea1731b1003100415i46dd8fcem85b85f49fb1a479@mail.gmail.com>
+References: <4B968834.3040609@gmail.com>
+	<21eaeb5a1003091808s2d7638cxd524952a7d84b378@mail.gmail.com>
+	<2ea1731b1003100002w104633ffy1ae46ef3d245e5b5@mail.gmail.com>
+	<21eaeb5a1003100120x6cd3f69ak598954af3c9fe955@mail.gmail.com>
+	<2ea1731b1003100415i46dd8fcem85b85f49fb1a479@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 11:39:25PM +0100, Florian Mickler wrote:
-> On Fri, 12 Mar 2010 13:20:26 -0800
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On Fri, Mar 12, 2010 at 09:57:43PM +0100, Florian Mickler wrote:
-> > > On Fri, 12 Mar 2010 10:22:09 -0800
-> > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > > 
-> > > > On Fri, Mar 12, 2010 at 07:03:08PM +0100, florian@mickler.org wrote:
-> > > > >  
-> > > > > +static ssize_t rfkill_hard_show(struct device *dev,
-> > > > > +				 struct device_attribute *attr,
-> > > > > +				 char *buf)
-> > > > > +{
-> > > > > +	struct rfkill *rfkill = to_rfkill(dev);
-> > > > > +	unsigned long flags;
-> > > > > +	u32 state;
-> > > > > +
-> > > > > +	spin_lock_irqsave(&rfkill->lock, flags);
-> > > > > +	state = rfkill->state;
-> > > > > +	spin_unlock_irqrestore(&rfkill->lock, flags);
-> > > > 
-> > > > Why exactly is this lock needed?
-> > > 
-> > > The rfkill state is updated from multiple contexts... Am I overlooking
-> > > smth obvious here?
-> > > 
-> > 
-> > You are not updating but reading... Are you concerned about seeing
-> > a partial write to u32? It does not happen.
-> > 
-> Hm.. You shure? On every arch that supports wireless drivers? 
-> 
-> I've just copied that code from the old sysfs state-file handler.
-> So I assumed that reading partial updated state can happen... Also I
-> just searched a little but did not find anything, cause i didn't know
-> where to look. Who garantees this? Is it a gcc thing? 
-> 
+On Wed, 10 Mar 2010 13:15:25 +0100
+Marco Stornelli <marco.stornelli@gmail.com> wrote:
 
-None of the arches would do byte-by-byte writes to a u32, they'd write
-dword at once. Also, even if they could, you are interested in a single
-flag (bit). You do realize that once you leave spinlock whatever you
-fetched is stale data and may not be trusted?
+> 2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
+> > 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
+> >> 2010/3/10 Yuasa Yoichi <yuasa@linux-mips.org>:
+> >>> Hi,
+> >>>
+> >>> 2010/3/10 Marco Stornelli <marco.stornelli@gmail.com>:
+> >>>> Ramoops, like mtdoops, can log oops/panic information but in RAM.
+> >>>
+> >>> What is different from mtdoops + mtd-ram?
+> >>>
+> >>> Yoichi
+> >>>
+> >>
+> >> It can be used in a very easy way with persistent RAM for systems
+> >> without flash support. For this systems, with this driver, it's no
+> >> more needed add to the kernel the mtd subsystem with advantage in
+> >> footprint as I said in the description.
+> >
+> > right.
+> > But,
+> >
+> >> In addition, you can save
+> >> flash space and store this information only in RAM. I think it's very
+> >> useful for embedded systems.
+> >
+> > CONFIG_MTD_RAM uses only RAM.
+> > I think there's no big difference about this point.
+> >
+> 
+> I meant with the "classic" use of mtdoops, therefore with a flash
+> partition without use MTD_RAM. Using MTD_RAM, it's more or less the
+> same thing, with the exception of "where" you want deploy the log. For
+> example: if in your system you have got a nvram you can use it without
+> problem, you need to specify the address of the nvram to the module.
+> Very simple. I  think it's a small driver but very useful, feedback
+> from other embedded guys are welcome.
 
--- 
-Dmitry
+Seems sensible to me.  If you have a machine whose memory is persistent
+across reboots then you reserve an arbitrary 4k hunk of memory for
+collecting oops traces, yes?
+
+What tools are used for displaying that memory on the next boot?  How
+do those tools distinguish between "valid oops trace" and "garbage
+because it was just powered on"?  A magic signature?
+
+Should the kernel provide the 4k of memory rather than (or in addition
+to) requiring that the system administrator reserve it and tell the
+kernel about it?  That'd be a matter of creating a linker section which
+isn't cleared out by the startup code.
+
