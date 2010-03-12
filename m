@@ -1,78 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934450Ab0CLS12 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 13:27:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:50273 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934424Ab0CLS11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 13:27:27 -0500
-Subject: Re: [GIT PULL] final scsi updates for 2.6.34-rc1
-From: James Bottomley <James.Bottomley@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1003121008420.3719@i5.linux-foundation.org>
-References: <1268242604.22601.25.camel@mulgrave.site>
-	 <alpine.LFD.2.00.1003121008420.3719@i5.linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Mar 2010 12:27:21 -0600
-Message-ID: <1268418441.2802.61.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S934465Ab0CLSfI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 13:35:08 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:44738 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934085Ab0CLSfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 13:35:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uuZ3XIUn2LSfnk6VIyEYkzJnmfRfUApdB0GzQVD2QUSLn8kxOJ6hhwLH1stBL+3UYT
+         sLzy5Q4x3UPbYuEkBhatpmcMAoFuqVfBVEg9oIRmaisBXkT/LoCuHe6WYnvG2f4AQj0r
+         1zUM5ahj2pS3SXiMGbWxDV7ciwvCevDTuBoO4=
+Date: Fri, 12 Mar 2010 10:34:51 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: kernel-janitors@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] arch/mips/txx9/generic: init dynamic bin_attribute
+ structures
+Message-ID: <20100312183450.GC8736@core.coreip.homeip.net>
+References: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de>
+ <1268377431-11671-2-git-send-email-w.sang@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268377431-11671-2-git-send-email-w.sang@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 10:10 -0800, Linus Torvalds wrote:
+On Fri, Mar 12, 2010 at 08:03:49AM +0100, Wolfram Sang wrote:
+> Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requirement.
+> Found with coccinelle, but fixed manually. Compile tested on X86 where
+> possible.
 > 
-> On Wed, 10 Mar 2010, James Bottomley wrote:
-> >
-> > OK, I know this is a bit late, but no-one told me the merge window was
-> > going to close early, but even if they had I'd have been unable to do
-> > anything about it, since I've been in transit from India all this week
-> > so far (don't ask ...).
+
+Regarding all 3 - it looks like these dynamically alocated attributes
+could be converted to statically allocated ones. I'd recommend doing
+that instead (in fact, I posted patch for the firmware_class couple days
+ago).
+
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  arch/mips/txx9/generic/setup.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> I'm not going to pull.
-> 
-> The whole "a few days early" was literally aimed at you and some similar 
-> people who _always_ send the pull request late, literally the last days.
-> 
-> I'm fed up with it.
-> 
-> The damn thing should have been ready when the merge window _opened_, not 
-> just before closing. And now there _is_ a tree waiting for me for the next 
-> merge window. Goodie.
+> diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
+> index 7174d83..95184a0 100644
+> --- a/arch/mips/txx9/generic/setup.c
+> +++ b/arch/mips/txx9/generic/setup.c
+> @@ -956,6 +956,7 @@ void __init txx9_sramc_init(struct resource *r)
+>  	if (!dev->base)
+>  		goto exit;
+>  	dev->dev.cls = &txx9_sramc_sysdev_class;
+> +	sysfs_bin_attr_init(&dev->bindata_attr);
+>  	dev->bindata_attr.attr.name = "bindata";
+>  	dev->bindata_attr.attr.mode = S_IRUSR | S_IWUSR;
+>  	dev->bindata_attr.read = txx9_sram_read;
 
-I do always have a tree ready in the first days of the merge window.  It
-was, in fact, here:
-
-commit 654451748b779b28077d9058442d0f354251870d
-Merge: 64d497f 77c9cfc
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri Feb 26 16:55:27 2010 -0800
-
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
-
-The slight problem is that I accumulate updates (like almost everyone
-else) from the few days before the merge window opened up until about
-the middle of the second week.  That's what goes into the final pull,
-plus assorted bug fixes that showed up during the window.
-
-I'm not objecting to a shorter merge window, just the unpredictability
-of all of this.  The reason I delay the second pull until the last days
-of the merge window is so that the proposed changes get the maximum
-amount of shake down in linux-next ... and that usually means I close
-down the inclusion window about three days before the pull request goes
-out.
-
-Personally, I do like the two week merge window, because it shakes out
-contributors to me who should have got their act together but didn't.
-If you don't like the way this works, fine ... I just need to know what
-the parameters are to adjust accordingly, so what is it now?  A 10 day
-merge window?
-
-James
-
-
+-- 
+Dmitry
