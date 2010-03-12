@@ -1,50 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934686Ab0CLWdz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:33:55 -0500
-Received: from mga10.intel.com ([192.55.52.92]:28833 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934667Ab0CLWdy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:33:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,628,1262592000"; 
-   d="scan'208";a="548618807"
-Message-ID: <4B9AC149.1010507@linux.intel.com>
-Date: Fri, 12 Mar 2010 14:33:45 -0800
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Jan Engelhardt <jengelh@medozas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: page_to_nid not linked in on PAE
-References: <alpine.LSU.2.01.1003091210230.10157@obet.zrqbmnf.qr>	 <alpine.LSU.2.01.1003101128340.9318@obet.zrqbmnf.qr> <1268423424.2793.21.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1268423424.2793.21.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	id S932227Ab0CLWjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:39:43 -0500
+Received: from ist.d-labs.de ([213.239.218.44]:52091 "EHLO mx01.d-labs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839Ab0CLWjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 17:39:41 -0500
+Date: Fri, 12 Mar 2010 23:39:25 +0100
+From: Florian Mickler <florian@mickler.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 2/2] enhance sysfs rfkill interface
+Message-ID: <20100312233925.74effc7d@schatten.dmk.lab>
+In-Reply-To: <20100312212025.GA17712@core.coreip.homeip.net>
+References: <1268416988-24862-1-git-send-email-florian@mickler.org>
+	<1268416988-24862-2-git-send-email-florian@mickler.org>
+	<1268416988-24862-3-git-send-email-florian@mickler.org>
+	<20100312182209.GB8736@core.coreip.homeip.net>
+	<20100312215743.7671d173@schatten.dmk.lab>
+	<20100312212025.GA17712@core.coreip.homeip.net>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 12 Mar 2010 13:20:26 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-> Jan, Even with out using the PG_head, PG_tail, PG_uncached and
-> PG_hwpoison, by allowing the NODES_SHIFT to have a maximum value of 9 on
-> 32bit kernel, can still result in the page flags to runout and result in
-> this problem. Best solution for now is to limit the NODES_SHIFT to 5. I
-> don't know of any platforms that have>  32nodes and where we care about
-> 32bit linux kernel. So it should be ok as a fix. If someone in future
-> cares about>  32 nodes for 32bit kernel, then we can think of a better
-> solution. Do you agree? I copied Andi/Nick for their eyes aswell on
-> this.
+> On Fri, Mar 12, 2010 at 09:57:43PM +0100, Florian Mickler wrote:
+> > On Fri, 12 Mar 2010 10:22:09 -0800
+> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > 
+> > > On Fri, Mar 12, 2010 at 07:03:08PM +0100, florian@mickler.org wrote:
+> > > >  
+> > > > +static ssize_t rfkill_hard_show(struct device *dev,
+> > > > +				 struct device_attribute *attr,
+> > > > +				 char *buf)
+> > > > +{
+> > > > +	struct rfkill *rfkill = to_rfkill(dev);
+> > > > +	unsigned long flags;
+> > > > +	u32 state;
+> > > > +
+> > > > +	spin_lock_irqsave(&rfkill->lock, flags);
+> > > > +	state = rfkill->state;
+> > > > +	spin_unlock_irqrestore(&rfkill->lock, flags);
+> > > 
+> > > Why exactly is this lock needed?
+> > 
+> > The rfkill state is updated from multiple contexts... Am I overlooking
+> > smth obvious here?
+> > 
+> 
+> You are not updating but reading... Are you concerned about seeing
+> a partial write to u32? It does not happen.
+> 
+Hm.. You shure? On every arch that supports wireless drivers? 
 
-Seems like the right approach to me. Although it might be better to
-use 1 3 or 1..4 or so, just in case someone else adds more page bits
-later (I'm sure it'll happen again). Even 8 nodes should be plenty for
-32bit.
-
-Acked-by: Andi Kleen <ak@linux.intel.com>
-
--Andi
+I've just copied that code from the old sysfs state-file handler.
+So I assumed that reading partial updated state can happen... Also I
+just searched a little but did not find anything, cause i didn't know
+where to look. Who garantees this? Is it a gcc thing? 
 
