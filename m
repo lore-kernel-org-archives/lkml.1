@@ -1,95 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504Ab0CLORi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 09:17:38 -0500
-Received: from smtp.citrix.com ([66.165.176.89]:11368 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758196Ab0CLORh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 09:17:37 -0500
-X-IronPort-AV: E=Sophos;i="4.49,626,1262581200"; 
-   d="scan'208";a="7537738"
-Subject: Re: patch
- x86-xen-disable-highmem-pte-allocation-even-when-config_highpte-y.patch
- added to 2.6.33-stable tree
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-CC: "gregkh@suse.de" <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "jeremy@goop.org" <jeremy@goop.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, "pasik@iki.fi" <pasik@iki.fi>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "stable@kernel.org" <stable@kernel.org>
-In-Reply-To: <201003121508.54384.s.L-H@gmx.de>
-References: <12683359492650@site>  <201003121508.54384.s.L-H@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Fri, 12 Mar 2010 14:17:33 +0000
-Message-ID: <1268403453.10129.7360.camel@zakaz.uk.xensource.com>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 8bit
+	id S933919Ab0CLOYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 09:24:22 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:36128 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933212Ab0CLOYV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 09:24:21 -0500
+From: Marcelo Roberto Jimenez <mroberto@cpti.cetuc.puc-rio.br>
+To: linux@arm.linux.org.uk, mroberto@cpti.cetuc.puc-rio.br
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] ARM: mach-sa1100: Fix for compiler warning of uninitialized variable.
+Date: Fri, 12 Mar 2010 11:23:46 -0300
+Message-Id: <1268403827-16127-1-git-send-email-mroberto@cpti.cetuc.puc-rio.br>
+X-Mailer: git-send-email 1.7.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 14:08 +0000, Stefan Lippers-Hollmann wrote:
-> Hi
-> 
-> On Friday 12 March 2010, gregkh@suse.de wrote:
-> > This is a note to let you know that we have just queued up the patch titled
-> > 
-> >     Subject: x86, xen: Disable highmem PTE allocation even when CONFIG_HIGHPTE=y
-> > 
-> > to the 2.6.33-stable tree.  Its filename is
-> > 
-> >     x86-xen-disable-highmem-pte-allocation-even-when-config_highpte-y.patch
-> > 
-> > A git repo of this tree can be found at 
-> >     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-> > 
-> > 
-> > From 817a824b75b1475f1b067c8cee318c7b4d66fcde Mon Sep 17 00:00:00 2001
-> > From: Ian Campbell <ian.campbell@citrix.com>
-> > Date: Fri, 26 Feb 2010 17:16:00 +0000
-> > Subject: x86, xen: Disable highmem PTE allocation even when CONFIG_HIGHPTE=y
-> > MIME-Version: 1.0
-> > Content-Type: text/plain; charset=UTF-8
-> > Content-Transfer-Encoding: 8bit
-> > 
-> > From: Ian Campbell <ian.campbell@citrix.com>
-> > 
-> > commit 817a824b75b1475f1b067c8cee318c7b4d66fcde upstream.
-> > 
-> > There's a path in the pagefault code where the kernel deliberately
-> > breaks its own locking rules by kmapping a high pte page without
-> > holding the pagetable lock (in at least page_check_address). This
-> > breaks Xen's ability to track the pinned/unpinned state of the
-> > page. There does not appear to be a viable workaround for this
-> > behaviour so simply disable HIGHPTE for all Xen guests.
-> 
-> This patch breaks compilation of the current 2.6.33 -stable queue and might
-> also affect queue-2.6.32 (untested):
-> 
->   CC      arch/x86/xen/enlighten.o
-> arch/x86/xen/enlighten.c: In function ‘xen_start_kernel’:
-> arch/x86/xen/enlighten.c:1102: error: ‘__userpte_alloc_gfp’ undeclared (first use in this function)
-> arch/x86/xen/enlighten.c:1102: error: (Each undeclared identifier is reported only once
-> arch/x86/xen/enlighten.c:1102: error: for each function it appears in.)
-> make[2]: *** [arch/x86/xen/enlighten.o] Error 1
-> make[1]: *** [arch/x86/xen] Error 2
-> 
-> as it seems to depend (tested) on:
-> 
-> commit 14315592009c17035cac81f4954d5a1f4d71e489
-> Author: Ian Campbell <ian.campbell@citrix.com>
-> Date:   Wed Feb 17 10:38:10 2010 +0000
-> 
->     x86, mm: Allow highmem user page tables to be disabled at boot time
+This is a fix for the compiler warning: 'new_ppcr' may be used
+uninitialized in this function.
 
-Thanks Stefan, this is indeed the correct fix. I pointed Greg to this
-patch in private mail this morning.
+Signed-off-by: Marcelo Roberto Jimenez <mroberto@cpti.cetuc.puc-rio.br>
+---
+ arch/arm/mach-sa1100/cpu-sa1100.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Ian.
-
-
+diff --git a/arch/arm/mach-sa1100/cpu-sa1100.c b/arch/arm/mach-sa1100/cpu-sa1100.c
+index ef81787..a98712e 100644
+--- a/arch/arm/mach-sa1100/cpu-sa1100.c
++++ b/arch/arm/mach-sa1100/cpu-sa1100.c
+@@ -184,16 +184,15 @@ static int sa1100_target(struct cpufreq_policy *policy,
+ {
+ 	unsigned int cur = sa11x0_getspeed(0);
+ 	unsigned int new_ppcr;
+-
+ 	struct cpufreq_freqs freqs;
++
++	new_ppcr = sa11x0_freq_to_ppcr(target_freq);
+ 	switch(relation){
+ 	case CPUFREQ_RELATION_L:
+-		new_ppcr = sa11x0_freq_to_ppcr(target_freq);
+ 		if (sa11x0_ppcr_to_freq(new_ppcr) > policy->max)
+ 			new_ppcr--;
+ 		break;
+ 	case CPUFREQ_RELATION_H:
+-		new_ppcr = sa11x0_freq_to_ppcr(target_freq);
+ 		if ((sa11x0_ppcr_to_freq(new_ppcr) > target_freq) &&
+ 		    (sa11x0_ppcr_to_freq(new_ppcr - 1) >= policy->min))
+ 			new_ppcr--;
+-- 
+1.7.0.1
 
