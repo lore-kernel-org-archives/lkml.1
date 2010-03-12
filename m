@@ -1,104 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242Ab0CKX72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 18:59:28 -0500
-Received: from trinity.develer.com ([83.149.158.210]:35678 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754464Ab0CKX71 (ORCPT
+	id S1755280Ab0CLABK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 19:01:10 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:8418 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755166Ab0CLABG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 18:59:27 -0500
-Date: Fri, 12 Mar 2010 00:59:22 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-ID: <20100311235922.GA4569@linux>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
- <20100311180753.GE29246@redhat.com>
+	Thu, 11 Mar 2010 19:01:06 -0500
+Subject: [PATCH v1 0/3] [RFC] resource, PCI: work around pci=use_crs conflicts
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yanko Kaneti <yaneti@declera.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Renninger <trenn@suse.de>, maciej.rutecki@gmail.com
+Date: Thu, 11 Mar 2010 17:01:03 -0700
+Message-ID: <20100311235954.4355.23100.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100311180753.GE29246@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 01:07:53PM -0500, Vivek Goyal wrote:
-> On Wed, Mar 10, 2010 at 12:00:31AM +0100, Andrea Righi wrote:
-> > Control the maximum amount of dirty pages a cgroup can have at any given time.
-> > 
-> > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> > page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> > will not be able to consume more than their designated share of dirty pages and
-> > will be forced to perform write-out if they cross that limit.
-> > 
-> > The overall design is the following:
-> > 
-> >  - account dirty pages per cgroup
-> >  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
-> >    and memory.dirty_background_ratio / memory.dirty_background_bytes in
-> >    cgroupfs
-> >  - start to write-out (background or actively) when the cgroup limits are
-> >    exceeded
-> > 
-> > This feature is supposed to be strictly connected to any underlying IO
-> > controller implementation, so we can stop increasing dirty pages in VM layer
-> > and enforce a write-out before any cgroup will consume the global amount of
-> > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
-> > /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
-> > 
-> 
-> Hi Andrea,
-> 
-> I am doing a simple dd test of writting a 4G file. This machine has got
-> 64G of memory and I have created one cgroup with 100M as limit_in_bytes.
-> 
-> I run following dd program both in root cgroup as well as test1/
-> cgroup(100M limit) one after the other.
-> 
-> In root cgroup
-> ==============
-> dd if=/dev/zero of=/root/zerofile bs=4K count=1000000
-> 1000000+0 records in
-> 1000000+0 records out
-> 4096000000 bytes (4.1 GB) copied, 59.5571 s, 68.8 MB/s
-> 
-> In test1/ cgroup
-> ===============
-> dd if=/dev/zero of=/root/zerofile bs=4K count=1000000
-> 1000000+0 records in
-> 1000000+0 records out
-> 4096000000 bytes (4.1 GB) copied, 20.6683 s, 198 MB/s
-> 
-> It is strange that we are throttling process in root group much more than
-> process in test1/ cgroup?
+These patches are to fix this pci=use_crs regression:
 
-mmmh.. strange, on my side I get something as expected:
+    http://bugzilla.kernel.org/show_bug.cgi?id=15480
 
-<root cgroup>
-$ dd if=/dev/zero of=test bs=1M count=500
-500+0 records in
-500+0 records out
-524288000 bytes (524 MB) copied, 6.28377 s, 83.4 MB/s
+The problem is that BIOS reported a PCI host bridge window that overlaps
+system RAM.  This workaround trims the window to avoid the overlap, which
+requires information about the conflicting resource.
 
-<child cgroup with 100M memory.limit_in_bytes>
-$ dd if=/dev/zero of=test bs=1M count=500
-500+0 records in
-500+0 records out
-524288000 bytes (524 MB) copied, 11.8884 s, 44.1 MB/s
+Yanko, I reworked these a bit, so if you have a chance to retest them
+and collect another dmesg log, I'd appreciate it.
 
-Did you change the global /proc/sys/vm/dirty_* or memcg dirty
-parameters?
+I'm still hoping for someone to find out how Windows deals with this, but
+haven't gotten any data yet.
 
--Andrea
+---
+
+Bjorn Helgaas (3):
+      resources: add interfaces that return conflict information
+      x86/PCI: trim _CRS windows when they conflict with previous reservations
+      PCI: for address space collisions, show conflicting resource
+
+
+ arch/x86/pci/acpi.c     |   48 ++++++++++++++++++++++++++++++++++-------------
+ drivers/pci/setup-res.c |   14 ++++++++------
+ include/linux/ioport.h  |    2 ++
+ kernel/resource.c       |   44 ++++++++++++++++++++++++++++++++++++-------
+ 4 files changed, 82 insertions(+), 26 deletions(-)
