@@ -1,59 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934563Ab0CLUWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 15:22:16 -0500
-Received: from claw.goop.org ([74.207.240.146]:52030 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932176Ab0CLUWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 15:22:14 -0500
-Message-ID: <4B9AA26F.4000508@goop.org>
-Date: Fri, 12 Mar 2010 12:22:07 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
+	id S934575Ab0CLU1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 15:27:19 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:49199 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934556Ab0CLU1R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 15:27:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xXDsgLrIMvDEPwTylcdxxvwbx9fZHfVXehjbdo+GrwxHROQhHlHJ1v1Q4cgefVyf5k
+         4CpAZlOaHxAYcSG+HbNqe4UO0qjZeENhvXmZq2IcpQligLsiNFpKxrJ6o1/9UZVaOOsT
+         ewyIV9Jqz4LyZH23zT7El/3p6x2QmpxBPTiVA=
 MIME-Version: 1.0
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 2 of 5] early PV on HVM
-References: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop> <4B995EA6.8080105@goop.org> <alpine.DEB.2.00.1003121819500.27222@kaball-desktop>
-In-Reply-To: <alpine.DEB.2.00.1003121819500.27222@kaball-desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.DEB.2.00.1003121502160.6929@p34.internal.lan>
+References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan>
+	 <alpine.DEB.2.00.1003120548551.6420@p34.internal.lan>
+	 <alpine.DEB.2.00.1003120556590.15732@p34.internal.lan>
+	 <alpine.DEB.2.00.1003120743530.15732@p34.internal.lan>
+	 <alpine.DEB.2.00.1003120755340.15732@p34.internal.lan>
+	 <alpine.DEB.2.00.1003120809030.15732@p34.internal.lan>
+	 <86802c441003121201y4c946fecrda5463b056f1ba58@mail.gmail.com>
+	 <alpine.DEB.2.00.1003121502160.6929@p34.internal.lan>
+Date: Fri, 12 Mar 2010 12:27:16 -0800
+X-Google-Sender-Auth: 5348238c385a8053
+Message-ID: <86802c441003121227j77edc017vd83b2ab866ec79d8@mail.gmail.com>
+Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous 
+	reboots [full dmesg]
+From: Yinghai Lu <yinghai@kernel.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/2010 11:09 AM, Stefano Stabellini wrote:
-> My version is not 64-bit specific, should I move it to a new file
-> anyway?
+On Fri, Mar 12, 2010 at 12:02 PM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 >
-> I was trying to keep the differences with Sheng's version low, but in
-> this case I am not quite sure how to manage it.
-> Suggestions are welcome.
->    
+>
+> On Fri, 12 Mar 2010, Yinghai Lu wrote:
+>
+>> On Fri, Mar 12, 2010 at 5:10 AM, Justin Piszcz <jpiszcz@lucidpixels.com>
+>> wrote:
+>>>
+>>> [    0.112379] pci 0000:00:00.0: reg 1c: [mem 0xe0000000-0xffffffff
+>>> 64bit]
+>>
+>>> [    0.133510] PCI: pci_cache_line_size set to 64 bytes
+>>> [    0.133515] pci 0000:00:00.0: BAR 3: reserving [mem
+>>> 0xe0000000-0xffffffff
+>>> flags 0x120204] (d=0, p=0)
+>>> [    0.133518] pci 0000:00:00.0: address space collision: [mem
+>>> 0xe0000000-0xffffffff 64bit] already in use
+>>> [    0.133522] pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xffffffff
+>>> 64bit]
+>>> [    0.137020] system 00:09: [mem 0xe0000000-0xefffffff] has been
+>>> reserved
+>>> [    0.172034] pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
+>>> [    0.172035] pci_bus 0000:00: resource 1 [mem 0x00000000-0xffffffff]
+>>
+>> looks like the silicon report wrong size in that BAR3
+>>
+>> YH
+>
+> Hi,
+>
+> Is there anyway to work around this?  Or is it a bad motherboard?
+>
 
-My rough rules for code layout (in no particular order):
+maybe one new BIOS could hide that register
 
-    * keep similar functions together (even if they're not necessarily
-      sharing common code)
-    * dislike externs and cross-file references (ie, prefer static
-      functions/data) -> keep code sharing functions/data together
-    * dislike #ifdef CONFIG_x within files; prefer Makefile rules to
-      either completely compile or not compile files
-    * dislike dumping-ground files
-    * dislike too-small files
-    * dislike moving code between files, so its better to get it right
-      from the start (it makes merging harder)
+or use pci quirk to hide that in OS.
 
-So in this case, enlighten.c is the general setup/init/misc file in 
-xen/.  I've been trying to move things out of it to reduce its dumping 
-ground-ness.  In your case, the changes are clearly init, so they 
-probably belong there.  They're compiled unconditionally, so there's no 
-#ifdef.  They're fairly small so they would probably be too small in a 
-separate file (unless its likely to get bigger?).  So keep in enlighten.c.
+may need to access the chipset doc.
 
-(In Sheng's version of this patch, it has more code and is conditionally 
-compiled, so I think the balance tips the other way.)
-
-     J
-
+YH
