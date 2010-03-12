@@ -1,57 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945Ab0CLGCI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 01:02:08 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:59891 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752545Ab0CLGCG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 01:02:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=LafkabuWfXhArlk1pDFi04JCEGGF0ny8NH3GPIgkfvUJi6ajb5Pcpv/ZcrVBOl9zDf
-         9EzgZJqXMjGFfFccxm6m4WW+hr55ulcYHgVJADOIX4FEFRJRsjEnmKFxp44VJp3j40uW
-         rKt7l7LeSQ/OhuhIo9tcUQ+/XkSQ9n2QVppv8=
-MIME-Version: 1.0
-In-Reply-To: <20100312025330.GA15402@tuxdriver.com>
-References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com> 
-	<69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com> 
-	<20100312025330.GA15402@tuxdriver.com>
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Fri, 12 Mar 2010 07:01:42 +0100
-Message-ID: <69e28c911003112201j6917d7b3t87cc981a0d9f03eb@mail.gmail.com>
-Subject: Re: cfg80211 conversion of all drivers
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1753259Ab0CLGUv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 01:20:51 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33737 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753110Ab0CLGUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 01:20:50 -0500
+Date: Fri, 12 Mar 2010 17:20:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf: Also export the weak version of
+ perf_arch_fetch_caller_regs
+Message-Id: <20100312172043.aa034ede.sfr@canb.auug.org.au>
+In-Reply-To: <20100312055043.GB5014@nowhere>
+References: <20100312150003.afd9b59a.sfr@canb.auug.org.au>
+	<20100312055043.GB5014@nowhere>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__12_Mar_2010_17_20_43_+1100_IAFj4Vxo/Hfc3fXG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/12 John W. Linville <linville@tuxdriver.com>:
-> On Fri, Mar 12, 2010 at 02:56:31AM +0100, Gábor Stefanik wrote:
+--Signature=_Fri__12_Mar_2010_17_20_43_+1100_IAFj4Vxo/Hfc3fXG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Frederic,
+
+On Fri, 12 Mar 2010 06:50:44 +0100 Frederic Weisbecker <fweisbec@gmail.com>=
+ wrote:
 >
->> May I ask you why hostap is "to be killed"? What is the alternative?
->
-> I think that is code for "replace it with something based on mac80211"...
+> Does that fixes the issue? Sorry I can not test for now...
 
-Isn't Prism2 a Fullmac chipset?
+I can't test it right now, sorry, but I have heard that EXPORT_SYMBOL's
+for weak symbols must be in a different file from the actual symbol
+definition.
 
-Anyway, as I hoped for, it is not "kill in favor of orinoco" (which
-also has some support for Prism2, though not as good as hostap).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
->
-> --
-> John W. Linville                Someday the world will need a hero, and you
-> linville@tuxdriver.com                  might be all we have.  Be ready.
->
+--Signature=_Fri__12_Mar_2010_17_20_43_+1100_IAFj4Vxo/Hfc3fXG
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkuZ3TsACgkQjjKRsyhoI8xDvQCeLSlUTlelHntXFYNIDrHf+tNj
+tgsAoJ8pSI1n8z93eWXL8hOi7X878fLM
+=0AnT
+-----END PGP SIGNATURE-----
 
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+--Signature=_Fri__12_Mar_2010_17_20_43_+1100_IAFj4Vxo/Hfc3fXG--
