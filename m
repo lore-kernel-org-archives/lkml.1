@@ -1,38 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232Ab0CLIMH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 03:12:07 -0500
-Received: from mx51.mymxserver.com ([85.199.173.110]:44426 "EHLO
-	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756091Ab0CLIMF (ORCPT
+	id S1756293Ab0CLIMW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 03:12:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:15895 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756251Ab0CLIMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 03:12:05 -0500
-From: Holger Schurig <holgerschurig@gmail.com>
-To: Jouni Malinen <j@w1.fi>
-Subject: Re: cfg80211 conversion of all drivers
-Date: Fri, 12 Mar 2010 09:12:26 +0100
-User-Agent: KMail/1.13.1 (Linux/2.6.33-rc8; KDE/4.4.1; i686; ; )
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       =?iso-8859-1?q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, devel@driverdev.osuosl.org,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com> <201003120810.38194.holgerschurig@gmail.com> <20100312080216.GA18550@jm.kir.nu>
-In-Reply-To: <20100312080216.GA18550@jm.kir.nu>
+	Fri, 12 Mar 2010 03:12:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=RO0tk9ui+S9bjuHF6eDuUXkvk96ouzaNjDtChmm/9I6GWMZzcsCuSvBCpYQ7ubeRFn
+         nnW8us6SPKBnzj0TJzMq6EFgZQtrVIK7ndmlT9v90BM754/EXmnjyerZJ+tVjVqS6uuh
+         ZDrPfKZrxYt6AGcEu1d8CBpv7IWa9aMOPoKxE=
+Message-ID: <4B99F75C.2070603@gmail.com>
+Date: Fri, 12 Mar 2010 09:12:12 +0100
+From: Till Kamppeter <till.kamppeter@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       lsb-discuss@lists.linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux wireless GSoC 2010 project ideas
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <20100128231545.GH18683@nowhere> <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com> <4B62231F.5080104@gmail.com> <20100309224347.GD5058@nowhere>
+In-Reply-To: <20100309224347.GD5058@nowhere>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003120912.26587.holgerschurig@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The Host AP mode in Prism 2/2.5/3 provides for a somewhat special
-> situation.. It does actually allow sending of (almost) arbitrary packets
-> and management frames in AP mode.
+On 03/09/2010 11:43 PM, Frederic Weisbecker wrote:
+> Ok, I hope it's not too late.
 
-Oh, thanks, I stand corrected.
+No, we are well before the student's application period.
 
--- 
-http://www.holgerschurig.de
+> Here is one subject that I would like to apply for:
+>
+
+Thank you for your suggestion.
+
+Great that you tell us your idea already now, we can put it on our ideas 
+page to support our application as mentoring organization,
+
+    Till
