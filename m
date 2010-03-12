@@ -1,45 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385Ab0CLJiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 04:38:18 -0500
-Received: from smtp.ispras.ru ([83.149.198.201]:42743 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755849Ab0CLJiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 04:38:17 -0500
-Message-ID: <4B9A0B87.9010001@ispras.ru>
-Date: Fri, 12 Mar 2010 12:38:15 +0300
-From: Denis Silakov <silakov@ispras.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Lightning/1.0b2pre Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	id S1757433Ab0CLJo4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 04:44:56 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:55736 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755849Ab0CLJoz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 04:44:55 -0500
+X-IronPort-AV: E=Sophos;i="4.49,625,1262581200"; 
+   d="scan'208";a="87802722"
+Subject: [GITPULL+PATCH 0/2] irq: move some interrupt arch_* functions into
+ struct irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, "x86@kernel.org" <x86@kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Fri, 12 Mar 2010 09:44:51 +0000
+Message-ID: <1268387091.10129.5973.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Till Kamppeter <till.kamppeter@gmail.com>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       lsb-discuss@lists.linux-foundation.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [lsb-discuss] Linux wireless GSoC 2010 project ideas
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>	<20100128231545.GH18683@nowhere>	<43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com>	<4B62231F.5080104@gmail.com> <20100309224347.GD5058@nowhere> <4B9A026D.1030806@gmail.com>
-In-Reply-To: <4B9A026D.1030806@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added this item to '2010 GSoC Kernel work' page:
+This small series ensures that struct irq_desc->chip_data is available
+for alternative irq_chip implementations.
 
-https://www.linuxfoundation.org/collaborate/workgroups/gsoc/2010-gsoc-kernel-work
+There is an outstanding issue wrt when/how the chip_data field is
+initialised. I am continuing to investigate this but the solution is not
+turning out as easy/low-impact as expected.
 
-On 03/12/10 11:59, Till Kamppeter wrote:
-> Can someone post this project idea on the ideas list today (marking that 
-> it comes from a student). This could support our application as 
-> mentoring organization.
->
->     Till
->   
+Since last time I've dropped the renaming portion of the series since it
+was basically wrong, the functions I'd implicated as ioapic specific are
+not at all.
 
--- 
-Regards,
-Denis.
+Ian.
+
+The following changes since commit 1ebbdcc83e75697c0d75eb091df172b7d93c84c1:
+  Ingo Molnar (1):
+        Merge branch 'perf/urgent'
+
+are available in the git repository at:
+
+  git://xenbits.xensource.com/people/ianc/linux-2.6.git for-x86/irq
+
+Ian Campbell (2):
+      irq: move some interrupt arch_* functions into struct irq_chip.
+      x86: irq_desc->chip_data is always correct whether or not SPARSE_IRQ is enabled.
+
+ arch/powerpc/kernel/irq.c      |    2 +-
+ arch/x86/include/asm/hw_irq.h  |   11 ++++++-
+ arch/x86/kernel/apic/io_apic.c |   61 ++++++++++++++++++++++++++++++++++-----
+ arch/x86/kernel/uv_irq.c       |    5 +++
+ include/linux/interrupt.h      |    2 +-
+ include/linux/irq.h            |   12 +++++--
+ kernel/irq/handle.c            |    2 +-
+ kernel/irq/numa_migrate.c      |   12 ++++++-
+ kernel/softirq.c               |    3 +-
+ 9 files changed, 90 insertions(+), 20 deletions(-)
+
 
