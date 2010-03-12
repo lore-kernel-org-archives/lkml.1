@@ -1,69 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934674Ab0CLW0w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:26:52 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:2493 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934658Ab0CLW0t convert rfc822-to-8bit (ORCPT
+	id S934686Ab0CLWdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:33:55 -0500
+Received: from mga10.intel.com ([192.55.52.92]:28833 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934667Ab0CLWdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:26:49 -0500
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-From: "Hugh Daschbach" <hdasch@broadcom.com>
-To: "Mike Christie" <michaelc@cs.wisc.edu>
-cc: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       "Chandra Seetharaman" <sekharan@us.ibm.com>,
-       "Eddie Williams" <Eddie.Williams@steeleye.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 12 Mar 2010 14:26:33 -0800
-Subject: RE: [PATCH] Don't change direction flags in struct request.
-Thread-Topic: [PATCH] Don't change direction flags in struct request.
-Thread-Index: AcrCL5yBuviHBmqNQWWiZeaDz1zeOgAAxrNw
-Message-ID: <233671224A0FED4688218FFDBED26E1A55321707E4@IRVEXCHCCR01.corp.ad.broadcom.com>
-References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>
- <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
- <4B9ABA84.9020801@cs.wisc.edu>
-In-Reply-To: <4B9ABA84.9020801@cs.wisc.edu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Fri, 12 Mar 2010 17:33:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,628,1262592000"; 
+   d="scan'208";a="548618807"
+Message-ID: <4B9AC149.1010507@linux.intel.com>
+Date: Fri, 12 Mar 2010 14:33:45 -0800
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-X-WSS-ID: 6784601131G58063851-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Jan Engelhardt <jengelh@medozas.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: page_to_nid not linked in on PAE
+References: <alpine.LSU.2.01.1003091210230.10157@obet.zrqbmnf.qr>	 <alpine.LSU.2.01.1003101128340.9318@obet.zrqbmnf.qr> <1268423424.2793.21.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1268423424.2793.21.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Christie [mailto:michaelc@cs.wisc.edu] writes:
 
-> On 03/19/2010 12:31 AM, Hugh Daschbach wrote:
->> The EMC multipath device handler should not change the I/O direction
->> flags of its trespass command request.
+> Jan, Even with out using the PG_head, PG_tail, PG_uncached and
+> PG_hwpoison, by allowing the NODES_SHIFT to have a maximum value of 9 on
+> 32bit kernel, can still result in the page flags to runout and result in
+> this problem. Best solution for now is to limit the NODES_SHIFT to 5. I
+> don't know of any platforms that have>  32nodes and where we care about
+> 32bit linux kernel. So it should be ok as a fix. If someone in future
+> cares about>  32 nodes for 32bit kernel, then we can think of a better
+> solution. Do you agree? I copied Andi/Nick for their eyes aswell on
+> this.
 
-...
+Seems like the right approach to me. Although it might be better to
+use 1 3 or 1..4 or so, just in case someone else adds more page bits
+later (I'm sure it'll happen again). Even 8 nodes should be plenty for
+32bit.
 
-> Did you try the patch I linked to the last time you posted about this?
+Acked-by: Andi Kleen <ak@linux.intel.com>
 
-I have not.  When I read it, I believed it would fix the issue.
+-Andi
 
-> I think there should be a patch which fixes this problem here:
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=6c71dcb28ff9b63b814a0b76a256f5dae08d3e0d;hp=3a5b27bf6f29574d667230c7e76e4b83fe3014e0
-> I think it got into 2.6.34-rc1.
-
-Then I'll pull it and test it.
-
-> With that patch mode selects should get set up as writes.
->
-> Does it work? If it does then I think we just need the attached cleanup 
-> patch which removes the cmd_flags setting. The patch that got merged 
-> fixed the problem of initializing the request properly, but it forgot to 
-> remove the cmd_flags setting.
-
-Agree.  I'll test it early next week and confirm.
-
-Thanks,
-Hugh
