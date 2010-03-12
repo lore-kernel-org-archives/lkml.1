@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932473Ab0CLQm2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 11:42:28 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40265 "EHLO gir.skynet.ie"
+	id S933160Ab0CLQmu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 11:42:50 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40243 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757002Ab0CLQle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 11:41:34 -0500
+	id S1757935Ab0CLQld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 11:41:33 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andrea Arcangeli <aarcange@redhat.com>,
@@ -15,9 +15,9 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 09/11] Add /sys trigger for per-node memory compaction
-Date: Fri, 12 Mar 2010 16:41:25 +0000
-Message-Id: <1268412087-13536-10-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 08/11] Add /proc trigger for memory compaction
+Date: Fri, 12 Mar 2010 16:41:24 +0000
+Message-Id: <1268412087-13536-9-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
 References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
@@ -25,119 +25,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a per-node sysfs file called compact. When the file is
-written to, each zone in that node is compacted. The intention that this
-would be used by something like a job scheduler in a batch system before
-a job starts so that the job can allocate the maximum number of
-hugepages without significant start-up cost.
+This patch adds a proc file /proc/sys/vm/compact_memory. When an arbitrary
+value is written to the file, all zones are compacted. The expected user
+of such a trigger is a job scheduler that prepares the system before the
+target application runs.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 Acked-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 ---
- Documentation/ABI/testing/sysfs-devices-node |    7 +++++++
- drivers/base/node.c                          |    3 +++
- include/linux/compaction.h                   |   16 ++++++++++++++++
- mm/compaction.c                              |   23 +++++++++++++++++++++++
- 4 files changed, 49 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-devices-node
+ Documentation/sysctl/vm.txt |   11 ++++++++
+ include/linux/compaction.h  |    6 ++++
+ kernel/sysctl.c             |   10 +++++++
+ mm/compaction.c             |   61 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 88 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-node b/Documentation/ABI/testing/sysfs-devices-node
-new file mode 100644
-index 0000000..0cb286a
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-devices-node
-@@ -0,0 +1,7 @@
-+What:		/sys/devices/system/node/nodeX/compact
-+Date:		February 2010
-+Contact:	Mel Gorman <mel@csn.ul.ie>
-+Description:
-+		When this file is written to, all memory within that node
-+		will be compacted. When it completes, memory will be free
-+		in as contiguous blocks as possible.
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index ad43185..15fb30d 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -15,6 +15,7 @@
- #include <linux/cpu.h>
- #include <linux/device.h>
- #include <linux/swap.h>
-+#include <linux/compaction.h>
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+index 6c7d18c..317d3f0 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -19,6 +19,7 @@ files can be found in mm/swap.c.
+ Currently, these files are in /proc/sys/vm:
  
- static struct sysdev_class_attribute *node_state_attrs[];
+ - block_dump
++- compact_memory
+ - dirty_background_bytes
+ - dirty_background_ratio
+ - dirty_bytes
+@@ -64,6 +65,16 @@ information on block I/O debugging is in Documentation/laptops/laptop-mode.txt.
  
-@@ -242,6 +243,8 @@ int register_node(struct node *node, int num, struct node *parent)
- 		scan_unevictable_register_node(node);
+ ==============================================================
  
- 		hugetlb_register_node(node);
++compact_memory
 +
-+		compaction_register_node(node);
- 	}
- 	return error;
- }
++Available only when CONFIG_COMPACTION is set. When an arbitrary value
++is written to the file, all zones are compacted such that free memory
++is available in contiguous blocks where possible. This can be important
++for example in the allocation of huge pages although processes will also
++directly compact memory as required.
++
++==============================================================
++
+ dirty_background_bytes
+ 
+ Contains the amount of dirty memory at which the pdflush background writeback
 diff --git a/include/linux/compaction.h b/include/linux/compaction.h
-index 52762d2..c94890b 100644
+index 6201371..52762d2 100644
 --- a/include/linux/compaction.h
 +++ b/include/linux/compaction.h
-@@ -11,4 +11,20 @@ extern int sysctl_compaction_handler(struct ctl_table *table, int write,
- 			void __user *buffer, size_t *length, loff_t *ppos);
- #endif /* CONFIG_COMPACTION */
+@@ -5,4 +5,10 @@
+ #define COMPACT_INCOMPLETE	0
+ #define COMPACT_COMPLETE	1
  
-+#if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
-+extern int compaction_register_node(struct node *node);
-+extern void compaction_unregister_node(struct node *node);
-+
-+#else
-+
-+static inline int compaction_register_node(struct node *node)
-+{
-+	return 0;
-+}
-+
-+static inline void compaction_unregister_node(struct node *node)
-+{
-+}
-+#endif /* CONFIG_COMPACTION && CONFIG_SYSFS && CONFIG_NUMA */
++#ifdef CONFIG_COMPACTION
++extern int sysctl_compact_memory;
++extern int sysctl_compaction_handler(struct ctl_table *table, int write,
++			void __user *buffer, size_t *length, loff_t *ppos);
++#endif /* CONFIG_COMPACTION */
 +
  #endif /* _LINUX_COMPACTION_H */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 7e12adc..df3b018 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -64,6 +64,7 @@
+ #include <linux/slow-work.h>
+ #include <linux/perf_event.h>
+ #include <linux/kprobes.h>
++#include <linux/compaction.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -1090,6 +1091,15 @@ static struct ctl_table vm_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= drop_caches_sysctl_handler,
+ 	},
++#ifdef CONFIG_COMPACTION
++	{
++		.procname	= "compact_memory",
++		.data		= &sysctl_compact_memory,
++		.maxlen		= sizeof(int),
++		.mode		= 0200,
++		.proc_handler	= sysctl_compaction_handler,
++	},
++#endif /* CONFIG_COMPACTION */
+ 	{
+ 		.procname	= "min_free_kbytes",
+ 		.data		= &min_free_kbytes,
 diff --git a/mm/compaction.c b/mm/compaction.c
-index 817aa5b..b85343c 100644
+index 3cc4db5..817aa5b 100644
 --- a/mm/compaction.c
 +++ b/mm/compaction.c
-@@ -12,6 +12,7 @@
+@@ -11,6 +11,7 @@
+ #include <linux/migrate.h>
  #include <linux/compaction.h>
  #include <linux/mm_inline.h>
- #include <linux/sysctl.h>
-+#include <linux/sysfs.h>
++#include <linux/sysctl.h>
  #include "internal.h"
  
  /*
-@@ -412,3 +413,25 @@ int sysctl_compaction_handler(struct ctl_table *table, int write,
- 
- 	return 0;
+@@ -351,3 +352,63 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
+ 	return ret;
  }
-+
-+#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
-+ssize_t sysfs_compact_node(struct sys_device *dev,
-+			struct sysdev_attribute *attr,
-+			const char *buf, size_t count)
+ 
++/* Compact all zones within a node */
++static int compact_node(int nid)
 +{
-+	compact_node(dev->id);
++	int zoneid;
++	pg_data_t *pgdat;
++	struct zone *zone;
 +
-+	return count;
++	if (nid < 0 || nid > nr_node_ids || !node_online(nid))
++		return -EINVAL;
++	pgdat = NODE_DATA(nid);
++
++	/* Flush pending updates to the LRU lists */
++	lru_add_drain_all();
++
++	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
++		struct compact_control cc;
++
++		zone = &pgdat->node_zones[zoneid];
++		if (!populated_zone(zone))
++			continue;
++
++		cc.nr_freepages = 0;
++		cc.nr_migratepages = 0;
++		cc.zone = zone;
++		cc.order = -1;
++		INIT_LIST_HEAD(&cc.freepages);
++		INIT_LIST_HEAD(&cc.migratepages);
++
++		compact_zone(zone, &cc);
++
++		VM_BUG_ON(!list_empty(&cc.freepages));
++		VM_BUG_ON(!list_empty(&cc.migratepages));
++	}
++
++	return 0;
 +}
-+static SYSDEV_ATTR(compact, S_IWUSR, NULL, sysfs_compact_node);
 +
-+int compaction_register_node(struct node *node)
++/* Compact all nodes in the system */
++static int compact_nodes(void)
 +{
-+	return sysdev_create_file(&node->sysdev, &attr_compact);
++	int nid;
++
++	for_each_online_node(nid)
++		compact_node(nid);
++
++	return COMPACT_COMPLETE;
 +}
 +
-+void compaction_unregister_node(struct node *node)
++/* The written value is actually unused, all memory is compacted */
++int sysctl_compact_memory;
++
++/* This is the entry point for compacting all nodes via /proc/sys/vm */
++int sysctl_compaction_handler(struct ctl_table *table, int write,
++			void __user *buffer, size_t *length, loff_t *ppos)
 +{
-+	return sysdev_remove_file(&node->sysdev, &attr_compact);
++	if (write)
++		return compact_nodes();
++
++	return 0;
 +}
-+#endif /* CONFIG_SYSFS && CONFIG_NUMA */
 -- 
 1.6.5
 
