@@ -1,97 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934597Ab0CLUeH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 15:34:07 -0500
-Received: from lucidpixels.com ([75.144.35.66]:55787 "EHLO lucidpixels.com"
+	id S932753Ab0CLUf7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 15:35:59 -0500
+Received: from claw.goop.org ([74.207.240.146]:42357 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934556Ab0CLUeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 15:34:02 -0500
-Date: Fri, 12 Mar 2010 15:34:01 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Yinghai Lu <yinghai@kernel.org>
-cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous
-  reboots [full dmesg]
-In-Reply-To: <86802c441003121227j77edc017vd83b2ab866ec79d8@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.1003121532300.6929@p34.internal.lan>
-References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan>  <alpine.DEB.2.00.1003120548551.6420@p34.internal.lan>  <alpine.DEB.2.00.1003120556590.15732@p34.internal.lan>  <alpine.DEB.2.00.1003120743530.15732@p34.internal.lan> 
- <alpine.DEB.2.00.1003120755340.15732@p34.internal.lan>  <alpine.DEB.2.00.1003120809030.15732@p34.internal.lan>  <86802c441003121201y4c946fecrda5463b056f1ba58@mail.gmail.com>  <alpine.DEB.2.00.1003121502160.6929@p34.internal.lan>
- <86802c441003121227j77edc017vd83b2ab866ec79d8@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S932306Ab0CLUf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 15:35:58 -0500
+Message-ID: <4B9AA5A9.20609@goop.org>
+Date: Fri, 12 Mar 2010 12:35:53 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-643406446-1268426041=:6929"
+To: Sheng Yang <sheng@linux.intel.com>
+CC: xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       linux-kernel@vger.kernel.org, Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [Xen-devel] [PATCH][v9 4/6] xen/hvm: Xen PV extension of HVM
+ initialization
+References: <1268362647-5317-1-git-send-email-sheng@linux.intel.com> <1268362647-5317-5-git-send-email-sheng@linux.intel.com>
+In-Reply-To: <1268362647-5317-5-git-send-email-sheng@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463747160-643406446-1268426041=:6929
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Fri, 12 Mar 2010, Yinghai Lu wrote:
-
-> On Fri, Mar 12, 2010 at 12:02 PM, Justin Piszcz <jpiszcz@lucidpixels.com>=
- wrote:
->>
->>
->> On Fri, 12 Mar 2010, Yinghai Lu wrote:
->>
->>> On Fri, Mar 12, 2010 at 5:10 AM, Justin Piszcz <jpiszcz@lucidpixels.com=
+On 03/11/2010 06:57 PM, Sheng Yang wrote:
+> The PV extended HVM(once known as Hybrid) is started from real mode like
+> HVM guest, but also with a component based PV feature selection(e.g. PV halt,
+> PV timer, event channel, then PV drivers). So guest can takes the advantages
+> of both H/W virtualization and Para-Virtualization.
 >
->>> wrote:
->>>>
->>>> [ =A0 =A00.112379] pci 0000:00:00.0: reg 1c: [mem 0xe0000000-0xfffffff=
-f
->>>> 64bit]
->>>
->>>> [ =A0 =A00.133510] PCI: pci_cache_line_size set to 64 bytes
->>>> [ =A0 =A00.133515] pci 0000:00:00.0: BAR 3: reserving [mem
->>>> 0xe0000000-0xffffffff
->>>> flags 0x120204] (d=3D0, p=3D0)
->>>> [ =A0 =A00.133518] pci 0000:00:00.0: address space collision: [mem
->>>> 0xe0000000-0xffffffff 64bit] already in use
->>>> [ =A0 =A00.133522] pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xf=
-fffffff
->>>> 64bit]
->>>> [ =A0 =A00.137020] system 00:09: [mem 0xe0000000-0xefffffff] has been
->>>> reserved
->>>> [ =A0 =A00.172034] pci_bus 0000:00: resource 0 [io =A00x0000-0xffff]
->>>> [ =A0 =A00.172035] pci_bus 0000:00: resource 1 [mem 0x00000000-0xfffff=
-fff]
->>>
->>> looks like the silicon report wrong size in that BAR3
->>>
->>> YH
->>
->> Hi,
->>
->> Is there anyway to work around this? =A0Or is it a bad motherboard?
->>
+> This patch introduced the PV extension of HVM guest initialization.
 >
-> maybe one new BIOS could hide that register
-Hi,
-
-It is using the latest F8c BIOS:
-http://www.gigabyte.us/Products/Motherboard/Products_Overview.aspx?ProductI=
-D=3D3007
-
-Other (earlier) bios' have been tested, that did not help either.
-
-Is there anyway to to the kernel not to touch that range of memory?
-0xe0000000-0xffffffff?
-
-Justin.
-
+> Guest would detect the capability using CPUID 0x40000002.edx, then call
+> HVMOP_enable_pv hypercall to enable pv support in hypervisor.
 >
-> or use pci quirk to hide that in OS.
+> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> Signed-off-by: Yaozu (Eddie) Dong<eddie.dong@intel.com>
+> ---
+>   arch/x86/include/asm/xen/cpuid.h      |    5 +
+>   arch/x86/include/asm/xen/hypervisor.h |   12 +++
+>   arch/x86/xen/Kconfig                  |    4 +
+>   arch/x86/xen/Makefile                 |    1 +
+>   arch/x86/xen/hvmpv.c                  |  135 +++++++++++++++++++++++++++++++++
+>   include/xen/interface/hvm/hvm_op.h    |    8 ++
+>   6 files changed, 165 insertions(+), 0 deletions(-)
+>   create mode 100644 arch/x86/xen/hvmpv.c
 >
-> may need to access the chipset doc.
+> diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
+> index 8787f03..b3a0b3a 100644
+> --- a/arch/x86/include/asm/xen/cpuid.h
+> +++ b/arch/x86/include/asm/xen/cpuid.h
+> @@ -65,4 +65,9 @@
+>   #define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
+>   #define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
 >
-> YH
+> +#define _XEN_CPUID_FEAT2_HVM_PV 0
+> +#define XEN_CPUID_FEAT2_HVM_PV (1u<<0)
+> +#define _XEN_CPUID_FEAT2_HVM_PV_CLOCK 1
+> +#define XEN_CPUID_FEAT2_HVM_PV_CLOCK (1u<<1)
+> +
+>   #endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
+> diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+> index d5b7e90..7569f64 100644
+> --- a/arch/x86/include/asm/xen/hypervisor.h
+> +++ b/arch/x86/include/asm/xen/hypervisor.h
+> @@ -55,6 +55,18 @@ extern enum xen_domain_type xen_domain_type;
+>   #define xen_hvm_domain()	(xen_domain()&&			\
+>   				 xen_domain_type == XEN_HVM_DOMAIN)
 >
----1463747160-643406446-1268426041=:6929--
+> +#ifdef CONFIG_XEN_HVM_PV
+> +
+> +#define XEN_HVM_PV_CLOCK_ENABLED   (1u<<  0)
+>    
+
+Why is this flag needed?  As far as I understand it, there's no real 
+underlying hypervisor change needed to make HVM access to pv clock 
+possible; its just a field in the shared_info's vcpu struct after all.  
+Even if you enable this feature unconditionally, the user can still 
+control whether the Xen clocksource is used with the "clocksource=" 
+kernel command-line parameter.
+
+Also, there's nothing about this which is 64-bit specific is there?
+
+Thanks,
+     J
