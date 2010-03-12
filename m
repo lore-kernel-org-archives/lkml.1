@@ -1,77 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807Ab0CLGyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 01:54:00 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:41479 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573Ab0CLGx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 01:53:58 -0500
-Message-ID: <4B99E502.1070204@linux.vnet.ibm.com>
-Date: Thu, 11 Mar 2010 22:53:54 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S1754040Ab0CLG65 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 01:58:57 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62380 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753050Ab0CLG64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 01:58:56 -0500
+Message-ID: <4B99E62C.1020500@cn.fujitsu.com>
+Date: Fri, 12 Mar 2010 14:58:52 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
- event names to "perf stat"
-References: <4B8F1B58.5000702@linux.vnet.ibm.com> <4B8FFE55.5070008@linux.vnet.ibm.com> <20100311124608.GG31354@elte.hu> <20100312024100.GA2734@brick.ozlabs.ibm.com>
-In-Reply-To: <20100312024100.GA2734@brick.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Subject: [PATCH -mmotm 1/2] cpuset: fix the problem that cpuset_mem_spread_node()
+ returns an offline node - fix
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/2010 06:41 PM, Paul Mackerras wrote:
-> On Thu, Mar 11, 2010 at 01:46:08PM +0100, Ingo Molnar wrote:
->>
->> * Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
->>
->>> On 3/3/2010 6:30 PM, Corey Ashford wrote:
->>>> For your review, this patch adds support for arch-dependent symbolic
->>>> event names to the "perf stat" tool, and could be expanded to other
->>>> "perf *" commands fairly easily, I suspect.
->
->> I'm quite much against stop-gap measures like this - they tend to become
->> tomorrow's impossible-to-remove quirk.
->>
->> If you want extensible events you can already do it by providing an ftrace
->> tracepoint event via TRACE_EVENT. They are easy to add and ad-hoc, and are
->> supported throughout by perf.
->
-> If I've understood correctly what Corey is doing, I think you're
-> missing the point.  The idea, I thought, was to provide a way to be
-> able to use symbolic names for raw hardware events rather than just
-> numbers.
+Remove unnecessary smp_wmb().
 
-Yes, that's what I meant.
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+---
+Against the following patch in mmotm-2010-03-11-13-13:
+cpuset-fix-the-problem-that-cpuset_mem_spread_node-returns-an-offline-node.patch
+---
+ kernel/cpuset.c |   14 --------------
+ 1 files changed, 0 insertions(+), 14 deletions(-)
 
- > I don't see how ftrace tracepoint events are relevant to
- > that.
->
-> Now as to whether an external .so is the best way to provide the
-> processor-specific mapping of names to raw events, I'm not sure.
-> If the kernel can provide that mapping via procfs, sysfs or eventfs,
-> that would be an alternative, but it does mean the kernel has those
-> tables in unswappable memory (and potentially the tables for all the
-> processors that the kernel supports), which seems unnecessary.  Or
-> they can just be added to the perf source code.
-
-In addition to the names and attributes, we'd also need text-based 
-descriptions of the events and attributes.
-
-I'm not opposed to the idea of placing them in sysfs (or other pseudo 
-fs), but it's also not clear to me how to represent the event data in a 
-clean, extensible, and space/performance efficient way.  That said, I do 
-like the idea of being able to navigate events by looking through a 
-directory structure which is possibly organized by the physical topology 
-of the system and its PMUs.
-
-- Corey
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index b15c01c..f36e577 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -933,23 +933,9 @@ static void cpuset_migrate_mm(struct mm_struct *mm, const nodemask_t *from,
+ 
+ 	tsk->mems_allowed = *to;
+ 
+-	/*
+-	 * After current->mems_allowed is set to a new value, current will
+-	 * allocate new pages for the migrating memory region. So we must
+-	 * ensure that update of current->mems_allowed have been completed
+-	 * by this moment.
+-	 */
+-	smp_wmb();
+ 	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+ 
+ 	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
+-
+-	/*
+-	 * After doing migrate pages, current will allocate new pages for
+-	 * itself not the other tasks. So we must ensure that update of
+-	 * current->mems_allowed have been completed by this moment.
+-	 */
+-	smp_wmb();
+ }
+ 
+ /*
+-- 
+1.6.5.2
 
 
