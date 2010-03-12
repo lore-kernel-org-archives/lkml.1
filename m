@@ -1,69 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576Ab0CLSgr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 13:36:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48150 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751102Ab0CLSgp (ORCPT
+	id S1757096Ab0CLSkz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 13:40:55 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:38187 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859Ab0CLSky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 13:36:45 -0500
-Date: Fri, 12 Mar 2010 10:34:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] final scsi updates for 2.6.34-rc1
-In-Reply-To: <1268418441.2802.61.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.00.1003121028390.3719@i5.linux-foundation.org>
-References: <1268242604.22601.25.camel@mulgrave.site>  <alpine.LFD.2.00.1003121008420.3719@i5.linux-foundation.org> <1268418441.2802.61.camel@mulgrave.site>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 12 Mar 2010 13:40:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=o5AjTTKDqKHEmBdaZFD2PDHP/h8MgRra7mYg13uoPEskVOJVc2XQnnWig2zRw91h4O
+         ny+pYL/bqGUpM0UONipTdgTxX5BPiROKoIsqpeK4CQ7hiD7mwJ2MnpH0uGi8+SeTUswC
+         MBoL79yQX0NJ3JiiO7Xh2Oo+xxyPd9ldQjxc0=
+Date: Fri, 12 Mar 2010 20:40:56 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ext-phil.2.carmody@nokia.com
+Subject: Re: [PATCH] err.h: add __must_check to error pointer handlers
+Message-ID: <20100312184056.GA4107@x200>
+References: <1268401540-8994-1-git-send-email-ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268401540-8994-1-git-send-email-ext-jani.1.nikula@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 12 Mar 2010, James Bottomley wrote:
+On Fri, Mar 12, 2010 at 03:45:40PM +0200, Jani Nikula wrote:
+> Add __must_check to error pointer handlers to have the compiler warn
+> about mistakes like:
 > 
-> I'm not objecting to a shorter merge window, just the unpredictability
-> of all of this.
+> 	if (err)
+> 		ERR_PTR(err);
 
-If you read the 2.6.33 release notes, the unpredictability WAS THE WHOLE 
-F*CKING POINT!
+> -static inline void *ERR_PTR(long error)
+> +static inline void * __must_check ERR_PTR(long error)
 
-I'm tired of people being able to predict exactly when the merge window 
-closes, and then using that to make the last days of the merge window be 
-hell on me, and sending all the merges within about 24 hours of the 
-closing.
+We had bugs like that?
 
-So I'm not doing it.
-
-If you had the major changes ready when the merge window opened, you 
-should damn well have sent it in _then_. 
-
-End of story. I've told people before. The merge window is for _merging_, 
-not for doing development. If you send me something the last day, then 
-there is no "window" any more. And It is _really_ annoying to have fifty 
-pull requests on the last day. I'm not going to take it any more.
-
-And the thing is, all your explanations make things WORSE. You're 
-basically saying that you're working exactly the way that I'm not going to 
-accept.
-
-So you're now going to get to wait six or seven weeks, because I refuse to 
-work the way you have worked me for the last two years. I gave people a 
-heads-up, and I probably shouldn't have. Some people noticed. And other 
-people didn't even care, because they never gamed the system in the first 
-place.
-
-And some people - like you - both gamed the system, and didn't read the 
-release notes, and now you complain. Tough.
-
-And the fact that you complain about the very fact that you were gaming 
-the system and now you can't because it's not predictable enough to game 
-is what just proves my f*cking point!
-
-		Linus
+Pretty much every non-void function should be marked then.
