@@ -1,72 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162Ab0CLS4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 13:56:34 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:12495 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798Ab0CLS4d (ORCPT
+	id S934456Ab0CLTFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 14:05:42 -0500
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:17143 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757131Ab0CLTFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 13:56:33 -0500
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAIYdmkurRN+K/2dsb2JhbACaanOjSJhWhHsEgxc
+	Fri, 12 Mar 2010 14:05:41 -0500
 X-IronPort-AV: E=Sophos;i="4.49,627,1262563200"; 
-   d="scan'208";a="308249752"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 12 Mar 2010 10:56:25 -0800
-Message-ID: <adar5np9xnq.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+   d="scan'208";a="9922725"
+Date: Fri, 12 Mar 2010 19:09:54 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+X-X-Sender: sstabellini@kaball-desktop
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 2 of 5] early PV on HVM
+In-Reply-To: <4B995EA6.8080105@goop.org>
+Message-ID: <alpine.DEB.2.00.1003121819500.27222@kaball-desktop>
+References: <alpine.DEB.2.00.1003101501320.28412@kaball-desktop> <4B995EA6.8080105@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Thu, 11 Mar 2010, Jeremy Fitzhardinge wrote:
+> On 03/10/2010 07:47 AM, Stefano Stabellini wrote:
+> > Hi all,
+> > this patch:
+> >
+> > - adds a xen_guest_init hook in setup.c right after kvm_guest_init;
+> >
+> > - initializes basic pv on hvm features in xen_guest_init;
+> >    
+> 
+> Is this 64-bit specific like Sheng's version?
+> 
+> I also asked him to move the setup code out of enlighten.c into a new 
+> file, though your version is a fair bit smaller.
+> 
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+My version is not 64-bit specific, should I move it to a new file
+anyway?
 
-This tree is also available from kernel.org mirrors at:
+I was trying to keep the differences with Sheng's version low, but in
+this case I am not quite sure how to manage it.
+Suggestions are welcome.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This will get a few small fixes:
-
-Chien Tung (2):
-      RDMA/nes: Clear stall bit before destroying NIC QP
-      RDMA/nes: Fix CX4 link problem in back-to-back configuration
-
-Eli Cohen (1):
-      IPoIB: Fix TX queue lockup with mixed UD/CM traffic
-
-Faisal Latif (1):
-      RDMA/nes: Set assume_aligned_header bit
-
-Or Gerlitz (1):
-      IPoIB: Include return code in trace message for ib_post_send() failures
-
-Roland Dreier (1):
-      Merge branches 'cxgb3', 'ipoib', 'misc' and 'nes' into for-next
-
-Steve Wise (2):
-      IB/mad: Ignore iWARP devices on device removal
-      RDMA/cxgb3: Wait at least one schedule cycle during device removal
-
- drivers/infiniband/core/mad.c           |    3 +++
- drivers/infiniband/hw/cxgb3/iwch.c      |    2 ++
- drivers/infiniband/hw/nes/nes_hw.c      |    8 ++++++++
- drivers/infiniband/hw/nes/nes_hw.h      |    1 +
- drivers/infiniband/hw/nes/nes_nic.c     |   30 ++++++++++++++++++++++++++++--
- drivers/infiniband/hw/nes/nes_verbs.c   |    1 +
- drivers/infiniband/ulp/ipoib/ipoib_cm.c |   10 +++++++---
- drivers/infiniband/ulp/ipoib/ipoib_ib.c |    9 +++++----
- 8 files changed, 55 insertions(+), 9 deletions(-)
-
--- 
-Roland Dreier  <rolandd@cisco.com>
-For corporate legal information go to:
-http://www.cisco.com/web/about/doing_business/legal/cri/index.html
