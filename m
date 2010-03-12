@@ -1,47 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933138Ab0CLNab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 08:30:31 -0500
-Received: from mtagate6.uk.ibm.com ([194.196.100.166]:40627 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932850Ab0CLNa3 (ORCPT
+	id S1757588Ab0CLNhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 08:37:46 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:60525 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755195Ab0CLNho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 08:30:29 -0500
-Date: Fri, 12 Mar 2010 14:30:22 +0100
-From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>, alsa-devel@alsa-project.org,
-       broonie@opensource.wolfsonmicro.com, linux-ide@vger.kernel.org,
-       James.Bottomley@suse.de, linux-i2c@vger.kernel.org,
-       sparclinux@vger.kernel.org, jeremy.kerr@canonical.com,
-       sfr@canb.auug.org.au, linux-scsi@vger.kernel.org, jgarzik@pobox.com,
-       microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-       Christoph Raisch <raisch@de.ibm.com>, ben-linux@fluff.org,
-       monstr@monstr.eu, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, davem@davemloft.net
-Subject: Re: [PATCH 25/37] drivers/infiniband: use .dev.of_node instead of
- .node in struct of_device
-Message-ID: <20100312143022.18b954a5@alex-laptop>
-In-Reply-To: <adavdd2d41q.fsf@roland-alpha.cisco.com>
-References: <20100311174830.4824.19820.stgit@angua>
-	<20100311180605.4824.3613.stgit@angua>
-	<adavdd2d41q.fsf@roland-alpha.cisco.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Fri, 12 Mar 2010 08:37:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=pHEplu/CdPoffY7L7n6LWMcQvOwzeozVtTj7oCi/GhLq6Evxn3whkf2D2TSBebZvIE
+         2r3p3vwTA4Yqic+3Fq9seh/veBWxs7yuMB9DEFqOTdu2hi5W5tb0JuXkIcjzabRcWie2
+         +13PKrpE9QAl9dPOYEQbHFsmOZ4fAt3KUPfoE=
+Subject: Re: 2.6.34-rc1: rcu lockdep bug?
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: David Miller <davem@davemloft.net>, paulmck@linux.vnet.ibm.com,
+       peterz@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
+References: <20100311134556.GA6344@linux.vnet.ibm.com>
+	 <20100311161751.GA3804@hack>
+	 <2375c9f91003112356g1b4164e4pb5f63f0e0e2f310a@mail.gmail.com>
+	 <20100312.000705.225033546.davem@davemloft.net>
+	 <2375c9f91003120059g771d162fxefc21beb2ab17b4d@mail.gmail.com>
+	 <1268392276.3141.4.camel@edumazet-laptop>
+	 <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 14:37:38 +0100
+Message-ID: <1268401058.3141.9.camel@edumazet-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 11:57:53 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
+Le vendredi 12 mars 2010 à 21:11 +0800, Américo Wang a écrit :
 
-> Seems fine... adding EHCA guys just to make sure.
+> Oh, but lockdep complains about rcu_read_lock(), it said
+> rcu_read_lock() can't be used in softirq context.
 > 
->  > .node is being removed
->  > 
->  > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Am I missing something?
 
-Acked-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Well, lockdep might be dumb, I dont know...
+
+I suggest you read rcu_read_lock_bh kernel doc :
+
+/**
+ * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical
+section
+ *
+ * This is equivalent of rcu_read_lock(), but to be used when updates
+ * are being done using call_rcu_bh(). Since call_rcu_bh() callbacks
+ * consider completion of a softirq handler to be a quiescent state,
+ * a process in RCU read-side critical section must be protected by
+ * disabling softirqs. Read-side critical sections in interrupt context
+ * can use just rcu_read_lock().
+ *
+ */
+
+
+Last sentence being perfect :
+
+Read-side critical sections in interrupt context
+can use just rcu_read_lock().
+
+
+
