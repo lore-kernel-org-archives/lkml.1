@@ -1,129 +1,302 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932970Ab0CLNZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 08:25:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54891 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932850Ab0CLNZV (ORCPT
+	id S932919Ab0CLNZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 08:25:23 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:7562 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932817Ab0CLNZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 08:25:21 -0500
-Date: Fri, 12 Mar 2010 10:25:09 -0300
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 5/5] perf report: Initial TUI using newt
-Message-ID: <20100312132509.GN14180@ghostprotocols.net>
-References: <1268349164-5822-1-git-send-email-acme@infradead.org> <1268349164-5822-5-git-send-email-acme@infradead.org> <20100312094533.GA13177@elte.hu>
+	Fri, 12 Mar 2010 08:25:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=b3NIwR1Q1BmfLhNv1CFXzHWsB4O2AHTtonu4BR53nMA2kGtLlNGq3oaCfCfXdea0Tf
+         j3ZOtRp7LiYMG0fgB8HlnooGHeYU5Grwk2fZiGlEvF4nXABoCfmNXAfAzIxzsfal8kEe
+         /leeYYg5T5fJfeE1DihdG7r8JWD1MYLGTMTlA=
+Message-ID: <4B9A40BC.4030301@gmail.com>
+Date: Fri, 12 Mar 2010 08:25:16 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100312094533.GA13177@elte.hu>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Michael Chan <mchan@broadcom.com>,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v4 2/7] net: remove old tcp_optlen function
+References: <4B98D592.6040301@gmail.com> <4B98D9A2.8060603@gmail.com>
+In-Reply-To: <4B98D9A2.8060603@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------040701070907040101030100"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Mar 12, 2010 at 10:45:33AM +0100, Ingo Molnar escreveu:
-> 
-> * Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
-> 
-> > From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > 
-> > Newt has widespread availability and provides a rather simple API as can be 
-> > seen by the size of this patch.
-> > 
-> > The work needed to support it will benefit other frontends too.
-> > 
-> > In this initial patch it just checks if the output is a tty, if not it falls 
-> > back to the previous behaviour, also if newt-devel/libnewt-dev is not 
-> > installed the previous behaviour is maintaned.
-> > 
-> > Pressing enter on a symbol will annotate it, ESC in the annotation window will
-> > return to the report symbol list.
-> 
-> Very nice!
-> 
-> a few observations. Firstly, could we perhaps make most of the interface 
-> functions GUI/TUI invariant? I.e. things like:
-> 
-> > +	if (use_browser)
-> > +		r = vfprintf(fp, fmt, args);
-> > +	else
-> > +		r = color_vfprintf(fp, color, fmt, args);
-> 
-> should be abstracted away into a single method:
-> 
-> 	r = color_vprintf(fp, color, fmt, args);
-> 
-> where color_vprintf() knows about which current GUI front-end to use.
+This is a multi-part message in MIME format.
+--------------040701070907040101030100
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yeah, I'll get to that, its just that I wanted to have something out as
-small as possible and that pointed to the places that need refactoring
-to properly support multiple UI frontends.
+The tcp_optlen() function returns a potential *negative* unsigned.
+
+In the only two existing files using the old tcp_optlen() function,
+clean up confusing and inconsistent mixing of both byte and word
+offsets, and other coding style issues.  Document assumptions.
+
+Quoth David Miller:
+    This is transmit, and the packets can only come from the Linux
+    TCP stack, not some external entity.
+
+    You're being way too anal here, and adding these checks to
+    drivers would be just a lot of rediculious bloat. [sic]
+
+Therefore, there are *no* checks for bad TCP and IP header sizes, nor
+any semantic changes.  The drivers should function exactly as existing,
+although usage of int should ameliorate the issues.
+
+Requires:
+   net: tcp_header_len_th and tcp_option_len_th
+
+Signed-off-by: William.Allen.Simpson@gmail.com
+CC: Michael Chan <mchan@broadcom.com>
+---
+  drivers/net/bnx2.c  |   29 +++++++++++++-----------
+  drivers/net/tg3.c   |   60 +++++++++++++++++++++++---------------------------
+  include/linux/tcp.h |    5 ----
+  3 files changed, 44 insertions(+), 50 deletions(-)
+
+No response from testers in 21+ weeks.
+
+[removed comment references to commit log]
+
+
+--------------040701070907040101030100
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="len_th+2b4+2.6.34-rc1.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="len_th+2b4+2.6.34-rc1.patch"
+
+diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+index 381887b..87607b8 100644
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -6335,6 +6335,8 @@ bnx2_vlan_rx_register(struct net_device *dev, struct vlan_group *vlgrp)
+ /* Called with netif_tx_lock.
+  * bnx2_tx_int() runs without netif_tx_lock unless it needs to call
+  * netif_wake_queue().
++ *
++ * No TCP or IP length checking, as required by David Miller.
+  */
+ static netdev_tx_t
+ bnx2_start_xmit(struct sk_buff *skb, struct net_device *dev)
+@@ -6378,19 +6380,19 @@ bnx2_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			(TX_BD_FLAGS_VLAN_TAG | (vlan_tx_tag_get(skb) << 16));
+ 	}
+ #endif
+-	if ((mss = skb_shinfo(skb)->gso_size)) {
+-		u32 tcp_opt_len;
+-		struct iphdr *iph;
++	mss = skb_shinfo(skb)->gso_size;
++	if (mss != 0) {
++		struct tcphdr *th = tcp_hdr(skb);
++		int tcp_opt_words = th->doff - (sizeof(*th) >> 2);
++		/* assumes positive tcp_opt_words without checking */
  
-> (The old color_printf() should be renamed to ascii_color_printf() or so, and 
-> put into a front-end driver structure perhaps - instead of explicit flags.)
-
-Right
+ 		vlan_tag_flags |= TX_BD_FLAGS_SW_LSO;
  
-> There's a similar situation here too:
-> 
-> > -		ret = vfprintf(stderr, fmt, args);
-> > +		if (use_browser)
-> > +			ret = browser__show_help(fmt, args);
-> > +		else
-> > +			ret = vfprintf(stderr, fmt, args);
-> 
-> Plus a few other observations about the newt TUI itself:
-> 
->  - The most important first-impression thing in a TUI is to make it obvious to
->    exit it. I eventually found that Escape would exit - but it would be nice 
->    to map 'Q' and 'Ctrl-C' to it as well. Nothing is more annoying than a TUI 
->    you cannot exit from.
-
-Newt's default is F12, I had to killall perf while developing and
-getting to know newtFormAddHotKey to exit, will add the other usual keys to
-exit.
+-		tcp_opt_len = tcp_optlen(skb);
+-
+ 		if (skb_shinfo(skb)->gso_type & SKB_GSO_TCPV6) {
+ 			u32 tcp_off = skb_transport_offset(skb) -
+ 				      sizeof(struct ipv6hdr) - ETH_HLEN;
  
->  - There's still a 'perf annotate' bug that has been introduced recently, and 
->    it shows up in the TUI too. The bug is due to us passing this to objdump 
->    and grep:
-> 
->      18573 execve("/bin/sh", ["sh", "-c", "objdump --start-address=0xffffffff81387b36
->        --stop-address=0xffffffff81387b4f -dS [kernel.kallsyms]|grep -v [kernel.kallsyms]"]
-> 
->    Look at how [kernel.kallsyms] goes unquoted to the shell, so globbing will 
->    match it on random file names in the current directory - which will then be 
->    showed by objdump, much to the surprise of the user!
-
-Will fix that, if we don't find a vmlinux file, the kernel symbols will
-be marked non annotable in some way.
+-			vlan_tag_flags |= ((tcp_opt_len >> 2) << 8) |
++			vlan_tag_flags |= (tcp_opt_words << 8) |
+ 					  TX_BD_FLAGS_SW_FLAGS;
+ 			if (likely(tcp_off == 0))
+ 				vlan_tag_flags &= ~TX_BD_FLAGS_TCP6_OFF0_MSK;
+@@ -6403,14 +6405,15 @@ bnx2_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 				mss |= (tcp_off & 0xc) << TX_BD_TCP6_OFF2_SHL;
+ 			}
+ 		} else {
+-			iph = ip_hdr(skb);
+-			if (tcp_opt_len || (iph->ihl > 5)) {
+-				vlan_tag_flags |= ((iph->ihl - 5) +
+-						   (tcp_opt_len >> 2)) << 8;
+-			}
++			struct iphdr *iph = ip_hdr(skb);
++			int ip_opt_words = iph->ihl - (sizeof(*iph) >> 2);
++			/* assumes positive ip_opt_words without checking */
++			int opt_words = ip_opt_words + tcp_opt_words;
++
++			if (opt_words > 0)
++				vlan_tag_flags |= opt_words << 8;
+ 		}
+-	} else
+-		mss = 0;
++	}
  
->  - I suspect we should finally make use of the .perfconfig parser and enable people
->    to use a different front-end from Newt? Just in case they prefer ASCII.
-> 
->  - When i hit enter on a symbol to annotate it, but the annotation fails, the TUI
->    just does nothing currently. Instead it should print something informative 
->    (and eye-catching) into a status line at the top or the bottom of the 
->    screen, possibly printed in red characters or so. Not a separate window as that
->    needs extra key-hits to get rid of - just a sufficiently visible status 
->    line would be perfect. There can be a few reasons why some functions can be 
->    annotated while others cannot be.
-
-Right.
+ 	mapping = pci_map_single(bp->pdev, skb->data, len, PCI_DMA_TODEVICE);
+ 	if (pci_dma_mapping_error(bp->pdev, mapping)) {
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 0fa7688..6ad8184 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -5481,6 +5481,8 @@ static void tg3_set_txd(struct tg3_napi *tnapi, int entry,
  
->  - [ call-graph data is not represented yet :-) ]
-
-It will
+ /* hard_start_xmit for devices that don't have any bugs and
+  * support TG3_FLG2_HW_TSO_2 and TG3_FLG2_HW_TSO_3 only.
++ *
++ * No TCP or IP length checking, as required by David Miller.
+  */
+ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
+ 				  struct net_device *dev)
+@@ -5515,9 +5517,9 @@ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
  
-> Anyway, very nice stuff!
+ 	entry = tnapi->tx_prod;
+ 	base_flags = 0;
+-	mss = 0;
+-	if ((mss = skb_shinfo(skb)->gso_size) != 0) {
+-		int tcp_opt_len, ip_tcp_len;
++	mss = skb_shinfo(skb)->gso_size;
++	if (mss != 0) {
++		struct tcphdr *th;
+ 		u32 hdrlen;
+ 
+ 		if (skb_header_cloned(skb) &&
+@@ -5525,18 +5527,16 @@ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
+ 			dev_kfree_skb(skb);
+ 			goto out_unlock;
+ 		}
++		th = tcp_hdr(skb);
+ 
+ 		if (skb_shinfo(skb)->gso_type & SKB_GSO_TCPV6)
+ 			hdrlen = skb_headlen(skb) - ETH_HLEN;
+ 		else {
+ 			struct iphdr *iph = ip_hdr(skb);
+ 
+-			tcp_opt_len = tcp_optlen(skb);
+-			ip_tcp_len = ip_hdrlen(skb) + sizeof(struct tcphdr);
+-
++			hdrlen = ip_hdrlen(skb) + tcp_header_len_th(th);
++			iph->tot_len = htons(mss + hdrlen);
+ 			iph->check = 0;
+-			iph->tot_len = htons(mss + ip_tcp_len + tcp_opt_len);
+-			hdrlen = ip_tcp_len + tcp_opt_len;
+ 		}
+ 
+ 		if (tp->tg3_flags2 & TG3_FLG2_HW_TSO_3) {
+@@ -5550,7 +5550,7 @@ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
+ 		base_flags |= (TXD_FLAG_CPU_PRE_DMA |
+ 			       TXD_FLAG_CPU_POST_DMA);
+ 
+-		tcp_hdr(skb)->check = 0;
++		th->check = 0;
+ 
+ 	}
+ 	else if (skb->ip_summed == CHECKSUM_PARTIAL)
+@@ -5683,6 +5683,8 @@ tg3_tso_bug_end:
+ 
+ /* hard_start_xmit for devices that have the 4G bug and/or 40-bit bug and
+  * support TG3_FLG2_HW_TSO_1 or firmware TSO only.
++ *
++ * No TCP or IP length checking, as required by David Miller.
+  */
+ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
+ 					  struct net_device *dev)
+@@ -5721,20 +5723,21 @@ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
+ 	if (skb->ip_summed == CHECKSUM_PARTIAL)
+ 		base_flags |= TXD_FLAG_TCPUDP_CSUM;
+ 
+-	if ((mss = skb_shinfo(skb)->gso_size) != 0) {
++	mss = skb_shinfo(skb)->gso_size;
++	if (mss != 0) {
+ 		struct iphdr *iph;
+-		u32 tcp_opt_len, ip_tcp_len, hdr_len;
++		struct tcphdr *th;
++		u32 hdr_len;
++		int opt_bytes;
+ 
+ 		if (skb_header_cloned(skb) &&
+ 		    pskb_expand_head(skb, 0, 0, GFP_ATOMIC)) {
+ 			dev_kfree_skb(skb);
+ 			goto out_unlock;
+ 		}
++		th = tcp_hdr(skb);
++		hdr_len = ip_hdrlen(skb) + tcp_header_len_th(th);
+ 
+-		tcp_opt_len = tcp_optlen(skb);
+-		ip_tcp_len = ip_hdrlen(skb) + sizeof(struct tcphdr);
+-
+-		hdr_len = ip_tcp_len + tcp_opt_len;
+ 		if (unlikely((ETH_HLEN + hdr_len) > 80) &&
+ 			     (tp->tg3_flags2 & TG3_FLG2_TSO_BUG))
+ 			return (tg3_tso_bug(tp, skb));
+@@ -5746,13 +5749,14 @@ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
+ 		iph->check = 0;
+ 		iph->tot_len = htons(mss + hdr_len);
+ 		if (tp->tg3_flags2 & TG3_FLG2_HW_TSO) {
+-			tcp_hdr(skb)->check = 0;
++			th->check = 0;
+ 			base_flags &= ~TXD_FLAG_TCPUDP_CSUM;
+ 		} else
+-			tcp_hdr(skb)->check = ~csum_tcpudp_magic(iph->saddr,
+-								 iph->daddr, 0,
+-								 IPPROTO_TCP,
+-								 0);
++			th->check = ~csum_tcpudp_magic(iph->saddr, iph->daddr,
++						       0, IPPROTO_TCP, 0);
++
++		opt_bytes = hdr_len - sizeof(*iph) - sizeof(*th);
++		/* assumes positive opt_bytes without checking */
+ 
+ 		if (tp->tg3_flags2 & TG3_FLG2_HW_TSO_3) {
+ 			mss |= (hdr_len & 0xc) << 12;
+@@ -5763,19 +5767,11 @@ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
+ 			mss |= hdr_len << 9;
+ 		else if ((tp->tg3_flags2 & TG3_FLG2_HW_TSO_1) ||
+ 			 GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705) {
+-			if (tcp_opt_len || iph->ihl > 5) {
+-				int tsflags;
+-
+-				tsflags = (iph->ihl - 5) + (tcp_opt_len >> 2);
+-				mss |= (tsflags << 11);
+-			}
++			if (opt_bytes > 0)
++				mss |= opt_bytes << (11 - 2);
+ 		} else {
+-			if (tcp_opt_len || iph->ihl > 5) {
+-				int tsflags;
+-
+-				tsflags = (iph->ihl - 5) + (tcp_opt_len >> 2);
+-				base_flags |= tsflags << 12;
+-			}
++			if (opt_bytes > 0)
++				base_flags |= opt_bytes << (12 - 2);
+ 		}
+ 	}
+ #if TG3_VLAN_TAG_USED
+diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+index 48ddeb8..854ad65 100644
+--- a/include/linux/tcp.h
++++ b/include/linux/tcp.h
+@@ -220,11 +220,6 @@ static inline unsigned int tcp_hdrlen(const struct sk_buff *skb)
+ 	return tcp_hdr(skb)->doff * 4;
+ }
+ 
+-static inline unsigned int tcp_optlen(const struct sk_buff *skb)
+-{
+-	return (tcp_hdr(skb)->doff - 5) * 4;
+-}
+-
+ /* Length of fixed header plus standard options. */
+ static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
+ {
+-- 
+1.6.3.3
 
-Thanks!
 
-- Arnaldo
+--------------040701070907040101030100--
