@@ -1,55 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753Ab0CLIqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 03:46:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7149 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756644Ab0CLIqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 03:46:15 -0500
-Message-ID: <4B99FF0A.1030700@redhat.com>
-Date: Fri, 12 Mar 2010 10:44:58 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+	id S1756790Ab0CLIuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 03:50:00 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:62162 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756678Ab0CLIt5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 03:49:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Qs9CmsgAXAZqoGcj72I8n3ApwEcGgpzYdtanvSu42Am+J/uuULleaMyWgJofh4kFoj
+         qD6jzEPExent/1tK+QuDlr3nBCYB3gO+5ZBzpaG3n7ejwBqC/n82SRVmLOLMziN+X5x8
+         ZJm+uPbjvkQ/cKeaxSB3EguzszlKnV4sFwyj0=
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: ying.huang@intel.com, akpm@linux-foundation.org,
-       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [BUGFIX] Fix AES-NI CTR optimization compiling failure with gas
- 2.16.1
-References: <1268377307.1640.491.camel@yhuang-dev.sh.intel.com>	<4B99FD4D.4090206@redhat.com> <20100312.004202.27822414.davem@davemloft.net>
-In-Reply-To: <20100312.004202.27822414.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <b637ec0b1003111328u5c1d7d7fw6c76c409740827c7@mail.gmail.com>
+References: <b637ec0b1003111328u5c1d7d7fw6c76c409740827c7@mail.gmail.com>
+Date: Fri, 12 Mar 2010 09:49:55 +0100
+Message-ID: <71cd59b01003120049n1a9fbbf3qfd37f14f241a7f64@mail.gmail.com>
+Subject: Re: Possible bug in eeepc-laptop.c - EeePC 900
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/2010 10:42 AM, David Miller wrote:
-> From: Avi Kivity<avi@redhat.com>
-> Date: Fri, 12 Mar 2010 10:37:33 +0200
+On Thu, Mar 11, 2010 at 10:28 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> Hi.
 >
->    
->> Eventually you'll port the entire assembler into macros, as
->> instructions are introduced more frequently that people upgrade their
->> assemblers.  Maybe we should disable the new features and warn people
->> (and distros) to upgrade their tools instead.
->>      
-> I totally and completely disagree.
+> On Tue, Mar 9, 2010 at 11:58 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+>> Hi.
+>> I have an EeePC 900 running 2.6.34-rc1.
+>>
+>> If I boot it on AC the cpu runs at full speed, 900MHz; if I boot it on
+>> battery it runs only at 630Mhz. Plugging / unplugging the AC does not
+>> change the cpu frequency. Only a reboot can change the situation.
+>>
+>> I already tried to echo 0 or 1 to the
+>> /sys/devices/platform/eeepc/cpufv file; no effects, even if the file
+>> changes its value.
+>>
+>> This is not a regression from 2.6.33: this behavior is also present in
+>> that version.
+>>
+>> Does this ring any bells? This is really annoying, especially when
+>> trying to watch a movie on battery. Also 3D apps show a 30%
+>> performance drop, as expected.
+>>
+>> Regards,
+>> Fabio
 >
-> It would have taken more than a year to get Niagara cpu support out to
-> people if I had done what you are suggesting.
->    
+> Well, it turns out that this is indeed a regression, but I don't know
+> from which kernel version.
+> I reverted (not cleanly) this patch:
+>
+>        http://patchwork.kernel.org/patch/28591
+>
+> and now
+>
+>        echo 1 > /sys/devices/platform/eeepc/cpufv
+>
+> enables the powersave mode and
+>
+>        echo 0 > /sys/devices/platform/eeepc/cpufv
+>
+> enables the performance mode.
+>
+> Tested with the non-benchmark glxgears (275 frames/sec in powersave
+> mode and 405 in performance mode) and stellarium (14 frames and 20
+> frames).
+>
+> Regards,
+> Fabio
+>
 
-Strange, that people can install a new kernel, but not a new assembler.
+Thanks for the report,
+Could you try to add a quick printk to show the value stored in
+set_acpi(CM_ASL_CPUFV, value); ?
+And also, could you send the result of acpidump ?
+Thanks,
 
-> And here we're talking about one instruction in one specialized case
-> in a very piece of crypto module assembler.
->    
-
-If it were one place, I'd agree, but there are more.  kvm for example 
-also uses .byte instead of the actual instructions.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Corentin Chary
+http://xf.iksaif.net
