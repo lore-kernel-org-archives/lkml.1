@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934697Ab0CLXOG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 18:14:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28093 "EHLO mx1.redhat.com"
+	id S934709Ab0CLXOK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 18:14:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27500 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279Ab0CLXOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 18:14:04 -0500
+	id S932279Ab0CLXOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 18:14:06 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 1/3] kprobes: Hide CONFIG_OPTPROBES and set if arch
-	support optimized kprobes
+Subject: [PATCH -tip 2/3] [BUGFIX] perf probe: Fix probe_point buffer overrun
 To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Dieter Ries <mail@dieterries.net>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Date: Fri, 12 Mar 2010 18:22:09 -0500
-Message-ID: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
+       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Date: Fri, 12 Mar 2010 18:22:17 -0500
+Message-ID: <20100312232217.2017.45017.stgit@localhost6.localdomain6>
+In-Reply-To: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
+References: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,73 +24,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hide CONFIG_OPTPROBES and set if arch support optimized kprobes, since
-this option doesn't change the behavior of kprobes, but just reduces
-the overhead.
+Fix probe_point array-size overrun problem. In some cases (e.g. inline
+function), one user-specified probe-point can be translated to many
+probe address, and it overruns pre-defined array-size.
+This also removes redundant MAX_PROBES macro definition.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Dieter Ries <mail@dieterries.net>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
 
- Documentation/kprobes.txt |   10 ++--------
- arch/Kconfig              |    6 ++----
- 2 files changed, 4 insertions(+), 12 deletions(-)
+ tools/perf/builtin-probe.c     |    1 -
+ tools/perf/util/probe-finder.c |    3 +++
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
-index 2f9115c..61c291c 100644
---- a/Documentation/kprobes.txt
-+++ b/Documentation/kprobes.txt
-@@ -165,8 +165,8 @@ the user entry_handler invocation is also skipped.
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index c30a335..152d6c9 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -47,7 +47,6 @@
+ #include "util/probe-event.h"
  
- 1.4 How Does Jump Optimization Work?
+ #define MAX_PATH_LEN 256
+-#define MAX_PROBES 128
  
--If you configured your kernel with CONFIG_OPTPROBES=y (currently
--this option is supported on x86/x86-64, non-preemptive kernel) and
-+If your kernel is built with CONFIG_OPTPROBES=y (currently this flag
-+is automatically set 'y' on x86/x86-64, non-preemptive kernel) and
- the "debug.kprobes_optimization" kernel parameter is set to 1 (see
- sysctl(8)), Kprobes tries to reduce probe-hit overhead by using a jump
- instruction instead of a breakpoint instruction at each probepoint.
-@@ -271,8 +271,6 @@ tweak the kernel's execution path, you need to suppress optimization,
- using one of the following techniques:
- - Specify an empty function for the kprobe's post_handler or break_handler.
-  or
--- Config CONFIG_OPTPROBES=n.
-- or
- - Execute 'sysctl -w debug.kprobes_optimization=n'
+ /* Session management structure */
+ static struct {
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 1e6c65e..f9cbbf1 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -455,6 +455,9 @@ static void show_probe_point(Dwarf_Die *sp_die, struct probe_finder *pf)
+ 	/* *pf->fb_ops will be cached in libdw. Don't free it. */
+ 	pf->fb_ops = NULL;
  
- 2. Architectures Supported
-@@ -307,10 +305,6 @@ it useful to "Compile the kernel with debug info" (CONFIG_DEBUG_INFO),
- so you can use "objdump -d -l vmlinux" to see the source-to-object
- code mapping.
- 
--If you want to reduce probing overhead, set "Kprobes jump optimization
--support" (CONFIG_OPTPROBES) to "y". You can find this option under the
--"Kprobes" line.
--
- 4. API Reference
- 
- The Kprobes API includes a "register" function and an "unregister"
-diff --git a/arch/Kconfig b/arch/Kconfig
-index e5eb133..12f9dcc 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -42,11 +42,9 @@ config KPROBES
- 	  If in doubt, say "N".
- 
- config OPTPROBES
--	bool "Kprobes jump optimization support (EXPERIMENTAL)"
--	default y
--	depends on KPROBES
-+	def_bool y
-+	depends on KPROBES && HAVE_OPTPROBES
- 	depends on !PREEMPT
--	depends on HAVE_OPTPROBES
- 	select KALLSYMS_ALL
- 	help
- 	  This option will allow kprobes to optimize breakpoint to
++	if (pp->found == MAX_PROBES)
++		die("Too many( > %d) probe point found.\n", MAX_PROBES);
++
+ 	pp->probes[pp->found] = strdup(tmp);
+ 	pp->found++;
+ }
 
 
 -- 
