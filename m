@@ -1,49 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933435Ab0CLRRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 12:17:18 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:47827 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933238Ab0CLRRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 12:17:16 -0500
-Date: Fri, 12 Mar 2010 18:17:13 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/serial/sunsab.c: adjust the constant used to initialize
- the interrupt_mask0 fields
-Message-ID: <Pine.LNX.4.64.1003121816500.3043@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S933488Ab0CLRSL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:18:11 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:45440 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933238Ab0CLRSJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 12:18:09 -0500
+From: Ameya Palande <ameya.palande@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
+       dbrownell@users.sourceforge.net
+Subject: [PATCH] regulator: Get rid of lockdep warning
+Date: Fri, 12 Mar 2010 19:16:36 +0200
+Message-Id: <37adb5f9cc7986b51b7b560cf7644ac5177a6e34.1268411141.git.ameya.palande@nokia.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 12 Mar 2010 17:17:48.0197 (UTC) FILETIME=[F0155550:01CAC207]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+From: Ameya Palande <ameya.palande@nokia.com>
 
-SAB82532_ISR0_TCD is declared in drivers/serial/subsab.h as relating to a
-status register, while SAB82532_IMR0_TCD is declared in the same file as
-relating to a mask register.  The latter seems more appropriate for the
-interrupt_mask0 field, and follows the strategy for initializing this field
-elsewhere in the same file.
+WARNING: at kernel/lockdep.c:2706 sysfs_add_file_mode+0x4c/0xa8()
 
-Both SAB82532_ISR0_TCD and SAB82532_IMR0_TCD have the same value.
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Ameya Palande <ameya.palande@nokia.com>
+CC: Liam Girdwood <lrg@slimlogic.co.uk>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/serial/sunsab.c             |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/regulator/core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/sunsab.c b/drivers/serial/sunsab.c
-index d514e28..d2e0321 100644
---- a/drivers/serial/sunsab.c
-+++ b/drivers/serial/sunsab.c
-@@ -474,7 +474,7 @@ static void sunsab_stop_rx(struct uart_port *port)
- {
- 	struct uart_sunsab_port *up = (struct uart_sunsab_port *) port;
- 
--	up->interrupt_mask0 |= SAB82532_ISR0_TCD;
-+	up->interrupt_mask0 |= SAB82532_IMR0_TCD;
- 	writeb(up->interrupt_mask1, &up->regs->w.imr0);
- }
- 
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index c7bbe30..2ad3272 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1045,6 +1045,7 @@ static struct regulator *create_regulator(struct regulator_dev *rdev,
+ 		regulator->dev_attr.attr.owner = THIS_MODULE;
+ 		regulator->dev_attr.attr.mode = 0444;
+ 		regulator->dev_attr.show = device_requested_uA_show;
++		sysfs_attr_init(&regulator->dev_attr.attr);
+ 		err = device_create_file(dev, &regulator->dev_attr);
+ 		if (err < 0) {
+ 			printk(KERN_WARNING "%s: could not add regulator_dev"
+-- 
+1.6.3.3
+
