@@ -1,114 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932349Ab0CLWnN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:43:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753996Ab0CLWnL (ORCPT
+	id S932460Ab0CLWsi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:48:38 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:56330 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932205Ab0CLWsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:43:11 -0500
-Date: Fri, 12 Mar 2010 14:42:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH] fix PHY polling system blocking
-Message-Id: <20100312144248.ade8b700.akpm@linux-foundation.org>
-In-Reply-To: <1267894258.18869.2.camel@wall-e>
-References: <1267894258.18869.2.camel@wall-e>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Mar 2010 17:48:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=u+JaeF2vojh81xgkmARbZcn9I0RYnxwyZ0xdG7p1QU3fDD6QYthtYAiRYbQDR6sgMB
+         EDV2dNEONLHI0gxhYpfAi1jaAtd+OajiWcGuxcSX6hOQhB08R2+0bUJSD/3EA/6Zhh7/
+         hqjhvRcDp3XYDIB/PC89ACAxH7DgqVMt+yjps=
+Date: Fri, 12 Mar 2010 14:48:28 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Florian Mickler <florian@mickler.org>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 2/2] enhance sysfs rfkill interface
+Message-ID: <20100312224828.GA18618@core.coreip.homeip.net>
+References: <1268416988-24862-1-git-send-email-florian@mickler.org>
+ <1268416988-24862-2-git-send-email-florian@mickler.org>
+ <1268416988-24862-3-git-send-email-florian@mickler.org>
+ <20100312182209.GB8736@core.coreip.homeip.net>
+ <20100312215743.7671d173@schatten.dmk.lab>
+ <20100312212025.GA17712@core.coreip.homeip.net>
+ <20100312233925.74effc7d@schatten.dmk.lab>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312233925.74effc7d@schatten.dmk.lab>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Mar 2010 17:50:58 +0100
-Stefani Seibold <stefani@seibold.net> wrote:
-
-> This patch fix the PHY poller, which can block the whole system. On a
-> Freescale PPC 834x this result in a delay of 450 us due the slow
-> communication with the PHY chip.
+On Fri, Mar 12, 2010 at 11:39:25PM +0100, Florian Mickler wrote:
+> On Fri, 12 Mar 2010 13:20:26 -0800
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 > 
-> For PHY chips without interrupts, the status of the ethernet will be
-> polled every 2 sec. The poll function will read some register of the MII
-> PHY. The time between the sending the MII_READ_COMMAND and receiving the
-> result is more the 100 us on a PPC 834x.
->    
-> The patch modifies the poller a lit bit. Only a link status state change
-> will result in a successive detection of the connection type. The poll
-> cycle on the other hand will be increased to every seconds.
-
-You didn't tell us how many seconds.  That would be important?
-
-> Together this patch will prevent a blocking of nearly 400 us every two
-> seconds of the whole system on a PPC 834x.
+> > On Fri, Mar 12, 2010 at 09:57:43PM +0100, Florian Mickler wrote:
+> > > On Fri, 12 Mar 2010 10:22:09 -0800
+> > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > 
+> > > > On Fri, Mar 12, 2010 at 07:03:08PM +0100, florian@mickler.org wrote:
+> > > > >  
+> > > > > +static ssize_t rfkill_hard_show(struct device *dev,
+> > > > > +				 struct device_attribute *attr,
+> > > > > +				 char *buf)
+> > > > > +{
+> > > > > +	struct rfkill *rfkill = to_rfkill(dev);
+> > > > > +	unsigned long flags;
+> > > > > +	u32 state;
+> > > > > +
+> > > > > +	spin_lock_irqsave(&rfkill->lock, flags);
+> > > > > +	state = rfkill->state;
+> > > > > +	spin_unlock_irqrestore(&rfkill->lock, flags);
+> > > > 
+> > > > Why exactly is this lock needed?
+> > > 
+> > > The rfkill state is updated from multiple contexts... Am I overlooking
+> > > smth obvious here?
+> > > 
+> > 
+> > You are not updating but reading... Are you concerned about seeing
+> > a partial write to u32? It does not happen.
+> > 
+> Hm.. You shure? On every arch that supports wireless drivers? 
+> 
+> I've just copied that code from the old sysfs state-file handler.
+> So I assumed that reading partial updated state can happen... Also I
+> just searched a little but did not find anything, cause i didn't know
+> where to look. Who garantees this? Is it a gcc thing? 
 > 
 
-I can't say that I really understand what you did - what functionality
-did we lose?
+None of the arches would do byte-by-byte writes to a u32, they'd write
+dword at once. Also, even if they could, you are interested in a single
+flag (bit). You do realize that once you leave spinlock whatever you
+fetched is stale data and may not be trusted?
 
-Would it not be better to extend the phy state machine a bit?  When we
-detect the link status change, issue the MII command then arm the
-delayed-work timer to expire in a millisecond, then go in next time and
-read the result?
-
-That might require fancy locking to prevent other threads of control
-from going in and mucking up the MII state.  Possibly leave phydev_lock
-held across that millisecond to keep other people away?
-
-> 
-> ...
-> 
-> diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net//phy/phy.c
-> --- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
-> +++ linux-2.6.33/drivers/net//phy/phy.c	2010-02-28 22:53:14.725464101 +0100
-
-erp, your weird patch headers ("//") broke my seven-year-old script. 
-But I fixed it!
-
-> @@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
->  		case PHY_RUNNING:
->  			/* Only register a CHANGE if we are
->  			 * polling */
-> -			if (PHY_POLL == phydev->irq)
-> -				phydev->state = PHY_CHANGELINK;
-> -			break;
-> +			if (PHY_POLL != phydev->irq)
-> +				break;
->  		case PHY_CHANGELINK:
->  			err = phy_read_status(phydev);
->  
-> diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net//phy/phy_device.c
-> --- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
-> +++ linux-2.6.33/drivers/net//phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
-> @@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
->  	dev->speed = 0;
->  	dev->duplex = -1;
->  	dev->pause = dev->asym_pause = 0;
-> -	dev->link = 1;
-> +	dev->link = 0;
->  	dev->interface = PHY_INTERFACE_MODE_GMII;
->  
->  	dev->autoneg = AUTONEG_ENABLE;
-> @@ -694,10 +694,16 @@ int genphy_update_link(struct phy_device
->  	if (status < 0)
->  		return status;
->  
-> -	if ((status & BMSR_LSTATUS) == 0)
-> +	if ((status & BMSR_LSTATUS) == 0) {
-> +		if (phydev->link==0)
-> +			return 1;
->  		phydev->link = 0;
-> -	else
-> +	}
-> +	else {
-> +		if (phydev->link==1)
-> +			return 1;
->  		phydev->link = 1;
-> +	}
-
-Please don't invent new coding styles.  scripts/checkpatch.pl is here
-to help.
-
-
+-- 
+Dmitry
