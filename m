@@ -1,106 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936340Ab0CMBR2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:17:28 -0500
-Received: from kroah.org ([198.145.64.141]:60985 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934993Ab0CMAUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:45 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
-Message-Id: <20100313001512.497683521@kvm.kroah.org>
-User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:02 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [patch 084/123] thinkpad-acpi: make driver events work in NVRAM poll mode
-In-Reply-To: <20100313001618.GA9811@kroah.com>
-In-Reply-To: <20100313001618.GA9811@kroah.com>
+	id S935360Ab0CMBRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:17:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936358Ab0CMBRl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 20:17:41 -0500
+Date: Fri, 12 Mar 2010 17:14:23 -0500
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       u.kleine-koenig@pengutronix.de, a.p.zijlstra@chello.nl,
+       andrea.gallo@stericsson.com, dbrownell@users.sourceforge.net,
+       eric.y.miao@gmail.com, hugh.dickins@tiscali.co.uk, jamie@shareable.org,
+       John Stultz <johnstul@us.ibm.com>, linux@bohmer.net, nico@marvell.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <greg@kroah.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 2/3] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the
+ right place
+Message-Id: <20100312171423.b7e7a838.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.1003130130090.22855@localhost.localdomain>
+References: <201003112208.o2BM8wJU013575@imap1.linux-foundation.org>
+	<alpine.LFD.2.00.1003130031300.22855@localhost.localdomain>
+	<20100312155015.090ba541.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.1003130130090.22855@localhost.localdomain>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.33-stable review patch.  If anyone has any objections, please let me know.
+On Sat, 13 Mar 2010 01:59:50 +0100 (CET) Thomas Gleixner <tglx@linutronix.de> wrote:
 
------------------
+> 
+> I'm simply refusing to apply patches which just shuffle code around to
+> warn about obscure use cases instead of tackling the real problem of
+> long running irq handlers which prevent us to get rid of IRQF_DISABLED
+> and just run all interrupt handlers with irqs disabled.
 
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+I'm having trouble agreeing with that aim, really.
 
-commit 7f0cf712a74fcc3ad21f0bde95bd32c2f2cc3888 upstream.
+We can tweak and tune until we're blue in the face, but the system's
+IRQ latency will always be worse if handlers always run with interrupts
+disabled.
 
-Thadeu Lima de Souza Cascardo reports this:
-
-Brightness notification does not work until the user writes to
-hotkey_mask attribute.  That's because the polling thread will only run
-if hotkey_user_mask is set and someone is reading the input device or
-if hotkey_driver_mask is set.  In this second case, this condition is
-not tested after the mask is changed, because the brightness and
-volume drivers are started after the hotkey drivers.
-
-Fix tpacpi_hotkey_driver_mask_set() to call hotkey_poll_setup(), so
-that the poller kthread will be started when needed.
-
-Reported-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Tested-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/platform/x86/thinkpad_acpi.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
-
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -2082,6 +2082,7 @@ static struct attribute_set *hotkey_dev_
- 
- static void tpacpi_driver_event(const unsigned int hkey_event);
- static void hotkey_driver_event(const unsigned int scancode);
-+static void hotkey_poll_setup(const bool may_warn);
- 
- /* HKEY.MHKG() return bits */
- #define TP_HOTKEY_TABLET_MASK (1 << 3)
-@@ -2264,6 +2265,8 @@ static int tpacpi_hotkey_driver_mask_set
- 
- 	rc = hotkey_mask_set((hotkey_acpi_mask | hotkey_driver_mask) &
- 							~hotkey_source_mask);
-+	hotkey_poll_setup(true);
-+
- 	mutex_unlock(&hotkey_mutex);
- 
- 	return rc;
-@@ -2548,7 +2551,7 @@ static void hotkey_poll_stop_sync(void)
- }
- 
- /* call with hotkey_mutex held */
--static void hotkey_poll_setup(bool may_warn)
-+static void hotkey_poll_setup(const bool may_warn)
- {
- 	const u32 poll_driver_mask = hotkey_driver_mask & hotkey_source_mask;
- 	const u32 poll_user_mask = hotkey_user_mask & hotkey_source_mask;
-@@ -2579,7 +2582,7 @@ static void hotkey_poll_setup(bool may_w
- 	}
- }
- 
--static void hotkey_poll_setup_safe(bool may_warn)
-+static void hotkey_poll_setup_safe(const bool may_warn)
- {
- 	mutex_lock(&hotkey_mutex);
- 	hotkey_poll_setup(may_warn);
-@@ -2597,7 +2600,11 @@ static void hotkey_poll_set_freq(unsigne
- 
- #else /* CONFIG_THINKPAD_ACPI_HOTKEY_POLL */
- 
--static void hotkey_poll_setup_safe(bool __unused)
-+static void hotkey_poll_setup(const bool __unused)
-+{
-+}
-+
-+static void hotkey_poll_setup_safe(const bool __unused)
- {
- }
- 
-
+Plus this approach introduces dependencies between unrelated drivers
+(and between _each_ driver and the overall system) which simply don't
+exist if those drivers are being nicer to the rest of the system.
 
