@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932637Ab0CLK0P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:26:15 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:59880 "EHLO
+	id S932641Ab0CLKcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:32:17 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:52887 "EHLO
 	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932482Ab0CLK0M (ORCPT
+	with ESMTP id S932567Ab0CLKcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:26:12 -0500
+	Fri, 12 Mar 2010 05:32:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Ftezo0qMwL8qmKutx5cWVCKIytXYo3rADg9Wa/gWaOKSzqjKyrCZhbSYsLOw1wfD76
-         cpiS2x513hoYCY+66b2B+iF69qG8vUglikTDyOeAPbAEspx5jMndAl6UQoecGCdHjG/g
-         6gnnQrPmDYTIcYWNJIsvNeoJmMKrskmf08Sq4=
+        b=SQ/LGiAFtjm31LAH9dBm5gSTjiHP/BiFpfU+47PvF+w8i0yqX7NgKb+S0ODqDeTEx0
+         9fTuN7B17DCH1Gldg7cuovDzpMKzEzkRpXyIu1wcTh0gHYLUdbCWkCVZqNJbcqeBiaeg
+         zYszesURx1BJ/It1azIkp8L3IbXY7UeRXp9PU=
 From: revent82@gmail.com
 To: gregkh@suse.de, andre@bitwigglers.org, peterhuewe@gmx.de,
        ak@linux.intel.com, eugeni@mandriva.com
 Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
        revent <revent@router.Premier>
 Subject: [PATCH] Staging:asus_oled: Fixed problem of style tabs in asus_oled.c
-Date: Fri, 12 Mar 2010 15:26:06 +0500
-Message-Id: <1268389566-26737-1-git-send-email-revent82@gmail.com>
+Date: Fri, 12 Mar 2010 15:32:11 +0500
+Message-Id: <1268389931-26872-1-git-send-email-revent82@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
