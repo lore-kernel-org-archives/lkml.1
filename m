@@ -1,82 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213Ab0CLErw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 23:47:52 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:51784 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753926Ab0CLErv (ORCPT
+	id S1756249Ab0CLE4O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 23:56:14 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:24774 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941Ab0CLE4N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 23:47:51 -0500
-Subject: Re: firmware loading vs. initrd
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tomas Winkler <tomasw@gmail.com>,
-       Greg KH <greg@kroah.com>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <ac3eb2511003112032s6d4b097aqda02143edfec5a3@mail.gmail.com>
-References: <1268347174.4142.11.camel@jlt3.sipsolutions.net>
-	 <ac3eb2511003112032s6d4b097aqda02143edfec5a3@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Mar 2010 20:48:10 -0800
-Message-ID: <1268369290.4828.4.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.91 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Mar 2010 23:56:13 -0500
+MIME-Version: 1.0
+In-Reply-To: <20100312104840.2128fe99.sfr@canb.auug.org.au>
+References: <20100311173024.4423.53178.stgit@angua> <20100311173203.4423.8733.stgit@angua> 
+	<20100312104840.2128fe99.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 11 Mar 2010 21:55:52 -0700
+X-Google-Sender-Auth: 1bad8577eda0bf9d
+Message-ID: <fa686aa41003112055i51bb1d31k6874a20d2a37748a@mail.gmail.com>
+Subject: Re: [PATCH 2/3] of/flattree: Make unflatten_device_tree() safe to 
+	call from any arch
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: devicetree-discuss@lists.ozlabs.org, benh@kernel.crashing.org,
+       davem@davemloft.net, jeremy.kerr@canonical.com, monstr@monstr.eu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 05:32 +0100, Kay Sievers wrote:
-> On Thu, Mar 11, 2010 at 23:39, Johannes Berg <johannes@sipsolutions.net> wrote:
-> > We recently converted a few wireless drivers to use
-> > request_firmware_nowait() in order to be able to load firmware from
-> > probe. We would like to continue with that so we can load the firmware
-> > before registering with any other subsystems, as we had discussed at the
-> > wireless summit last year.
-> >
-> > However, in actually trying this today, I noticed that there's a problem
-> > with this. I made my drivers all built in, and then I ended up with it
-> > not working because the firmware agent that was in my initrd was telling
-> > [1], and the kernel that the firmware could not be found.
-> >
-> > I thought of modifying the firmware agent in the initrd to not tell the
-> > kernel it doesn't have it, but that is problematic when using
-> > request_firmware(), the kernel boot will be delayed until the timeout
-> > (one minute).
-> >
-> > This can be solved by adding an environment variable to the uevent that
-> > tells userspace whether or not this is coming from request_firmware() or
-> > request_firmware_nowait(). I will follow up with a patch doing that.
-> >
-> > Additionally, however, we need to make a change like below to the
-> > firmware agent in order to not reply to asynchronous firmware loads
-> > during the initrd stage. I'm not sure how to actually check that we're
-> > running in an initrd (is that possible?) nor did I actually verify that
-> > the NOWAIT environment variable is set properly.
-> >
-> > Thoughts? It seems like this would solve our problems nicely if we can
-> > determine whether we're in the initrd or not.
-> 
-> I don't think we can reliably make the decision that the firmware is
-> not available at a later point.
-> 
-> Depending on the system, we can have several re-trigger of the same
-> events during bootup, and the firmware loader does not have any idea
-> in which state the system is.
+On Thu, Mar 11, 2010 at 4:48 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Grant,
+>
+> On Thu, 11 Mar 2010 10:32:03 -0700 Grant Likely <grant.likely@secretlab.ca> wrote:
+>>
+>> - If CONFIG_OF_FLATTREE is not set, then make unflatten_device_tree()
+>>   an empty #define.
+>
+> "an empty static inline funtion."
+>
+>> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+>> index f0fdd1f..54399f1 100644
+>> --- a/include/linux/of_fdt.h
+>> +++ b/include/linux/of_fdt.h
+>> @@ -99,6 +99,8 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+>>  /* Other Prototypes */
+>>  extern void unflatten_device_tree(void);
+>>  extern void early_init_devtree(void *);
+>> +#else /* CONFIG_OF_FLATTREE */
+>> +static inline void define unflatten_device_tree(void) {}
+>                      ^^^^^^
+> You need to remove that.
 
-Oh, interesting, I had no idea.
+Fixed.  Thanks.
 
-> What's wrong to leave the request staying around for forever, until it
-> is possibly canceled from userspace? So this event could be
-> re-triggered from userspace any time later. Whatever will cancel the
-> firmware requests in the end, it needs to be something that knows more
-> about the state of "booting" than the firmware loader knows today, I
-> guess.
-
-Nothing in particular, although when you've set the timeout to 0 (no
-timeout) this would have the request and a kernel thread stick around
-forever. But I didn't know about multiple stages etc. here, so yes it
-would probably make sense to just leave the request around until we know
-we can reliably say we don't have it.
-
-johannes
-
+g.
