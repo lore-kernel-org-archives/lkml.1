@@ -1,44 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933775Ab0CLRdr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 12:33:47 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37822 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933630Ab0CLRdq (ORCPT
+	id S1757684Ab0CLRht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:37:49 -0500
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:54222
+	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757004Ab0CLRhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 12:33:46 -0500
-X-Sasl-enc: 43VQit38q+U07EcC/sIdoRbZ19CKr9CoJT/VTh5FGKTH 1268415225
-Date: Fri, 12 Mar 2010 14:33:42 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "rpurdie@rpsys.net" <rpurdie@rpsys.net>
-Subject: Re: [PATCH] backlight: provide sysfs percent brightness attribute
-Message-ID: <20100312173341.GA4931@khazad-dum.debian.net>
-References: <0D753D10438DA54287A00B02708426976368437C8D@AUSP01VMBX24.collaborationhost.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0D753D10438DA54287A00B02708426976368437C8D@AUSP01VMBX24.collaborationhost.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 12 Mar 2010 12:37:46 -0500
+Date: Fri, 12 Mar 2010 12:31:02 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, davem@davemloft.net, sfr@canb.auug.org.au,
+       jgarzik@pobox.com, ben-linux@fluff.org, dwmw2@infradead.org,
+       jeremy.kerr@canonical.com, James.Bottomley@suse.de,
+       broonie@opensource.wolfsonmicro.com, microblaze-uclinux@itee.uq.edu.au,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
+       alsa-devel@alsa-project.org
+Subject: Re: [PATCH 12/27] drivers/mtd/of: don't use deprecated field in
+ of_platform_driver
+Message-ID: <20100312123102.453ff2d0@lappy.seanm.ca>
+In-Reply-To: <20100311182253.13103.92479.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+	<20100311182253.13103.92479.stgit@angua>
+Organization: PIKA
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; i686-pc-linux-gnu)
+X-Message-Flag: Warning: This message may contain actual content.
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAHlBMVEXOy8P+/f8hHBFoOhetjm76/P5qPzJLJxltXUSaX0wbgtjEAAACY0lEQVQ4jWWUQWvcMBCF91BCjiuIIWcX6nsE9uZWgknjWwW7sD2rjL1XGzzpNS2ufI5xVv+2byTHSehcbO8nzWjeG+1GqcPhZfTlEl8/hUdVbgDUvfNT+SEqH8Ho/UdQCjDJg0dMceVUhVcBKhn8Go7qTjd4CYCcBL7OQ9GmGXfNuICauaNmIKrbNGWivAngQPhMOScibODGOZ2PYUfdMlCnyTJWpFlu9SkW14Ps6cdZHoJ4F4ENPzxOD3i2cZMA9VCHdV/KCmdC3i7WMAKyNuNfZVUwzoA2pmqjDkZd1ikjfpblTDj32PhSwEH9GHTBrQDvpaXT9Aqc1cz9HwHedg20qkLxK2cLNIh1q8p+Ae53TsMJ36shAewdDPHz+B/YDqOffEhTvXMQYIbp0SppIdQKIIG31XwK4Pk2OrYAuGQX0JHUowDUPY1O77xkeob6CLsxYQfZvMhxNJhYsNY56bjjktA6Pgl6WIiLiOC6g1hQltMMIJBY/FrEhcRisIWcrG3csa8DEOt6pGs5HwIw2zrkCW6TCN0sQP2tuwjSmouWb10EiXrJcUwhqAzfx2aWaYe5F48k9qbBYplKFybRmGPvbuJIyUTKTAagkquabrJWcnV0OqONqFWSfH/qi52cDOvHs10bVOobgEb73NPoh1WSJDky72whkmDcVmCkCMuJU9Yn/y6VMWaGriTTiesmUxZTIS4yOIR5qPzZSbMr2LefcaB4P/V7kNxlvcY9xJnEQ70Cc2w7aCFXtBCnVqC2uCEiU2hz6TxuuUsz0TDy/C1Vcgwayh8AwFvxg9k/LTcWUfA/se5dIXIv87sAAAAASUVORK5CYII=
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010, H Hartley Sweeten wrote:
-> It's usually more convenient to set the backlight brightness
-> as a 'percent' of total brightness rather than using the raw
-> 'brightness' value.
+On Thu, 11 Mar 2010 11:22:54 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Well, that scale is often not linear, so you are not dealing with fractions
-of the effective brightness, just with fractions of an arbritary scale
-exported by the backend driver.  Much of the "usefulness" of a "percent"
-scale dies right there.
+> .name, .match_table and .owner are duplicated in both
+> of_platform_driver and device_driver, so the of_platform_driver
+> copies will be removed soon.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+NDFC
+Acked-by: Sean MacLennan <smaclennan@pikatech.com>
