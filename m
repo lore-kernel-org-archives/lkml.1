@@ -1,127 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934618Ab0CLVJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 16:09:18 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:39241 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933167Ab0CLVJR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 16:09:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=JzQq8OGJSfr4WwoPw2Cc4REk0fkWl4ia1DqmYX69eZ+IeDPbsL9IcM6pKKva+CKid5
-         Gb3N6gvUzdw/F/po1WmdI0FTLOZATSlED7VxPYRL3AVPCKYRdaokRou0anEDf8cyQXc2
-         e7Kv1Z/iqsKVrbET5igvgkXQp73Ad2JGDAgOE=
+	id S934623Ab0CLVLS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 16:11:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46382 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932683Ab0CLVLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 16:11:17 -0500
+Message-ID: <4B9AADC1.1040808@kernel.org>
+Date: Fri, 12 Mar 2010 13:10:25 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <9c7fa61f1003121041r767cd60k4c2297ced36c9f88@mail.gmail.com>
-References: <9c7fa61f1003121013j3e4c9c5djb8de244f2e345943@mail.gmail.com>
-	 <9c7fa61f1003121041r767cd60k4c2297ced36c9f88@mail.gmail.com>
-Date: Fri, 12 Mar 2010 22:01:03 +0100
-Message-ID: <9c7fa61f1003121301h9abee3bt508679ee92f94165@mail.gmail.com>
-Subject: Re: [PATCH] Clear abnormal poweroff flag on VIA southbridges, fix 
-	resume
-From: Marcus Lell <marcus.lell@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous
+  reboots
+References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan>  <alpine.DEB.2.00.1003120548551.6420@p34.internal.lan>  <alpine.DEB.2.00.1003120556590.15732@p34.internal.lan>  <alpine.DEB.2.00.1003120743530.15732@p34.internal.lan>  <alpine.DEB.2.00.1003120755340.15732@p34.internal.lan> <86802c441003121144y24e763e6n16f237928df1f676@mail.gmail.com> <alpine.DEB.2.00.1003121520120.6929@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1003121520120.6929@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-oh, googlemail fucked the lat one up...
-I hope this patch looks better.
-when not let us blame google... :-)
+On 03/12/2010 12:32 PM, Justin Piszcz wrote:
+> 
+> 
+> On Fri, 12 Mar 2010, Yinghai Lu wrote:
+> 
+>> On Fri, Mar 12, 2010 at 4:56 AM, Justin Piszcz
+>> <jpiszcz@lucidpixels.com> wrote:
+>>>
+>>>
+>>> On Fri, 12 Mar 2010, Justin Piszcz wrote:
+>>>
+>>>>
+>>>>
+>>>> On Fri, 12 Mar 2010, Justin Piszcz wrote:
+>>>>
+>>>> Problem persists.
+>>>>
+>>>> Others seem to have similar issues:
+>>>> http://lkml.org/lkml/2010/1/9/157
+>>>>
+>>>> Some boards not compatible it appears..
+>>>>
+>>>> Justin.
+>>>>
+>>>>
+>>>
+>>> Even with all boards removed:
+>>> [    0.133537] pci 0000:00:00.0: address space collision: [mem
+>>> 0xe0000000-0xffffffff 64bit] already in use
+>>>
+>>> 00:00.0 Host bridge: ATI Technologies Inc RD790 Northbridge only dual
+>>> slot
+>>> PCI-e_GFX and HT3 K8 part
+>>>
+>>
+>> how about current linus' tree with pci=nocrs or pci=use_crs?
+> 
+> Hi, I saw your second e-mail, so it sounds like a bad board or something
+> that Linux does not have a quirk for yet, but in any case, per your
+> recommendations:
+> 
+> pci=nocrs:
+> http://home.comcast.net/~jpiszcz/20100312/dmesg-pci-nocrs.txt
+> 
+> pci=use_crs:
+> http://home.comcast.net/~jpiszcz/20100312/dmesg-use-crs.txt
+> 
+> No collision when pci=use_crs is used, BUT the system still crashes.
+> 
+> Instead of collision, it says this:
+> 
+> [    0.133598] PCI: pci_cache_line_size set to 64 bytes
+> [    0.133603] pci 0000:00:00.0: BAR 3: reserving [mem
+> 0xe0000000-0xffffffff flags 0x120204] (d=0, p=0)
+> [    0.133606] pci 0000:00:00.0: no compatible bridge window for [mem
+> 0xe0000000-0xffffffff 64bit]
+> [    0.133610] pci 0000:00:00.0: can't reserve [mem
+> 0xe0000000-0xffffffff 64bit]
+> [    0.133617] pci 0000:00:11.0: BAR 0: reserving [io  0xff00-0xff07
+> flags 0x20101] (d=0, p=0)
+> 
+> [    0.133735] Expanded resource reserved due to conflict with PCI Bus
+> 0000:00
+> 
+> Ideas?
 
-On Fri, Mar 12, 2010 at 7:41 PM, Marcus Lell <marcus.lell@googlemail.com> wrote:
-> hi all,
->
-> [please cc me, as I am not subscribed to lkml]
->
-> maybe this patch got lost...
->
->>Mon, 19 Jun 2006 23:01:48 -0700
->>Andrew Morton wrote:
->>
->>>On Sun, 18 Jun 2006 20:14:22 +0100
->>>Matthew Garrett <[EMAIL PROTECTED]> wrote:
->>>
->>> Some VIA southbridges contain a flag in the ACPI register space that
->>> indicates whether an abnormal poweroff has occured, presumably with the
->>> intention that it can be cleared on clean shutdown. Some BIOSes check
->>> this flag at resume time, and will re-POST the system rather than jump
->>> back to the OS if it's set. Clearing it at boot time appears to be
->>> sufficient. I'm not sure if drivers/pci/quirks.c is the right place to
->>> do it, but I'm not sure where would be cleaner.
->>>
->>> Signed-off-by: Matthew Garrett <[EMAIL PROTECTED]>
->>>
->>> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
->>> index 7537260..2f9f996 100644
->>> --- a/drivers/pci/quirks.c
->>> +++ b/drivers/pci/quirks.c
->>> @@ -660,6 +660,33 @@ static void __devinit quirk_vt82c598_id(
->>>  }
->>>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C597_0,
->>> quirk_vt82c598_id );
->>>
->>> +#ifdef CONFIG_ACPI
->>> +
->>> +/* Some VIA systems boot with the abnormal status flag set. This can
-> cause
->>> + * the BIOS to re-POST the system on resume rather than passing control
->>> + * back to the OS. Clear the flag on boot
->>> + */
->>> +
->>> +static void __devinit quirk_via_abnormal_poweroff(struct pci_dev *dev)
->>> +{
->>> +     u32 reg;
->>> +
->>> +     acpi_hw_register_read (ACPI_MTX_DO_NOT_LOCK,
-> ACPI_REGISTER_PM1_STATUS,
->>> +                                         &reg);
->>> +
->>> +      if (reg & 0x800) {
->>> +             printk ("Clearing abnormal poweroff flag\n");
->>> +                         acpi_hw_register_write (ACPI_MTX_DO_NOT_LOCK,
->>> +                         ACPI_REGISTER_PM1_STATUS,
->>> +                          (u16)0x800);
->>> +     }
->>> +}
->>> +
->>> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_VIA, PCI_DEVICE_ID_VIA_8235,
->>> quirk_via_abnormal_poweroff);
->>> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_VIA, PCI_DEVICE_ID_VIA_8237,
->>> quirk_via_abnormal_poweroff);
->>> +
->>> +#endif
->>
->>Is CONFIG_ACPI the right thing to use here?  As opposed to, say,
->>CONFIG_PM?
->>Or CONFIG_ACPI_SLEEP??
->
-> I am still (@2010) not able to boot for a suspended (STR) system. my
-> pc reboots normally
-> instead of resuming. maybe this patch fixes this.
-> (I did a 's/register/reg/' in the orginal patch for obvious reasons...)
->
-> unfortunately I am not able to port it to 2.6.33, I don't know the kernel api...
->
-> I tried to test it, but it doesn't compile on 2.6.24.7 or 2.6.25.20,
-> but was posted in 2.6.25 time line for sure. (iirc it was based on the
-> 2.6.25-mm2 patch)
->
-> as I don't know, what I can do about it, I am posting it here.
-> I hope, that someone comes in with advises, or better, patches, that
-> apply to 2.6.33 or 2.6.34-rc1. :-)
->
-> of course, I will be very glad to test patches, or will try to port
-> this patch, thus it is be more unlikely, that I am able to.
->
->
-> marcus lell
->
-> --
-> return to the point of no return._
->
+you are using 2.6.33, can you try linus today's git or 2.6.34-rc1?
+
+Yinghai
+
