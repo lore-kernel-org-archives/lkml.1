@@ -1,69 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932793Ab0CLXiv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 18:38:51 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:46848 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932385Ab0CLXit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 18:38:49 -0500
-Date: Fri, 12 Mar 2010 23:38:20 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefani Seibold <stefani@seibold.net>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Kreuzer, Michael (NSN - DE/Ulm)" <michael.kreuzer@nsn.com>,
-       linux-mtd@lists.infradead.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] fix MTD CFI/LPDDR flash driver huge latency bug
-Message-ID: <20100312233820.GH6491@shareable.org>
-References: <1267894137.18869.0.camel@wall-e> <20100312142344.174bd46f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100312142344.174bd46f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S932802Ab0CLXlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 18:41:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30654 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932385Ab0CLXll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 18:41:41 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B9A6033.8010705@s5r6.in-berlin.de>
+References: <4B9A6033.8010705@s5r6.in-berlin.de> <20100311172055.7328.51353.stgit@warthog.procyon.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       sgruszka@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] Document Linux's circular buffering capabilities
+Date: Fri, 12 Mar 2010 23:41:08 +0000
+Message-ID: <18180.1268437268@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 06 Mar 2010 17:48:57 +0100
-> Stefani Seibold <stefani@seibold.net> wrote:
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> "...do this" could be misunderstood as "use a modulus instruction",
+> although the heading says that this section is about 2^n sized buffers.
+> How about reversing the leading paragraph?
 > 
-> > This patch fix a huge latency problem in the MTD CFI and LPDDR flash
-> > drivers.
-> > 
-> > The use of a memcpy() during a spinlock operation will cause very long
-> > thread context switch delays if the flash chip bandwidth is low and the
-> > data to be copied large, because a spinlock will disable preemption.
-> > 
-> > For example: A flash with 6,5 MB/s bandwidth will cause under ubifs,
-> > which request sometimes 128 KB (the flash erase size), a preemption
-> > delay of 20 milliseconds. High priority threads will not be served
-> > during this time, regardless whether this threads access the flash or
-> > not. This behavior breaks real time.
-
-I agree that's a problem, and it's not just real time that's affected.
-
-I've just realised I have a video player with ~1.5 MB/s bandwidth
-64kb/block flash attached, and this might be the reason JFFS2 activity
-makes video play less smooth on it.  44ms is even worse.
-
-> > The patch change all the use of spin_lock operations for xxxx->mutex
-> > into mutex operations, which is exact what the name says and means.
-
-It would be even better if it also split the critical sections into
-smaller ones with cond_resched() between, so that non-preemptible
-kernels benefit too.
-
-> > There is no performance regression since the mutex is normally not
-> > acquired.
+>     Calculating the occupied or free space of a circular buffer involves
+>     a somewhat slow modulus operation.  But if the buffer size is an
+>     exact power of 2, a quick bitwise AND can be used instead.
 > 
-> hm, big scary patch.  Are you sure this mutex is never taken from
-> atomic or irq contexts?  Is it ully tested with all relevant debug options
-> and lockdep enabled?
+>     There is a set of macros which do the latter, that can be made use
+>     of by [...]
 
-Including from mtdoops?
+How about:
 
--- Jamie
+	Calculation of the occupancy or the remaining capacity of an
+	arbitrarily sized circular buffer would normally be a slow operation,
+	requiring the use of a modulus (divide) instruction.  However, if the
+	buffer is of a power-of-2 size, then a much quicker bitwise-AND
+	instruction can be used instead.
+
+	Linux provides a set of macros for handling power-of-2 circular
+	buffers.  These can be made use of by:
+	...
+
+> > +Note the use of ACCESS_ONCE() in both algorithms to read the opposition index.
+> > +This prevents the compiler from discarding and reloading its cached value -
+> > +which some compilers will do, even after an implied compiler barrier.
+> 
+> I don't understand why ACCESS_ONCE is needed here.  The CIRC_SPACE and
+> CIRC_CNT macros do not look at head and tail more than once.
+
+In this example they don't, but say someone wants to read several elements
+from the buffer, they might end up accessing their copy of head several times.
+
+If you only access it once anyway, ACCESS_ONCE() shouldn't hurt.
+
+David
