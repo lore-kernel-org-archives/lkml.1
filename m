@@ -1,53 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751150Ab0CLFBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 00:01:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58655 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712Ab0CLFBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 00:01:18 -0500
-Message-ID: <4B99CB0F.1090505@kernel.org>
-Date: Fri, 12 Mar 2010 14:03:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
+	id S1751704Ab0CLFUH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 00:20:07 -0500
+Received: from eu1sys200aog103.obsmtp.com ([207.126.144.115]:33379 "EHLO
+	eu1sys200aog103.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750954Ab0CLFUE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 00:20:04 -0500
+Message-ID: <4B99CECF.5030502@st.com>
+Date: Fri, 12 Mar 2010 10:49:11 +0530
+From: Viresh KUMAR <viresh.kumar@st.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, arjan@linux.intel.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org, oleg@redhat.com
-Subject: Re: [PATCHSET] workqueue: concurrency managed workqueue, take#4
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <29029.1268232771@redhat.com>
-In-Reply-To: <29029.1268232771@redhat.com>
-X-Enigmail-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>, rajeev-dlh.kumar@st.com,
+       shiraz.hashim@st.com, armando.visconti@st.com,
+       ashish.priyadarshi@st.com, linux-kernel@vger.kernel.org,
+       vipin.kumar@st.com, amit.goel@st.com, deepak.sikri@st.com,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 07/11] ST SPEAr: Added source files for SPEAr3xx	machine
+ family
+References: <1267592861-26911-1-git-send-email-viresh.kumar@st.com> <1267592861-26911-2-git-send-email-viresh.kumar@st.com> <1267592861-26911-3-git-send-email-viresh.kumar@st.com> <1267592861-26911-4-git-send-email-viresh.kumar@st.com> <1267592861-26911-5-git-send-email-viresh.kumar@st.com> <1267592861-26911-6-git-send-email-viresh.kumar@st.com> <1267592861-26911-7-git-send-email-viresh.kumar@st.com> <1267592861-26911-8-git-send-email-viresh.kumar@st.com> <63386a3d1003082246g2752ccf4ob52d5bb01dfb264c@mail.gmail.com> <20100311104103.GC16376@n2100.arm.linux.org.uk>
+In-Reply-To: <20100311104103.GC16376@n2100.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Mar 2010 05:00:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 03/10/2010 11:52 PM, David Howells wrote:
->  * queue_work - queue work on a workqueue
->  * @wq: workqueue to use
->  * @work: work to queue
->  *
->  * Returns 0 if @work was already on a queue, non-zero otherwise.
->  *
->  * We queue the work to the CPU on which it was submitted, but if the CPU dies
->  * it can be processed by another CPU.
+On 3/11/2010 4:11 PM, Russell King - ARM Linux wrote:
+> On Tue, Mar 09, 2010 at 07:46:10AM +0100, Linus Walleij wrote:
+>>> +struct amba_device uart_device = {
+>>> +       .dev = {
+>>> +               .init_name = "uart",
+>>> +               },
+>>> +       .res = {
+>>> +               .start = SPEAR3XX_ICM1_UART_BASE,
+>>> +               .end = SPEAR3XX_ICM1_UART_BASE + SPEAR3XX_ICM1_UART_SIZE - 1,
+>>> +               .flags = IORESOURCE_MEM,
+>>> +               },
+>>> +       .irq = {IRQ_UART, NO_IRQ},
+>>> +       .periphid = 0x00041011,
+>>> +};
+>>
+>> You're hardcoding the PrimeCell ID to the ARM version, but I suspect
+>> you have an ST derivate with some additional features. If you look in
+>> the PL011 driver in drivers/serial/amba-pl011.c you will probably recognize
+>> the modified PrimeCell IDs for vendor 0x80 (VENDOR_ST) and I think
+>> you might rather need to patch this file with your new periphid and
+>> possibly even implement some new extensions (if there are any).
+>>
+>> What value is actually in the ID registers of your cell? (Just
+>> check in some debugger or simply printk() it...)
 > 
-> So when a work item is running on a CPU, any work items it queues (including
-> requeueing itself) will be queued upon that CPU for attention only by that CPU
-> (assuming that CPU doesn't get pulled out)?
+> There is no need to specify the ID when the device provides it - in fact
+> the code will override you by reading the ID from the device if it finds
+> it.  The only reason to explicitly provide one is for the very early
+> Primecell devices which didn't implement the ID scheme - such as PL010.
+> 
 
-Yes, that's the one of the characteristics of workqueue.  For IO bound
-stuff, it usually is a plus.
-
-Thanks.
-
--- 
-tejun
+It is Removed.
