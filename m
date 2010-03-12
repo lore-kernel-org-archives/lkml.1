@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615Ab0CLQmJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 11:42:09 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40233 "EHLO gir.skynet.ie"
+	id S1758310Ab0CLQlc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 11:41:32 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40185 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758371Ab0CLQle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 11:41:34 -0500
+	id S1757935Ab0CLQl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 11:41:29 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andrea Arcangeli <aarcange@redhat.com>,
@@ -15,321 +15,246 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 10/11] Direct compact when a high-order allocation fails
-Date: Fri, 12 Mar 2010 16:41:26 +0000
-Message-Id: <1268412087-13536-11-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 0/11] Memory Compaction v4
+Date: Fri, 12 Mar 2010 16:41:16 +0000
+Message-Id: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
-References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ordinarily when a high-order allocation fails, direct reclaim is entered to
-free pages to satisfy the allocation.  With this patch, it is determined if
-an allocation failed due to external fragmentation instead of low memory
-and if so, the calling process will compact until a suitable page is
-freed. Compaction by moving pages in memory is considerably cheaper than
-paging out to disk and works where there are locked pages or no swap. If
-compaction fails to free a page of a suitable size, then reclaim will
-still occur.
+This is a rebase on top of mmotm for consideration of merging. These are
+based up and tested on mmotm-2010-03-09-19-15 minus the sysctl changes that
+cause locking-related spew all over the console during boot time. The spew
+problem has been reported already in the thread "mmotm 2010-03-09-19-15:
+Lot of scheduling while atomic warnings related to RCU".
 
-Direct compaction returns as soon as possible. As each block is compacted,
-it is checked if a suitable page has been freed and if so, it returns.
+Changelog since V3
+  o Document sysfs entries (subseqently, merged independently)
+  o COMPACTION should depend on MMU
+  o Comment updates
+  o Ensure proc/sysfs triggering of compaction fully completes
+  o Rename anon_vma refcount to external_refcount
+  o Rebase to mmotm on top of 2.6.34-rc1
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Rik van Riel <riel@redhat.com>
----
- include/linux/compaction.h |   16 +++++-
- include/linux/vmstat.h     |    1 +
- mm/compaction.c            |  118 ++++++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c            |   26 ++++++++++
- mm/vmstat.c                |   15 +++++-
- 5 files changed, 172 insertions(+), 4 deletions(-)
+Changelog since V2
+  o Move unusable and fragmentation indices to separate proc files
+  o Express indices as being between 0 and 1
+  o Update copyright notice for compaction.c
+  o Avoid infinite loop when split free page fails
+  o Init compact_resume at least once (impacted x86 testing)
+  o Fewer pages are isolated during compaction.
+  o LRU lists are no longer rotated when page is busy
+  o NR_ISOLATED_* is updated to avoid isolating too many pages
+  o Update zone LRU stats correctly when isolating pages
+  o Reference count anon_vma instead of insufficient locking with
+    use-after-free races in memory compaction
+  o Watch for unmapped anon pages during migration
+  o Remove unnecessary parameters on a few functions
+  o Add Reviewed-by's. Note that I didn't add the Acks and Reviewed
+    for the proc patches as they have been split out into separate
+    files and I don't know if the Acks are still valid.
 
-diff --git a/include/linux/compaction.h b/include/linux/compaction.h
-index c94890b..b851428 100644
---- a/include/linux/compaction.h
-+++ b/include/linux/compaction.h
-@@ -1,14 +1,26 @@
- #ifndef _LINUX_COMPACTION_H
- #define _LINUX_COMPACTION_H
- 
--/* Return values for compact_zone() */
-+/* Return values for compact_zone() and try_to_compact_pages() */
- #define COMPACT_INCOMPLETE	0
--#define COMPACT_COMPLETE	1
-+#define COMPACT_PARTIAL		1
-+#define COMPACT_COMPLETE	2
- 
- #ifdef CONFIG_COMPACTION
- extern int sysctl_compact_memory;
- extern int sysctl_compaction_handler(struct ctl_table *table, int write,
- 			void __user *buffer, size_t *length, loff_t *ppos);
-+
-+extern int fragmentation_index(struct zone *zone, unsigned int order);
-+extern unsigned long try_to_compact_pages(struct zonelist *zonelist,
-+			int order, gfp_t gfp_mask, nodemask_t *mask);
-+#else
-+static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
-+			int order, gfp_t gfp_mask, nodemask_t *nodemask)
-+{
-+	return COMPACT_INCOMPLETE;
-+}
-+
- #endif /* CONFIG_COMPACTION */
- 
- #if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
-diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-index 56e4b44..b4b4d34 100644
---- a/include/linux/vmstat.h
-+++ b/include/linux/vmstat.h
-@@ -44,6 +44,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
- 		KSWAPD_SKIP_CONGESTION_WAIT,
- 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
- 		COMPACTBLOCKS, COMPACTPAGES, COMPACTPAGEFAILED,
-+		COMPACTSTALL, COMPACTFAIL, COMPACTSUCCESS,
- #ifdef CONFIG_HUGETLB_PAGE
- 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
- #endif
-diff --git a/mm/compaction.c b/mm/compaction.c
-index b85343c..15589c6 100644
---- a/mm/compaction.c
-+++ b/mm/compaction.c
-@@ -34,6 +34,8 @@ struct compact_control {
- 	unsigned long nr_anon;
- 	unsigned long nr_file;
- 
-+	unsigned int order;		/* order a direct compactor needs */
-+	int migratetype;		/* MOVABLE, RECLAIMABLE etc */
- 	struct zone *zone;
- };
- 
-@@ -304,10 +306,31 @@ static void update_nr_listpages(struct compact_control *cc)
- static inline int compact_finished(struct zone *zone,
- 						struct compact_control *cc)
- {
-+	unsigned int order;
-+	unsigned long watermark = low_wmark_pages(zone) + (1 << cc->order);
-+
- 	/* Compaction run completes if the migrate and free scanner meet */
- 	if (cc->free_pfn <= cc->migrate_pfn)
- 		return COMPACT_COMPLETE;
- 
-+	/* Compaction run is not finished if the watermark is not met */
-+	if (!zone_watermark_ok(zone, cc->order, watermark, 0, 0))
-+		return COMPACT_INCOMPLETE;
-+
-+	if (cc->order == -1)
-+		return COMPACT_INCOMPLETE;
-+
-+	/* Direct compactor: Is a suitable page free? */
-+	for (order = cc->order; order < MAX_ORDER; order++) {
-+		/* Job done if page is free of the right migratetype */
-+		if (!list_empty(&zone->free_area[order].free_list[cc->migratetype]))
-+			return COMPACT_PARTIAL;
-+
-+		/* Job done if allocation would set block type */
-+		if (order >= pageblock_order && zone->free_area[order].nr_free)
-+			return COMPACT_PARTIAL;
-+	}
-+
- 	return COMPACT_INCOMPLETE;
- }
- 
-@@ -353,6 +376,101 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
- 	return ret;
- }
- 
-+static inline unsigned long compact_zone_order(struct zone *zone,
-+						int order, gfp_t gfp_mask)
-+{
-+	struct compact_control cc = {
-+		.nr_freepages = 0,
-+		.nr_migratepages = 0,
-+		.order = order,
-+		.migratetype = allocflags_to_migratetype(gfp_mask),
-+		.zone = zone,
-+	};
-+	INIT_LIST_HEAD(&cc.freepages);
-+	INIT_LIST_HEAD(&cc.migratepages);
-+
-+	return compact_zone(zone, &cc);
-+}
-+
-+/**
-+ * try_to_compact_pages - Direct compact to satisfy a high-order allocation
-+ * @zonelist: The zonelist used for the current allocation
-+ * @order: The order of the current allocation
-+ * @gfp_mask: The GFP mask of the current allocation
-+ * @nodemask: The allowed nodes to allocate from
-+ *
-+ * This is the main entry point for direct page compaction.
-+ */
-+unsigned long try_to_compact_pages(struct zonelist *zonelist,
-+			int order, gfp_t gfp_mask, nodemask_t *nodemask)
-+{
-+	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-+	int may_enter_fs = gfp_mask & __GFP_FS;
-+	int may_perform_io = gfp_mask & __GFP_IO;
-+	unsigned long watermark;
-+	struct zoneref *z;
-+	struct zone *zone;
-+	int rc = COMPACT_INCOMPLETE;
-+
-+	/* Check whether it is worth even starting compaction */
-+	if (order == 0 || !may_enter_fs || !may_perform_io)
-+		return rc;
-+
-+	/*
-+	 * We will not stall if the necessary conditions are not met for
-+	 * migration but direct reclaim seems to account stalls similarly
-+	 */
-+	count_vm_event(COMPACTSTALL);
-+
-+	/* Compact each zone in the list */
-+	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
-+								nodemask) {
-+		int fragindex;
-+		int status;
-+
-+		/*
-+		 * Watermarks for order-0 must be met for compaction. Note
-+		 * the 2UL. This is because during migration, copies of
-+		 * pages need to be allocated and for a short time, the
-+		 * footprint is higher
-+		 */
-+		watermark = low_wmark_pages(zone) + (2UL << order);
-+		if (!zone_watermark_ok(zone, 0, watermark, 0, 0))
-+			continue;
-+
-+		/*
-+		 * fragmentation index determines if allocation failures are
-+		 * due to low memory or external fragmentation
-+		 *
-+		 * index of -1 implies allocations might succeed depending
-+		 * 	on watermarks
-+		 * index < 500 implies alloc failure is due to lack of memory
-+		 *
-+		 * XXX: The choice of 500 is arbitrary. Reinvestigate
-+		 *      appropriately to determine a sensible default.
-+		 *      and what it means when watermarks are also taken
-+		 *      into account. Consider making it a sysctl
-+		 */
-+		fragindex = fragmentation_index(zone, order);
-+		if (fragindex >= 0 && fragindex <= 500)
-+			continue;
-+
-+		if (fragindex == -1 && zone_watermark_ok(zone, order, watermark, 0, 0)) {
-+			rc = COMPACT_PARTIAL;
-+			break;
-+		}
-+
-+		status = compact_zone_order(zone, order, gfp_mask);
-+		rc = max(status, rc);
-+
-+		if (zone_watermark_ok(zone, order, watermark, 0, 0))
-+			break;
-+	}
-+
-+	return rc;
-+}
-+
-+
- /* Compact all zones within a node */
- static int compact_node(int nid)
- {
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 9708143..e301108 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -49,6 +49,7 @@
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
- #include <linux/memory.h>
-+#include <linux/compaction.h>
- #include <trace/events/kmem.h>
- #include <linux/ftrace_event.h>
- 
-@@ -1765,6 +1766,31 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
- 
- 	cond_resched();
- 
-+	/* Try memory compaction for high-order allocations before reclaim */
-+	if (order) {
-+		*did_some_progress = try_to_compact_pages(zonelist,
-+						order, gfp_mask, nodemask);
-+		if (*did_some_progress != COMPACT_INCOMPLETE) {
-+			page = get_page_from_freelist(gfp_mask, nodemask,
-+					order, zonelist, high_zoneidx,
-+					alloc_flags, preferred_zone,
-+					migratetype);
-+			if (page) {
-+				__count_vm_event(COMPACTSUCCESS);
-+				return page;
-+			}
-+
-+			/*
-+			 * It's bad if compaction run occurs and fails.
-+			 * The most likely reason is that pages exist,
-+			 * but not enough to satisfy watermarks.
-+			 */
-+			count_vm_event(COMPACTFAIL);
-+
-+			cond_resched();
-+		}
-+	}
-+
- 	/* We now go into synchronous reclaim */
- 	cpuset_memory_pressure_bump();
- 	p->flags |= PF_MEMALLOC;
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index af88647..c88f285 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -560,7 +560,7 @@ static int unusable_show(struct seq_file *m, void *arg)
-  * The value can be used to determine if page reclaim or compaction
-  * should be used
-  */
--int fragmentation_index(unsigned int order, struct contig_page_info *info)
-+int __fragmentation_index(unsigned int order, struct contig_page_info *info)
- {
- 	unsigned long requested = 1UL << order;
- 
-@@ -580,6 +580,14 @@ int fragmentation_index(unsigned int order, struct contig_page_info *info)
- 	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
- }
- 
-+/* Same as __fragmentation index but allocs contig_page_info on stack */
-+int fragmentation_index(struct zone *zone, unsigned int order)
-+{
-+	struct contig_page_info info;
-+
-+	fill_contig_page_info(zone, order, &info);
-+	return __fragmentation_index(order, &info);
-+}
- 
- static void extfrag_show_print(struct seq_file *m,
- 					pg_data_t *pgdat, struct zone *zone)
-@@ -595,7 +603,7 @@ static void extfrag_show_print(struct seq_file *m,
- 				zone->name);
- 	for (order = 0; order < MAX_ORDER; ++order) {
- 		fill_contig_page_info(zone, order, &info);
--		index = fragmentation_index(order, &info);
-+		index = __fragmentation_index(order, &info);
- 		seq_printf(m, "%d.%03d ", index / 1000, index % 1000);
- 	}
- 
-@@ -895,6 +903,9 @@ static const char * const vmstat_text[] = {
- 	"compact_blocks_moved",
- 	"compact_pages_moved",
- 	"compact_pagemigrate_failed",
-+	"compact_stall",
-+	"compact_fail",
-+	"compact_success",
- 
- #ifdef CONFIG_HUGETLB_PAGE
- 	"htlb_buddy_alloc_success",
--- 
-1.6.5
+Changelog since V1
+  o Update help blurb on CONFIG_MIGRATION
+  o Max unusable free space index is 100, not 1000
+  o Move blockpfn forward properly during compaction
+  o Cleanup CONFIG_COMPACTION vs CONFIG_MIGRATION confusion
+  o Permissions on /proc and /sys files should be 0200
+  o Reduce verbosity
+  o Compact all nodes when triggered via /proc
+  o Add per-node compaction via sysfs
+  o Move defer_compaction out-of-line
+  o Fix lock oddities in rmap_walk_anon
+  o Add documentation
+
+This patchset is a memory compaction mechanism that reduces external
+fragmentation memory by moving GFP_MOVABLE pages to a fewer number of
+pageblocks. The term "compaction" was chosen as there are is a number of
+mechanisms that are not mutually exclusive that can be used to defragment
+memory. For example, lumpy reclaim is a form of defragmentation as was slub
+"defragmentation" (really a form of targeted reclaim). Hence, this is called
+"compaction" to distinguish it from other forms of defragmentation.
+
+In this implementation, a full compaction run involves two scanners operating
+within a zone - a migration and a free scanner. The migration scanner
+starts at the beginning of a zone and finds all movable pages within one
+pageblock_nr_pages-sized area and isolates them on a migratepages list. The
+free scanner begins at the end of the zone and searches on a per-area
+basis for enough free pages to migrate all the pages on the migratepages
+list. As each area is respectively migrated or exhausted of free pages,
+the scanners are advanced one area.  A compaction run completes within a
+zone when the two scanners meet.
+
+This method is a bit primitive but is easy to understand and greater
+sophistication would require maintenance of counters on a per-pageblock
+basis. This would have a big impact on allocator fast-paths to improve
+compaction which is a poor trade-off.
+
+It also does not try relocate virtually contiguous pages to be physically
+contiguous. However, assuming transparent hugepages were in use, a
+hypothetical khugepaged might reuse compaction code to isolate free pages,
+split them and relocate userspace pages for promotion.
+
+Memory compaction can be triggered in one of three ways. It may be triggered
+explicitly by writing any value to /proc/sys/vm/compact_memory and compacting
+all of memory. It can be triggered on a per-node basis by writing any
+value to /sys/devices/system/node/nodeN/compact where N is the node ID to
+be compacted. When a process fails to allocate a high-order page, it may
+compact memory in an attempt to satisfy the allocation instead of entering
+direct reclaim. Explicit compaction does not finish until the two scanners
+meet and direct compaction ends if a suitable page becomes available that
+would meet watermarks.
+
+The series is in 11 patches. The first three are not "core" to the series
+but are important pre-requisites.
+
+Patch 1 reference counts anon_vma for rmap_walk_anon(). Without this
+	patch, it's possible to use anon_vma after free if the caller is
+	not holding a VMA or mmap_sem for the pages in question. While
+	there should be no existing user that causes this problem,
+	it's a requirement for memory compaction to be stable. The patch
+	is at the start of the series for bisection reasons.
+Patch 2 skips over anon pages during migration that are no longer mapped
+	because there still appeared to be a small window between when
+	a page was isolated and migration started during which anon_vma
+	could disappear.
+Patch 3 merges the KSM and migrate counts. It could be merged with patch 1
+	but would be slightly harder to review.
+Patch 4 allows CONFIG_MIGRATION to be set without CONFIG_NUMA
+Patch 5 exports a "unusable free space index" via /proc/pagetypeinfo. It's
+	a measure of external fragmentation that takes the size of the
+	allocation request into account. It can also be calculated from
+	userspace so can be dropped if requested
+Patch 6 exports a "fragmentation index" which only has meaning when an
+	allocation request fails. It determines if an allocation failure
+	would be due to a lack of memory or external fragmentation.
+Patch 7 is the compaction mechanism although it's unreachable at this point
+Patch 8 adds a means of compacting all of memory with a proc trgger
+Patch 9 adds a means of compacting a specific node with a sysfs trigger
+Patch 10 adds "direct compaction" before "direct reclaim" if it is
+	determined there is a good chance of success.
+Patch 11 temporarily disables compaction if an allocation failure occurs
+	after compaction.
+
+Testing of compaction was in three stages.  For the test, debugging, preempt,
+the sleep watchdog and lockdep were all enabled but nothing nasty popped
+out. min_free_kbytes was tuned as recommended by hugeadm to help fragmentation
+avoidance and high-order allocations. It was tested on X86, X86-64 and PPC64.
+
+Ths first test represents one of the easiest cases that can be faced for
+lumpy reclaim or memory compaction.
+
+1. Machine freshly booted and configured for hugepage usage with
+	a) hugeadm --create-global-mounts
+	b) hugeadm --pool-pages-max DEFAULT:8G
+	c) hugeadm --set-recommended-min_free_kbytes
+	d) hugeadm --set-recommended-shmmax
+
+	The min_free_kbytes here is important. Anti-fragmentation works best
+	when pageblocks don't mix. hugeadm knows how to calculate a value that
+	will significantly reduce the worst of external-fragmentation-related
+	events as reported by the mm_page_alloc_extfrag tracepoint.
+
+2. Load up memory
+	a) Start updatedb
+	b) Create in parallel a X files of pagesize*128 in size. Wait
+	   until files are created. By parallel, I mean that 4096 instances
+	   of dd were launched, one after the other using &. The crude
+	   objective being to mix filesystem metadata allocations with
+	   the buffer cache.
+	c) Delete every second file so that pageblocks are likely to
+	   have holes
+	d) kill updatedb if it's still running
+
+	At this point, the system is quiet, memory is full but it's full with
+	clean filesystem metadata and clean buffer cache that is unmapped.
+	This is readily migrated or discarded so you'd expect lumpy reclaim
+	to have no significant advantage over compaction but this is at
+	the POC stage.
+
+3. In increments, attempt to allocate 5% of memory as hugepages.
+	   Measure how long it took, how successful it was, how many
+	   direct reclaims took place and how how many compactions. Note
+	   the compaction figures might not fully add up as compactions
+	   can take place for orders other than the hugepage size
+
+X86				vanilla		compaction
+Final page count                    930                941 (attempted 1002)
+pages reclaimed                   74630               3861
+
+X86-64				vanilla		compaction
+Final page count:                   916                916 (attempted 1002)
+Total pages reclaimed:           122076              49800
+
+PPC64				vanilla		compaction
+Final page count:                    91                 94 (attempted 110)
+Total pages reclaimed:            80252              96299
+
+There was not a dramatic improvement in success rates but it wouldn't be
+expected in this case either. What was important is that significantly fewer
+pages were reclaimed in all cases reducing the amount of IO required to
+satisfy a huge page allocation.
+
+The second tests were all performance related - kernbench, netperf, iozone
+and sysbench. None showed anything too remarkable.
+
+The last test was a high-order allocation stress test. Many kernel compiles
+are started to fill memory with a pressured mix of kernel and movable
+allocations. During this, an attempt is made to allocate 90% of memory
+as huge pages - one at a time with small delays between attempts to avoid
+flooding the IO queue.
+
+                                             vanilla   compaction
+Percentage of request allocated X86               98           99
+Percentage of request allocated X86-64            93           99
+Percentage of request allocated PPC64             59           76
+
+Success rates are a little higher, particularly on PPC64 with the larger
+huge pages. What is most interesting is the latency when allocating huge
+pages.
+
+X86:    http://www.csn.ul.ie/~mel/postings/compaction-20100312/highalloc-interlatency-arnold-compaction-stress-v4r3-mean.ps
+X86_64: http://www.csn.ul.ie/~mel/postings/compaction-20100312/highalloc-interlatency-hydra-compaction-stress-v4r3-mean.ps
+PPC64: http://www.csn.ul.ie/~mel/postings/compaction-20100312/highalloc-interlatency-powyah-compaction-stress-v4r3-mean.ps
+
+X86 latency is reduced the least but it is depending heavily on the HIGHMEM
+zone to allocate many of its huge pages which is a relatively
+straight-forward job. X86-64 and PPC64 both show very significant reductions
+in average time taken to allocate huge pages. It is not reduced to zero
+because the system is under enough memory pressure that reclaim is still
+required for some of the allocations.
+
+What is also enlightening in the same directory is the "stddev" files. Each
+of them show that the variance between allocation times is drastically
+reduced.
+
+Andrew, assuming no major complaints, how do you feel about picking these up?
+
+ Documentation/ABI/stable/sysfs-devices-node  |    7 +
+ Documentation/ABI/testing/sysfs-devices-node |    7 +
+ Documentation/filesystems/proc.txt           |   68 +++-
+ Documentation/sysctl/vm.txt                  |   11 +
+ drivers/base/node.c                          |    3 +
+ include/linux/compaction.h                   |   76 ++++
+ include/linux/mm.h                           |    1 +
+ include/linux/mmzone.h                       |    7 +
+ include/linux/rmap.h                         |   27 +-
+ include/linux/swap.h                         |    6 +
+ include/linux/vmstat.h                       |    2 +
+ kernel/sysctl.c                              |   11 +
+ mm/Kconfig                                   |   20 +-
+ mm/Makefile                                  |    1 +
+ mm/compaction.c                              |  555 ++++++++++++++++++++++++++
+ mm/ksm.c                                     |    4 +-
+ mm/migrate.c                                 |   22 +
+ mm/page_alloc.c                              |   68 ++++
+ mm/rmap.c                                    |   10 +-
+ mm/vmscan.c                                  |    5 -
+ mm/vmstat.c                                  |  217 ++++++++++
+ 21 files changed, 1101 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-devices-node
+ create mode 100644 Documentation/ABI/testing/sysfs-devices-node
+ create mode 100644 include/linux/compaction.h
+ create mode 100644 mm/compaction.c
 
