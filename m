@@ -1,50 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339Ab0CLKD2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:03:28 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:63887 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932336Ab0CLKD0 (ORCPT
+	id S932459Ab0CLKFG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:05:06 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37104 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932321Ab0CLKFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:03:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=RoTHL7IKnLpoFI9brN99j3HuvMHo+EVICXRw+RfdWR2f8rc7vSVXSRbEVq4B/U91E9
-         aGVqLqEYFih4GcuzC5RxWOxNuLZzeloevUuuD0ERP44zJKdeX1IoBCjiNhDup9OwmtwQ
-         IpFenrxyLvZf4hRMxRd5j1H58hvjliNbA9KlA=
-From: revent82@gmail.com
-To: gregkh@suse.de, andre@bitwigglers.org, peterhuewe@gmx.de,
-       ak@linux.intel.com, eugeni@mandriva.com
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       revent <revent@router.Premier>
-Subject: [PATCH] Staging:asus_oled: Fixed problem of style tabs in asus_oled.c
-Date: Fri, 12 Mar 2010 15:03:21 +0500
-Message-Id: <1268388201-26333-1-git-send-email-revent82@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 12 Mar 2010 05:05:04 -0500
+Date: Fri, 12 Mar 2010 10:04:54 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+Cc: linux-kernel@vger.kernel.org, dinuxbg@gmail.com,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 1/2] Add support for Olimex SAM9-L9261 SBC
+Message-ID: <20100312100454.GA29306@n2100.arm.linux.org.uk>
+References: <20100312105817.4392b594@rechenknecht2k7> <20100312110032.2e57fdce@rechenknecht2k7>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312110032.2e57fdce@rechenknecht2k7>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: revent <revent@router.Premier>
+On Fri, Mar 12, 2010 at 11:00:32AM +0100, Benjamin Valentin wrote:
+> diff -urpN -x CVS linux-2.6.34-rc1/arch/arm/configs/sam9_l9261_defconfig linux-2.6.34-rc1-olimex/arch/arm/configs/sam9_l9261_defconfig
+> --- linux-2.6.34-rc1/arch/arm/configs/sam9_l9261_defconfig	1970-01-01 02:00:00.000000000 +0200
+> +++ linux-2.6.34-rc1-olimex/arch/arm/configs/sam9_l9261_defconfig	2008-10-28 06:08:46.000000000 +0200
+> @@ -0,0 +1,1606 @@
 
----
- drivers/staging/asus_oled/asus_oled.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Please think about your reviewers when you send patches - do you think
+it's reasonable to expect reviewers to scroll through 1600 lines before
+they get to something interesting to read?
 
-diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
-index 7ebecc9..5b279fb 100644
---- a/drivers/staging/asus_oled/asus_oled.c
-+++ b/drivers/staging/asus_oled/asus_oled.c
-@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
- };
- 
- static CLASS_ATTR_STRING(version, S_IRUGO,
--		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
-+			ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
- 
- static int __init asus_oled_init(void)
- {
--- 
-1.5.6.5
-
+Always split defconfig patches into a separate patch.
