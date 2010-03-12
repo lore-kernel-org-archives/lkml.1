@@ -1,73 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933792Ab0CLRjQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 12:39:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38754 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933678Ab0CLRjN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 12:39:13 -0500
-Date: Fri, 12 Mar 2010 09:37:55 -0500
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] Avoid the use of congestion_wait under zone
- pressure
-Message-Id: <20100312093755.b2393b33.akpm@linux-foundation.org>
-In-Reply-To: <4B9A3049.7010602@linux.vnet.ibm.com>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
-	<20100311154124.e1e23900.akpm@linux-foundation.org>
-	<4B99E19E.6070301@linux.vnet.ibm.com>
-	<20100312020526.d424f2a8.akpm@linux-foundation.org>
-	<20100312104712.GB18274@csn.ul.ie>
-	<4B9A3049.7010602@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
+	id S934063Ab0CLRkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:40:07 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:56830 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933743Ab0CLRkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 12:40:05 -0500
+Subject: Re: [PATCH] backlight: provide sysfs percent brightness attribute
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100312173341.GA4931@khazad-dum.debian.net>
+References: <0D753D10438DA54287A00B02708426976368437C8D@AUSP01VMBX24.collaborationhost.net>
+	 <20100312173341.GA4931@khazad-dum.debian.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 09:39:45 -0800
+Message-ID: <1268415585.1625.13.camel@rex>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010 13:15:05 +0100 Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com> wrote:
-
-> > It still feels a bit unnatural though that the page allocator waits on
-> > congestion when what it really cares about is watermarks. Even if this
-> > patch works for Christian, I think it still has merit so will kick it a
-> > few more times.
+On Fri, 2010-03-12 at 14:33 -0300, Henrique de Moraes Holschuh wrote:
+> On Fri, 12 Mar 2010, H Hartley Sweeten wrote:
+> > It's usually more convenient to set the backlight brightness
+> > as a 'percent' of total brightness rather than using the raw
+> > 'brightness' value.
 > 
-> In whatever way I can look at it watermark_wait should be supperior to 
-> congestion_wait. Because as Mel points out waiting for watermarks is 
-> what is semantically correct there.
+> Well, that scale is often not linear, so you are not dealing with fractions
+> of the effective brightness, just with fractions of an arbritary scale
+> exported by the backend driver.  Much of the "usefulness" of a "percent"
+> scale dies right there.
 
-If a direct-reclaimer waits for some thresholds to be achieved then what
-task is doing reclaim?
+This patch does nothing to address that though.
 
-Ultimately, kswapd.  This will introduce a hard dependency upon kswapd
-activity.  This might introduce scalability problems.  And latency
-problems if kswapd if off doodling with a slow device (say), or doing a
-journal commit.  And perhaps deadlocks if kswapd tries to take a lock
-which one of the waiting-for-watermark direct relcaimers holds.
+I agree this is a userland issue and having two interfaces to the kernel
+to do the same thing is not a good idea in general.
 
-Generally, kswapd is an optional, best-effort latency optimisation
-thing and we haven't designed for it to be a critical service. 
-Probably stuff would break were we to do so.
+So no, I'm not going to take that patch, sorry.
 
+Cheers,
 
-This is one of the reasons why we avoided creating such dependencies in
-reclaim.  Instead, what we do when a reclaimer is encountering lots of
-dirty or in-flight pages is
+Richard
 
-	msleep(100);
-
-then try again.  We're waiting for the disks, not kswapd.
-
-Only the hard-wired 100 is a bit silly, so we made the "100" variable,
-inversely dependent upon the number of disks and their speed.  If you
-have more and faster disks then you sleep for less time.
-
-And that's what congestion_wait() does, in a very simplistic fashion. 
-It's a facility which direct-reclaimers use to ratelimit themselves in
-inverse proportion to the speed with which the system can retire writes.
