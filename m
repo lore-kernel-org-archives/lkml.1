@@ -1,69 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697Ab0CLBIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 20:08:22 -0500
-Received: from mail-px0-f198.google.com ([209.85.216.198]:36749 "EHLO
-	mail-px0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460Ab0CLBIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 20:08:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type;
-        b=sGub5h4iBjwKAlu5ULSjueedEsiXIKMuExkFAEgPjUKzfQ6RV5Odtjx6MMzRFOvbFf
-         65h3mEis7SHxXTH+LrKBZKpk/Zyha+FJuiF/r0fgvmXxn9/pe7agfctSqu0bzXIw0Ig6
-         L5MQJCTqY1jnKAaQgXo9uklU384TPGRZFPDQo=
+	id S1754801Ab0CLBKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 20:10:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53754 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754460Ab0CLBKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 20:10:32 -0500
+Message-ID: <4B999467.4000501@kernel.org>
+Date: Fri, 12 Mar 2010 10:09:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <1268355632-32348-1-git-send-email-lrodriguez@atheros.com>
-References: <1268355632-32348-1-git-send-email-lrodriguez@atheros.com>
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Thu, 11 Mar 2010 17:07:59 -0800
-X-Google-Sender-Auth: 4eeb3cc8a5f608e3
-Message-ID: <43e72e891003111707v71af9eb9r2da0328f6a877886@mail.gmail.com>
-Subject: Re: [FYI] cfg80211: HT40 fix for APs with odd country IEs for 
-	2.6.33.y
-To: linux-wireless@vger.kernel.org, stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Content-Type: text/plain; charset=UTF-8
+To: Greg Freemyer <greg.freemyer@gmail.com>
+CC: tytso@mit.edu, Nikanth Karthikesan <knikanth@suse.de>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Damian Lukowski <damian@tvk.rwth-aachen.de>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       aschnell@suse.de, jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org>	 <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>	 <1268318374.2798.2.camel@mulgrave.site>	 <201003112035.26743.knikanth@suse.de>	 <20100311152551.GG1497@thunk.org> <87f94c371003110834t37235274yc641258ac5939c24@mail.gmail.com>
+In-Reply-To: <87f94c371003110834t37235274yc641258ac5939c24@mail.gmail.com>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Mar 2010 01:10:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 5:00 PM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
-> Just a heads up to distribution maintainers, 2.6.33 has an
-> issue with disabling HT40 channels if you connect to an AP
-> that has an odd country IE. Specifically if your AP sends
-> out country IEs as follows:
->
-> [1-1]
-> [2-2]
-> [3-3]
-> [4-4]
-> [5-5]
-> [6-6]
-> [7-7]
-> [8-8]
-> [9-9]
-> [10-10]
-> [11-11]
->
-> instead of like this:
->
-> [1-11]
->
-> Then HT40 gets disabled. This issue was fixed on 2.6.34 and the fixes
-> were not propagated to 2.6.33.y as they are not "critical" fixes
-> per se, but if you do value this as "important" you may want to
-> fetch them and apply them to your 2.6.33.y kernel tree.
->
-> I've backported them and stashed them here:
->
-> http://kernel.org/pub/linux/kernel/people/mcgrof/patches/cfg80211/2010-03/reg-fixes-33/01-ht40-odd-country-ie/
+Hello,
 
-If no one has complaints I'm going to cherry pick this seires and the
-suspend/resume fixes on compat-wireless-2.6.33.y releases.
+On 03/12/2010 01:34 AM, Greg Freemyer wrote:
+> I do think the linux partitioners should provide a way to force a
+> cylinder alignment.  Tejun, I would like to see your doc describe how
+> to force a win2k compatible partition layout.
 
-  Luis
+I suppose I can play with fdisk and list it as an example but if
+anyone knows better/proper way to force certain partitions to legacy
+alignment while leaving others properly aligned, I'll be happy to
+include it.
+
+Thanks.
+
+-- 
+tejun
