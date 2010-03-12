@@ -1,46 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150Ab0CLEhI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 23:37:08 -0500
-Received: from mga14.intel.com ([143.182.124.37]:49146 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723Ab0CLEhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 23:37:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,624,1262592000"; 
-   d="scan'208";a="253834645"
-Date: Fri, 12 Mar 2010 12:37:02 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: VDR User <user.vdr@gmail.com>
-Cc: Jaroslav Kysela <perex@perex.cz>, Wei Ni <wni@nvidia.com>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel <alsa-devel@alsa-project.org>,
-       Jaroslav Kysela <jkysela@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Pavel Hofman <pavel.hofman@insite.cz>
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Message-ID: <20100312043702.GA30428@localhost>
-References: <20100308044614.GA29026@localhost> <a3ef07921003092142g23b93903v2b4af9c6b691bea0@mail.gmail.com> <alpine.LNX.2.00.1003100856420.4672@eeebox2.perex-int.cz> <a3ef07921003100005k6c7da149k99069cc13b3c8183@mail.gmail.com> <20100310125456.GA18509@localhost> <a3ef07921003100938o4d94161fw559bc9b563ce55b@mail.gmail.com> <alpine.LNX.2.00.1003110824390.4672@eeebox2.perex-int.cz> <a3ef07921003111015x2386cc80x73a2a4bd679b1fe1@mail.gmail.com> <alpine.LNX.2.00.1003111927570.4672@eeebox2.perex-int.cz> <a3ef07921003112032v3c3effb8n7e8f6599f4cbb453@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a3ef07921003112032v3c3effb8n7e8f6599f4cbb453@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755602Ab0CLEh1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 23:37:27 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41678 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755194Ab0CLEhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 23:37:24 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/mSFwklC3muP16Rq2B14k8m1ebdz3+y6zbTwhif8
+	7+ORFBKjIxWG2P
+Subject: Re: [tip:sched/core] sched: Remove AFFINE_WAKEUPS feature
+From: Mike Galbraith <efault@gmx.de>
+To: Yong Zhang <yong.zhang@windriver.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20100312032333.GA13021@windriver.com>
+References: <1268301890.6785.50.camel@marge.simson.net>
+	 <tip-beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8@git.kernel.org>
+	 <20100312032333.GA13021@windriver.com>
+Content-Type: text/plain
+Date: Fri, 12 Mar 2010 05:37:19 +0100
+Message-Id: <1268368639.6302.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51000000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 12:32:51PM +0800, VDR User wrote:
-> On Thu, Mar 11, 2010 at 10:32 AM, Jaroslav Kysela <perex@perex.cz> wrote:
-> > All these parameters should be set: CONFIG_SND_PCM_XRUN_DEBUG,
-> > CONFIG_SND_VERBOSE_PROCFS, CONFIG_SND_DEBUG . I updated wiki.
+On Fri, 2010-03-12 at 11:23 +0800, Yong Zhang wrote:
+> On Thu, Mar 11, 2010 at 06:33:38PM +0000, tip-bot for Mike Galbraith wrote:
+> > Commit-ID:  beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
+> > Gitweb:     http://git.kernel.org/tip/beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
+> > Author:     Mike Galbraith <efault@gmx.de>
+> > AuthorDate: Thu, 11 Mar 2010 17:17:20 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Thu, 11 Mar 2010 18:32:53 +0100
+> > 
+> > sched: Remove AFFINE_WAKEUPS feature
+> > 
+> > Disabling affine wakeups is too horrible to contemplate.  Remove the feature flag.
 > 
-> I have replied with both the result of my dmesg and syslog.  However,
-> the mailing list seems to have rejected the message due to size (62k,
-> but 60k is the limit).  Please let me know if you've received that
-> post or if I have to repost and split dmesg + syslog into two.
+> AFFINE_WAKEUPS is still left in sched_feature.h
 
-Never mind, the CC'ed users should be able to receive it.
+Oops, axe got dull.  Thanks for checking.
 
-Thanks,
-Fengguang
+	-Mike
+
+> From: Yong Zhang <yong.zhang@windriver.com>
+> Date: Fri, 12 Mar 2010 11:14:26 +0800
+> Subject: [PATCH] sched: clean AFFINE_WAKEUPS feature
+> 
+> complementary work to commit beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
+> 
+> Signed-off-by: Yong Zhang <yong.zhang@windriver.com>
+> ---
+>  kernel/sched_features.h |    8 --------
+>  1 files changed, 0 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+> index 83c66e8..2137ac0 100644
+> --- a/kernel/sched_features.h
+> +++ b/kernel/sched_features.h
+> @@ -17,14 +17,6 @@ SCHED_FEAT(START_DEBIT, 1)
+>  SCHED_FEAT(WAKEUP_PREEMPT, 1)
+>  
+>  /*
+> - * Based on load and program behaviour, see if it makes sense to place
+> - * a newly woken task on the same cpu as the task that woke it --
+> - * improve cache locality. Typically used with SYNC wakeups as
+> - * generated by pipes and the like, see also SYNC_WAKEUPS.
+> - */
+> -SCHED_FEAT(AFFINE_WAKEUPS, 1)
+> -
+> -/*
+>   * Prefer to schedule the task we woke last (assuming it failed
+>   * wakeup-preemption), since its likely going to consume data we
+>   * touched, increases cache locality.
 
