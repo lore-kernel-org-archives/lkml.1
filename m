@@ -1,45 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934684Ab0CLXJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 18:09:42 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58596 "EHLO mx2.suse.de"
+	id S934697Ab0CLXOG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 18:14:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28093 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933445Ab0CLXJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 18:09:41 -0500
-Date: Fri, 12 Mar 2010 15:08:10 -0800
-From: Greg KH <gregkh@suse.de>
-To: Lars Lindley <lindley@coyote.org>
-Cc: pavel@ucw.cz, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: winbond: TODO file: Updated Gregs mail too
-Message-ID: <20100312230810.GB31475@suse.de>
-References: <1268431569-18456-1-git-send-email-lindley@coyote.org>
+	id S932279Ab0CLXOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 18:14:04 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 1/3] kprobes: Hide CONFIG_OPTPROBES and set if arch
+	support optimized kprobes
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Dieter Ries <mail@dieterries.net>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Date: Fri, 12 Mar 2010 18:22:09 -0500
+Message-ID: <20100312232208.2017.55337.stgit@localhost6.localdomain6>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1268431569-18456-1-git-send-email-lindley@coyote.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 11:06:09PM +0100, Lars Lindley wrote:
-> 
-> diff --git a/drivers/staging/winbond/TODO b/drivers/staging/winbond/TODO
-> index f4fb3f3..9c0df29 100644
-> --- a/drivers/staging/winbond/TODO
-> +++ b/drivers/staging/winbond/TODO
-> @@ -7,5 +7,5 @@ TODO:
->  	- use cfg80211 for regulatory stuff
->  	- fix 4k stack problems
->  
-> -Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
-> +Please send patches to Greg Kroah-Hartman <gregkh@suse.de> and
+Hide CONFIG_OPTPROBES and set if arch support optimized kprobes, since
+this option doesn't change the behavior of kprobes, but just reduces
+the overhead.
 
-Why are you changing my email address?  Don't you think I put the
-correct one in there and if it was wrong, I would change it?
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Dieter Ries <mail@dieterries.net>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
 
-Hint, please leave it as-is.
+ Documentation/kprobes.txt |   10 ++--------
+ arch/Kconfig              |    6 ++----
+ 2 files changed, 4 insertions(+), 12 deletions(-)
 
-thanks,
+diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
+index 2f9115c..61c291c 100644
+--- a/Documentation/kprobes.txt
++++ b/Documentation/kprobes.txt
+@@ -165,8 +165,8 @@ the user entry_handler invocation is also skipped.
+ 
+ 1.4 How Does Jump Optimization Work?
+ 
+-If you configured your kernel with CONFIG_OPTPROBES=y (currently
+-this option is supported on x86/x86-64, non-preemptive kernel) and
++If your kernel is built with CONFIG_OPTPROBES=y (currently this flag
++is automatically set 'y' on x86/x86-64, non-preemptive kernel) and
+ the "debug.kprobes_optimization" kernel parameter is set to 1 (see
+ sysctl(8)), Kprobes tries to reduce probe-hit overhead by using a jump
+ instruction instead of a breakpoint instruction at each probepoint.
+@@ -271,8 +271,6 @@ tweak the kernel's execution path, you need to suppress optimization,
+ using one of the following techniques:
+ - Specify an empty function for the kprobe's post_handler or break_handler.
+  or
+-- Config CONFIG_OPTPROBES=n.
+- or
+ - Execute 'sysctl -w debug.kprobes_optimization=n'
+ 
+ 2. Architectures Supported
+@@ -307,10 +305,6 @@ it useful to "Compile the kernel with debug info" (CONFIG_DEBUG_INFO),
+ so you can use "objdump -d -l vmlinux" to see the source-to-object
+ code mapping.
+ 
+-If you want to reduce probing overhead, set "Kprobes jump optimization
+-support" (CONFIG_OPTPROBES) to "y". You can find this option under the
+-"Kprobes" line.
+-
+ 4. API Reference
+ 
+ The Kprobes API includes a "register" function and an "unregister"
+diff --git a/arch/Kconfig b/arch/Kconfig
+index e5eb133..12f9dcc 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -42,11 +42,9 @@ config KPROBES
+ 	  If in doubt, say "N".
+ 
+ config OPTPROBES
+-	bool "Kprobes jump optimization support (EXPERIMENTAL)"
+-	default y
+-	depends on KPROBES
++	def_bool y
++	depends on KPROBES && HAVE_OPTPROBES
+ 	depends on !PREEMPT
+-	depends on HAVE_OPTPROBES
+ 	select KALLSYMS_ALL
+ 	help
+ 	  This option will allow kprobes to optimize breakpoint to
 
-greg k-h
+
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
