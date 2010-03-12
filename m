@@ -1,50 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293Ab0CLIMW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 03:12:22 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:15895 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756251Ab0CLIMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 03:12:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=RO0tk9ui+S9bjuHF6eDuUXkvk96ouzaNjDtChmm/9I6GWMZzcsCuSvBCpYQ7ubeRFn
-         nnW8us6SPKBnzj0TJzMq6EFgZQtrVIK7ndmlT9v90BM754/EXmnjyerZJ+tVjVqS6uuh
-         ZDrPfKZrxYt6AGcEu1d8CBpv7IWa9aMOPoKxE=
-Message-ID: <4B99F75C.2070603@gmail.com>
-Date: Fri, 12 Mar 2010 09:12:12 +0100
-From: Till Kamppeter <till.kamppeter@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
+	id S1756344Ab0CLIXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 03:23:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3823 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756285Ab0CLIXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 03:23:47 -0500
+Message-ID: <4B99F9A4.9010203@redhat.com>
+Date: Fri, 12 Mar 2010 10:21:56 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       lsb-discuss@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux wireless GSoC 2010 project ideas
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <20100128231545.GH18683@nowhere> <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com> <4B62231F.5080104@gmail.com> <20100309224347.GD5058@nowhere>
-In-Reply-To: <20100309224347.GD5058@nowhere>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Clark Williams <williams@redhat.com>,
+       =?UTF-8?B?Ikx1aXMgQ2xhdWRpbyBSLiBH?= =?UTF-8?B?b27Dp2FsdmVzIg==?= 
+	<lclaudio@redhat.com>
+Subject: Re: [PATCH v2 5/5] perf report: Initial TUI using newt
+References: <1268349164-5822-1-git-send-email-acme@infradead.org> <1268349164-5822-5-git-send-email-acme@infradead.org> <20100311232952.GF28421@ghostprotocols.net>
+In-Reply-To: <20100311232952.GF28421@ghostprotocols.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 11:43 PM, Frederic Weisbecker wrote:
-> Ok, I hope it's not too late.
-
-No, we are well before the student's application period.
-
-> Here is one subject that I would like to apply for:
+On 03/12/2010 01:29 AM, Arnaldo Carvalho de Melo wrote:
+> Em Thu, Mar 11, 2010 at 08:12:44PM -0300, Arnaldo Carvalho de Melo escreveu:
+>    
+>> From: Arnaldo Carvalho de Melo<acme@redhat.com>
+>>
+>> Newt has widespread availability and provides a rather simple API as can be
+>> seen by the size of this patch.
+>>
+>> The work needed to support it will benefit other frontends too.
+>>
+>> In this initial patch it just checks if the output is a tty, if not it falls
+>> back to the previous behaviour, also if newt-devel/libnewt-dev is not installed
+>> the previous behaviour is maintaned.
+>>
+>> Pressing enter on a symbol will annotate it, ESC in the annotation window will
+>> return to the report symbol list.
+>>      
+> For those not so curious as to apply and try it out, here is a
+> screenshot of it in action:
 >
+> http://tglx.de/~acme/perf-newt.png
+>
+>    
 
-Thank you for your suggestion.
+Looks really useful!
 
-Great that you tell us your idea already now, we can put it on our ideas 
-page to support our application as mentoring organization,
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-    Till
