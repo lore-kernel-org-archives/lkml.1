@@ -1,55 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249Ab0CLW4Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:56:16 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:55355 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932205Ab0CLW4P (ORCPT
+	id S933325Ab0CLW4z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:56:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35409 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932205Ab0CLW4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:56:15 -0500
-From: John Stultz <johnstul@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Add xtime, wall_to_monotonic to feature-removal-schedule
-Date: Fri, 12 Mar 2010 14:56:00 -0800
-Message-Id: <1268434560-2677-1-git-send-email-johnstul@us.ibm.com>
-X-Mailer: git-send-email 1.6.0.4
+	Fri, 12 Mar 2010 17:56:54 -0500
+Date: Fri, 12 Mar 2010 14:56:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [mtd, nandsim] Fix typo: struct nandsin_geometry
+Message-Id: <20100312145631.36585f9b.akpm@linux-foundation.org>
+In-Reply-To: <87aaul1d67.fsf@tac.ki.iif.hu>
+References: <87aaul1d67.fsf@tac.ki.iif.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-They aren't really features, but fair warning to out of tree
-driver folks who might be accessing these variables.
+On Sat, 06 Mar 2010 20:08:00 +0100
+Ferenc Wagner <wferi@niif.hu> wrote:
 
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> Subject: [PATCH] [mtd, nandsim] Fix typo: struct nandsin_geometry
+
+fyi, the text inside [] is conventionally considered "transient, to be
+removed by receiver", so you should have placed the
+subsystem-identification text outside the [].
+
+> Actually, this embedded struct (together with nandsim_regs) could as well
+> remain nameless...
+> 
+
+Sounds like a fine idea.
+
+> ---
+>  drivers/mtd/nand/nandsim.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/nandsim.c b/drivers/mtd/nand/nandsim.c
+> index 7281000..803ae12 100644
+> --- a/drivers/mtd/nand/nandsim.c
+> +++ b/drivers/mtd/nand/nandsim.c
+> @@ -312,7 +312,7 @@ struct nandsim {
+>  	union ns_mem buf;
+>  
+>  	/* NAND flash "geometry" */
+> -	struct nandsin_geometry {
+> +	struct nandsim_geometry {
+>  		uint64_t totsz;     /* total flash size, bytes */
+>  		uint32_t secsz;     /* flash sector (erase block) size, bytes */
+>  		uint pgsz;          /* NAND flash page size, bytes */
+
+
+this:
+
+
+From: Ferenc Wagner <wferi@niif.hu>
+
+The name was spelled wrong.  We don't need an identifier on this struct
+anyway, so remove it altogether.
+
+Signed-off-by: Ferenc Wagner <wferi@niif.hu>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- Documentation/feature-removal-schedule.txt |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index a5cc0db..b545080 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -582,3 +582,16 @@ Why:	The paravirt mmu host support is slower than non-paravirt mmu, both
- Who:	Avi Kivity <avi@redhat.com>
+ drivers/mtd/nand/nandsim.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/mtd/nand/nandsim.c~mtd-nandsim-fix-typo-struct-nandsin_geometry drivers/mtd/nand/nandsim.c
+--- a/drivers/mtd/nand/nandsim.c~mtd-nandsim-fix-typo-struct-nandsin_geometry
++++ a/drivers/mtd/nand/nandsim.c
+@@ -315,7 +315,7 @@ struct nandsim {
+ 	union ns_mem buf;
  
- ----------------------------
-+
-+What:  xtime, wall_to_monotonic
-+When:  2.6.36+
-+Files: kernel/time/timekeeping.c include/linux/time.h
-+Why:   Cleaning up timekeeping internal values. Please use
-+       existing timekeeping accessor functions to access
-+       the equivalent functionality.
-+Who:   John Stultz <johnstul@us.ibm.com>
-+
-+----------------------------
-+
-+
-+
--- 
-1.6.0.4
+ 	/* NAND flash "geometry" */
+-	struct nandsin_geometry {
++	struct {
+ 		uint64_t totsz;     /* total flash size, bytes */
+ 		uint32_t secsz;     /* flash sector (erase block) size, bytes */
+ 		uint pgsz;          /* NAND flash page size, bytes */
+_
 
