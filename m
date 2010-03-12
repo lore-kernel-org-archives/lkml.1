@@ -1,201 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164Ab0CLPll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 10:41:41 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44700 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537Ab0CLPlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 10:41:39 -0500
-Date: Fri, 12 Mar 2010 15:41:21 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: mmotm 2010-03-09-19-15: Lot of scheduling while atomic
-	warnings related to RCU
-Message-ID: <20100312154121.GD18274@csn.ul.ie>
-References: <201003100342.o2A3gKvA022440@imap1.linux-foundation.org> <20100310195745.GP4883@csn.ul.ie> <20100310203242.GC3770@hmsreliant.think-freely.org> <20100312114600.GC18274@csn.ul.ie> <20100312152922.GA1518@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100312152922.GA1518@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1755325Ab0CLPmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 10:42:16 -0500
+Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:46164 "EHLO
+	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751537Ab0CLPmO convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 10:42:14 -0500
+Subject: Re: [PATCH] trace power_frequency events on the correct cpu  (for
+ Intel x86 CPUs)
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       cpufreq <cpufreq@vger.kernel.org>, x86@kernel.org
+In-Reply-To: <4B9A552D.6080103@linux.intel.com>
+References: <1268399863.3407.15.camel@localhost>
+	 <4B9A552D.6080103@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 16:41:46 +0100
+Message-ID: <1268408506.3407.17.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8BIT
+X-TUD-Virus-Scanned: mailout1.zih.tu-dresden.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 10:29:22AM -0500, Neil Horman wrote:
-> On Fri, Mar 12, 2010 at 11:46:00AM +0000, Mel Gorman wrote:
-> > On Wed, Mar 10, 2010 at 03:32:42PM -0500, Neil Horman wrote:
-> > > On Wed, Mar 10, 2010 at 07:57:46PM +0000, Mel Gorman wrote:
-> > > > On Tue, Mar 09, 2010 at 07:16:03PM -0800, akpm@linux-foundation.org wrote:
-> > > > > The mm-of-the-moment snapshot 2010-03-09-19-15 has been uploaded to
-> > > > > 
-> > > > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > > > 
-> > > > > and will soon be available at
-> > > > > 
-> > > > >    git://zen-kernel.org/kernel/mmotm.git
-> > > > > 
-> > > > > It contains the following patches against 2.6.34-rc1:
-> > > > > 
-> > > > 
-> > > > With preempt and sleeping spinlock debugging on, I'm seeing a lot of warnings
-> > > > about scheduling while atomic. Starts off with messages like
-> > > > 
-> > > > [    0.572278] BUG: scheduling while atomic: swapper/1/0x00000002
-> > > > [    0.576004] 1 lock held by swapper/1:
-> > > > [    0.580002]  #0:  (rcu_read_lock){.+.+.+}, at: [<ffffffff811b6950>] kobject_uevent_env+0x363/0x4d0
-> > > > [    0.600001] Modules linked in:
-> > > > [    0.608003] Pid: 1, comm: swapper Not tainted 2.6.34-rc1-mm1-vanilla #1
-> > > > [    0.612001] Call Trace:
-> > > > [    0.616005]  [<ffffffff810727fe>] ?  __debug_show_held_locks+0x22/0x24
-> > > > [    0.620005]  [<ffffffff810395ed>] __schedule_bug+0x77/0x7c
-> > > > [    0.624004]  [<ffffffff812f4cc5>] schedule+0xcc/0x723
-> > > > [    0.628003]  [<ffffffff812f55b6>] schedule_timeout+0x2d/0x28d
-> > > > [    0.632003]  [<ffffffff8107315d>] ? mark_held_locks+0x4d/0x6b
-> > > > [    0.636004]  [<ffffffff812f81e9>] ? _raw_spin_unlock_irq+0x30/0x5d
-> > > > [    0.640003]  [<ffffffff810733de>] ?  trace_hardirqs_on_caller+0x110/0x134
-> > > > [    0.644003]  [<ffffffff812f4a0f>] wait_for_common+0xdc/0x152
-> > > > [    0.648003]  [<ffffffff8103a43b>] ? default_wake_function+0x0/0x14
-> > > > [    0.652004]  [<ffffffff812f4b28>] wait_for_completion+0x1d/0x1f
-> > > > [    0.656004]  [<ffffffff8105cdf0>] call_usermodehelper_exec+0xad/0xfa
-> > > > [    0.660004]  [<ffffffff81068429>] ?  prepare_usermodehelper_creds+0x136/0x168
-> > > > [    0.664003]  [<ffffffff811b6a37>] kobject_uevent_env+0x44a/0x4d0
-> > > > [    0.668003]  [<ffffffff811b6950>] ? kobject_uevent_env+0x363/0x4d0
-> > > > [    0.672003]  [<ffffffff811b6ac8>] kobject_uevent+0xb/0xd
-> > > > [    0.676002]  [<ffffffff811b5e65>] kset_register+0x37/0x3f
-> > > > [    0.680004]  [<ffffffff8123239a>] bus_register+0x11f/0x2b1
-> > > > [    0.684005]  [<ffffffff8175973e>] platform_bus_init+0x2c/0x44
-> > > > [    0.688003]  [<ffffffff817597b9>] driver_init+0x1d/0x29
-> > > > [    0.692004]  [<ffffffff8172c69b>] kernel_init+0x12e/0x1e3
-> > > > [    0.696003]  [<ffffffff81003be4>] kernel_thread_helper+0x4/0x10
-> > > > [    0.700004]  [<ffffffff812f8794>] ? restore_args+0x0/0x30
-> > > > [    0.704003]  [<ffffffff8172c56d>] ? kernel_init+0x0/0x1e3
-> > > > [    0.708002]  [<ffffffff81003be0>] ? kernel_thread_helper+0x0/0x10
-> > > > 
-> > > > There are a lot of warnings along these lines during boot. This system did
-> > > > boot *eventually* but it was in obvious trouble. The warnings appear to
-> > > > be all around kobject_uevent_env acquiring the RCU lock and then going to
-> > > > sleep. Most likely candidate problem patches in mmotm are
-> > > > 
-> > > > sysctl-fix-up-remaining-references-to-uevent_helper
-> > > > sysctl-fix-up-remaining-references-to-uevent_helper-fix
-> > > > 
-> > > > But there are also a whole host of other sysctl-related changes around RCU in
-> > > > there. The changelog implies that these patches are part of some long-lived
-> > > > review process so I didn't delve too deeply. The people most likely to be
-> > > > involved based on comments in the changelog are cc'd.
-> > > > 
-> > > > -- 
-> > > > Mel Gorman
-> > > > Part-time Phd Student                          Linux Technology Center
-> > > > University of Limerick                         IBM Dublin Software Lab
-> > > > 
-> > > Yeah, its probably this chunk:
-> > > diff -puN
-> > > lib/kobject_uevent.c~sysctl-fix-up-remaining-references-to-uevent_helper-fix
-> > > lib/kobject_uevent.c
-> > > ---
-> > > a/lib/kobject_uevent.c~sysctl-fix-up-remaining-references-to-uevent_helper-fix
-> > > +++ a/lib/kobject_uevent.c
-> > > @@ -273,10 +273,11 @@ int kobject_uevent_env(struct kobject *k
-> > >  #endif
-> > > 
-> > >         /* call uevent_helper, usually only enabled during early boot */
-> > > +       rcu_read_lock();
-> > >         helper = rcu_dereference(uevent_helper);
-> > >         if (helper[0])
-> > >                 retval = uevent_call_helper(subsystem, env);
-> > > -
-> > > +       rcu_read_unlock();
-> > >  exit:
-> > >         kfree(devpath);
-> > >         kfree(env);
-> > > _
-> > > 
-> > > My bad, I'm not sure why I didn't catch that, I tested using lots of module
-> > > loads/unloads while changing uevent_helper.  Anywho, should be easy to fix,
-> > > Mel, can you modify the code to copy helper to a private variable, then unlock
-> > > the rcu read side prior to calling uevent_call_helper?  I imagine that would be
-> > > the best fix.
-> > > 
-> > 
-> > I am missing why it is even necessary to dereference this string. helper
-> > is not passed to uevent_call_helper() and it makes a proper copy of the
-> > string. Why not just make the empty-string check on the copy like the
-> > following?
-> > 
-> > ==== CUT HERE ====
-> > kobject: Do not call uevent_helper with RCU lock held
-> > 
-> > With sleep debugging enabled, the call to uevent_helper spews warnings
-> > all over the console because the RCU lock is held when the process goes to
-> > sleep. The RCU lock is only held so that the system is sure that
-> > uevent_helper is not an empty string.
-> > 
-> > As uevent_call_helper() already makes a proper copy of the uevent_helper
-> > string, this patch changes when and where the empty-string check is
-> > made so that the check is made against the copy. Assuming the helper
-> > exists, it is then called without the RCU lock held.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  lib/kobject_uevent.c |   13 +++++++------
-> >  1 files changed, 7 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-> > index a7520d0..f411457 100644
-> > --- a/lib/kobject_uevent.c
-> > +++ b/lib/kobject_uevent.c
-> > @@ -88,6 +88,11 @@ static int uevent_call_helper(const char *subsystem, struct kobj_uevent_env *env
-> >  	if (!helper)
-> >  		return -ENOMEM;
-> >  
-> > +	if (!helper[0]) {
-> > +		retval = -EINVAL;
-> > +		goto error;
-> > +	}
-> > +
-> >  	retval = -E2BIG;
-> >  	argv[0] = helper;
-> >  	argv[1] = (char *)subsystem;
-> > @@ -126,7 +131,6 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
-> >  	struct kset *kset;
-> >  	const struct kset_uevent_ops *uevent_ops;
-> >  	u64 seq;
-> > -	const char *helper;
-> >  	int i = 0;
-> >  	int retval = 0;
-> >  
-> > @@ -273,11 +277,8 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
-> >  #endif
-> >  
-> >  	/* call uevent_helper, usually only enabled during early boot */
-> > -	rcu_read_lock();
-> > -	helper = rcu_dereference(uevent_helper);
-> > -	if (helper[0])
-> > -		retval = uevent_call_helper(subsystem, env);
-> > -	rcu_read_unlock();
-> > +	retval = uevent_call_helper(subsystem, env);
-> > +
-> >  exit:
-> >  	kfree(devpath);
-> >  	kfree(env);
-> > 
+Am Freitag, den 12.03.2010, 06:52 -0800 schrieb Arjan van de Ven:
+> On 3/12/2010 5:17, Robert Schöne wrote:
+> > This patch fixes the following behaviour:
+> > Currently, the power_frequency event is reported for the cpu (core) which initiated the frequency change.
+> > It should be reported for the cpu that actually changes its frequency.
+> >
+> > Example: when using
+> >   taskset -c 0 echo<new_frequency>  >  /sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed
+> > cpu 0 is traced, instead of cpu 1
+> >
+> > Signed of by Robert Schoene<robert.schoene@tu-dresden.de>
+> >
+> >
+> > diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > index 1b1920f..0a47f10 100644
+> > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > @@ -174,6 +174,7 @@ static void do_drv_write(void *_cmd)
+> >
+> >          switch (cmd->type) {
+> >          case SYSTEM_INTEL_MSR_CAPABLE:
+> > +               trace_power_frequency(POWER_PSTATE, cmd->val);
+> >                  rdmsr(cmd->addr.msr.reg, lo, hi);
+> >                  lo = (lo&  ~INTEL_MSR_RANGE) | (cmd->val&  INTEL_MSR_RANGE);
+> >                  wrmsr(cmd->addr.msr.reg, lo, hi);
+> > @@ -363,7 +364,6 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+> >                  }
+> >          }
+> >
+> > -       trace_power_frequency(POWER_PSTATE, data->freq_table[next_state].frequency);
+> >
+> >          switch (data->cpu_feature) {
+> >          case SYSTEM_INTEL_MSR_CAPABLE:
+> >
+> >
 > 
-> We could, but all the rcu string copy stuff got trashed, so we've got to re-diff
-> this all anyway.  I'll probalby do exactly what you're suggesting as I fix this
-> all up though.
+> are you sure this is right?
+> it's moving something from outside a switch statement to inside only one prong of a switch statement...
+
+I'm pretty sure, since I'm moving it from function acpi_cpufreq_target(...) to do_drv_write(...)
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
-Grand. I'm going to ignore this for the moment so and will keep an eye
-out for it in the future.
-
-Thanks
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Robert Schoene
+Technische Universitaet Dresden
+Zentrum fuer Informationsdienste und Hochleistungsrechnen
+01062 Dresden
+
+Tel.: (0351) 463-42483, Fax: (0351) 463-37773
+E-Mail: Robert.Schoene@tu-dresden.de
+
