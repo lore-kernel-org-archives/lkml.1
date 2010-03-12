@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600Ab0CLQli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 11:41:38 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40217 "EHLO gir.skynet.ie"
+	id S1758615Ab0CLQmJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 11:42:09 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40233 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757203Ab0CLQla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 11:41:30 -0500
+	id S1758371Ab0CLQle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 11:41:34 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andrea Arcangeli <aarcange@redhat.com>,
@@ -15,9 +15,9 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 03/11] mm: Share the anon_vma ref counts between KSM and page migration
-Date: Fri, 12 Mar 2010 16:41:19 +0000
-Message-Id: <1268412087-13536-4-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 10/11] Direct compact when a high-order allocation fails
+Date: Fri, 12 Mar 2010 16:41:26 +0000
+Message-Id: <1268412087-13536-11-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
 References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
@@ -25,167 +25,311 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For clarity of review, KSM and page migration have separate refcounts on
-the anon_vma. While clear, this is a waste of memory. This patch gets
-KSM and page migration to share their toys in a spirit of harmony.
+Ordinarily when a high-order allocation fails, direct reclaim is entered to
+free pages to satisfy the allocation.  With this patch, it is determined if
+an allocation failed due to external fragmentation instead of low memory
+and if so, the calling process will compact until a suitable page is
+freed. Compaction by moving pages in memory is considerably cheaper than
+paging out to disk and works where there are locked pages or no swap. If
+compaction fails to free a page of a suitable size, then reclaim will
+still occur.
+
+Direct compaction returns as soon as possible. As each block is compacted,
+it is checked if a suitable page has been freed and if so, it returns.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+Acked-by: Rik van Riel <riel@redhat.com>
 ---
- include/linux/rmap.h |   50 ++++++++++++++++++--------------------------------
- mm/ksm.c             |    4 ++--
- mm/migrate.c         |    4 ++--
- mm/rmap.c            |    6 ++----
- 4 files changed, 24 insertions(+), 40 deletions(-)
+ include/linux/compaction.h |   16 +++++-
+ include/linux/vmstat.h     |    1 +
+ mm/compaction.c            |  118 ++++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c            |   26 ++++++++++
+ mm/vmstat.c                |   15 +++++-
+ 5 files changed, 172 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index 567d43f..7721674 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -26,11 +26,17 @@
-  */
- struct anon_vma {
- 	spinlock_t lock;	/* Serialize access to vma list */
--#ifdef CONFIG_KSM
--	atomic_t ksm_refcount;
--#endif
--#ifdef CONFIG_MIGRATION
--	atomic_t migrate_refcount;
-+#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
+diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+index c94890b..b851428 100644
+--- a/include/linux/compaction.h
++++ b/include/linux/compaction.h
+@@ -1,14 +1,26 @@
+ #ifndef _LINUX_COMPACTION_H
+ #define _LINUX_COMPACTION_H
+ 
+-/* Return values for compact_zone() */
++/* Return values for compact_zone() and try_to_compact_pages() */
+ #define COMPACT_INCOMPLETE	0
+-#define COMPACT_COMPLETE	1
++#define COMPACT_PARTIAL		1
++#define COMPACT_COMPLETE	2
+ 
+ #ifdef CONFIG_COMPACTION
+ extern int sysctl_compact_memory;
+ extern int sysctl_compaction_handler(struct ctl_table *table, int write,
+ 			void __user *buffer, size_t *length, loff_t *ppos);
 +
-+	/*
-+	 * The external_refcount is taken by either KSM or page migration
-+	 * to take a reference to an anon_vma when there is no
-+	 * guarantee that the vma of page tables will exist for
-+	 * the duration of the operation. A caller that takes
-+	 * the reference is responsible for clearing up the
-+	 * anon_vma if they are the last user on release
-+	 */
-+	atomic_t external_refcount;
++extern int fragmentation_index(struct zone *zone, unsigned int order);
++extern unsigned long try_to_compact_pages(struct zonelist *zonelist,
++			int order, gfp_t gfp_mask, nodemask_t *mask);
++#else
++static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
++			int order, gfp_t gfp_mask, nodemask_t *nodemask)
++{
++	return COMPACT_INCOMPLETE;
++}
++
+ #endif /* CONFIG_COMPACTION */
+ 
+ #if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 56e4b44..b4b4d34 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -44,6 +44,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		KSWAPD_SKIP_CONGESTION_WAIT,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+ 		COMPACTBLOCKS, COMPACTPAGES, COMPACTPAGEFAILED,
++		COMPACTSTALL, COMPACTFAIL, COMPACTSUCCESS,
+ #ifdef CONFIG_HUGETLB_PAGE
+ 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
  #endif
- 	/*
- 	 * NOTE: the LSB of the head.next is set by
-@@ -64,46 +70,26 @@ struct anon_vma_chain {
+diff --git a/mm/compaction.c b/mm/compaction.c
+index b85343c..15589c6 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -34,6 +34,8 @@ struct compact_control {
+ 	unsigned long nr_anon;
+ 	unsigned long nr_file;
+ 
++	unsigned int order;		/* order a direct compactor needs */
++	int migratetype;		/* MOVABLE, RECLAIMABLE etc */
+ 	struct zone *zone;
  };
  
- #ifdef CONFIG_MMU
--#ifdef CONFIG_KSM
--static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-+#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
-+static inline void anonvma_external_refcount_init(struct anon_vma *anon_vma)
+@@ -304,10 +306,31 @@ static void update_nr_listpages(struct compact_control *cc)
+ static inline int compact_finished(struct zone *zone,
+ 						struct compact_control *cc)
  {
--	atomic_set(&anon_vma->ksm_refcount, 0);
-+	atomic_set(&anon_vma->external_refcount, 0);
++	unsigned int order;
++	unsigned long watermark = low_wmark_pages(zone) + (1 << cc->order);
++
+ 	/* Compaction run completes if the migrate and free scanner meet */
+ 	if (cc->free_pfn <= cc->migrate_pfn)
+ 		return COMPACT_COMPLETE;
+ 
++	/* Compaction run is not finished if the watermark is not met */
++	if (!zone_watermark_ok(zone, cc->order, watermark, 0, 0))
++		return COMPACT_INCOMPLETE;
++
++	if (cc->order == -1)
++		return COMPACT_INCOMPLETE;
++
++	/* Direct compactor: Is a suitable page free? */
++	for (order = cc->order; order < MAX_ORDER; order++) {
++		/* Job done if page is free of the right migratetype */
++		if (!list_empty(&zone->free_area[order].free_list[cc->migratetype]))
++			return COMPACT_PARTIAL;
++
++		/* Job done if allocation would set block type */
++		if (order >= pageblock_order && zone->free_area[order].nr_free)
++			return COMPACT_PARTIAL;
++	}
++
+ 	return COMPACT_INCOMPLETE;
  }
  
--static inline int ksm_refcount(struct anon_vma *anon_vma)
-+static inline int anonvma_external_refcount(struct anon_vma *anon_vma)
- {
--	return atomic_read(&anon_vma->ksm_refcount);
-+	return atomic_read(&anon_vma->external_refcount);
- }
- #else
--static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-+static inline void anonvma_external_refcount_init(struct anon_vma *anon_vma)
- {
+@@ -353,6 +376,101 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
+ 	return ret;
  }
  
--static inline int ksm_refcount(struct anon_vma *anon_vma)
-+static inline int anonvma_external_refcount(struct anon_vma *anon_vma)
++static inline unsigned long compact_zone_order(struct zone *zone,
++						int order, gfp_t gfp_mask)
++{
++	struct compact_control cc = {
++		.nr_freepages = 0,
++		.nr_migratepages = 0,
++		.order = order,
++		.migratetype = allocflags_to_migratetype(gfp_mask),
++		.zone = zone,
++	};
++	INIT_LIST_HEAD(&cc.freepages);
++	INIT_LIST_HEAD(&cc.migratepages);
++
++	return compact_zone(zone, &cc);
++}
++
++/**
++ * try_to_compact_pages - Direct compact to satisfy a high-order allocation
++ * @zonelist: The zonelist used for the current allocation
++ * @order: The order of the current allocation
++ * @gfp_mask: The GFP mask of the current allocation
++ * @nodemask: The allowed nodes to allocate from
++ *
++ * This is the main entry point for direct page compaction.
++ */
++unsigned long try_to_compact_pages(struct zonelist *zonelist,
++			int order, gfp_t gfp_mask, nodemask_t *nodemask)
++{
++	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
++	int may_enter_fs = gfp_mask & __GFP_FS;
++	int may_perform_io = gfp_mask & __GFP_IO;
++	unsigned long watermark;
++	struct zoneref *z;
++	struct zone *zone;
++	int rc = COMPACT_INCOMPLETE;
++
++	/* Check whether it is worth even starting compaction */
++	if (order == 0 || !may_enter_fs || !may_perform_io)
++		return rc;
++
++	/*
++	 * We will not stall if the necessary conditions are not met for
++	 * migration but direct reclaim seems to account stalls similarly
++	 */
++	count_vm_event(COMPACTSTALL);
++
++	/* Compact each zone in the list */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
++								nodemask) {
++		int fragindex;
++		int status;
++
++		/*
++		 * Watermarks for order-0 must be met for compaction. Note
++		 * the 2UL. This is because during migration, copies of
++		 * pages need to be allocated and for a short time, the
++		 * footprint is higher
++		 */
++		watermark = low_wmark_pages(zone) + (2UL << order);
++		if (!zone_watermark_ok(zone, 0, watermark, 0, 0))
++			continue;
++
++		/*
++		 * fragmentation index determines if allocation failures are
++		 * due to low memory or external fragmentation
++		 *
++		 * index of -1 implies allocations might succeed depending
++		 * 	on watermarks
++		 * index < 500 implies alloc failure is due to lack of memory
++		 *
++		 * XXX: The choice of 500 is arbitrary. Reinvestigate
++		 *      appropriately to determine a sensible default.
++		 *      and what it means when watermarks are also taken
++		 *      into account. Consider making it a sysctl
++		 */
++		fragindex = fragmentation_index(zone, order);
++		if (fragindex >= 0 && fragindex <= 500)
++			continue;
++
++		if (fragindex == -1 && zone_watermark_ok(zone, order, watermark, 0, 0)) {
++			rc = COMPACT_PARTIAL;
++			break;
++		}
++
++		status = compact_zone_order(zone, order, gfp_mask);
++		rc = max(status, rc);
++
++		if (zone_watermark_ok(zone, order, watermark, 0, 0))
++			break;
++	}
++
++	return rc;
++}
++
++
+ /* Compact all zones within a node */
+ static int compact_node(int nid)
  {
- 	return 0;
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 9708143..e301108 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -49,6 +49,7 @@
+ #include <linux/debugobjects.h>
+ #include <linux/kmemleak.h>
+ #include <linux/memory.h>
++#include <linux/compaction.h>
+ #include <trace/events/kmem.h>
+ #include <linux/ftrace_event.h>
+ 
+@@ -1765,6 +1766,31 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 
+ 	cond_resched();
+ 
++	/* Try memory compaction for high-order allocations before reclaim */
++	if (order) {
++		*did_some_progress = try_to_compact_pages(zonelist,
++						order, gfp_mask, nodemask);
++		if (*did_some_progress != COMPACT_INCOMPLETE) {
++			page = get_page_from_freelist(gfp_mask, nodemask,
++					order, zonelist, high_zoneidx,
++					alloc_flags, preferred_zone,
++					migratetype);
++			if (page) {
++				__count_vm_event(COMPACTSUCCESS);
++				return page;
++			}
++
++			/*
++			 * It's bad if compaction run occurs and fails.
++			 * The most likely reason is that pages exist,
++			 * but not enough to satisfy watermarks.
++			 */
++			count_vm_event(COMPACTFAIL);
++
++			cond_resched();
++		}
++	}
++
+ 	/* We now go into synchronous reclaim */
+ 	cpuset_memory_pressure_bump();
+ 	p->flags |= PF_MEMALLOC;
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index af88647..c88f285 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -560,7 +560,7 @@ static int unusable_show(struct seq_file *m, void *arg)
+  * The value can be used to determine if page reclaim or compaction
+  * should be used
+  */
+-int fragmentation_index(unsigned int order, struct contig_page_info *info)
++int __fragmentation_index(unsigned int order, struct contig_page_info *info)
+ {
+ 	unsigned long requested = 1UL << order;
+ 
+@@ -580,6 +580,14 @@ int fragmentation_index(unsigned int order, struct contig_page_info *info)
+ 	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
  }
- #endif /* CONFIG_KSM */
--#ifdef CONFIG_MIGRATION
--static inline void migrate_refcount_init(struct anon_vma *anon_vma)
--{
--	atomic_set(&anon_vma->migrate_refcount, 0);
--}
--
--static inline int migrate_refcount(struct anon_vma *anon_vma)
--{
--	return atomic_read(&anon_vma->migrate_refcount);
--}
--#else
--static inline void migrate_refcount_init(struct anon_vma *anon_vma)
--{
--}
--
--static inline int migrate_refcount(struct anon_vma *anon_vma)
--{
--	return 0;
--}
--#endif /* CONFIG_MIGRATE */
  
- static inline struct anon_vma *page_anon_vma(struct page *page)
- {
-diff --git a/mm/ksm.c b/mm/ksm.c
-index a93f1b7..e45ec98 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -318,14 +318,14 @@ static void hold_anon_vma(struct rmap_item *rmap_item,
- 			  struct anon_vma *anon_vma)
- {
- 	rmap_item->anon_vma = anon_vma;
--	atomic_inc(&anon_vma->ksm_refcount);
-+	atomic_inc(&anon_vma->external_refcount);
- }
++/* Same as __fragmentation index but allocs contig_page_info on stack */
++int fragmentation_index(struct zone *zone, unsigned int order)
++{
++	struct contig_page_info info;
++
++	fill_contig_page_info(zone, order, &info);
++	return __fragmentation_index(order, &info);
++}
  
- static void drop_anon_vma(struct rmap_item *rmap_item)
- {
- 	struct anon_vma *anon_vma = rmap_item->anon_vma;
- 
--	if (atomic_dec_and_lock(&anon_vma->ksm_refcount, &anon_vma->lock)) {
-+	if (atomic_dec_and_lock(&anon_vma->external_refcount, &anon_vma->lock)) {
- 		int empty = list_empty(&anon_vma->head);
- 		spin_unlock(&anon_vma->lock);
- 		if (empty)
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 3c491e3..dd1ab6b 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -615,7 +615,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 		rcu_read_lock();
- 		rcu_locked = 1;
- 		anon_vma = page_anon_vma(page);
--		atomic_inc(&anon_vma->migrate_refcount);
-+		atomic_inc(&anon_vma->external_refcount);
+ static void extfrag_show_print(struct seq_file *m,
+ 					pg_data_t *pgdat, struct zone *zone)
+@@ -595,7 +603,7 @@ static void extfrag_show_print(struct seq_file *m,
+ 				zone->name);
+ 	for (order = 0; order < MAX_ORDER; ++order) {
+ 		fill_contig_page_info(zone, order, &info);
+-		index = fragmentation_index(order, &info);
++		index = __fragmentation_index(order, &info);
+ 		seq_printf(m, "%d.%03d ", index / 1000, index % 1000);
  	}
  
- 	/*
-@@ -657,7 +657,7 @@ skip_unmap:
- rcu_unlock:
+@@ -895,6 +903,9 @@ static const char * const vmstat_text[] = {
+ 	"compact_blocks_moved",
+ 	"compact_pages_moved",
+ 	"compact_pagemigrate_failed",
++	"compact_stall",
++	"compact_fail",
++	"compact_success",
  
- 	/* Drop an anon_vma reference if we took one */
--	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-+	if (anon_vma && atomic_dec_and_lock(&anon_vma->external_refcount, &anon_vma->lock)) {
- 		int empty = list_empty(&anon_vma->head);
- 		spin_unlock(&anon_vma->lock);
- 		if (empty)
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 578d0fe..af35b75 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -248,8 +248,7 @@ static void anon_vma_unlink(struct anon_vma_chain *anon_vma_chain)
- 	list_del(&anon_vma_chain->same_anon_vma);
- 
- 	/* We must garbage collect the anon_vma if it's empty */
--	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
--					!migrate_refcount(anon_vma);
-+	empty = list_empty(&anon_vma->head) && !anonvma_external_refcount(anon_vma);
- 	spin_unlock(&anon_vma->lock);
- 
- 	if (empty)
-@@ -273,8 +272,7 @@ static void anon_vma_ctor(void *data)
- 	struct anon_vma *anon_vma = data;
- 
- 	spin_lock_init(&anon_vma->lock);
--	ksm_refcount_init(anon_vma);
--	migrate_refcount_init(anon_vma);
-+	anonvma_external_refcount_init(anon_vma);
- 	INIT_LIST_HEAD(&anon_vma->head);
- }
- 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	"htlb_buddy_alloc_success",
 -- 
 1.6.5
 
