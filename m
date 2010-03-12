@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611Ab0CLQlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 11:41:39 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40243 "EHLO gir.skynet.ie"
+	id S1758419Ab0CLQle (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 11:41:34 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40205 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758435Ab0CLQlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 11:41:35 -0500
+	id S1756987Ab0CLQl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 11:41:29 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andrea Arcangeli <aarcange@redhat.com>,
@@ -15,9 +15,9 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 11/11] Do not compact within a preferred zone after a compaction failure
-Date: Fri, 12 Mar 2010 16:41:27 +0000
-Message-Id: <1268412087-13536-12-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 02/11] mm,migration: Do not try to migrate unmapped anonymous pages
+Date: Fri, 12 Mar 2010 16:41:18 +0000
+Message-Id: <1268412087-13536-3-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
 References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
@@ -25,121 +25,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fragmentation index may indicate that a failure it due to external
-fragmentation, a compaction run complete and an allocation failure still
-fail. There are two obvious reasons as to why
-
-  o Page migration cannot move all pages so fragmentation remains
-  o A suitable page may exist but watermarks are not met
-
-In the event of compaction and allocation failure, this patch prevents
-compaction happening for a short interval. It's only recorded on the
-preferred zone but that should be enough coverage. This could have been
-implemented similar to the zonelist_cache but the increased size of the
-zonelist did not appear to be justified.
+rmap_walk_anon() was triggering errors in memory compaction that looks like
+use-after-free errors in anon_vma. The problem appears to be that between
+the page being isolated from the LRU and rcu_read_lock() being taken, the
+mapcount of the page dropped to 0 and the anon_vma was freed. This patch
+skips the migration of anon pages that are not mapped by anyone.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 Acked-by: Rik van Riel <riel@redhat.com>
 ---
- include/linux/compaction.h |   35 +++++++++++++++++++++++++++++++++++
- include/linux/mmzone.h     |    7 +++++++
- mm/page_alloc.c            |    5 ++++-
- 3 files changed, 46 insertions(+), 1 deletions(-)
+ mm/migrate.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/compaction.h b/include/linux/compaction.h
-index b851428..bc7059d 100644
---- a/include/linux/compaction.h
-+++ b/include/linux/compaction.h
-@@ -14,6 +14,32 @@ extern int sysctl_compaction_handler(struct ctl_table *table, int write,
- extern int fragmentation_index(struct zone *zone, unsigned int order);
- extern unsigned long try_to_compact_pages(struct zonelist *zonelist,
- 			int order, gfp_t gfp_mask, nodemask_t *mask);
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 98eaaf2..3c491e3 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -602,6 +602,16 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+ 	 * just care Anon page here.
+ 	 */
+ 	if (PageAnon(page)) {
++		/*
++		 * If the page has no mappings any more, just bail. An
++		 * unmapped anon page is likely to be freed soon but worse,
++		 * it's possible its anon_vma disappeared between when
++		 * the page was isolated and when we reached here while
++		 * the RCU lock was not held
++		 */
++		if (!page_mapcount(page))
++			goto uncharge;
 +
-+/* defer_compaction - Do not compact within a zone until a given time */
-+static inline void defer_compaction(struct zone *zone, unsigned long resume)
-+{
-+	/*
-+	 * This function is called when compaction fails to result in a page
-+	 * allocation success. This is somewhat unsatisfactory as the failure
-+	 * to compact has nothing to do with time and everything to do with
-+	 * the requested order, the number of free pages and watermarks. How
-+	 * to wait on that is more unclear, but the answer would apply to
-+	 * other areas where the VM waits based on time.
-+	 */
-+	zone->compact_resume = resume;
-+}
-+
-+static inline int compaction_deferred(struct zone *zone)
-+{
-+	/* init once if necessary */
-+	if (unlikely(!zone->compact_resume)) {
-+		zone->compact_resume = jiffies;
-+		return 0;
-+	}
-+
-+	return time_before(jiffies, zone->compact_resume);
-+}
-+
- #else
- static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
- 			int order, gfp_t gfp_mask, nodemask_t *nodemask)
-@@ -21,6 +47,15 @@ static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
- 	return COMPACT_INCOMPLETE;
- }
- 
-+static inline void defer_compaction(struct zone *zone, unsigned long resume)
-+{
-+}
-+
-+static inline int compaction_deferred(struct zone *zone)
-+{
-+	return 1;
-+}
-+
- #endif /* CONFIG_COMPACTION */
- 
- #if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 37df0b3..99b7ecc 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -321,6 +321,13 @@ struct zone {
- 	unsigned long		*pageblock_flags;
- #endif /* CONFIG_SPARSEMEM */
- 
-+#ifdef CONFIG_COMPACTION
-+	/*
-+	 * If a compaction fails, do not try compaction again until
-+	 * jiffies is after the value of compact_resume
-+	 */
-+	unsigned long		compact_resume;
-+#endif
- 
- 	ZONE_PADDING(_pad1_)
- 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e301108..f481df2 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1767,7 +1767,7 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
- 	cond_resched();
- 
- 	/* Try memory compaction for high-order allocations before reclaim */
--	if (order) {
-+	if (order && !compaction_deferred(preferred_zone)) {
- 		*did_some_progress = try_to_compact_pages(zonelist,
- 						order, gfp_mask, nodemask);
- 		if (*did_some_progress != COMPACT_INCOMPLETE) {
-@@ -1787,6 +1787,9 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
- 			 */
- 			count_vm_event(COMPACTFAIL);
- 
-+			/* On failure, avoid compaction for a short time. */
-+			defer_compaction(preferred_zone, jiffies + HZ/50);
-+
- 			cond_resched();
- 		}
- 	}
+ 		rcu_read_lock();
+ 		rcu_locked = 1;
+ 		anon_vma = page_anon_vma(page);
 -- 
 1.6.5
 
