@@ -1,85 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932175Ab0CLJvb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 04:51:31 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56409 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740Ab0CLJva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 04:51:30 -0500
-Date: Fri, 12 Mar 2010 10:41:48 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Antonio Ospite <ospite@studenti.unina.it>,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] V4L/DVB: mx1-camera: compile fix
-Message-ID: <20100312094148.GA15123@pengutronix.de>
-References: <20100304194241.GG19843@pengutronix.de> <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de> <Pine.LNX.4.64.1003121016480.4385@axis700.grange>
+	id S932190Ab0CLJwO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 04:52:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36289 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756359Ab0CLJwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 04:52:11 -0500
+Date: Fri, 12 Mar 2010 10:52:09 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: use sysfs_bin_attr_init in firmware class
+ driver
+In-Reply-To: <alpine.LNX.2.00.1003091856430.17799@pobox.suse.cz>
+Message-ID: <alpine.LNX.2.00.1003121051340.18642@pobox.suse.cz>
+References: <alpine.LNX.2.00.1003091856430.17799@pobox.suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.1003121016480.4385@axis700.grange>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-On Fri, Mar 12, 2010 at 10:22:31AM +0100, Guennadi Liakhovetski wrote:
-> On Fri, 5 Mar 2010, Uwe Kleine-König wrote:
-> > This is a regression of
-> > 
-> > 	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
-> > 
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > ---
-> >  drivers/media/video/mx1_camera.c |   12 +++++++-----
-> >  1 files changed, 7 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
-> > index 2ba14fb..29c2833 100644
-> > --- a/drivers/media/video/mx1_camera.c
-> > +++ b/drivers/media/video/mx1_camera.c
-> > @@ -45,11 +45,13 @@
-> >  #include <mach/hardware.h>
-> >  #include <mach/mx1_camera.h>
-> >  
-> > +#define __DMAREG(offset)	(MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR) + offset)
-> > +
-> 
-> Well, I think, Sascha is right, we have to fix 
-> arch/arm/plat-mxc/include/mach/dma-mx1-mx2.h, because that's what actually 
-> got broken. The line
-> 
-> #define DMA_BASE IO_ADDRESS(DMA_BASE_ADDR)
-> 
-> in it is no longer valid, right? So, we have to either remove it, or fix 
-> it, if we think, that other drivers might start using it.
-I thought a minimal fix would be a good idea.  I have no problem with a
-clean one though.
+Is anyone going to pick this one up please?
 
->                                                           And even if we 
-> decide to remove it from the header and implement here, wouldn't it be 
-> better to choose a name, not beginning with "__"? Something like 
-> MX1_DMA_REG, perhaps?
-Then the register definitions should go into the header, too.  I will
-prepare a patch later today.
->                       Or maybe even we shall remap those registers?
-Well, they are remapped, don't they?  Otherwise IO_ADDRESS wouldn't
-work.
+Thanks,
 
-Best regards
-Uwe
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
+On Tue, 9 Mar 2010, Jiri Kosina wrote:
+
+> Annotate dynamic sysfs attribute in fw_setup_device(). This gets
+> rid of the following lockdep warning:
+> 
+> bnx2 0000:08:00.0: firmware: requesting bnx2/bnx2-mips-06-5.0.0.j6.fw
+> BUG: key ffff880008293470 not in .data!
+> ------------[ cut here ]------------
+> WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x562/0x620()
+> Modules linked in: bnx2(+) sg tpm_bios floppy rtc_lib usb_storage i2c_piix4 joydev button container shpchp i2c_core sr_mod cdrom pci_hotplug usbhid hid ohci_hcd ehci_hcd sd_mod usbcore edd ext3 mbcache jbd fan ata_generic sata_svw pata_serverworks libata scsi_mod thermal processor
+> Pid: 1915, comm: work_for_cpu Not tainted 2.6.34-rc1-default #81
+> Call Trace:
+>  [<ffffffff8107c1d2>] ? lockdep_init_map+0x562/0x620
+>  [<ffffffff81049fd8>] warn_slowpath_common+0x78/0xd0
+>  [<ffffffff8104a03f>] warn_slowpath_null+0xf/0x20
+>  [<ffffffff8107c1d2>] lockdep_init_map+0x562/0x620
+>  [<ffffffff8117a236>] ? sysfs_new_dirent+0x76/0x120
+>  [<ffffffff8126edb2>] ? put_device+0x12/0x20
+>  [<ffffffff811797cc>] sysfs_add_file_mode+0x6c/0xd0
+>  [<ffffffff8117983c>] sysfs_add_file+0xc/0x10
+>  [<ffffffff8117bf61>] sysfs_create_bin_file+0x21/0x30
+>  [<ffffffff81279c61>] _request_firmware+0x2f1/0x650
+>  [<ffffffff8127a04e>] request_firmware+0xe/0x10
+>  [<ffffffffa01ec19e>] bnx2_init_one+0x8f5/0x177e [bnx2]
+>  [<ffffffff81389eab>] ? _raw_spin_unlock_irq+0x2b/0x40
+>  [<ffffffff81040ed9>] ? finish_task_switch+0x69/0x100
+>  [<ffffffff81040e70>] ? finish_task_switch+0x0/0x100
+>  [<ffffffff81064b40>] ? do_work_for_cpu+0x0/0x30
+>  [<ffffffff811e6302>] local_pci_probe+0x12/0x20
+>  [<ffffffff81064b53>] do_work_for_cpu+0x13/0x30
+>  [<ffffffff81064b40>] ? do_work_for_cpu+0x0/0x30
+>  [<ffffffff81068c56>] kthread+0x96/0xa0
+>  [<ffffffff81003e64>] kernel_thread_helper+0x4/0x10
+>  [<ffffffff8138a350>] ? restore_args+0x0/0x30
+>  [<ffffffff81068bc0>] ? kthread+0x0/0xa0
+>  [<ffffffff81003e60>] ? kernel_thread_helper+0x0/0x10
+> ---[ end trace a2ecee9c9602d195 ]---
+> 
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> --- 
+>  drivers/base/firmware_class.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index d0dc26a..fc7565c 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -442,6 +442,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
+>  	fw_priv = dev_get_drvdata(f_dev);
+>  
+>  	fw_priv->fw = fw;
+> +	sysfs_bin_attr_init(&fw_priv->attr_data);
+>  	retval = sysfs_create_bin_file(&f_dev->kobj, &fw_priv->attr_data);
+>  	if (retval) {
+>  		dev_err(device, "%s: sysfs_create_bin_file failed\n", __func__);
+> 
