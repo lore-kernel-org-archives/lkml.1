@@ -1,85 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626Ab0CLQno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 11:43:44 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40227 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757967Ab0CLQla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 11:41:30 -0500
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 04/11] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA or memory hot-remove
-Date: Fri, 12 Mar 2010 16:41:20 +0000
-Message-Id: <1268412087-13536-5-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
-References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
+	id S933297Ab0CLRKp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:10:45 -0500
+Received: from p01c11o145.mxlogic.net ([208.65.144.68]:58303 "EHLO
+	p01c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932245Ab0CLRKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 12:10:44 -0500
+X-MXL-Hash: 4b9a75940f1274fd-58112c0be9c4964425b5bc08cf7ee3a0b22d4f11
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: "rpurdie@rpsys.net" <rpurdie@rpsys.net>
+Date: Fri, 12 Mar 2010 11:10:35 -0600
+Subject: [PATCH] backlight: provide sysfs percent brightness attribute
+Thread-Topic: [PATCH] backlight: provide sysfs percent brightness attribute
+Thread-Index: AcrCBu4QelPBanz1SO+YLv+P4Kcx0Q==
+Message-ID: <0D753D10438DA54287A00B02708426976368437C8D@AUSP01VMBX24.collaborationhost.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010030401)]
+X-MAIL-FROM: <hartleys@visionengravers.com>
+X-SOURCE-IP: [(unknown)]
+X-AnalysisOut: [v=1.0 c=1 a=BuG6rG04yhgA:10 a=VphdPIyG4kEA:10 a=IkcTkHD0fZ]
+X-AnalysisOut: [MA:10 a=TYbMNos9eHUa9bm6/o8foQ==:17 a=i00gxMtYAAAA:8 a=-sM]
+X-AnalysisOut: [3sDvmAAAA:8 a=zUgfCeZ8dgXclGF-qp0A:9 a=0WAFTzg72vq3bftNfN4]
+X-AnalysisOut: [8IZMY-_8A:4 a=QEXdDO2ut3YA:10 a=x1WnkoZAwusA:10 a=130E6OD_]
+X-AnalysisOut: [8ZAA:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o2CHB0mE011818
 
-CONFIG_MIGRATION currently depends on CONFIG_NUMA or on the architecture
-being able to hot-remove memory. The main users of page migration such as
-sys_move_pages(), sys_migrate_pages() and cpuset process migration are
-only beneficial on NUMA so it makes sense.
+It's usually more convenient to set the backlight brightness
+as a 'percent' of total brightness rather than using the raw
+'brightness' value.
 
-As memory compaction will operate within a zone and is useful on both NUMA
-and non-NUMA systems, this patch allows CONFIG_MIGRATION to be set if the
-user selects CONFIG_COMPACTION as an option.
+This provides the necessary sysfs attributes to handle this.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+
 ---
- mm/Kconfig |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 9c61158..04e241b 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -172,17 +172,29 @@ config SPLIT_PTLOCK_CPUS
- 	default "4"
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 18829cf..af25bfa 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -190,6 +190,50 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
+ 	return rc;
+ }
  
- #
-+# support for memory compaction
-+config COMPACTION
-+	bool "Allow for memory compaction"
-+	def_bool y
-+	select MIGRATION
-+	depends on EXPERIMENTAL && HUGETLBFS && MMU
-+	help
-+	  Allows the compaction of memory for the allocation of huge pages.
++static ssize_t backlight_show_percent(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++	int percent;
 +
-+#
- # support for page migration
- #
- config MIGRATION
- 	bool "Page migration"
- 	def_bool y
--	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
-+	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE || COMPACTION
- 	help
- 	  Allows the migration of the physical location of pages of processes
--	  while the virtual addresses are not changed. This is useful for
--	  example on NUMA systems to put pages nearer to the processors accessing
--	  the page.
-+	  while the virtual addresses are not changed. This is useful in
-+	  two situations. The first is on NUMA systems to put pages nearer
-+	  to the processors accessing. The second is when allocating huge
-+	  pages as migration can relocate pages to satisfy a huge page
-+	  allocation instead of reclaiming.
++	percent = bd->props.brightness * 100 / bd->props.max_brightness;
++	return sprintf(buf, "%d\n", percent);
++}
++
++static ssize_t backlight_store_percent(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++	unsigned long percent, brightness;
++	int rc;
++
++	rc = strict_strtoul(buf, 0, &percent);
++	if (rc)
++		return rc;
++
++	brightness = percent * bd->props.max_brightness / 100;
++
++	rc = -ENXIO;
++
++	mutex_lock(&bd->ops_lock);
++	if (bd->ops) {
++		if (brightness > bd->props.max_brightness)
++			rc = -EINVAL;
++		else {
++			pr_debug("backlight: set to %lu%% (brightness of %lu)\n",
++				 percent, brightness);
++			bd->props.brightness = brightness;
++			backlight_update_status(bd);
++			rc = count;
++		}
++	}
++	mutex_unlock(&bd->ops_lock);
++
++	backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
++
++	return rc;
++}
++
+ static struct class *backlight_class;
  
- config PHYS_ADDR_T_64BIT
- 	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
--- 
-1.6.5
-
+ static int backlight_suspend(struct device *dev, pm_message_t state)
+@@ -233,6 +277,7 @@ static struct device_attribute bl_device_attributes[] = {
+ 	__ATTR(actual_brightness, 0444, backlight_show_actual_brightness,
+ 		     NULL),
+ 	__ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),
++	__ATTR(percent, 0644, backlight_show_percent, backlight_store_percent),
+ 	__ATTR_NULL,
+ };
+ 
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
