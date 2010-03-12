@@ -1,71 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934631Ab0CLVUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 16:20:38 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56995 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932683Ab0CLVUg (ORCPT
+	id S934642Ab0CLVZW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 16:25:22 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:32804 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934626Ab0CLVZU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 16:20:36 -0500
+	Fri, 12 Mar 2010 16:25:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vNp4F3uRN6BF07JLMi4MlOWyf/+0fF+Hkyd1dEcbloo4kNOanXk4BJBKRz4gd05B/2
-         4c5rTxpasUamMcP6PN5YdMArfNChtd34vMpmEYrIID6jU0hdGC+94adGbaTIS5IRe6y3
-         iygMq7STeq6DqF4ink9BEY4Jt/Ev+3mImJbds=
-Date: Fri, 12 Mar 2010 13:20:26 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Florian Mickler <florian@mickler.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 2/2] enhance sysfs rfkill interface
-Message-ID: <20100312212025.GA17712@core.coreip.homeip.net>
-References: <1268416988-24862-1-git-send-email-florian@mickler.org>
- <1268416988-24862-2-git-send-email-florian@mickler.org>
- <1268416988-24862-3-git-send-email-florian@mickler.org>
- <20100312182209.GB8736@core.coreip.homeip.net>
- <20100312215743.7671d173@schatten.dmk.lab>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Osd7aAWZjHLBdtLcvOmQw3KQizAisWrxpGz5F4DSIjxL5Iboghsn0CfC9L8bM1IIYp
+         NWn+waXDMAchhOItCCSmiw/jPoETNAdpnl2Pq3zO0wO10fmP0sQoJi62mK7XxUwxwkw7
+         +FdL7ddWfXKSazU4XTJ/frnKdYIlkFgZwGJnI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100312215743.7671d173@schatten.dmk.lab>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <201003042012.36416.rjw@sisk.pl>
+References: <201003040125.30091.rjw@sisk.pl>
+	 <b170af451003040311g3cea44caj1cd0e23e55814696@mail.gmail.com>
+	 <201003042012.36416.rjw@sisk.pl>
+Date: Fri, 12 Mar 2010 22:25:17 +0100
+Message-ID: <b170af451003121325h388ba4e5rcb73d1929ffedd1d@mail.gmail.com>
+Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM notifier
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 09:57:43PM +0100, Florian Mickler wrote:
-> On Fri, 12 Mar 2010 10:22:09 -0800
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On Fri, Mar 12, 2010 at 07:03:08PM +0100, florian@mickler.org wrote:
-> > >  
-> > > +static ssize_t rfkill_hard_show(struct device *dev,
-> > > +				 struct device_attribute *attr,
-> > > +				 char *buf)
-> > > +{
-> > > +	struct rfkill *rfkill = to_rfkill(dev);
-> > > +	unsigned long flags;
-> > > +	u32 state;
-> > > +
-> > > +	spin_lock_irqsave(&rfkill->lock, flags);
-> > > +	state = rfkill->state;
-> > > +	spin_unlock_irqrestore(&rfkill->lock, flags);
-> > 
-> > Why exactly is this lock needed?
-> 
-> The rfkill state is updated from multiple contexts... Am I overlooking
-> smth obvious here?
-> 
+W dniu 4 marca 2010 20:12 użytkownik Rafael J. Wysocki <rjw@sisk.pl> napisał:
+>> Can we send this to stable for .32 and .33?
+>
+> That depends on Len.
 
-You are not updating but reading... Are you concerned about seeing
-a partial write to u32? It does not happen.
+Len?
 
 -- 
-Dmitry
+Rafał
