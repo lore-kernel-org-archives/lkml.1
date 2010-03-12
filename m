@@ -1,25 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085Ab0CLC4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 21:56:24 -0500
-Received: from mga03.intel.com ([143.182.124.21]:36861 "EHLO mga03.intel.com"
+	id S1755938Ab0CLC4F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 21:56:05 -0500
+Received: from mga11.intel.com ([192.55.52.93]:56432 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838Ab0CLC4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 21:56:15 -0500
+	id S1755312Ab0CLCz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 21:55:57 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,624,1262592000"; 
-   d="scan'208";a="253809155"
+   d="scan'208";a="548353638"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
        Ian Pratt <Ian.Pratt@eu.citrix.com>,
        Ian Campbell <Ian.Campbell@citrix.com>,
        xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH][v9 1/6] xen: add support for hvm_op
-Date: Fri, 12 Mar 2010 10:57:22 +0800
-Message-Id: <1268362647-5317-2-git-send-email-sheng@linux.intel.com>
+Subject: [PATCH][v9 6/6] xen: Enable PV clocksource for HVM
+Date: Fri, 12 Mar 2010 10:57:27 +0800
+Message-Id: <1268362647-5317-7-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1268362647-5317-1-git-send-email-sheng@linux.intel.com>
 References: <1268362647-5317-1-git-send-email-sheng@linux.intel.com>
@@ -27,263 +26,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+PV clocksource can provide a reliable clocksource for HVM running on Xen.
 
-Add support for hvm_op hypercall.
+To enable it, put following line to the HVM configure file:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+cpuid = [ '0x40000002:edx=0x3' ]
+
+It would set bit 0 and bit 1 in 0x40000002:edx, which enable PV extension
+framework and PV clocksource.
+
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
- arch/x86/include/asm/xen/hypercall.h |    6 ++
- include/xen/hvm.h                    |   23 +++++++
- include/xen/interface/hvm/hvm_op.h   |   72 ++++++++++++++++++++++
- include/xen/interface/hvm/params.h   |  111 ++++++++++++++++++++++++++++++++++
- 4 files changed, 212 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/hvm.h
- create mode 100644 include/xen/interface/hvm/hvm_op.h
- create mode 100644 include/xen/interface/hvm/params.h
+ arch/x86/xen/hvmpv.c   |   24 ++++++++++++++++++++++++
+ arch/x86/xen/time.c    |   12 +++++++++++-
+ arch/x86/xen/xen-ops.h |    1 +
+ 3 files changed, 36 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
-index 9c371e4..47c2ebb 100644
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -417,6 +417,12 @@ HYPERVISOR_nmi_op(unsigned long op, unsigned long arg)
- 	return _hypercall2(int, nmi_op, op, arg);
+diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
+index a24a1e9..1961cf0 100644
+--- a/arch/x86/xen/hvmpv.c
++++ b/arch/x86/xen/hvmpv.c
+@@ -42,6 +42,8 @@ static void __init xen_hvm_pv_banner(void)
+ 		pv_info.name);
+ 	printk(KERN_INFO "Xen version: %d.%d%s\n",
+ 		version >> 16, version & 0xffff, extra.extraversion);
++	if (xen_hvm_pv_clock_enabled())
++		printk(KERN_INFO "PV feature: PV clocksource enabled\n");
  }
  
-+static inline unsigned long __must_check
-+HYPERVISOR_hvm_op(int op, void *arg)
+ static int __init xen_para_available(void)
+@@ -80,6 +82,9 @@ static int __init init_hvm_pv_info(void)
+ 	if (!(edx & XEN_CPUID_FEAT2_HVM_PV))
+ 		return -ENODEV;
+ 
++	if (edx & XEN_CPUID_FEAT2_HVM_PV_CLOCK)
++		xen_hvm_pv_features |= XEN_HVM_PV_CLOCK_ENABLED;
++
+ 	if (pages < 1)
+ 		return -ENODEV;
+ 
+@@ -110,6 +115,23 @@ static int __init init_shared_info(void)
+ 	return 0;
+ }
+ 
++static void __init init_pv_clocksource(void)
 +{
-+	return _hypercall2(unsigned long, hvm_op, op, arg);
++	if (!xen_hvm_pv_clock_enabled())
++		return;
++
++	if (enable_hvm_pv(HVM_PV_CLOCK))
++		BUG();
++
++	pv_time_ops.sched_clock = xen_sched_clock;
++
++	x86_platform.calibrate_tsc = xen_tsc_khz;
++	x86_platform.get_wallclock = xen_get_wallclock;
++	x86_platform.set_wallclock = xen_set_wallclock;
++
++	xen_register_clocksource();
 +}
 +
- static inline void
- MULTI_fpu_taskswitch(struct multicall_entry *mcl, int set)
+ void __init xen_guest_init(void)
  {
-diff --git a/include/xen/hvm.h b/include/xen/hvm.h
-new file mode 100644
-index 0000000..4ea8887
---- /dev/null
-+++ b/include/xen/hvm.h
-@@ -0,0 +1,23 @@
-+/* Simple wrappers around HVM functions */
-+#ifndef XEN_HVM_H__
-+#define XEN_HVM_H__
+ 	int r;
+@@ -132,4 +154,6 @@ void __init xen_guest_init(void)
+ 	pv_info = xen_hvm_pv_info;
+ 
+ 	xen_domain_type = XEN_HVM_DOMAIN;
 +
-+#include <xen/interface/hvm/params.h>
++	init_pv_clocksource();
+ }
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index 0a5aa44..d1c1c50 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -474,11 +474,21 @@ void xen_timer_resume(void)
+ 	}
+ }
+ 
++static bool xen_clocksource_enabled;
 +
-+static inline unsigned long hvm_get_parameter(int idx)
++void xen_register_clocksource(void)
 +{
-+	struct xen_hvm_param xhv;
-+	int r;
-+
-+	xhv.domid = DOMID_SELF;
-+	xhv.index = idx;
-+	r = HYPERVISOR_hvm_op(HVMOP_get_param, &xhv);
-+	if (r < 0) {
-+		printk(KERN_ERR "cannot get hvm parameter %d: %d.\n",
-+		       idx, r);
-+		return 0;
++	if (!xen_clocksource_enabled) {
++		clocksource_register(&xen_clocksource);
++		xen_clocksource_enabled = 1;
 +	}
-+	return xhv.value;
 +}
 +
-+#endif /* XEN_HVM_H__ */
-diff --git a/include/xen/interface/hvm/hvm_op.h b/include/xen/interface/hvm/hvm_op.h
-new file mode 100644
-index 0000000..7c74ba4
---- /dev/null
-+++ b/include/xen/interface/hvm/hvm_op.h
-@@ -0,0 +1,72 @@
-+/*
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ */
-+
-+#ifndef __XEN_PUBLIC_HVM_HVM_OP_H__
-+#define __XEN_PUBLIC_HVM_HVM_OP_H__
-+
-+/* Get/set subcommands: extra argument == pointer to xen_hvm_param struct. */
-+#define HVMOP_set_param           0
-+#define HVMOP_get_param           1
-+struct xen_hvm_param {
-+    domid_t  domid;    /* IN */
-+    uint32_t index;    /* IN */
-+    uint64_t value;    /* IN/OUT */
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_param);
-+
-+/* Set the logical level of one of a domain's PCI INTx wires. */
-+#define HVMOP_set_pci_intx_level  2
-+struct xen_hvm_set_pci_intx_level {
-+    /* Domain to be updated. */
-+    domid_t  domid;
-+    /* PCI INTx identification in PCI topology (domain:bus:device:intx). */
-+    uint8_t  domain, bus, device, intx;
-+    /* Assertion level (0 = unasserted, 1 = asserted). */
-+    uint8_t  level;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_intx_level);
-+
-+/* Set the logical level of one of a domain's ISA IRQ wires. */
-+#define HVMOP_set_isa_irq_level   3
-+struct xen_hvm_set_isa_irq_level {
-+    /* Domain to be updated. */
-+    domid_t  domid;
-+    /* ISA device identification, by ISA IRQ (0-15). */
-+    uint8_t  isa_irq;
-+    /* Assertion level (0 = unasserted, 1 = asserted). */
-+    uint8_t  level;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_isa_irq_level);
-+
-+#define HVMOP_set_pci_link_route  4
-+struct xen_hvm_set_pci_link_route {
-+    /* Domain to be updated. */
-+    domid_t  domid;
-+    /* PCI link identifier (0-3). */
-+    uint8_t  link;
-+    /* ISA IRQ (1-15), or 0 (disable link). */
-+    uint8_t  isa_irq;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_link_route);
-+
-+/* Flushes all VCPU TLBs: @arg must be NULL. */
-+#define HVMOP_flush_tlbs          5
-+
-+#endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
-diff --git a/include/xen/interface/hvm/params.h b/include/xen/interface/hvm/params.h
-new file mode 100644
-index 0000000..15d828f
---- /dev/null
-+++ b/include/xen/interface/hvm/params.h
-@@ -0,0 +1,111 @@
-+/*
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ */
-+
-+#ifndef __XEN_PUBLIC_HVM_PARAMS_H__
-+#define __XEN_PUBLIC_HVM_PARAMS_H__
-+
-+#include "hvm_op.h"
-+
-+/*
-+ * Parameter space for HVMOP_{set,get}_param.
-+ */
-+
-+/*
-+ * How should CPU0 event-channel notifications be delivered?
-+ * val[63:56] == 0: val[55:0] is a delivery GSI (Global System Interrupt).
-+ * val[63:56] == 1: val[55:0] is a delivery PCI INTx line, as follows:
-+ *                  Domain = val[47:32], Bus  = val[31:16],
-+ *                  DevFn  = val[15: 8], IntX = val[ 1: 0]
-+ * If val == 0 then CPU0 event-channel notifications are not delivered.
-+ */
-+#define HVM_PARAM_CALLBACK_IRQ 0
-+
-+/*
-+ * These are not used by Xen. They are here for convenience of HVM-guest
-+ * xenbus implementations.
-+ */
-+#define HVM_PARAM_STORE_PFN    1
-+#define HVM_PARAM_STORE_EVTCHN 2
-+
-+#define HVM_PARAM_PAE_ENABLED  4
-+
-+#define HVM_PARAM_IOREQ_PFN    5
-+
-+#define HVM_PARAM_BUFIOREQ_PFN 6
-+
-+#ifdef __ia64__
-+
-+#define HVM_PARAM_NVRAM_FD     7
-+#define HVM_PARAM_VHPT_SIZE    8
-+#define HVM_PARAM_BUFPIOREQ_PFN	9
-+
-+#elif defined(__i386__) || defined(__x86_64__)
-+
-+/* Expose Viridian interfaces to this HVM guest? */
-+#define HVM_PARAM_VIRIDIAN     9
-+
-+#endif
-+
-+/*
-+ * Set mode for virtual timers (currently x86 only):
-+ *  delay_for_missed_ticks (default):
-+ *   Do not advance a vcpu's time beyond the correct delivery time for
-+ *   interrupts that have been missed due to preemption. Deliver missed
-+ *   interrupts when the vcpu is rescheduled and advance the vcpu's virtual
-+ *   time stepwise for each one.
-+ *  no_delay_for_missed_ticks:
-+ *   As above, missed interrupts are delivered, but guest time always tracks
-+ *   wallclock (i.e., real) time while doing so.
-+ *  no_missed_ticks_pending:
-+ *   No missed interrupts are held pending. Instead, to ensure ticks are
-+ *   delivered at some non-zero rate, if we detect missed ticks then the
-+ *   internal tick alarm is not disabled if the VCPU is preempted during the
-+ *   next tick period.
-+ *  one_missed_tick_pending:
-+ *   Missed interrupts are collapsed together and delivered as one 'late tick'.
-+ *   Guest time always tracks wallclock (i.e., real) time.
-+ */
-+#define HVM_PARAM_TIMER_MODE   10
-+#define HVMPTM_delay_for_missed_ticks    0
-+#define HVMPTM_no_delay_for_missed_ticks 1
-+#define HVMPTM_no_missed_ticks_pending   2
-+#define HVMPTM_one_missed_tick_pending   3
-+
-+/* Boolean: Enable virtual HPET (high-precision event timer)? (x86-only) */
-+#define HVM_PARAM_HPET_ENABLED 11
-+
-+/* Identity-map page directory used by Intel EPT when CR0.PG=0. */
-+#define HVM_PARAM_IDENT_PT     12
-+
-+/* Device Model domain, defaults to 0. */
-+#define HVM_PARAM_DM_DOMAIN    13
-+
-+/* ACPI S state: currently support S0 and S3 on x86. */
-+#define HVM_PARAM_ACPI_S_STATE 14
-+
-+/* TSS used on Intel when CR0.PE=0. */
-+#define HVM_PARAM_VM86_TSS     15
-+
-+/* Boolean: Enable aligning all periodic vpts to reduce interrupts */
-+#define HVM_PARAM_VPT_ALIGN    16
-+
-+#define HVM_NR_PARAMS          17
-+
-+#endif /* __XEN_PUBLIC_HVM_PARAMS_H__ */
+ __init void xen_time_init(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+-	clocksource_register(&xen_clocksource);
++	xen_register_clocksource();
+ 
+ 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
+ 		/* Successfully turned off 100Hz tick, so we have the
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 355fa6b..2aeaf51 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -46,6 +46,7 @@ cycle_t xen_clocksource_read(void);
+ void xen_setup_cpu_clockevents(void);
+ unsigned long xen_tsc_khz(void);
+ void __init xen_time_init(void);
++void xen_register_clocksource(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+ unsigned long long xen_sched_clock(void);
 -- 
 1.7.0.1
 
