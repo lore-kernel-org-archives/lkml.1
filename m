@@ -1,41 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065Ab0CLHWh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 02:22:37 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:57385 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595Ab0CLHWg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 02:22:36 -0500
-Message-ID: <4B99EBB9.5000508@canonical.com>
-Date: Fri, 12 Mar 2010 08:22:33 +0100
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751949Ab0CLHgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 02:36:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10126 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751114Ab0CLHgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 02:36:50 -0500
+Message-ID: <4B99EF09.1080608@redhat.com>
+Date: Fri, 12 Mar 2010 09:36:41 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: gleb@redhat.com, avi@redhat.com, gregkh@suse.de, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: Re: patch kvm-x86-emulator-add-group8-instruction-decoding.patch
- added to 2.6.32-stable tree
-References: <12683548383025@site>
-In-Reply-To: <12683548383025@site>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Joerg Roedel <joerg.roedel@amd.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/18][RFC] Nested Paging support for Nested SVM (aka NPT-Virtualization)
+References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com> <20100304144255.GA26657@amt.cnet> <20100304155820.GA6019@amd.com> <20100311205803.GA18849@amt.cnet>
+In-Reply-To: <20100311205803.GA18849@amt.cnet>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+On 03/11/2010 10:58 PM, Marcelo Tosatti wrote:
+>
+>>> Can't you translate l2_gpa ->  l1_gpa walking the current l1 nested
+>>> pagetable, and pass that to the kvm tdp fault path (with the correct
+>>> context setup)?
+>>>        
+>> If I understand your suggestion correctly, I think thats exactly whats
+>> done in the patches. Some words about the design:
+>>
+>> For nested-nested we need to shadow the l1-nested-ptable on the host.
+>> This is done using the vcpu->arch.mmu context which holds the l1 paging
+>> modes while the l2 is running. On a npt-fault from the l2 we just
+>> instrument the shadow-ptable code. This is the common case. because it
+>> happens all the time while the l2 is running.
+>>      
+> OK, makes sense now, I was missing the fact that the l1-nested-ptable
+> needs to be shadowed and l1 translations to it must be write protected.
+>    
 
-I am currently working on getting the whole series of kvm patches marked for
-stable backported to 2.6.32. You could pick those from
+Shadow converts (gva -> gpa -> hpa) to (gva -> hpa) or (ngpa -> gpa -> 
+hpa) to (ngpa -> hpa) equally well.  In the second case npt still does 
+(ngva -> ngpa).
 
-git://kernel.ubuntu.com/smb/linux-2.6.32.y.git kvm
+> You should disable out of sync shadow so that l1 guest writes to
+> l1-nested-ptables always trap.
 
-Currently there is one patch on the HEAD which is fixing a regression for AMD
-hosts. That is not upstream, yet. (needed for the patch fixing memory access).
+Why?  The guest is under obligation to flush the tlb if it writes to a 
+page table, and we will resync on that tlb flush.
 
-Stefan
+Unsync makes just as much sense for nnpt.  Think of khugepaged in the 
+guest eating a page table and spitting out a PDE.
 
+> And in the trap case, you'd have to
+> invalidate l2 shadow pagetable entries that used the (now obsolete)
+> l1-nested-ptable entry. Does that happen automatically?
+>    
+
+What do you mean by 'l2 shadow ptable entries'?  There are the guest's 
+page tables (ordinary direct mapped, unless the guest's guest is also 
+running an npt-enabled hypervisor), and the host page tables.  When the 
+guest writes to each page table, we invalidate the shadows.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
