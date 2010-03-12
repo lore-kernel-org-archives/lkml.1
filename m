@@ -1,80 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765Ab0CLXiK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 18:38:10 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54436 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932370Ab0CLXiH (ORCPT
+	id S932793Ab0CLXiv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 18:38:51 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:46848 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932385Ab0CLXit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 18:38:07 -0500
-Subject: gcc and kernel build trouble report
-From: Keith Mannthey <kmannth@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: James Smart <james.smart@Emulex.Com>, Richard Lary <rlary@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 12 Mar 2010 15:38:05 -0800
-Message-Id: <1268437085.7745.62.camel@keith-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Mar 2010 18:38:49 -0500
+Date: Fri, 12 Mar 2010 23:38:20 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Kreuzer, Michael (NSN - DE/Ulm)" <michael.kreuzer@nsn.com>,
+       linux-mtd@lists.infradead.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] fix MTD CFI/LPDDR flash driver huge latency bug
+Message-ID: <20100312233820.GH6491@shareable.org>
+References: <1267894137.18869.0.camel@wall-e> <20100312142344.174bd46f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312142344.174bd46f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
+Andrew Morton wrote:
+> On Sat, 06 Mar 2010 17:48:57 +0100
+> Stefani Seibold <stefani@seibold.net> wrote:
+> 
+> > This patch fix a huge latency problem in the MTD CFI and LPDDR flash
+> > drivers.
+> > 
+> > The use of a memcpy() during a spinlock operation will cause very long
+> > thread context switch delays if the flash chip bandwidth is low and the
+> > data to be copied large, because a spinlock will disable preemption.
+> > 
+> > For example: A flash with 6,5 MB/s bandwidth will cause under ubifs,
+> > which request sometimes 128 KB (the flash erase size), a preemption
+> > delay of 20 milliseconds. High priority threads will not be served
+> > during this time, regardless whether this threads access the flash or
+> > not. This behavior breaks real time.
 
-  At the start of the week I moved kernels forwarded.  I tried
-2.6.34-rc1 and 2.6.33-git15.  The lpfc fiber channel driver was failing
-to load and generating a hardware level pci bus fault that was resetting
-the server.  There is a small thread on linux-scsi from when I started. 
+I agree that's a problem, and it's not just real time that's affected.
 
-  Tried forward porting know working versions of the driver to the new
-kernels but it did not fix the problem. I have to reason to suspect the
-actual code in the driver is not really involved with the issue. 
+I've just realised I have a video player with ~1.5 MB/s bandwidth
+64kb/block flash attached, and this might be the reason JFFS2 activity
+makes video play less smooth on it.  44ms is even worse.
 
-  I booted whole older kernels until I sorted out that somewhere post
-2.6.33 stock that issue started. I am not 100% sure where in the kernel
-commits the problem starts I just know if is after 2.6.33. 
+> > The patch change all the use of spin_lock operations for xxxx->mutex
+> > into mutex operations, which is exact what the name says and means.
 
-  It was identified that an alternate .config file worked and I decided
-to dig on the config options. 
+It would be even better if it also split the critical sections into
+smaller ones with cond_resched() between, so that non-preemptible
+kernels benefit too.
 
-  I narrowed the config change down to:
+> > There is no performance regression since the mutex is normally not
+> > acquired.
+> 
+> hm, big scary patch.  Are you sure this mutex is never taken from
+> atomic or irq contexts?  Is it ully tested with all relevant debug options
+> and lockdep enabled?
 
-CONFIG_CC_OPTIMIZE_FOR_SIZE
+Including from mtdoops?
 
-  I have to set CONFIG_CC_OPTIMIZE_FOR_SIZE=y else I get a pci fault
-while failing to load the lpfc driver. As I understand this passes a
-different -O flag to the build. 
-
-
-Relevant details:
-
-Hardware:  IBM x3550m2 server. Current Intel based 2 socket system,
-nothing fancy. 
-
-GCC:  gcc version 4.3.4 [gcc-4_3-branch revision 152973] (SUSE Linux) 
-
-Kernels: For sure, 2.6.34-rc1, 2.6.33-git15 have the problem.  If the 10
-or so 2.6.33 and before kernels trees I have booted I did not encounter
-the issue. 
-
-Config: CONFIG_CC_OPTIMIZE_FOR_SIZE=y or bad things happen. I booted a
-ton of .config changes, 100% sure this is it, it has been triple
-checked. 
-
-  All in all not a fun experience and I don't really have the skills to
-fix this issue.  I am going to try a different gcc version when I get a
-few cycles. 
-
- Any suggestions on what to do with this gcc / kernel build issue? I
-found it a little unsettling. 
-
-Thanks,
- Keith Mannthey
- LTC FS-Dev 
-
-
-
-
-
+-- Jamie
