@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684Ab0CLRht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 12:37:49 -0500
-Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:54222
+	id S933866Ab0CLRip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:38:45 -0500
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:54232
 	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757004Ab0CLRhq (ORCPT
+	with SMTP id S1757038Ab0CLRil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 12:37:46 -0500
-Date: Fri, 12 Mar 2010 12:31:02 -0500
+	Fri, 12 Mar 2010 12:38:41 -0500
+Date: Fri, 12 Mar 2010 12:31:58 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 To: Grant Likely <grant.likely@secretlab.ca>
 Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
@@ -20,12 +20,12 @@ Cc: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
        netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
        devicetree-discuss@lists.ozlabs.org, linux-scsi@vger.kernel.org,
        alsa-devel@alsa-project.org
-Subject: Re: [PATCH 12/27] drivers/mtd/of: don't use deprecated field in
+Subject: Re: [PATCH 22/27] drivers/i2c/of: don't use deprecated field in
  of_platform_driver
-Message-ID: <20100312123102.453ff2d0@lappy.seanm.ca>
-In-Reply-To: <20100311182253.13103.92479.stgit@angua>
+Message-ID: <20100312123158.7ed9d9a0@lappy.seanm.ca>
+In-Reply-To: <20100311182349.13103.39322.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
-	<20100311182253.13103.92479.stgit@angua>
+	<20100311182349.13103.39322.stgit@angua>
 Organization: PIKA
 X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; i686-pc-linux-gnu)
 X-Message-Flag: Warning: This message may contain actual content.
@@ -37,7 +37,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 11:22:54 -0700
+On Thu, 11 Mar 2010 11:23:49 -0700
 Grant Likely <grant.likely@secretlab.ca> wrote:
 
 > .name, .match_table and .owner are duplicated in both
@@ -46,5 +46,5 @@ Grant Likely <grant.likely@secretlab.ca> wrote:
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-NDFC
+i2c-ibm_iic
 Acked-by: Sean MacLennan <smaclennan@pikatech.com>
