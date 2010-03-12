@@ -1,111 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723Ab0CLV7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 16:59:41 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:15153 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753938Ab0CLV7j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 16:59:39 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous reboots
-Date: Fri, 12 Mar 2010 14:59:28 -0700
-User-Agent: KMail/1.9.10
-Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan> <86802c441003121144y24e763e6n16f237928df1f676@mail.gmail.com> <alpine.DEB.2.00.1003121520120.6929@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1003121520120.6929@p34.internal.lan>
+	id S1758734Ab0CLWBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:01:41 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:57544 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753938Ab0CLWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 17:01:39 -0500
+Message-ID: <4B9ABA84.9020801@cs.wisc.edu>
+Date: Fri, 12 Mar 2010 16:04:52 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <201003121459.29793.bjorn.helgaas@hp.com>
+To: Hugh Daschbach <hdasch@broadcom.com>
+CC: "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Eddie Williams <Eddie.Williams@steeleye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Don't change direction flags in struct request.
+References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com> <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
+In-Reply-To: <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
+Content-Type: multipart/mixed;
+ boundary="------------000804010505080801010901"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 March 2010 01:32:17 pm Justin Piszcz wrote:
+This is a multi-part message in MIME format.
+--------------000804010505080801010901
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> >> Even with all boards removed:
-> >> [    0.133537] pci 0000:00:00.0: address space collision: [mem
-> >> 0xe0000000-0xffffffff 64bit] already in use
-> >>
-> >> 00:00.0 Host bridge: ATI Technologies Inc RD790 Northbridge only dual slot
-> >> PCI-e_GFX and HT3 K8 part
-> >
-> > how about current linus' tree with pci=nocrs or pci=use_crs?
-> 
-> Hi, I saw your second e-mail, so it sounds like a bad board or something
-> that Linux does not have a quirk for yet, but in any case, per your
-> recommendations:
-> 
-> pci=nocrs:
-> http://home.comcast.net/~jpiszcz/20100312/dmesg-pci-nocrs.txt
-> 
-> pci=use_crs:
-> http://home.comcast.net/~jpiszcz/20100312/dmesg-use-crs.txt
-> 
-> No collision when pci=use_crs is used, BUT the system still crashes.
-> 
-> Instead of collision, it says this:
-> 
-> [    0.133598] PCI: pci_cache_line_size set to 64 bytes
-> [    0.133603] pci 0000:00:00.0: BAR 3: reserving [mem 0xe0000000-0xffffffff flags 0x120204] (d=0, p=0)
-> [    0.133606] pci 0000:00:00.0: no compatible bridge window for [mem 0xe0000000-0xffffffff 64bit]
-> [    0.133610] pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xffffffff 64bit]
-> [    0.133617] pci 0000:00:11.0: BAR 0: reserving [io  0xff00-0xff07 flags 0x20101] (d=0, p=0)
-> 
-> [    0.133735] Expanded resource reserved due to conflict with PCI Bus 0000:00
+On 03/19/2010 12:31 AM, Hugh Daschbach wrote:
+> The EMC multipath device handler should not change the I/O direction
+> flags of its trespass command request.
+>
+> The CFQ elevator may BUG if the direction flags on an I/O request are
+> changed after allocation.  cfq_set_request() and cfq_put_request()
+> count READ and WRITE requests separately.  Changing the I/O request
+> direction after blk_get_request() allocates the request throws off
+> this CFQ accounting.
+>
+> Signed-off-by: Hugh Daschbach<hdasch@broadcom.com>
+> ---
+>   drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
+>   1 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
+> index 6196675..3709342 100644
+> --- a/drivers/scsi/device_handler/scsi_dh_emc.c
+> +++ b/drivers/scsi/device_handler/scsi_dh_emc.c
+> @@ -269,10 +269,12 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
+>   				unsigned char *buffer)
+>   {
+>   	struct request *rq;
+> +	int mode = READ;
+>   	int len = 0;
+>
+> -	rq = blk_get_request(sdev->request_queue,
+> -			(cmd == MODE_SELECT) ? WRITE : READ, GFP_NOIO);
+> +	if (cmd == MODE_SELECT || cmd == MODE_SELECT_10)
+> +		mode = WRITE;
+> +	rq = blk_get_request(sdev->request_queue, mode, GFP_NOIO);
+>   	if (!rq) {
+>   		sdev_printk(KERN_INFO, sdev, "get_req: blk_get_request failed");
+>   		return NULL;
+> @@ -284,12 +286,10 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
+>   	switch (cmd) {
+>   	case MODE_SELECT:
+>   		len = sizeof(short_trespass);
+> -		rq->cmd_flags |= REQ_RW;
+>   		rq->cmd[1] = 0x10;
+>   		break;
+>   	case MODE_SELECT_10:
+>   		len = sizeof(long_trespass);
+> -		rq->cmd_flags |= REQ_RW;
+>   		rq->cmd[1] = 0x10;
+>   		break;
+>   	case INQUIRY:
 
-Let's look at some of these messages:
+Did you try the patch I linked to the last time you posted about this?
 
-  pci_root PNP0A03:00: host bridge window [mem 0x40000000-0xfed0ffff]
+I think there should be a patch which fixes this problem here:
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=6c71dcb28ff9b63b814a0b76a256f5dae08d3e0d;hp=3a5b27bf6f29574d667230c7e76e4b83fe3014e0
+I think it got into 2.6.34-rc1.
 
-That looks normal to me.  If you could boot a current upstream kernel,
-e.g., 2.6.34-rc1, I think it might print more information about your
-AMD PCI address space routing.  BTW, it looks like you have four CPUs,
-but your kernel is only compiled to support two.
+With that patch mode selects should get set up as writes.
 
-  pci 0000:00:00.0: reg 1c: [mem 0xe0000000-0xffffffff 64bit]
-  pci 0000:00:00.0: no compatible bridge window for [mem 0xe0000000-0xffffffff 64bit]
-  pci 0000:00:00.0: can't reserve [mem 0xe0000000-0xffffffff 64bit]
+Does it work? If it does then I think we just need the attached cleanup 
+patch which removes the cmd_flags setting. The patch that got merged 
+fixed the problem of initializing the request properly, but it forgot to 
+remove the cmd_flags setting.
 
-These are just telling us that the device BAR 0xe0000000-0xffffffff
-doesn't fit inside the bridge window of 0x40000000-0xfed0ffff.  I don't
-know why the device has that weird-looking BAR, but that by itself
-shouldn't be fatal because we don't have any drivers that try to use
-that BAR.
+--------------000804010505080801010901
+Content-Type: text/plain;
+ name="emc-cleanup-cmd-flags.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="emc-cleanup-cmd-flags.patch"
 
-  Expanded resource reserved due to conflict with PCI Bus 0000:00
+blk_get_request sets the cmd_flags, so we should not and do not
+need to set them. If we did set them to a different value then
+it can cause a oops in the elevator code.
 
-This comes from e820_reserve_resources_late().  I wish it were a
-more useful message and showed the actual conflict and what was
-expanded, but I don't think it's a problem in itself.
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
 
-  pnp 00:0a: disabling [mem 0x000f0000-0x000f3fff] because it overlaps 0000:00:00.0 BAR 3 [mem 0x00000000-0x1fffffff 64bit]
+diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
+index 63032ec..2752892 100644
+--- a/drivers/scsi/device_handler/scsi_dh_emc.c
++++ b/drivers/scsi/device_handler/scsi_dh_emc.c
+@@ -284,13 +284,11 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
+ 	switch (cmd) {
+ 	case MODE_SELECT:
+ 		len = sizeof(short_trespass);
+-		rq->cmd_flags |= REQ_RW;
+ 		rq->cmd[1] = 0x10;
+ 		rq->cmd[4] = len;
+ 		break;
+ 	case MODE_SELECT_10:
+ 		len = sizeof(long_trespass);
+-		rq->cmd_flags |= REQ_RW;
+ 		rq->cmd[1] = 0x10;
+ 		rq->cmd[8] = len;
+ 		break;
 
-We failed to reserve the 0xe0000000-0xffffffff region above, so we just
-cleared out the resource.  It keeps the same size, so it ends up at
-0x00000000-0x1fffffff, where it appears to conflict with a lot of PNP
-devices.  But this isn't a real conflict; it's just Linux being stupid
-because we don't handle that PCI resource correctly.
-
-So the messages *look* alarming, but I don't see anything there that
-should cause a spontaneous reboot.
-
-Is this a regression?  Did the system ever work reliably with any
-Linux kernel?  If not, I'd suspect a hardware problem like bad memory.
-
-Bjorn
-
-
-
-
-
-
-
-
-
-
+--------------000804010505080801010901--
