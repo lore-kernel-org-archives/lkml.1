@@ -1,59 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512Ab0CLICe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 03:02:34 -0500
-Received: from 128-177-27-249.ip.openhosting.com ([128.177.27.249]:39723 "EHLO
-	jmalinen.user.openhosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752387Ab0CLICd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 03:02:33 -0500
-Date: Fri, 12 Mar 2010 10:02:16 +0200
-From: Jouni Malinen <j@w1.fi>
-To: Holger Schurig <holgerschurig@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       =?utf-8?B?R8OhYm9y?= Stefanik <netrolller.3d@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: cfg80211 conversion of all drivers
-Message-ID: <20100312080216.GA18550@jm.kir.nu>
-References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com>
- <69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com>
- <20100312025330.GA15402@tuxdriver.com>
- <201003120810.38194.holgerschurig@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003120810.38194.holgerschurig@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755694Ab0CLIGq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 03:06:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51802
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753859Ab0CLIGp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 03:06:45 -0500
+Date: Fri, 12 Mar 2010 00:07:05 -0800 (PST)
+Message-Id: <20100312.000705.225033546.davem@davemloft.net>
+To: xiyou.wangcong@gmail.com
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.34-rc1: rcu lockdep bug?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <2375c9f91003112356g1b4164e4pb5f63f0e0e2f310a@mail.gmail.com>
+References: <20100311134556.GA6344@linux.vnet.ibm.com>
+	<20100311161751.GA3804@hack>
+	<2375c9f91003112356g1b4164e4pb5f63f0e0e2f310a@mail.gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 08:10:37AM +0100, Holger Schurig wrote:
-> > I think that is code for "replace it with something based on mac80211"...
-> 
-> That's not going to happen, hostap + orinoco both work against fullmac chips, 
-> which can't send arbitrary packets and therefore no 802.11 management frames.
+From: Américo Wang <xiyou.wangcong@gmail.com>
+Date: Fri, 12 Mar 2010 15:56:03 +0800
 
-The Host AP mode in Prism 2/2.5/3 provides for a somewhat special
-situation.. It does actually allow sending of (almost) arbitrary packets
-and management frames in AP mode. In other words, it should be possible
-to create a mac80211-based AP mode driver for Prism 2/2.5/3 to replace
-the AP side of the Host AP driver. Whether anyone has enough interest
-and time to do that is another question, though.
+> Ok, after decoding the lockdep output, it looks like that
+> netif_receive_skb() should call rcu_read_lock_bh() instead of rcu_read_lock()?
+> But I don't know if all callers of netif_receive_skb() are in softirq context.
 
-As far as station functionality is concerned, I would agree that
-mac80211 is not a good target for the Host AP driver. If AP side were to
-be made available as a mac80211-based driver, it could make more sense
-to merge station side from the Host AP driver into orinoco or some kind
-of combination of the driver. However, having two different drivers for
-same hardware issue would not go anywhere with this.
+Normally, netif_receive_skb() is invoked from softirq context.
 
-One of the problems here is that the hardware is question is quite old
-and for many practical purposes obsolete, so finding people to work on
-this can get difficult. I can certainly come up with much better uses
-for my time.. ;-)
- 
--- 
-Jouni Malinen                                            PGP id EFC895FA
+However, via netpoll it can be invoked essentially from any context.
+
+But, when this happens, the networking receive path makes amends such
+that this works fine.  That's what the netpoll_receive_skb() check in
+netif_receive_skb() is for.  That check makes it bail out early if the
+call to netif_receive_skb() is via a netpoll invocation.
