@@ -1,61 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794Ab0CLNMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 08:12:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36676 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756555Ab0CLNMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 08:12:17 -0500
-Message-ID: <4B9A3DAC.3020008@redhat.com>
-Date: Fri, 12 Mar 2010 14:12:12 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100227 Lightning/1.0b1 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Matthias Schniedermeyer <ms@citd.de>
-CC: Mathias Buren <mathias.buren@ie.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: RAID + LUKS + LVM performance
-References: <OF8365E100.57191C87-ON802576E3.0046BDEA-802576E3.0047EFDF@ie.ibm.com> <20100311173604.GA17659@citd.de> <OFDBA54FBA.FB6F3D10-ON802576E4.002FCA7A-802576E4.002FFBCF@ie.ibm.com> <20100312120643.GA26020@citd.de>
-In-Reply-To: <20100312120643.GA26020@citd.de>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S932821Ab0CLNRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 08:17:45 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:60718 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932293Ab0CLNRm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 08:17:42 -0500
+From: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: davinci-linux-open-source@linux.davincidsp.com, akpm@linux-foundation.org,
+       linux-mmc@vger.kernel.org, Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Subject: [PATCH v2] davinci: MMC: Pass number of SG segments as platform data
+Date: Fri, 12 Mar 2010 18:04:09 +0530
+Message-Id: <1268397249-7654-1-git-send-email-sudhakar.raj@ti.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/2010 01:06 PM, Matthias Schniedermeyer wrote:
+On some platforms like DM355, the number of EDMA parameter
+slots available for EDMA_SLOT_ANY usage are few. In such cases,
+if MMC/SD uses 16 slots for each instance of MMC controller,
+then the number of slots available for other modules will be
+very few.
 
-> Using one of the Westmere Core i5-6XX, which support AES-NI, should get 
-> you better performance (if supported by krcyptd), altough you loose 2 
-> cores as onyl have 2. But i don't know what kind of performance 
-> improvement (if any) AES-NI provides.
-> Or you wait a few weeks and buy on Core I7-980X with 6 core and AES-NI.
+By passing the number of EDMA slots to be used in MMC driver
+from platform data, EDMA slots available for other purposes
+can be controlled.
 
-dm-crypt uses whatever is implemented in cryptoAPI, AES-NI of course works
-when you have proper modules loaded.
+Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+---
+Following are the modifications from the previous version:
+1. Changed the type of nr_sg variable to u8 from u32.
+2. 'if (pdata->nr_sg)' check was introduced before initializing
+   host->nr_sg.
 
-The main reason why dm-crypt is single-threaded is that all these new
-crypto accelerators uses asynchronous crypto API, so if hw allows
-parallel operation it can use it already.
-(dm-crypt submits all sectors in bio as separate asynchronous crypto requests).
+ arch/arm/mach-davinci/include/mach/mmc.h |    3 +++
+ drivers/mmc/host/davinci_mmc.c           |   24 +++++++++++++++++-------
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
-But note: single threaded per volume - if you have LVM with multiple
-encrypted LVs - every LV have its own thread.
+diff --git a/arch/arm/mach-davinci/include/mach/mmc.h b/arch/arm/mach-davinci/include/mach/mmc.h
+index 5a85e24..d4f1e96 100644
+--- a/arch/arm/mach-davinci/include/mach/mmc.h
++++ b/arch/arm/mach-davinci/include/mach/mmc.h
+@@ -22,6 +22,9 @@ struct davinci_mmc_config {
+ 
+ 	/* Version of the MMC/SD controller */
+ 	u8	version;
++
++	/* Number of sg segments */
++	u8	nr_sg;
+ };
+ void davinci_setup_mmc(int module, struct davinci_mmc_config *config);
+ 
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+index 3bd0ba2..547d29c 100644
+--- a/drivers/mmc/host/davinci_mmc.c
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -137,15 +137,15 @@
+ 
+ /*
+  * One scatterlist dma "segment" is at most MAX_CCNT rw_threshold units,
+- * and we handle up to NR_SG segments.  MMC_BLOCK_BOUNCE kicks in only
++ * and we handle up to MAX_NR_SG segments.  MMC_BLOCK_BOUNCE kicks in only
+  * for drivers with max_hw_segs == 1, making the segments bigger (64KB)
+- * than the page or two that's otherwise typical.  NR_SG == 16 gives at
+- * least the same throughput boost, using EDMA transfer linkage instead
+- * of spending CPU time copying pages.
++ * than the page or two that's otherwise typical. nr_sg (passed from
++ * platform data) == 16 gives at least the same throughput boost, using
++ * EDMA transfer linkage instead of spending CPU time copying pages.
+  */
+ #define MAX_CCNT	((1 << 16) - 1)
+ 
+-#define NR_SG		16
++#define MAX_NR_SG	16
+ 
+ static unsigned rw_threshold = 32;
+ module_param(rw_threshold, uint, S_IRUGO);
+@@ -192,7 +192,7 @@ struct mmc_davinci_host {
+ 	struct edmacc_param	tx_template;
+ 	struct edmacc_param	rx_template;
+ 	unsigned		n_link;
+-	u32			links[NR_SG - 1];
++	u32			links[MAX_NR_SG - 1];
+ 
+ 	/* For PIO we walk scatterlists one segment at a time. */
+ 	unsigned int		sg_len;
+@@ -202,6 +202,8 @@ struct mmc_davinci_host {
+ 	u8 version;
+ 	/* for ns in one cycle calculation */
+ 	unsigned ns_in_one_cycle;
++	/* Number of sg segments */
++	u8 nr_sg;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+ #endif
+@@ -568,6 +570,7 @@ davinci_release_dma_channels(struct mmc_davinci_host *host)
+ 
+ static int __init davinci_acquire_dma_channels(struct mmc_davinci_host *host)
+ {
++	u32 link_size;
+ 	int r, i;
+ 
+ 	/* Acquire master DMA write channel */
+@@ -593,7 +596,8 @@ static int __init davinci_acquire_dma_channels(struct mmc_davinci_host *host)
+ 	/* Allocate parameter RAM slots, which will later be bound to a
+ 	 * channel as needed to handle a scatterlist.
+ 	 */
+-	for (i = 0; i < ARRAY_SIZE(host->links); i++) {
++	link_size = min_t(unsigned, host->nr_sg, ARRAY_SIZE(host->links));
++	for (i = 0; i < link_size; i++) {
+ 		r = edma_alloc_slot(EDMA_CTLR(host->txdma), EDMA_SLOT_ANY);
+ 		if (r < 0) {
+ 			dev_dbg(mmc_dev(host->mmc), "dma PaRAM alloc --> %d\n",
+@@ -1202,6 +1206,12 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+ 
+ 	init_mmcsd_host(host);
+ 
++	if (pdata->nr_sg)
++		host->nr_sg = pdata->nr_sg - 1;
++
++	if (host->nr_sg > MAX_NR_SG || !host->nr_sg)
++		host->nr_sg = MAX_NR_SG;
++
+ 	host->use_dma = use_dma;
+ 	host->irq = irq;
+ 
+-- 
+1.5.6
 
-If we build another multi-core(thread) processing in dm-crypt, it can
-help on multi-core CPU but complicate things otherwise.
-(I tried simple implementation and abandoned it, I would prefer
-if cryptoAPI can do some parallel processing itself here.
-That question was discussed several times on dm-crypt mailing list.)
-
-Anyway, only two real-world examples, where one thread 
-in dm-crypt can cause real problems with speed
-
- - dm-crypt over fast RAID(5)
- - dm-crypt over fast SSD.
-
-And many users of these configurations have now AES-NI acceleration.
-
-Milan
---
-mbroz@redhat.com
