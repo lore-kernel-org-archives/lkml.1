@@ -1,51 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641Ab0CLGsm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 01:48:42 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49683 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753522Ab0CLGsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 01:48:41 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/KGDwYcyHKVLyOoEgsG638VGZFH06sAAN+1KBOxv
-	Hz9SRIIIAuWX2H
-Subject: Re: [PATCH v2 5/5] perf report: Initial TUI using newt
-From: Mike Galbraith <efault@gmx.de>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, Avi Kivity <avi@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1268349164-5822-5-git-send-email-acme@infradead.org>
-References: <1268349164-5822-1-git-send-email-acme@infradead.org>
-	 <1268349164-5822-5-git-send-email-acme@infradead.org>
-Content-Type: text/plain
-Date: Fri, 12 Mar 2010 07:48:20 +0100
-Message-Id: <1268376500.23887.9.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	id S1753807Ab0CLGyA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 01:54:00 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:41479 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753573Ab0CLGx6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 01:53:58 -0500
+Message-ID: <4B99E502.1070204@linux.vnet.ibm.com>
+Date: Thu, 11 Mar 2010 22:53:54 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
+ event names to "perf stat"
+References: <4B8F1B58.5000702@linux.vnet.ibm.com> <4B8FFE55.5070008@linux.vnet.ibm.com> <20100311124608.GG31354@elte.hu> <20100312024100.GA2734@brick.ozlabs.ibm.com>
+In-Reply-To: <20100312024100.GA2734@brick.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.70999999999999996
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-11 at 20:12 -0300, Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
+On 03/11/2010 06:41 PM, Paul Mackerras wrote:
+> On Thu, Mar 11, 2010 at 01:46:08PM +0100, Ingo Molnar wrote:
+>>
+>> * Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
+>>
+>>> On 3/3/2010 6:30 PM, Corey Ashford wrote:
+>>>> For your review, this patch adds support for arch-dependent symbolic
+>>>> event names to the "perf stat" tool, and could be expanded to other
+>>>> "perf *" commands fairly easily, I suspect.
+>
+>> I'm quite much against stop-gap measures like this - they tend to become
+>> tomorrow's impossible-to-remove quirk.
+>>
+>> If you want extensible events you can already do it by providing an ftrace
+>> tracepoint event via TRACE_EVENT. They are easy to add and ad-hoc, and are
+>> supported throughout by perf.
+>
+> If I've understood correctly what Corey is doing, I think you're
+> missing the point.  The idea, I thought, was to provide a way to be
+> able to use symbolic names for raw hardware events rather than just
+> numbers.
 
-> In this initial patch it just checks if the output is a tty, if not it falls
-> back to the previous behaviour, also if newt-devel/libnewt-dev is not installed
-> the previous behaviour is maintaned.
-> 
-> Pressing enter on a symbol will annotate it, ESC in the annotation window will
-> return to the report symbol list.
+Yes, that's what I meant.
 
-<build>
+ > I don't see how ftrace tracepoint events are relevant to
+ > that.
+>
+> Now as to whether an external .so is the best way to provide the
+> processor-specific mapping of names to raw events, I'm not sure.
+> If the kernel can provide that mapping via procfs, sysfs or eventfs,
+> that would be an alternative, but it does mean the kernel has those
+> tables in unswappable memory (and potentially the tables for all the
+> processors that the kernel supports), which seems unnecessary.  Or
+> they can just be added to the perf source code.
 
-Oooooo, major case of happiness.  Nice!
+In addition to the names and attributes, we'd also need text-based 
+descriptions of the events and attributes.
 
-	-Mike
+I'm not opposed to the idea of placing them in sysfs (or other pseudo 
+fs), but it's also not clear to me how to represent the event data in a 
+clean, extensible, and space/performance efficient way.  That said, I do 
+like the idea of being able to navigate events by looking through a 
+directory structure which is possibly organized by the physical topology 
+of the system and its PMUs.
+
+- Corey
+
 
