@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934529Ab0CLTNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 14:13:36 -0500
-Received: from smtp123.mail.ukl.yahoo.com ([77.238.184.54]:28438 "HELO
+	id S934539Ab0CLTNz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 14:13:55 -0500
+Received: from smtp123.mail.ukl.yahoo.com ([77.238.184.54]:28429 "HELO
 	smtp123.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934480Ab0CLTM7 (ORCPT
+	by vger.kernel.org with SMTP id S934476Ab0CLTM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 14:12:59 -0500
+	Fri, 12 Mar 2010 14:12:57 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.es;
   h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
-  b=YTJKRVrGyK/jGpe5hJd5z+KjUuw/mOAt/hRk+siQPx10pDz5csDRYuNRe/vtK04R0l8ZOmjSzFFexcwKGFdl525mUlcRpNPmw0OdeEqFynIMCkAuAKA3X0pXtVCVl/Irzc1Tuc+ZF9fqMew/ZkxsR3usHIfphiePk0Fzq5kAlDU=  ;
+  b=q8L9QZWo8J7oi0DyB01z4jMm0dTaKLy/7anf4NGgXRxHu+ckoJEtJ5hrCuRlQAAPUpCB0Yxf4T4EsHxiV19adaQ+nC718wo6e1z/EP99sYKHWJJ/4mt0GILbs+apaWpGBtB7Sx0ZhhV/PTmxU7RFPBNyA65qT5s/qGlQb9rBEwc=  ;
 X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
-X-YMail-OSG: .CW7MlcVM1l4_pO_303EUbGlUYezR9MK1jiTFmCJj2.i.pxnnXZjE_.qmnPtvQ8yiADhrU4ehzwa4mPkxV6k9upWn6Ozd873Yi9nz2WC2Qqq0g28RTU_9WrGvFnBkBNXjhj6Zy5C1yzbgR63uS38ptASTuKyl6JcAPceUsoFGUqV4Dwnpu78gaw6KRKxtFjH2Qv6TJ8l.m_xDxoUFePEK1sgSwRMjX7KSM7JgH1V5C5_gSOHJIgPco_H5sNCoqeWGGArHWAwbuB5zHt9oE2FXNnbUvh8EpEZFw--
+X-YMail-OSG: t1VmRKsVM1mmQNVkZoUsPctVKoh9IfVLZ9qy74SzDIV.asPRGNQZTfbl01qosBIxYa8Lb8GAmm9aFOp45kpnuB4HHMkhMw45.VLlAimq1r0CwgAZBPKa214V.4.FCE5W2Z93EDN3bDUixuUW1oaq.pUfAWQ3DJq6uqPG6BE_Y6lOkSyFZdsOUeDfmPxFb_5Dv04l1VFjnddORMLIc2eId24FiKfp1F1HlNPatcuiw7Ct6OVz0eJIK4hWQzloaQCW7Tmqmsn3ii3VtciP4e66YxD6iDV.Uyfvsw--
 X-Yahoo-Newman-Property: ymail-3
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: Albert Herranz <albert_herranz@yahoo.es>, linux-kernel@vger.kernel.org,
        x86@kernel.org, linux-ia64@vger.kernel.org
-Subject: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
-Date: Fri, 12 Mar 2010 20:12:40 +0100
-Message-Id: <1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v4 04/11] swiotlb: support NOT_COHERENT_CACHE PowerPC platforms
+Date: Fri, 12 Mar 2010 20:12:39 +0100
+Message-Id: <1268421166-4791-5-git-send-email-albert_herranz@yahoo.es>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
 References: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
@@ -28,16 +28,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current SWIOTLB code uses a default of 64MB for the IO TLB area.
-This size can be influenced using a kernel command line parameter "swiotlb".
-Unfortunately, the parsing of the kernel command line is done _after_ the
-swiotlb is initialized on some architectures.
+The current SWIOTLB code does not support NOT_COHERENT_CACHE platforms.
+This patch adds support for NOT_COHERENT_CACHE platforms to SWIOTLB by
+adding two platform specific functions swiotlb_dma_sync_page() and
+swiotlb_dma_sync() which can be used to explicitly manage cache coherency.
 
-This patch adds a new function swiotlb_set_default_size() which can be used
-before swiotlb_init() to indicate the desired IO TLB area size in bytes.
+On PowerPC these functions are mapped to their corresponding
+__dma_sync_page() and __dma_sync() functions.
+On other architectures using SWIOTLB these functions are optimized out.
 
-This will be used later to implement a smaller IO TLB on the Nintendo Wii
-video game console which just comes with 24MB + 64MB of RAM.
+This will be used later to support SWIOTLB on the Nintendo Wii video game
+console.
 
 CC: linuxppc-dev@lists.ozlabs.org
 CC: linux-kernel@vger.kernel.org
@@ -45,54 +46,151 @@ CC: x86@kernel.org
 CC: linux-ia64@vger.kernel.org
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- include/linux/swiotlb.h |    2 ++
- lib/swiotlb.c           |   20 ++++++++++++++++++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+ arch/ia64/include/asm/swiotlb.h    |   10 ++++++++++
+ arch/powerpc/include/asm/swiotlb.h |    3 +++
+ arch/x86/include/asm/swiotlb.h     |   10 ++++++++++
+ lib/swiotlb.c                      |   30 ++++++++++++++++++++++++------
+ 4 files changed, 47 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 3954228..2af6a45 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -22,6 +22,8 @@ extern int swiotlb_force;
-  */
- #define IO_TLB_SHIFT 11
+diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
+index f0acde6..6722090 100644
+--- a/arch/ia64/include/asm/swiotlb.h
++++ b/arch/ia64/include/asm/swiotlb.h
+@@ -14,4 +14,14 @@ static inline void pci_swiotlb_init(void)
+ }
+ #endif
  
-+extern size_t __init swiotlb_set_default_size(size_t size);
-+
- extern void swiotlb_init(int verbose);
- 
- extern void *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 8f2dad9..dbeca50 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -117,6 +117,26 @@ setup_io_tlb_npages(char *str)
- __setup("swiotlb=", setup_io_tlb_npages);
- /* make io_tlb_overflow tunable too? */
- 
-+/**
-+ * swiotlb_set_default_size() - set the default size for the IO TLB
-+ * @size:	size in bytes of the IO TLB
-+ *
-+ * A platform can use this function to change the default size of the
-+ * IO TLB when the default of 64MB is not suitable.
-+ * This function must be called before swiotlb_init().
-+ *
-+ * Note that on some platforms this is the only way to influence the
-+ * size of the IO TLB, as the command line may be parsed _after_ the
-+ * IO TLB is initialized.
-+ */
-+size_t __init swiotlb_set_default_size(size_t size)
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
 +{
-+	size_t previous_size = io_tlb_nslabs << IO_TLB_SHIFT;
-+
-+	io_tlb_nslabs = size >> IO_TLB_SHIFT;
-+	return previous_size;
 +}
 +
- void * __weak __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
++{
++}
++
+ #endif /* ASM_IA64__SWIOTLB_H */
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 8979d4c..603b343 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -22,4 +22,7 @@ int __init swiotlb_setup_bus_notifier(void);
+ 
+ extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+ 
++#define swiotlb_dma_sync_page __dma_sync_page
++#define swiotlb_dma_sync __dma_sync
++
+ #endif /* __ASM_SWIOTLB_H */
+diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+index 8085277..e5f6d9c 100644
+--- a/arch/x86/include/asm/swiotlb.h
++++ b/arch/x86/include/asm/swiotlb.h
+@@ -20,4 +20,14 @@ static inline void pci_swiotlb_init(void)
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
++{
++}
++
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
++{
++}
++
+ #endif /* _ASM_X86_SWIOTLB_H */
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 94db5df..8f2dad9 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -346,10 +346,13 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			local_irq_save(flags);
+ 			buffer = kmap_atomic(pfn_to_page(pfn),
+ 					     KM_BOUNCE_READ);
+-			if (dir == DMA_TO_DEVICE)
++			if (dir == DMA_TO_DEVICE) {
+ 				memcpy(dma_addr, buffer + offset, sz);
+-			else
++				swiotlb_dma_sync(dma_addr, sz, dir);
++			} else {
++				swiotlb_dma_sync(dma_addr, sz, dir);
+ 				memcpy(buffer + offset, dma_addr, sz);
++			}
+ 			kunmap_atomic(buffer, KM_BOUNCE_READ);
+ 			local_irq_restore(flags);
+ 
+@@ -359,10 +362,14 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			offset = 0;
+ 		}
+ 	} else {
+-		if (dir == DMA_TO_DEVICE)
++		if (dir == DMA_TO_DEVICE) {
+ 			memcpy(dma_addr, phys_to_virt(phys), size);
+-		else
++			swiotlb_dma_sync(dma_addr, size, dir);
++
++		} else {
++			swiotlb_dma_sync(dma_addr, size, dir);
+ 			memcpy(phys_to_virt(phys), dma_addr, size);
++		}
+ 	}
+ }
+ 
+@@ -542,6 +549,8 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+ 	}
+ }
+ 
++#ifndef CONFIG_NOT_COHERENT_CACHE
++
+ void *
+ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		       dma_addr_t *dma_handle, gfp_t flags)
+@@ -606,6 +615,8 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+ }
+ EXPORT_SYMBOL(swiotlb_free_coherent);
+ 
++#endif /* !CONFIG_NOT_COHERENT_CACHE */
++
+ static void
+ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
  {
- 	return alloc_bootmem_low_pages(size);
+@@ -652,8 +663,10 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * we can safely return the device addr and not worry about bounce
+ 	 * buffering it.
+ 	 */
+-	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
++	if (dma_capable(dev, dev_addr, size) && !swiotlb_force) {
++		swiotlb_dma_sync_page(page, offset, size, dir);
+ 		return dev_addr;
++	}
+ 
+ 	/*
+ 	 * Oh well, have to allocate and map a bounce buffer.
+@@ -739,6 +752,8 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+ 		return;
+ 	}
+ 
++	swiotlb_dma_sync(phys_to_virt(paddr), size, dir);
++
+ 	if (dir != DMA_FROM_DEVICE)
+ 		return;
+ 
+@@ -835,8 +850,11 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 				return 0;
+ 			}
+ 			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+-		} else
++		} else {
++			swiotlb_dma_sync_page(sg_page(sg), sg->offset,
++					      sg->length, dir);
+ 			sg->dma_address = dev_addr;
++		}
+ 		sg->dma_length = sg->length;
+ 	}
+ 	return nelems;
 -- 
 1.6.3.3
 
