@@ -1,58 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926Ab0CLHF4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 02:05:56 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:60527 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753989Ab0CLHFx (ORCPT
+	id S1754938Ab0CLHKM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 02:10:12 -0500
+Received: from mx51.mymxserver.com ([85.199.173.110]:35553 "EHLO
+	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754414Ab0CLHKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 02:05:53 -0500
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: kernel-janitors@vger.kernel.org
-Cc: Wolfram Sang <w.sang@pengutronix.de>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, rtc-linux@googlegroups.com,
+	Fri, 12 Mar 2010 02:10:10 -0500
+From: Holger Schurig <holgerschurig@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: cfg80211 conversion of all drivers
+Date: Fri, 12 Mar 2010 08:10:37 +0100
+User-Agent: KMail/1.13.1 (Linux/2.6.33-rc8; KDE/4.4.1; i686; ; )
+Cc: =?iso-8859-1?q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, devel@driverdev.osuosl.org,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
        linux-kernel@vger.kernel.org
-Date: Fri, 12 Mar 2010 08:03:51 +0100
-Message-Id: <1268377431-11671-4-git-send-email-w.sang@pengutronix.de>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de>
-References: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-Subject: [PATCH 3/3] drivers/rtc: init dynamic bin_attribute structures
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com> <69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com> <20100312025330.GA15402@tuxdriver.com>
+In-Reply-To: <20100312025330.GA15402@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003120810.38194.holgerschurig@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requirement.
-Found with coccinelle, but fixed manually. Compile tested on X86 where
-possible.
+> I think that is code for "replace it with something based on mac80211"...
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/rtc/rtc-ds1742.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+That's not going to happen, hostap + orinoco both work against fullmac chips, 
+which can't send arbitrary packets and therefore no 802.11 management frames.
 
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index a127336..cad9ceb 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -184,6 +184,7 @@ static int __devinit ds1742_rtc_probe(struct platform_device *pdev)
- 	pdata->size_nvram = pdata->size - RTC_SIZE;
- 	pdata->ioaddr_rtc = ioaddr + pdata->size_nvram;
- 
-+	sysfs_bin_attr_init(&pdata->nvram_attr);
- 	pdata->nvram_attr.attr.name = "nvram";
- 	pdata->nvram_attr.attr.mode = S_IRUGO | S_IWUSR;
- 	pdata->nvram_attr.read = ds1742_nvram_read;
 -- 
-1.7.0
-
+http://www.holgerschurig.de
