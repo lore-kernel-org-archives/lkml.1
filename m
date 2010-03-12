@@ -1,126 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734Ab0CLWBl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 17:01:41 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:57544 "EHLO sabe.cs.wisc.edu"
+	id S1758744Ab0CLWDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 17:03:24 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:53517 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753938Ab0CLWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 17:01:39 -0500
-Message-ID: <4B9ABA84.9020801@cs.wisc.edu>
-Date: Fri, 12 Mar 2010 16:04:52 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+	id S1753938Ab0CLWDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 17:03:22 -0500
+Date: Fri, 12 Mar 2010 14:03:19 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, David Miller <davem@davemloft.net>,
+       peterz@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.34-rc1: rcu lockdep bug?
+Message-ID: <20100312220319.GC7824@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100311134556.GA6344@linux.vnet.ibm.com> <20100311161751.GA3804@hack> <2375c9f91003112356g1b4164e4pb5f63f0e0e2f310a@mail.gmail.com> <20100312.000705.225033546.davem@davemloft.net> <2375c9f91003120059g771d162fxefc21beb2ab17b4d@mail.gmail.com> <1268392276.3141.4.camel@edumazet-laptop> <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
 MIME-Version: 1.0
-To: Hugh Daschbach <hdasch@broadcom.com>
-CC: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       Chandra Seetharaman <sekharan@us.ibm.com>,
-       Eddie Williams <Eddie.Williams@steeleye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Don't change direction flags in struct request.
-References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com> <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
-In-Reply-To: <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
-Content-Type: multipart/mixed;
- boundary="------------000804010505080801010901"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000804010505080801010901
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Mar 12, 2010 at 09:11:02PM +0800, Américo Wang wrote:
+> On Fri, Mar 12, 2010 at 7:11 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > Le vendredi 12 mars 2010 à 16:59 +0800, Américo Wang a écrit :
+> >> On Fri, Mar 12, 2010 at 4:07 PM, David Miller <davem@davemloft.net> wrote:
+> >> > From: Américo Wang <xiyou.wangcong@gmail.com>
+> >> > Date: Fri, 12 Mar 2010 15:56:03 +0800
+> >> >
+> >> >> Ok, after decoding the lockdep output, it looks like that
+> >> >> netif_receive_skb() should call rcu_read_lock_bh() instead of rcu_read_lock()?
+> >> >> But I don't know if all callers of netif_receive_skb() are in softirq context.
+> >> >
+> >> > Normally, netif_receive_skb() is invoked from softirq context.
+> >> >
+> >> > However, via netpoll it can be invoked essentially from any context.
+> >> >
+> >> > But, when this happens, the networking receive path makes amends such
+> >> > that this works fine.  That's what the netpoll_receive_skb() check in
+> >> > netif_receive_skb() is for.  That check makes it bail out early if the
+> >> > call to netif_receive_skb() is via a netpoll invocation.
+> >> >
+> >>
+> >> Oh, I see. This means we should call rcu_read_lock_bh() instead.
+> >> If Paul has no objections, I will send a patch for this.
+> >>
+> >
+> > Nope, its calling rcu_read_lock() from interrupt context and it should
+> > stay as is (we dont need to disable bh, this has a cpu cost)
+> >
+> 
+> Oh, but lockdep complains about rcu_read_lock(), it said
+> rcu_read_lock() can't be used in softirq context.
+> 
+> Am I missing something?
 
-On 03/19/2010 12:31 AM, Hugh Daschbach wrote:
-> The EMC multipath device handler should not change the I/O direction
-> flags of its trespass command request.
->
-> The CFQ elevator may BUG if the direction flags on an I/O request are
-> changed after allocation.  cfq_set_request() and cfq_put_request()
-> count READ and WRITE requests separately.  Changing the I/O request
-> direction after blk_get_request() allocates the request throws off
-> this CFQ accounting.
->
-> Signed-off-by: Hugh Daschbach<hdasch@broadcom.com>
-> ---
->   drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
->   1 files changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
-> index 6196675..3709342 100644
-> --- a/drivers/scsi/device_handler/scsi_dh_emc.c
-> +++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-> @@ -269,10 +269,12 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
->   				unsigned char *buffer)
->   {
->   	struct request *rq;
-> +	int mode = READ;
->   	int len = 0;
->
-> -	rq = blk_get_request(sdev->request_queue,
-> -			(cmd == MODE_SELECT) ? WRITE : READ, GFP_NOIO);
-> +	if (cmd == MODE_SELECT || cmd == MODE_SELECT_10)
-> +		mode = WRITE;
-> +	rq = blk_get_request(sdev->request_queue, mode, GFP_NOIO);
->   	if (!rq) {
->   		sdev_printk(KERN_INFO, sdev, "get_req: blk_get_request failed");
->   		return NULL;
-> @@ -284,12 +286,10 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
->   	switch (cmd) {
->   	case MODE_SELECT:
->   		len = sizeof(short_trespass);
-> -		rq->cmd_flags |= REQ_RW;
->   		rq->cmd[1] = 0x10;
->   		break;
->   	case MODE_SELECT_10:
->   		len = sizeof(long_trespass);
-> -		rq->cmd_flags |= REQ_RW;
->   		rq->cmd[1] = 0x10;
->   		break;
->   	case INQUIRY:
+Hmmm...  It is supposed to be OK to use rcu_read_lock() in pretty much
+any context, even NMI.  I will take a look.
 
-Did you try the patch I linked to the last time you posted about this?
-
-I think there should be a patch which fixes this problem here:
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=6c71dcb28ff9b63b814a0b76a256f5dae08d3e0d;hp=3a5b27bf6f29574d667230c7e76e4b83fe3014e0
-I think it got into 2.6.34-rc1.
-
-With that patch mode selects should get set up as writes.
-
-Does it work? If it does then I think we just need the attached cleanup 
-patch which removes the cmd_flags setting. The patch that got merged 
-fixed the problem of initializing the request properly, but it forgot to 
-remove the cmd_flags setting.
-
---------------000804010505080801010901
-Content-Type: text/plain;
- name="emc-cleanup-cmd-flags.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="emc-cleanup-cmd-flags.patch"
-
-blk_get_request sets the cmd_flags, so we should not and do not
-need to set them. If we did set them to a different value then
-it can cause a oops in the elevator code.
-
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-
-diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
-index 63032ec..2752892 100644
---- a/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -284,13 +284,11 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
- 	switch (cmd) {
- 	case MODE_SELECT:
- 		len = sizeof(short_trespass);
--		rq->cmd_flags |= REQ_RW;
- 		rq->cmd[1] = 0x10;
- 		rq->cmd[4] = len;
- 		break;
- 	case MODE_SELECT_10:
- 		len = sizeof(long_trespass);
--		rq->cmd_flags |= REQ_RW;
- 		rq->cmd[1] = 0x10;
- 		rq->cmd[8] = len;
- 		break;
-
---------------000804010505080801010901--
+							Thanx, Paul
