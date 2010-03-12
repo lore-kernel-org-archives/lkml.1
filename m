@@ -1,98 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159Ab0CLD1V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 22:27:21 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:63032 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756064Ab0CLD1U (ORCPT
+	id S1751062Ab0CLDcL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 22:32:11 -0500
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:58385 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750721Ab0CLDcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 22:27:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BGf50VAj1MPiPZOCr8bqPj4BLKoxcn8qxa6NHpSRwkbJqLnefVLxYxZJ+b0swyvv4I
-         GmcaJGNETKi5++cEQ4NBrBKo4E3Bx8Hy8oXt7clhgPO7uXYuGYfi8WytsgVAeipJh/Gh
-         8x8yiuQowhocZh5qR3mqrtuahVTC0L2W72MG4=
-Date: Fri, 12 Mar 2010 04:27:17 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, lizf@cn.fujitsu.com, hpa@zytor.com,
-       tglx@linutronix.de, mhiramat@redhat.com, heiko.carstens@de.ibm.com,
-       benh@kernel.crashing.org, davem@davemloft.net, lethal@linux-sh.org,
-       schwidefsky@de.ibm.com, brueckner@linux.vnet.ibm.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH 00/12] tracing: add compat syscall support v2
-Message-ID: <20100312032714.GB5076@nowhere>
-References: <cover.1267214186.git.jbaron@redhat.com> <20100310190330.GB5000@nowhere> <20100311221227.GA5285@redhat.com>
+	Thu, 11 Mar 2010 22:32:09 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: Memory management woes - order 1 allocation failures
+Date: Fri, 12 Mar 2010 04:32:03 +0100
+User-Agent: KMail/1.9.9
+Cc: Greg KH <gregkh@suse.de>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <alpine.DEB.2.00.1002261042020.7719@router.home> <20100302221751.20addf02@lxorguk.ukuu.org.uk> <20100302222933.GF11355@csn.ul.ie>
+In-Reply-To: <20100302222933.GF11355@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100311221227.GA5285@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201003120432.06149.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Mar 2010 03:32:06.0804 (UTC) FILETIME=[971CAD40:01CAC194]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 05:12:28PM -0500, Jason Baron wrote:
-> I kept separate namespaces to avoid collisions and generally simplify
-> things. However, you are right - we can maintain namespace separation at the
-> "sys32_blah", "compat_sys", level and map to a common "compat_blah" for the
-> trace event name. We can avoid collisions by simply storing the "sys32" or
-> "compat_sys" name in the syscall metadata structure name field. 
+On Tuesday 02 March 2010, Mel Gorman wrote:
+> On Tue, Mar 02, 2010 at 10:17:51PM +0000, Alan Cox wrote:
+> > > -#define TTY_BUFFER_PAGE		((PAGE_SIZE  - 256) / 2)
+> > > +#define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) /
+> > > 2) & ~0xFF)
+> >
+> > Yes agreed I missed a '-1'
+>
+> Frans, would you mind testing your NAS box with the following patch
+> applied please? It should apply cleanly on top of 2.6.33-rc7. Thanks
 
+Thanks Mel.
 
-Well, the purpose is also to reach a state near to cross arch generic
-for tools.
+I've been running with this patch for about a week now and have so far not 
+seen any more allocation failures. I've tried doing large rsyncs a few 
+times.
 
-If we have a script that parses compat syscalls events in arch X, it
-would be nice if it works on arch Y.
+It's not 100% conclusive, but I would say it improves things and I've 
+certainly not noticed any issues with the patch.
 
-If arch X overrides compat_blah through sys32_blah and arch Y just keep
-compat_blah, the script won't cross work.
+Before I got the patch I noticed that the default value for 
+vm.min_free_kbytes was only 1442 for this machine. Isn't that on the low 
+side? Could that have been a factor?
 
-The problem is not that trivial to solve though, I guess the best is to
-remove the compat_blah trace event if we already have sys32_blah.
-Also the syscall handler naming doesn't seem to be always unified (not
-talking about the sys32 thing but the name of the syscall itself).
+My concern is that, although fixing bugs in GFP_ATOMIC allocations is 
+certainly very good, I can't help wondering why the system does not keep a 
+bit more memory in reserve instead of using everything up for relatively 
+silly things like cache and buffers.
+What if during an rsync I plug in some USB device whose driver has some 
+valid GFP_ATOMIC allocations? Shouldn't the memory manager allow for such 
+situations?
 
-So let's start simple for now, we can just include everything and
-solve that incrementally. But a good start would be to have a separate
-compat_syscalls event subsystem.
+Cheers,
+FJP
 
- 
-> > - We probably want a compat_syscalls trace event subsystem (separated
-> > from syscalls), can be done incrementally though
-> > 
-> > - Commit e7b8e675d9c71b868b66f62f725a948047514719
-> >   (tracing: Unify arch_syscall_addr() implementations)
-> > has made a good use of the unified syscall table name
-> > between archs that support syscall tracing so that we
-> > can, most of the time, directly dereference it from generic
-> > code. Exotic archs can still override arch_syscall_addr()
-> > if we can't do that with their syscall table.
-> > I wish we can do that with the compat syscall tables too.
-> > Compat syscall tables names seem to be less unified for now
-> > though. Again, can be done incrementally.
-> > 
-> > Other than that, that's a cool batch!
-> > 
-> > Thanks!
-> > 
-> 
-> the other question is how to go about getting arch support, since right
-> now we break non-x86 arches which have CONFIG_FTRACE_SYSCALLS and
-> CONFIG_COMPAT set with this patch.
+> tty: Keep the default buffering to sub-page units
+>
+> We allocate during interrupts so while our buffering is normally diced
+> up small anyway on some hardware at speed we can pressure the VM
+> excessively for page pairs. We don't really need big buffers to be
+> linear so don't try so hard.
+>
+> In order to make this work well we will tidy up excess callers to
+> request_room, which cannot itself enforce this break up.
+>
+> [mel@csn.ul.ie: Adjust TTY_BUFFER_PAGE to take padding into account]
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
-I guess we can handle that with an ARCH_HAVE_FTRACE_COMPAT_SYSCALLS.
-It's not that broken actually, compat syscalls events will just
-not trigger.
-
-
-
-> thanks,
-> 
-> -Jason
-
+Tested-by: Frans Pop <fjp@planet.nl>
