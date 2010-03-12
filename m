@@ -1,57 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077Ab0CLJKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 04:10:52 -0500
-Received: from mga09.intel.com ([134.134.136.24]:47294 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756923Ab0CLJKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 04:10:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,625,1262592000"; 
-   d="scan'208";a="500101711"
-Date: Fri, 12 Mar 2010 10:11:42 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: [GIT PULL] MFD fixes for 2.6.34
-Message-ID: <20100312091141.GA25413@sortiz.org>
+	id S1757278Ab0CLJW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 04:22:29 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47527 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756999Ab0CLJWY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 04:22:24 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+/0zFI0De/h0BzwCIGZXEAcrqUJ1k3hynjWhaHM/
+	Lt8InVtpKbxE7y
+Date: Fri, 12 Mar 2010 10:22:31 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] V4L/DVB: mx1-camera: compile fix
+In-Reply-To: <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.1003121016480.4385@axis700.grange>
+References: <20100304194241.GG19843@pengutronix.de>
+ <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45000000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi Uwe
 
-I have a couple of MFD fixes, fixing the sm501 region requested size and
-the MFD Kconfig for genirq dependent drivers.
+On Fri, 5 Mar 2010, Uwe Kleine-König wrote:
 
-Thanks in advance for pulling.
+> This is a regression of
+> 
+> 	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+>  drivers/media/video/mx1_camera.c |   12 +++++++-----
+>  1 files changed, 7 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
+> index 2ba14fb..29c2833 100644
+> --- a/drivers/media/video/mx1_camera.c
+> +++ b/drivers/media/video/mx1_camera.c
+> @@ -45,11 +45,13 @@
+>  #include <mach/hardware.h>
+>  #include <mach/mx1_camera.h>
+>  
+> +#define __DMAREG(offset)	(MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR) + offset)
+> +
 
-The following changes since commit 522dba7134d6b2e5821d3457f7941ec34f668e6d:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
+Well, I think, Sascha is right, we have to fix 
+arch/arm/plat-mxc/include/mach/dma-mx1-mx2.h, because that's what actually 
+got broken. The line
 
-are available in the git repository at:
+#define DMA_BASE IO_ADDRESS(DMA_BASE_ADDR)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6.git for-linus
+in it is no longer valid, right? So, we have to either remove it, or fix 
+it, if we think, that other drivers might start using it. And even if we 
+decide to remove it from the header and implement here, wouldn't it be 
+better to choose a name, not beginning with "__"? Something like 
+MX1_DMA_REG, perhaps? Or maybe even we shall remap those registers?
 
-Geert Uytterhoeven (1):
-      mfd: Several MFD drivers should depend on GENERIC_HARDIRQS
+Thanks
+Guennadi
 
-Samuel Ortiz (1):
-      mfd: Fix sm501 requested region size
+>  /*
+>   * CSI registers
+>   */
+> -#define DMA_CCR(x)	(0x8c + ((x) << 6))	/* Control Registers */
+> -#define DMA_DIMR	0x08			/* Interrupt mask Register */
+> +#define DMA_CCR(x)	__DMAREG(0x8c + ((x) << 6))	/* Control Registers */
+> +#define DMA_DIMR	__DMAREG(0x08)		/* Interrupt mask Register */
+>  #define CSICR1		0x00			/* CSI Control Register 1 */
+>  #define CSISR		0x08			/* CSI Status Register */
+>  #define CSIRXR		0x10			/* CSI RxFIFO Register */
+> @@ -783,7 +785,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+>  			       pcdev);
+>  
+>  	imx_dma_config_channel(pcdev->dma_chan, IMX_DMA_TYPE_FIFO,
+> -			       IMX_DMA_MEMSIZE_32, DMA_REQ_CSI_R, 0);
+> +			       IMX_DMA_MEMSIZE_32, MX1_DMA_REQ_CSI_R, 0);
+>  	/* burst length : 16 words = 64 bytes */
+>  	imx_dma_config_burstlen(pcdev->dma_chan, 0);
+>  
+> @@ -797,8 +799,8 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+>  	set_fiq_handler(&mx1_camera_sof_fiq_start, &mx1_camera_sof_fiq_end -
+>  						   &mx1_camera_sof_fiq_start);
+>  
+> -	regs.ARM_r8 = DMA_BASE + DMA_DIMR;
+> -	regs.ARM_r9 = DMA_BASE + DMA_CCR(pcdev->dma_chan);
+> +	regs.ARM_r8 = (long)DMA_DIMR;
+> +	regs.ARM_r9 = (long)DMA_CCR(pcdev->dma_chan);
+>  	regs.ARM_r10 = (long)pcdev->base + CSICR1;
+>  	regs.ARM_fp = (long)pcdev->base + CSISR;
+>  	regs.ARM_sp = 1 << pcdev->dma_chan;
+> -- 
+> 1.7.0
+> 
 
- drivers/mfd/Kconfig |    9 +++++----
- drivers/mfd/sm501.c |    4 ++--
- 2 files changed, 7 insertions(+), 6 deletions(-)
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
