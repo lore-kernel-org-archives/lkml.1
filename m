@@ -1,48 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932676Ab0CLLQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 06:16:31 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:36492 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932463Ab0CLLQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 06:16:30 -0500
-Subject: Re: Weird wireless/wpa_supplicant screw-up.
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1268392481.4828.7.camel@jlt3.sipsolutions.net>
-References: <7197.1268086939@localhost>
-	 <1268392481.4828.7.camel@jlt3.sipsolutions.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Mar 2010 03:16:23 -0800
-Message-ID: <1268392583.4828.8.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.91 
-Content-Transfer-Encoding: 7bit
+	id S932691Ab0CLL0F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 06:26:05 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16134 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932219Ab0CLL0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 06:26:01 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B99CB0F.1090505@kernel.org>
+References: <4B99CB0F.1090505@kernel.org> <1267187000-18791-1-git-send-email-tj@kernel.org> <29029.1268232771@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
+       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       oleg@redhat.com
+Subject: Re: [PATCHSET] workqueue: concurrency managed workqueue, take#4
+Date: Fri, 12 Mar 2010 11:23:55 +0000
+Message-ID: <3491.1268393035@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 03:14 -0800, Johannes Berg wrote:
-> On Mon, 2010-03-08 at 17:22 -0500, Valdis.Kletnieks@vt.edu wrote:
-> > (This could be user error/userspace bug, feel free to point me in the right
-> > direction if you think so.  Hopefully somebody knows what I've broken this
-> > time...)
-> > 
-> > Fedora Rawhide as of this morning, 2.6.33-mmotm0304 kernel, wpa_supplicant-0.6.8-8.fc13.x86_64
-> > wireless-tools-29-5.1.fc12.x86_64.  Dell Latitude E6500, Intel 5100AGN card.
-> > 
-> > So I finally get a few spare cycles, and re-try getting WPA2 working on our
-> > enterprise wireless network, and wpa_supplicant reports it completed
-> > successfully and set the keys,
+Tejun Heo <tj@kernel.org> wrote:
+
+> > So when a work item is running on a CPU, any work items it queues
+> > (including requeueing itself) will be queued upon that CPU for attention
+> > only by that CPU (assuming that CPU doesn't get pulled out)?
 > 
-> and does it work? The iwlist stuff could just be a reporting error...
+> Yes, that's the one of the characteristics of workqueue.  For IO bound
+> stuff, it usually is a plus.
 
-In fact, it's not even an error, it's perfectly normal because we use
-that key for RX only since that's the group key ... So if there is a
-problem, iwlist is completely unsuitable for diagnosing it.
+Hmmm.  So when, say, an FS-Cache index object finishes creating itself on disk
+and then releases all the several thousand data objects waiting on that event
+so that they can then create themselves, it will do this by calling
+queue_work() on each of them in turn.  I take it this will stack them all up on
+that one CPU's work queue.
 
-johannes
-
+David
