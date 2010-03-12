@@ -1,54 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369Ab0CLB45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 20:56:57 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:39388 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857Ab0CLB4x convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 20:56:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=x5XDgrMdjiv28eSX6w3Znh2LkWvXuVhUsSLxU88JwNMm6n9meoRtD3alpM2iQFxtAw
-         QQG2DK1L6Ruif3EINI08606hpHr+W3YtmJOLuyn95XAs2kKGdFb+U2ZaGky3IgsInWx7
-         JMZZ8VTPAp/kzN6N/qoJjvepsXhQklax/3T88=
+	id S1754352Ab0CLCBI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 21:01:08 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42033 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752358Ab0CLCBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 21:01:06 -0500
+Date: Thu, 11 Mar 2010 18:00:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpuset: current_cpuset_is_being_rebound() need rcu lock
+Message-ID: <20100312020056.GB6389@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100311142035.94FD.A69D9226@jp.fujitsu.com> <20100311190759.GA6298@linux.vnet.ibm.com> <20100312085807.950B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com>
-References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com>
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Fri, 12 Mar 2010 02:56:31 +0100
-Message-ID: <69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com>
-Subject: Re: cfg80211 conversion of all drivers
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312085807.950B.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 2:22 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> Staging developers, if you would like to get your hands wet with some
-> 802.11 work, there are some 802.11 drivers which need conversion to
-> cfg80211. The list is here:
->
-> http://wireless.kernel.org/en/developers/todo-list/cfg80211-conversion
->
-> Takers are greatly appreciated.
->
-> Thanks,
->
->  Luis
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+On Fri, Mar 12, 2010 at 09:03:03AM +0900, KOSAKI Motohiro wrote:
+> > On Thu, Mar 11, 2010 at 02:46:15PM +0900, KOSAKI Motohiro wrote:
+> > > rcu lockdep detected cpuset have wrong rcu usage.
+> > > the fixing is trivial. but I wonder why don't cpuset_being_rebound assignment
+> > > and read need a memory barrier pairing?
+> > 
+> > The fix is in -tip, commit 99ee4ca746dda71326db7645463b4075ac1d665c.
+> > 
+> > This is an initialization-time use of rcu_dereference(), so no other
+> > task has a reference to this data.  Hence it is constant.  Other uses
+> > of this code operate on shared data structures, which might change at
+> > any time.
+> 
+> thanks. I haven't notice such commit.
+> 
+> I think you are talking about task_cs(current) accessing and you are right
+> in such point.
+> but I'm talking cpuset_being_rebound global variable.
+> 
+> update_tasks_nodemask() has following code
+> 
+> static void update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem,
+>                                  struct ptr_heap *heap)
+> {
+>         cpuset_being_rebound = cs;		/* start transaction */
+>         cgroup_scan_tasks(&scan);
+>         cpuset_being_rebound = NULL;		/* end transaction */
+> }
 
-May I ask you why hostap is "to be killed"? What is the alternative?
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+Hmmm...  What commit are you looking at in what tree?  I instead see
+a much larger function body for update_tasks_nodemask().  I am looking
+in a number of places, including 522dba7134d6b2e5821d3457f7941ec34f668e6d
+in Linus's git tree.
+
+							Thanx, Paul
