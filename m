@@ -1,112 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278Ab0CLJW3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 04:22:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47527 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756999Ab0CLJWY convert rfc822-to-8bit (ORCPT
+	id S1756473Ab0CLJdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 04:33:55 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:38032 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788Ab0CLJds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 04:22:24 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+/0zFI0De/h0BzwCIGZXEAcrqUJ1k3hynjWhaHM/
-	Lt8InVtpKbxE7y
-Date: Fri, 12 Mar 2010 10:22:31 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Antonio Ospite <ospite@studenti.unina.it>,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] V4L/DVB: mx1-camera: compile fix
-In-Reply-To: <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Message-ID: <Pine.LNX.4.64.1003121016480.4385@axis700.grange>
-References: <20100304194241.GG19843@pengutronix.de>
- <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Fri, 12 Mar 2010 04:33:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=F4i6cEI8ARUKl6YXB2oesiJPYS/zkHLbvpZvpMCya3rS+Az/B0JmLYLSD0n5gGMsWK
+         uYb2zxd+Xyo5xP81XNg4QtouTVs+M1Av6kpBXZQY7+kUo8KSir0GYSx4x+4/b8/ddcO2
+         xXKvtiL026LtjidzjxC5lA8O0OJILsYIdrqps=
+Message-ID: <4B9A0A71.7010206@warmcat.com>
+Date: Fri, 12 Mar 2010 09:33:37 +0000
+From: Andy Green <andy@warmcat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc14 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45000000000000001
+To: Stanislav Brabec <utx@penguin.cz>
+CC: Eric Miao <eric.y.miao@gmail.com>, dbaryshkov@gmail.com,
+       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       lenz@cs.wisc.edu, rpurdie@rpsys.net,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Pavel Machek <pavel@ucw.cz>, thommycheck@gmail.com,
+       zaurus-devel@www.linuxtogo.org, omegamoon@gmail.com
+Subject: Re: bit errors on spitz
+References: <20100305212708.GC21773@elf.ucw.cz>	 <f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com>	 <20100308072858.GA29939@atrey.karlin.mff.cuni.cz>	 <20100308082530.GA1982@atrey.karlin.mff.cuni.cz>	 <4B98EF5D.5000609@warmcat.com> <1268322155.3990.114.camel@hammer.suse.cz>	 <4B995EE1.1050609@warmcat.com> <1268384824.4963.35.camel@utx.utx.cz>
+In-Reply-To: <1268384824.4963.35.camel@utx.utx.cz>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe
+On 03/12/10 09:07, Somebody in the thread at some point said:
 
-On Fri, 5 Mar 2010, Uwe Kleine-König wrote:
+>> Unless there's more to it in the way the zaurus using it that regulator
+>> isn't programmable digitally.
+>
+> OOPS, I made a mistake and linked ISL6721 instead of ISL6271 there.
+> Now it is fixed:
+> http://www.penguin.cz/~utx/zaurus/datasheets/power/XScale/ISL6271A.pdf
+>
+> This one has I2C. It is connected to GPIO 3 (PWR_SCL) and GPIO 4
+> (PWR_SDA).
 
-> This is a regression of
-> 
-> 	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/media/video/mx1_camera.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
-> index 2ba14fb..29c2833 100644
-> --- a/drivers/media/video/mx1_camera.c
-> +++ b/drivers/media/video/mx1_camera.c
-> @@ -45,11 +45,13 @@
->  #include <mach/hardware.h>
->  #include <mach/mx1_camera.h>
->  
-> +#define __DMAREG(offset)	(MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR) + offset)
-> +
+Thanks... that defaults to 1.3V on Vcore if you don't touch it.  I guess 
+confirm on the CPU datasheet that it's OK for your selected CPU clock speed.
 
-Well, I think, Sascha is right, we have to fix 
-arch/arm/plat-mxc/include/mach/dma-mx1-mx2.h, because that's what actually 
-got broken. The line
+> I guess that Zaurus has a good power design and that voltage should be
+> constant enough. CF has a dedicated step down (plus 2.8V power detector
 
-#define DMA_BASE IO_ADDRESS(DMA_BASE_ADDR)
+In that case is the PXA CF driver PIO?  Then it can be the same load on 
+Vcore issue in disguise.
 
-in it is no longer valid, right? So, we have to either remove it, or fix 
-it, if we think, that other drivers might start using it. And even if we 
-decide to remove it from the header and implement here, wouldn't it be 
-better to choose a name, not beginning with "__"? Something like 
-MX1_DMA_REG, perhaps? Or maybe even we shall remap those registers?
-
-Thanks
-Guennadi
-
->  /*
->   * CSI registers
->   */
-> -#define DMA_CCR(x)	(0x8c + ((x) << 6))	/* Control Registers */
-> -#define DMA_DIMR	0x08			/* Interrupt mask Register */
-> +#define DMA_CCR(x)	__DMAREG(0x8c + ((x) << 6))	/* Control Registers */
-> +#define DMA_DIMR	__DMAREG(0x08)		/* Interrupt mask Register */
->  #define CSICR1		0x00			/* CSI Control Register 1 */
->  #define CSISR		0x08			/* CSI Status Register */
->  #define CSIRXR		0x10			/* CSI RxFIFO Register */
-> @@ -783,7 +785,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
->  			       pcdev);
->  
->  	imx_dma_config_channel(pcdev->dma_chan, IMX_DMA_TYPE_FIFO,
-> -			       IMX_DMA_MEMSIZE_32, DMA_REQ_CSI_R, 0);
-> +			       IMX_DMA_MEMSIZE_32, MX1_DMA_REQ_CSI_R, 0);
->  	/* burst length : 16 words = 64 bytes */
->  	imx_dma_config_burstlen(pcdev->dma_chan, 0);
->  
-> @@ -797,8 +799,8 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
->  	set_fiq_handler(&mx1_camera_sof_fiq_start, &mx1_camera_sof_fiq_end -
->  						   &mx1_camera_sof_fiq_start);
->  
-> -	regs.ARM_r8 = DMA_BASE + DMA_DIMR;
-> -	regs.ARM_r9 = DMA_BASE + DMA_CCR(pcdev->dma_chan);
-> +	regs.ARM_r8 = (long)DMA_DIMR;
-> +	regs.ARM_r9 = (long)DMA_CCR(pcdev->dma_chan);
->  	regs.ARM_r10 = (long)pcdev->base + CSICR1;
->  	regs.ARM_fp = (long)pcdev->base + CSISR;
->  	regs.ARM_sp = 1 << pcdev->dma_chan;
-> -- 
-> 1.7.0
-> 
-
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+-Andy
