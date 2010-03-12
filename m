@@ -1,313 +1,143 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413Ab0CLBZK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 20:25:10 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:34103 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754947Ab0CLBZH (ORCPT
+	id S1752056Ab0CLBfV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 20:35:21 -0500
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:44601 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750934Ab0CLBfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 20:25:07 -0500
-Date: Fri, 12 Mar 2010 10:14:11 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
-Message-Id: <20100312101411.b2639128.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100311184244.6735076a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1268175636-4673-1-git-send-email-arighi@develer.com>
-	<20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
-	<1268298865.5279.997.camel@twins>
-	<20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100311184244.6735076a.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Mar 2010 20:35:19 -0500
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <201003120131.o2C1Vhcr030787@turbo.physics.adelaide.edu.au>
+Subject: Re: 2.9.29.2: ide-tape: panic when probing device at boot
+To: jwoithe@physics.adelaide.edu.au (Jonathan Woithe)
+Date: Fri, 12 Mar 2010 12:01:43 +1030 (CST)
+Cc: petkovbb@googlemail.com (Borislav Petkov), hancockrwd@gmail.com,
+       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       tj@kernel.org (Tejun Heo),
+       bzolnier@gmail.com (Bartlomiej Zolnierkiewicz),
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <201001050538.o055c5eF021739@turbo.physics.adelaide.edu.au> from "Jonathan Woithe" at Jan 05, 2010 04:08:04 PM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 18:42:44 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 11 Mar 2010 18:25:00 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > Then, it's not problem that check pc->mem_cgroup is root cgroup or not
-> > without spinlock.
-> > ==
-> > void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> > {
-> > 	pc = lookup_page_cgroup(page);
-> > 	if (unlikely(!pc) || mem_cgroup_is_root(pc->mem_cgroup))
-> > 		return;	
-> > 	...
-> > }
-> > ==
-> > This can be handle in the same logic of "lock failure" path.
-> > And we just do ignore accounting.
+Hi
+
+Following up on my email from several months ago.  Sorry for the delay.
+
+> > On Mon, Jan 04, 2010 at 11:45:12AM +1030, Jonathan Woithe wrote:
+> > > Has there been any movement on this in recent months?  I gave 2.6.30 a whirl
+> > > on the machine when that was released but it still gave major problems with
+> > > the ide-tape driver.  Is 2.6.32 likely to be improved?  If so I'll make
+> > > arrangements to test that version.
 > > 
-> > There are will be no spinlocks....to do more than this,
-> > I think we have to use "struct page" rather than "struct page_cgroup".
-> > 
-> Hmm..like this ? The bad point of this patch is that this will corrupt FILE_MAPPED
-> status in root cgroup. This kind of change is not very good.
-> So, one way is to use this kind of function only for new parameters. Hmm.
-IMHO, if we disable accounting file stats in root cgroup, it would be better
-not to show them in memory.stat to avoid confusing users.
-But, hmm, I think accounting them in root cgroup isn't so meaningless.
-Isn't making mem_cgroup_has_dirty_limit() return false in case of root cgroup enough?
+> > Yes, please do test 2.6.32 to see whether it fixes your problem. If you still
+> > get that oops, please apply the following patch and send me the _whole_ dmesg
+> > output of the machine.
+> 
+> Ok, will do.  Since it is a production machine and I've got linux.conf.au
+> coming up it may be a couple of weeks before I get to do the test.  I'll
+> advise the outcome once I have tested it.
+> 
+> Robert Hancock wrote:
+> > You could also try using libata instead of IDE drivers and see if they 
+> > work any better for you..
+> 
+> Yes, a good suggestion (I'm not sure why I neglected to try that initially). 
+> I'll test that too and report back.
 
-> ==
-> 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, file-mapped is maintaiend. But more generic update function
-> will be needed for dirty page accounting.
-> 
-> For accountig page status, we have to guarantee lock_page_cgroup()
-> will be never called under tree_lock held.
-> To guarantee that, we use trylock at updating status.
-> By this, we do fuzyy accounting, but in almost all case, it's correct.
-> 
-> Changelog:
->  - removed unnecessary preempt_disable()
->  - added root cgroup check. By this, we do no lock/account in root cgroup.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Looks good overall.
+I've finally had an opportunity to test a few things.  I grabbed 2.6.33 and
+configured libata support for the PATA controller (a VIA TV82CXXX) using the
+"VIA PATA" option.  I disabled support for the legacy IDE driver.  Upon
+booting 2.6.33's libata drivers correctly identified the two SATA HDDs in
+the system, the PATA CDROM drive (secondary master) and the PATA tape unit
+(primary master).  However, at this point things stopped - it seemed as if
+the kernel lost the ability to communicate with either SATA HDD since it
+reported timeouts on accesses to sda and sdb.
 
+I haven't had a chance to test whether the inability to access the HDDs
+comes as a result of the use of the VIA PATA libata driver or whether 2.6.33
+has some inherant problem with VIA SATA controllers.  If I get a chance I'll
+test that later today.  In any case, where do you suggest we go from here?
 
-Thanks,
-Daisuke Nishimura.
+Unfortunately I didn't have time to note the precise errors seeen under
+2.6.33 since I couldn't keep the machine down for very long.  I'll see if I
+can repeat the test in a less busy part of the day later to get this
+information.
 
-> ---
->  include/linux/memcontrol.h  |    7 ++-
->  include/linux/page_cgroup.h |   15 +++++++
->  mm/memcontrol.c             |   92 +++++++++++++++++++++++++++++++++-----------
->  mm/rmap.c                   |    4 -
->  4 files changed, 94 insertions(+), 24 deletions(-)
-> 
-> Index: mmotm-2.6.34-Mar9/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.34-Mar9.orig/mm/memcontrol.c
-> +++ mmotm-2.6.34-Mar9/mm/memcontrol.c
-> @@ -1348,30 +1348,83 @@ bool mem_cgroup_handle_oom(struct mem_cg
->   * Currently used to update mapped file statistics, but the routine can be
->   * generalized to update other statistics as well.
->   */
-> -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> +void __mem_cgroup_update_stat(struct page_cgroup *pc, int idx, bool charge)
->  {
->  	struct mem_cgroup *mem;
-> -	struct page_cgroup *pc;
-> -
-> -	pc = lookup_page_cgroup(page);
-> -	if (unlikely(!pc))
-> -		return;
-> +	int val;
->  
-> -	lock_page_cgroup(pc);
->  	mem = pc->mem_cgroup;
-> -	if (!mem)
-> -		goto done;
-> +	if (!mem || !PageCgroupUsed(pc))
-> +		return;
->  
-> -	if (!PageCgroupUsed(pc))
-> -		goto done;
-> +	if (charge)
-> +		val = 1;
-> +	else
-> +		val = -1;
->  
-> +	switch (idx) {
-> +	case MEMCG_NR_FILE_MAPPED:
-> +		if (charge) {
-> +			if (!PageCgroupFileMapped(pc))
-> +				SetPageCgroupFileMapped(pc);
-> +			else
-> +				val = 0;
-> +		} else {
-> +			if (PageCgroupFileMapped(pc))
-> +				ClearPageCgroupFileMapped(pc);
-> +			else
-> +				val = 0;
-> +		}
-> +		idx = MEM_CGROUP_STAT_FILE_MAPPED;
-> +		break;
-> +	default:
-> +		BUG();
-> +		break;
-> +	}
->  	/*
->  	 * Preemption is already disabled. We can use __this_cpu_xxx
->  	 */
-> -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> +	__this_cpu_add(mem->stat->count[idx], val);
-> +}
->  
-> -done:
-> -	unlock_page_cgroup(pc);
-> +void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
-> +{
-> +	struct page_cgroup *pc;
-> +
-> +	pc = lookup_page_cgroup(page);
-> +	if (!pc || mem_cgroup_is_root(pc->mem_cgroup))
-> +		return;
-> +
-> +	if (trylock_page_cgroup(pc)) {
-> +		__mem_cgroup_update_stat(pc, idx, charge);
-> +		unlock_page_cgroup(pc);
-> +	}
-> +	return;
-> +}
-> +
-> +static void mem_cgroup_migrate_stat(struct page_cgroup *pc,
-> +	struct mem_cgroup *from, struct mem_cgroup *to)
-> +{
-> +	if (PageCgroupFileMapped(pc)) {
-> +		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> +		if (!mem_cgroup_is_root(to)) {
-> +			__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> +		} else {
-> +			ClearPageCgroupFileMapped(pc);
-> +		}
-> +	}
-> +}
-> +
-> +static void
-> +__mem_cgroup_stat_fixup(struct page_cgroup *pc, struct mem_cgroup *mem)
-> +{
-> +	if (mem_cgroup_is_root(mem))
-> +		return;
-> +	/* We'are in uncharge() and lock_page_cgroup */
-> +	if (PageCgroupFileMapped(pc)) {
-> +		__this_cpu_dec(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> +		ClearPageCgroupFileMapped(pc);
-> +	}
->  }
->  
->  /*
-> @@ -1810,13 +1863,7 @@ static void __mem_cgroup_move_account(st
->  	VM_BUG_ON(pc->mem_cgroup != from);
->  
->  	page = pc->page;
-> -	if (page_mapped(page) && !PageAnon(page)) {
-> -		/* Update mapped_file data for mem_cgroup */
-> -		preempt_disable();
-> -		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> -		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> -		preempt_enable();
-> -	}
-> +	mem_cgroup_migrate_stat(pc, from, to);
->  	mem_cgroup_charge_statistics(from, pc, false);
->  	if (uncharge)
->  		/* This is not "cancel", but cancel_charge does all we need. */
-> @@ -2208,6 +2255,9 @@ __mem_cgroup_uncharge_common(struct page
->  		__do_uncharge(mem, ctype);
->  	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
->  		mem_cgroup_swap_statistics(mem, true);
-> +	if (unlikely(PCG_PageStatMask & pc->flags))
-> +		__mem_cgroup_stat_fixup(pc, mem);
-> +
->  	mem_cgroup_charge_statistics(mem, pc, false);
->  
->  	ClearPageCgroupUsed(pc);
-> Index: mmotm-2.6.34-Mar9/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.34-Mar9.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.34-Mar9/include/linux/page_cgroup.h
-> @@ -39,6 +39,8 @@ enum {
->  	PCG_CACHE, /* charged as cache */
->  	PCG_USED, /* this object is in use. */
->  	PCG_ACCT_LRU, /* page has been accounted for */
-> +	/* for cache-status accounting */
-> +	PCG_FILE_MAPPED,
->  };
->  
->  #define TESTPCGFLAG(uname, lname)			\
-> @@ -57,6 +59,10 @@ static inline void ClearPageCgroup##unam
->  static inline int TestClearPageCgroup##uname(struct page_cgroup *pc)	\
->  	{ return test_and_clear_bit(PCG_##lname, &pc->flags);  }
->  
-> +/* Page/File stat flag mask */
-> +#define PCG_PageStatMask	((1 << PCG_FILE_MAPPED))
-> +
-> +
->  TESTPCGFLAG(Locked, LOCK)
->  
->  /* Cache flag is set only once (at allocation) */
-> @@ -73,6 +79,10 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  
-> +TESTPCGFLAG(FileMapped, FILE_MAPPED)
-> +SETPCGFLAG(FileMapped, FILE_MAPPED)
-> +CLEARPCGFLAG(FileMapped, FILE_MAPPED)
-> +
->  static inline int page_cgroup_nid(struct page_cgroup *pc)
->  {
->  	return page_to_nid(pc->page);
-> @@ -93,6 +103,11 @@ static inline void unlock_page_cgroup(st
->  	bit_spin_unlock(PCG_LOCK, &pc->flags);
->  }
->  
-> +static inline int trylock_page_cgroup(struct page_cgroup *pc)
-> +{
-> +	return bit_spin_trylock(PCG_LOCK, &pc->flags);
-> +}
-> +
->  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
->  struct page_cgroup;
->  
-> Index: mmotm-2.6.34-Mar9/include/linux/memcontrol.h
-> ===================================================================
-> --- mmotm-2.6.34-Mar9.orig/include/linux/memcontrol.h
-> +++ mmotm-2.6.34-Mar9/include/linux/memcontrol.h
-> @@ -124,7 +124,12 @@ static inline bool mem_cgroup_disabled(v
->  	return false;
->  }
->  
-> -void mem_cgroup_update_file_mapped(struct page *page, int val);
-> +enum mem_cgroup_page_stat_item {
-> +	MEMCG_NR_FILE_MAPPED,
-> +	MEMCG_NR_FILE_NSTAT,
-> +};
-> +
-> +void mem_cgroup_update_stat(struct page *page, int idx, bool charge);
->  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  						gfp_t gfp_mask, int nid,
->  						int zid);
-> Index: mmotm-2.6.34-Mar9/mm/rmap.c
-> ===================================================================
-> --- mmotm-2.6.34-Mar9.orig/mm/rmap.c
-> +++ mmotm-2.6.34-Mar9/mm/rmap.c
-> @@ -829,7 +829,7 @@ void page_add_file_rmap(struct page *pag
->  {
->  	if (atomic_inc_and_test(&page->_mapcount)) {
->  		__inc_zone_page_state(page, NR_FILE_MAPPED);
-> -		mem_cgroup_update_file_mapped(page, 1);
-> +		mem_cgroup_update_stat(page, MEMCG_NR_FILE_MAPPED, true);
->  	}
->  }
->  
-> @@ -861,7 +861,7 @@ void page_remove_rmap(struct page *page)
->  		__dec_zone_page_state(page, NR_ANON_PAGES);
->  	} else {
->  		__dec_zone_page_state(page, NR_FILE_MAPPED);
-> -		mem_cgroup_update_file_mapped(page, -1);
-> +		mem_cgroup_update_stat(page, MEMCG_NR_FILE_MAPPED, false);
->  	}
->  	/*
->  	 * It would be tidy to reset the PageAnon mapping here,
-> 
+Some system details:
+  00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID
+    Controller (rev 80)
+  00:0f.1 IDE interface: VIA Technologies, Inc.
+    VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
+
+00:0f.0 has two WD2502ABYS SATA HDDs connected.  Both drives have the
+"1.5Gbps" jumper set because this chipset only supports 1.5Gbps but the
+drives by default won't auto-negotiate down to this speed.  00:0f.1 has
+an IDE tape drive (SONY SDX-260V) attached to primary master and a CD writer
+(LITE-ON LTR-32123S) attached to secondary master.
+
+Interface notes during boot on 2.6.24.2:
+
+  Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+  ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+  VP_IDE: IDE controller (0x1106:0x0571 rev 0x06) at  PCI slot 0000:00:0f.1
+  ACPI: PCI Interrupt Link [LNKE] enabled at IRQ 5
+  PCI: setting IRQ 5 as level-triggered
+  ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [LNKE] -> GSI 5 (level, low) ->
+    IRQ 5
+  PCI: VIA VLink IRQ fixup for 0000:00:0f.1, from 255 to 5
+  VP_IDE: not 100% native mode: will probe irqs later
+  VP_IDE: VIA vt8237 (rev 00) IDE UDMA133 controller on pci0000:00:0f.1
+      ide0: BM-DMA at 0xa000-0xa007, BIOS settings: hda:DMA, hdb:pio
+      ide1: BM-DMA at 0xa008-0xa00f, BIOS settings: hdc:DMA, hdd:pio
+  Probing IDE interface ide0...  
+  hda: SONY SDX-260V, ATAPI TAPE drive
+  hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+  hda: UDMA/100 mode selected 
+  ide0 at 0x1f0-0x1f7,0x3f6 on irq 14 
+  Probing IDE interface ide1...
+  hdc: LITE-ON LTR-32123S, ATAPI CD/DVD-ROM drive
+  hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+  hdc: UDMA/33 mode selected
+  ide1 at 0x170-0x177,0x376 on irq 15
+  hdc: ATAPI 40X CD-ROM CD-R/RW drive, 2048kB Cache
+  Uniform CD-ROM driver Revision: 3.20
+  ide-tape: hda <-> ht0: SONY SDX-260V rev 0100
+  ide-tape: hda: overriding capabilities->speed (assuming 650KB/sec)
+  ide-tape: hda: overriding capabilities->max_speed (assuming 650KB/sec)
+  ide-tape: decreasing stage size
+  ide-tape: decreasing stage size
+  ide-tape: decreasing stage size
+  ide-tape: hda <-> ht0: 650KBps, 126*32kB buffer, 6336kB pipeline, 100ms
+    tDSC, DMA
+  st: Version 20070203, fixed bufsize 32768, s/g segs 256 
+  :
+  sata_via 0000:00:0f.0: version 2.3
+  ACPI: PCI Interrupt Link [LNKF] BIOS reported IRQ 0, using IRQ 9
+  ACPI: PCI Interrupt Link [LNKF] enabled at IRQ 9
+  PCI: setting IRQ 9 as level-triggered
+  ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [LNKF] -> GSI 9 (level, low) ->
+    IRQ 9
+  PCI: VIA VLink IRQ fixup for 0000:00:0f.0, from 5 to 9
+  sata_via 0000:00:0f.0: routed to hard irq line 9
+  scsi0 : sata_via
+  scsi1 : sata_via
+  ata1: SATA max UDMA/133 cmd 0xd000 ctl 0xb800 bmdma 0xa800 irq 9
+  ata2: SATA max UDMA/133 cmd 0xb400 ctl 0xb000 bmdma 0xa808 irq 9
+  ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata1.00: ATA-8: WDC WD2502ABYS-01B7A0, 02.03B02, max UDMA/133
+  ata1.00: 490350672 sectors, multi 16: LBA48 NCQ (depth 0/32) 
+  ata1.00: configured for UDMA/133
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata2.00: ATA-8: WDC WD2502ABYS-01B7A0, 02.03B02, max UDMA/133
+  ata2.00: 490350672 sectors, multi 16: LBA48 NCQ (depth 0/32) 
+  ata2.00: configured for UDMA/133
+
+Regards
+  jonathan
