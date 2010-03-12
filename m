@@ -1,83 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602Ab0CLEh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 23:37:27 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41678 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755194Ab0CLEhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 23:37:24 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/mSFwklC3muP16Rq2B14k8m1ebdz3+y6zbTwhif8
-	7+ORFBKjIxWG2P
-Subject: Re: [tip:sched/core] sched: Remove AFFINE_WAKEUPS feature
-From: Mike Galbraith <efault@gmx.de>
-To: Yong Zhang <yong.zhang@windriver.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20100312032333.GA13021@windriver.com>
-References: <1268301890.6785.50.camel@marge.simson.net>
-	 <tip-beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8@git.kernel.org>
-	 <20100312032333.GA13021@windriver.com>
-Content-Type: text/plain
-Date: Fri, 12 Mar 2010 05:37:19 +0100
-Message-Id: <1268368639.6302.2.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51000000000000001
+	id S1754893Ab0CLEjl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 23:39:41 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:57490 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723Ab0CLEjk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 23:39:40 -0500
+MIME-Version: 1.0
+In-Reply-To: <20100312041518.GA31394@kroah.com>
+References: <1268340652.2845.10.camel@edumazet-laptop> <20100312041518.GA31394@kroah.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 12 Mar 2010 05:39:23 +0100
+Message-ID: <ac3eb2511003112039i7c2009a9gcadb760f128dab6c@mail.gmail.com>
+Subject: Re: [PATCH] kobject: Fix kobject_set_name_vargs()
+To: Greg KH <greg@kroah.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 11:23 +0800, Yong Zhang wrote:
-> On Thu, Mar 11, 2010 at 06:33:38PM +0000, tip-bot for Mike Galbraith wrote:
-> > Commit-ID:  beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
-> > Gitweb:     http://git.kernel.org/tip/beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
-> > Author:     Mike Galbraith <efault@gmx.de>
-> > AuthorDate: Thu, 11 Mar 2010 17:17:20 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Thu, 11 Mar 2010 18:32:53 +0100
-> > 
-> > sched: Remove AFFINE_WAKEUPS feature
-> > 
-> > Disabling affine wakeups is too horrible to contemplate.  Remove the feature flag.
-> 
-> AFFINE_WAKEUPS is still left in sched_feature.h
+On Fri, Mar 12, 2010 at 05:15, Greg KH <greg@kroah.com> wrote:
+> On Thu, Mar 11, 2010 at 09:50:52PM +0100, Eric Dumazet wrote:
+>> In case of kvasprintf() failure, we can leak old kobject name.
+>>
+>> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+>> ---
+>> diff --git a/lib/kobject.c b/lib/kobject.c
+>> index 8115eb1..1247c57 100644
+>> --- a/lib/kobject.c
+>> +++ b/lib/kobject.c
+>> @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+>>               return 0;
+>>
+>>       kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+>> -     if (!kobj->name)
+>> +     if (!kobj->name) {
+>> +             kobj->name = old_name;
+>>               return -ENOMEM;
+>> +     }
+>
+> Are you sure?  I think we've been over this very thing many times in the
+> past...
+>
+> Kay, I can't recall the issue here, can you?
 
-Oops, axe got dull.  Thanks for checking.
+I think we just lost attention to it, and never made a final decision.
+There have been some issues, I also don't really remember.
 
-	-Mike
+I myself have an unsubmitted patch for this problem here since 9 months:
+  http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kobj-leak.patch;hb=HEAD
 
-> From: Yong Zhang <yong.zhang@windriver.com>
-> Date: Fri, 12 Mar 2010 11:14:26 +0800
-> Subject: [PATCH] sched: clean AFFINE_WAKEUPS feature
-> 
-> complementary work to commit beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
-> 
-> Signed-off-by: Yong Zhang <yong.zhang@windriver.com>
-> ---
->  kernel/sched_features.h |    8 --------
->  1 files changed, 0 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-> index 83c66e8..2137ac0 100644
-> --- a/kernel/sched_features.h
-> +++ b/kernel/sched_features.h
-> @@ -17,14 +17,6 @@ SCHED_FEAT(START_DEBIT, 1)
->  SCHED_FEAT(WAKEUP_PREEMPT, 1)
->  
->  /*
-> - * Based on load and program behaviour, see if it makes sense to place
-> - * a newly woken task on the same cpu as the task that woke it --
-> - * improve cache locality. Typically used with SYNC wakeups as
-> - * generated by pipes and the like, see also SYNC_WAKEUPS.
-> - */
-> -SCHED_FEAT(AFFINE_WAKEUPS, 1)
-> -
-> -/*
->   * Prefer to schedule the task we woke last (assuming it failed
->   * wakeup-preemption), since its likely going to consume data we
->   * touched, increases cache locality.
+Seems, we should start thinking about the problem again. And if we
+decide to do nothing at least add a comment why we don't. :)
 
+Thanks,
+Kay
