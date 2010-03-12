@@ -1,85 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469Ab0CLKHG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:07:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34722 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932238Ab0CLKHE (ORCPT
+	id S932497Ab0CLKHd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:07:33 -0500
+Received: from trinity.develer.com ([83.149.158.210]:39224 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932238Ab0CLKHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:07:04 -0500
-Date: Fri, 12 Mar 2010 02:05:26 -0500
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] Avoid the use of congestion_wait under zone
- pressure
-Message-Id: <20100312020526.d424f2a8.akpm@linux-foundation.org>
-In-Reply-To: <4B99E19E.6070301@linux.vnet.ibm.com>
-References: <1268048904-19397-1-git-send-email-mel@csn.ul.ie>
-	<20100311154124.e1e23900.akpm@linux-foundation.org>
-	<4B99E19E.6070301@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Mar 2010 05:07:30 -0500
+Date: Fri, 12 Mar 2010 11:07:27 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v6)
+Message-ID: <20100312100727.GC4438@linux>
+References: <1268175636-4673-1-git-send-email-arighi@develer.com>
+ <20100311093913.07c9ca8a.kamezawa.hiroyu@jp.fujitsu.com>
+ <20100311101726.f58d24e9.kamezawa.hiroyu@jp.fujitsu.com>
+ <1268298865.5279.997.camel@twins>
+ <20100311182500.0f3ba994.kamezawa.hiroyu@jp.fujitsu.com>
+ <20100311184244.6735076a.kamezawa.hiroyu@jp.fujitsu.com>
+ <20100312101411.b2639128.nishimura@mxp.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312101411.b2639128.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010 07:39:26 +0100 Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com> wrote:
+On Fri, Mar 12, 2010 at 10:14:11AM +0900, Daisuke Nishimura wrote:
+> On Thu, 11 Mar 2010 18:42:44 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Thu, 11 Mar 2010 18:25:00 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > Then, it's not problem that check pc->mem_cgroup is root cgroup or not
+> > > without spinlock.
+> > > ==
+> > > void mem_cgroup_update_stat(struct page *page, int idx, bool charge)
+> > > {
+> > > 	pc = lookup_page_cgroup(page);
+> > > 	if (unlikely(!pc) || mem_cgroup_is_root(pc->mem_cgroup))
+> > > 		return;	
+> > > 	...
+> > > }
+> > > ==
+> > > This can be handle in the same logic of "lock failure" path.
+> > > And we just do ignore accounting.
+> > > 
+> > > There are will be no spinlocks....to do more than this,
+> > > I think we have to use "struct page" rather than "struct page_cgroup".
+> > > 
+> > Hmm..like this ? The bad point of this patch is that this will corrupt FILE_MAPPED
+> > status in root cgroup. This kind of change is not very good.
+> > So, one way is to use this kind of function only for new parameters. Hmm.
+> IMHO, if we disable accounting file stats in root cgroup, it would be better
+> not to show them in memory.stat to avoid confusing users.
 
-> 
-> 
-> Andrew Morton wrote:
-> > On Mon,  8 Mar 2010 11:48:20 +0000
-> > Mel Gorman <mel@csn.ul.ie> wrote:
-> > 
-> >> Under memory pressure, the page allocator and kswapd can go to sleep using
-> >> congestion_wait(). In two of these cases, it may not be the appropriate
-> >> action as congestion may not be the problem.
-> > 
-> > clear_bdi_congested() is called each time a write completes and the
-> > queue is below the congestion threshold.
-> > 
-> > So if the page allocator or kswapd call congestion_wait() against a
-> > non-congested queue, they'll wake up on the very next write completion.
-> 
-> Well the issue came up in all kind of loads where you don't have any 
-> writes at all that can wake up congestion_wait.
-> Thats true for several benchmarks, but also real workload as well e.g. A 
-> backup job reading almost all files sequentially and pumping out stuff 
-> via network.
+Or just show the same values that we show in /proc/meminfo.. (I mean,
+not actually the same, but coherent with them).
 
-Why is reclaim going into congestion_wait() at all if there's heaps of
-clean reclaimable pagecache lying around?
+> But, hmm, I think accounting them in root cgroup isn't so meaningless.
+> Isn't making mem_cgroup_has_dirty_limit() return false in case of root cgroup enough?
 
-(I don't thing the read side of the congestion_wqh[] has ever been used, btw)
+Agreed. Returning false from mem_cgroup_has_dirty_limit() is enough to
+always use global stats for the writeback, so this shouldn't introduce
+any overhead for the root cgroup (at least for this part).
 
-> > Hence the above-quoted claim seems to me to be a significant mis-analysis and
-> > perhaps explains why the patchset didn't seem to help anything?
-> 
-> While I might have misunderstood you and it is a mis-analysis in your 
-> opinion, it fixes a -80% Throughput regression on sequential read 
-> workloads, thats not nothing - its more like absolutely required :-)
-> 
-> You might check out the discussion with the subject "Performance 
-> regression in scsi sequential throughput (iozone)	due to "e084b - 
-> page-allocator: preserve PFN ordering when	__GFP_COLD is set"".
-> While the original subject is misleading from todays point of view, it 
-> contains a lengthy discussion about exactly when/why/where time is lost 
-> due to congestion wait with a lot of traces, counters, data attachments 
-> and such stuff.
-
-Well if we're not encountering lots of dirty pages in reclaim then we
-shouldn't be waiting for writes to retire, of course.
-
-But if we're not encountering lots of dirty pages in reclaim, we should
-be reclaiming pages, normally.
-
-I could understand reclaim accidentally going into congestion_wait() if
-it hit a large pile of pages which are unreclaimable for reasons other
-than being dirty, but is that happening in this case?
-
-If not, we broke it again.
+-Andrea
