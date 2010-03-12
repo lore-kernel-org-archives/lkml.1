@@ -1,53 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801Ab0CLBKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 20:10:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53754 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460Ab0CLBKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 20:10:32 -0500
-Message-ID: <4B999467.4000501@kernel.org>
-Date: Fri, 12 Mar 2010 10:09:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
+	id S1755037Ab0CLBVw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 20:21:52 -0500
+Received: from mga06.intel.com ([134.134.136.21]:39839 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754780Ab0CLBVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 20:21:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,623,1262592000"; 
+   d="scan'208";a="500011053"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Subject: Re: [Xen-devel] [PATCH 7/7] xen: Enable event channel of PV extension of HVM
+Date: Fri, 12 Mar 2010 09:23:22 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
+       Konrad Rzeszutek Wilk <kliw@darnok.org>
+References: <1268032732-8025-1-git-send-email-sheng@linux.intel.com> <201003110934.51408.sheng@linux.intel.com> <alpine.DEB.2.00.1003111139390.11570@kaball-desktop>
+In-Reply-To: <alpine.DEB.2.00.1003111139390.11570@kaball-desktop>
 MIME-Version: 1.0
-To: Greg Freemyer <greg.freemyer@gmail.com>
-CC: tytso@mit.edu, Nikanth Karthikesan <knikanth@suse.de>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Daniel Taylor <Daniel.Taylor@wdc.com>, Mark Lord <kernel@teksavvy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, hirofumi@mail.parknet.co.jp,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
-       aschnell@suse.de, jdelvare@suse.de
-Subject: Re: ATA 4 KiB sector issues.
-References: <4B947393.2050002@kernel.org>	 <472A4C80-30CE-4875-8073-F7E61659B6F0@mit.edu>	 <1268318374.2798.2.camel@mulgrave.site>	 <201003112035.26743.knikanth@suse.de>	 <20100311152551.GG1497@thunk.org> <87f94c371003110834t37235274yc641258ac5939c24@mail.gmail.com>
-In-Reply-To: <87f94c371003110834t37235274yc641258ac5939c24@mail.gmail.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Mar 2010 01:10:03 +0000 (UTC)
+Message-Id: <201003120923.22666.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 03/12/2010 01:34 AM, Greg Freemyer wrote:
-> I do think the linux partitioners should provide a way to force a
-> cylinder alignment.  Tejun, I would like to see your doc describe how
-> to force a win2k compatible partition layout.
-
-I suppose I can play with fdisk and list it as an example but if
-anyone knows better/proper way to force certain partitions to legacy
-alignment while leaving others properly aligned, I'll be happy to
-include it.
-
-Thanks.
+On Thursday 11 March 2010 19:43:00 Stefano Stabellini wrote:
+> On Thu, 11 Mar 2010, Sheng Yang wrote:
+> > On Wednesday 10 March 2010 23:29:30 Stefano Stabellini wrote:
+> > > On Wed, 10 Mar 2010, Sheng Yang wrote:
+> > > > I think we can leave the controversial thing later. At least, we want
+> > > > a framework for PV extension of HVM. We can work together to
+> > > > determine what is the better way for evtchn, as well as porting
+> > > > pirqs. (And the later MSI work may also depends on it)
+> > >
+> > > Most of my patch series can be upstreamed right now, the only thing
+> > > that needs some extra work is the pirq remapping.
+> > > So yes, we can upstream the rest and that would also make PV on HVM
+> > > work on linux upstream ASAP.
+> > > I think that is a worthy goal by itself, therefore I am going to send
+> > > another reduced patch series, ready to be upstreamed, without pirq
+> > > remappings, with support for PV on HVM.
+> >
+> > I think my first 6 patches can be used without modification. And I've
+> > already spent lots of efforts on them with Jeremy.
+> >
+> > We can work on evtchn and platform pci later.
+> 
+> Agreed on evtchn but platform pci should be present even in the basic
+> version.
+> Please read the series "basic PV on HVM support" I posted yesterday
+> because I believe has already everything needed to be accepted upstream
+> right now; at the same time it introduces the pv clocksource and the
+> vector based callback mechanism that is going to be needed for the
+> interrupt remapping we are going to work on later on.
+> 
+IIRC, I think your platform PCI driver also depends on evtchn to inject 
+interrupt?
 
 -- 
-tejun
+regards
+Yang, Sheng
