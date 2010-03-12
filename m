@@ -1,74 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510Ab0CLKic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:38:32 -0500
-Received: from smtp.eu.citrix.com ([62.200.22.115]:34456 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270Ab0CLKib (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:38:31 -0500
-X-IronPort-AV: E=Sophos;i="4.49,625,1262563200"; 
-   d="scan'208";a="9912058"
-Date: Fri, 12 Mar 2010 10:42:42 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>
-Subject: Re: [Xen-devel] [PATCH 0 of 5] PV on HVM Xen
-In-Reply-To: <201003121123.33935.sheng@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.1003121024590.27222@kaball-desktop>
-References: <alpine.DEB.2.00.1003101457100.28412@kaball-desktop> <201003121123.33935.sheng@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	id S1757577Ab0CLKmu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:42:50 -0500
+Received: from ns.penguin.cz ([84.21.108.25]:34328 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757270Ab0CLKms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 05:42:48 -0500
+Subject: Re: bit errors on spitz
+From: Stanislav Brabec <utx@penguin.cz>
+To: Andy Green <andy@warmcat.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, dbaryshkov@gmail.com,
+       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       lenz@cs.wisc.edu, rpurdie@rpsys.net,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Pavel Machek <pavel@ucw.cz>, thommycheck@gmail.com,
+       zaurus-devel@www.linuxtogo.org, omegamoon@gmail.com
+In-Reply-To: <4B9A0A71.7010206@warmcat.com>
+References: <20100305212708.GC21773@elf.ucw.cz>
+	 <f17812d71003072137u51be17a1ie3e50e30dea16f77@mail.gmail.com>
+	 <20100308072858.GA29939@atrey.karlin.mff.cuni.cz>
+	 <20100308082530.GA1982@atrey.karlin.mff.cuni.cz>
+	 <4B98EF5D.5000609@warmcat.com> <1268322155.3990.114.camel@hammer.suse.cz>
+	 <4B995EE1.1050609@warmcat.com> <1268384824.4963.35.camel@utx.utx.cz>
+	 <4B9A0A71.7010206@warmcat.com>
+Content-Type: text/plain; charset="ISO-8859-2"
+Date: Fri, 12 Mar 2010 11:43:08 +0100
+Message-ID: <1268390588.4963.66.camel@utx.utx.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010, Sheng Yang wrote:
-> On Wednesday 10 March 2010 23:46:54 Stefano Stabellini wrote:
-> > Hi all,
-> 
-> Stefano,
-> 
-> And next time when you send out the patch, please be more respect to my work.
-> 
-> You dropped all the original author(me) of patchset, and only add a sign-off 
-> for me. If you don't aware the difference, here is a snippet of 
-> linux/Documentation/SummittingPatches
-> 
+Andy Green wrote:
 
-I am truly sorry and apologise for it, I would never want to give you
-the impression of being disrespectful of you and your work.
-If you pay attention I manually wrote in the comments of all the past
-versions of the patches that you were the original author, this time I
-just forgot.
-I guess it is really the time I start using git-send-email :)
+> In that case is the PXA CF driver PIO?  Then it can be the same load on 
+> Vcore issue in disguise.
 
-Your work has been really important for my series and you deserve the
-credit for it independently from which patch series gets applied.
+There is a proprietary ASIC chip (Sharp Scoop) that handles CF and HDD
+access (and also several additional GPIOs):
+http://www.penguin.cz/~utx/zaurus/datasheets/ASIC_S1L50752B26B200/412752.PDF
+
+The ASIC runs in dual power mode. HVDD is powered from the 3.3V
+dedicated to CF resp. HDD power supply (both may be turned off by the
+kernel), LVDD is shared with CPU 3.3V (it is always on).
+
+It seems that there are no other chips connected to the VCC_PLL,
+VCC_SRAM and VCC_CORE.
+
+VCC_DRAM is the same 3.3V ans CPU ans ASIC LVDD and also the same as
+flash power and flash driver CPLD:
+http://www.penguin.cz/~utx/zaurus/datasheets/memory/
 
 
-> Another thing is, you were keeping using my old patches as your base, while I 
-> was working with the reviewers to update the patch quickly. I don't think 
-> that's a kind of respect to both reviewers' and my work. You would duplicate 
-> reviewer's effect, especially you always repost the whole patch(and drop my 
-> authorship) rather than the different part. I've split patches in order to 
-> provide a code base for further development, but you complete ignored them and 
-> keeping post the whole patchset based on my old patches.
-> 
-
-I don't keep using your old patches as a base but I manually rebase over
-the most recent patch series you sent every time.
-Obviously it is not a perfect system and sometimes I can miss something,
-this is why at the beginning I asked you to work together on the same
-tree: I wanted to avoid exactly this sort of issues.
-
-My intentions are true so my proposal of working on a common tree is
-still valid, just let me know when you are interested.
+________________________________________________________________________
+Stanislav Brabec
+http://www.penguin.cz/~utx/zaurus
 
