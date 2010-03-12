@@ -1,38 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756Ab0CLCze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Mar 2010 21:55:34 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:34779 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667Ab0CLCzc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Mar 2010 21:55:32 -0500
-Date: Thu, 11 Mar 2010 21:53:30 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: cfg80211 conversion of all drivers
-Message-ID: <20100312025330.GA15402@tuxdriver.com>
-References: <43e72e891003111722n4b4d5b6crf764dfe357ff8965@mail.gmail.com>
- <69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <69e28c911003111756h224ef6a9x622c979232b6698b@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1755458Ab0CLCz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Mar 2010 21:55:57 -0500
+Received: from mga09.intel.com ([134.134.136.24]:9241 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753148Ab0CLCzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Mar 2010 21:55:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,624,1262592000"; 
+   d="scan'208";a="603635491"
+From: Sheng Yang <sheng@linux.intel.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH][v9 0/6] PV extension of HVM (Hybrid) for Xen
+Date: Fri, 12 Mar 2010 10:57:21 +0800
+Message-Id: <1268362647-5317-1-git-send-email-sheng@linux.intel.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 12, 2010 at 02:56:31AM +0100, Gábor Stefanik wrote:
+The 9th version of patchset to enable PV extension of HVM support
+in Linux kernel of Xen.
 
-> May I ask you why hostap is "to be killed"? What is the alternative?
+The patch based on upstream 2.6.32.
 
-I think that is code for "replace it with something based on mac80211"...
+The PV extension of HVM is started from real mode like HVM guest, but also with a
+a range of PV features(e.g. PV timer now, and event channel, PV
+drivers in the future). So guest with this feature can takes the advantages of
+both H/W virtualization and Para-Virtualization.
 
--- 
-John W. Linville                Someday the world will need a hero, and you
-linville@tuxdriver.com                  might be all we have.  Be ready.
+The first two of the patchset imported several header file from Jeremy's tree
+and Xen tree, respect to Jeremy and Keir's works.
+
+The whole patchset based on Linux upstream.
+
+You need a line like:
+
+cpuid = [ '0x40000002:edx=0x7' ]
+
+in HVM configuration file to expose all PV feature to guest, and
+
+CONFIG_XEN
+
+in the guest kernel configuration file to enable the PV extension support. It
+would implicit enable CONFIG_XEN_HVM_PV if CONFIG_X86_64 is selected as well.
+
+And the compiled image can be used as native/pv domU/hvm guest/pv feature hvm kernel.
+
+Change from v8:
+1. Delay the controversial part of evtchn.
+2. Rebase to 2.6.32 so it can be picked up by Jeremy for more test easily.
+
+Change from v7:
+1. Move evtchn related macro to patch 7. So that the patch 1-6 can be
+cleanly applied.
+
+Change from v6:
+1. Make PV clocksource as a separate feature rather than default one.
+Notice PV evtchn still depends on it.
+2. Some comments update.
+
+Change from v5:
+Update the comments from Jeremy.
+
+Change from v4:
+1. Add a new CONFIG_XEN_HVM_PV to enable the feature in kernel
+2. Separate the related code form enlighted.c to hvmpv.c
+3. Separate the feature "PV clocksource" from evtchn. Now we can support HVM
+guest with PV clocksource. This would be enabled by default.
+4. Drop PV halt and pv drivers in this edition. We can work on that
+later.
+5. Update the patchset following Jeremy's comments.
+
+Change from v3:
+1. Rebase to Linux 2.6.33 release.
+2. change the name to "PV extension of HVM"
+3. Some minor coding polishing.
+
+Change from v2:
+1. change the name "hybrid" to "PV featured HVM".
+2. Unified the PV driver's judgement of xen_domain() to xen_evtchn_enabled().
+3. Move the function(evtchn) initialize hypercall near the real enabling place,
+rather than a unified place before function enabled.
+4. Remove the reserved E820 region for grant table. Use QEmu Xen platform
+device's MMIO instead.
+
+The major change from v1:
+1. SMP support.
+2. Modify the entrance point to avoid most of genernic kernel modification.
+3. Binding PV timer with event channel mechanism.
+
+--
+regards
+Yang, Sheng
+
+Jeremy Fitzhardinge (1):
+  xen: add support for hvm_op
+
+Keir Fraser (1):
+  xen: Import cpuid.h from Xen
+
+Sheng Yang (5):
+  xen: Make pv drivers only work with xen_pv_domain()
+  xen/hvm: Xen PV extension of HVM initialization
+  x86/xen: The entrance for PV extension of HVM
+  xen: Enable PV clocksource for HVM
+  xen: Enable event channel of PV extension of HVM
+
+ arch/x86/include/asm/xen/cpuid.h      |   75 +++++++++++
+ arch/x86/include/asm/xen/hypercall.h  |    6 +
+ arch/x86/include/asm/xen/hypervisor.h |    6 +
+ arch/x86/kernel/setup.c               |    4 +
+ arch/x86/xen/Kconfig                  |    4 +
+ arch/x86/xen/Makefile                 |    1 +
+ arch/x86/xen/enlighten.c              |    6 +-
+ arch/x86/xen/hvmpv.c                  |  228 +++++++++++++++++++++++++++++++++
+ arch/x86/xen/irq.c                    |    9 ++
+ arch/x86/xen/smp.c                    |   76 +++++++++++-
+ arch/x86/xen/time.c                   |   12 ++-
+ arch/x86/xen/xen-ops.h                |   17 +++
+ drivers/block/xen-blkfront.c          |    2 +-
+ drivers/input/xen-kbdfront.c          |    2 +-
+ drivers/net/xen-netfront.c            |    2 +-
+ drivers/video/xen-fbfront.c           |    2 +-
+ drivers/xen/events.c                  |   74 ++++++++++-
+ drivers/xen/grant-table.c             |    2 +-
+ drivers/xen/xenbus/xenbus_probe.c     |    4 +-
+ include/xen/events.h                  |    4 +
+ include/xen/hvm.h                     |   28 ++++
+ include/xen/interface/hvm/hvm_op.h    |   80 ++++++++++++
+ include/xen/interface/hvm/params.h    |  111 ++++++++++++++++
+ include/xen/interface/xen.h           |    6 +-
+ include/xen/xen.h                     |   15 ++
+ 25 files changed, 754 insertions(+), 22 deletions(-)
+ create mode 100644 arch/x86/include/asm/xen/cpuid.h
+ create mode 100644 arch/x86/xen/hvmpv.c
+ create mode 100644 include/xen/hvm.h
+ create mode 100644 include/xen/interface/hvm/hvm_op.h
+ create mode 100644 include/xen/interface/hvm/params.h
+
