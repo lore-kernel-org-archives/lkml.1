@@ -1,70 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265Ab0CLOwc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 09:52:32 -0500
-Received: from mga05.intel.com ([192.55.52.89]:2860 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758040Ab0CLOwb (ORCPT
+	id S932481Ab0CLOzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 09:55:22 -0500
+Received: from indigo.declera.com ([212.116.131.21]:55344 "HELO
+	indigo.declera.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932114Ab0CLOzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 09:52:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,626,1262592000"; 
-   d="scan'208";a="548494695"
-Message-ID: <4B9A552D.6080103@linux.intel.com>
-Date: Fri, 12 Mar 2010 06:52:29 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Robert_Sch=F6ne?= <robert.schoene@tu-dresden.de>
-CC: Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       cpufreq <cpufreq@vger.kernel.org>, x86@kernel.org
-Subject: Re: [PATCH] trace power_frequency events on the correct cpu  (for
- Intel x86 CPUs)
-References: <1268399863.3407.15.camel@localhost>
-In-Reply-To: <1268399863.3407.15.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 12 Mar 2010 09:55:19 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Mar 2010 09:55:19 EST
+Subject: Re: [PATCH v1 0/3] [RFC] resource, PCI: work around pci=use_crs
+ conflicts
+From: Yanko Kaneti <yaneti@declera.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Renninger <trenn@suse.de>, maciej.rutecki@gmail.com
+In-Reply-To: <20100311235954.4355.23100.stgit@bob.kio>
+References: <20100311235954.4355.23100.stgit@bob.kio>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Fri, 12 Mar 2010 16:49:37 +0200
+Message-ID: <1268405377.3493.4.camel@d2>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.92 (2.29.92-1.fc13) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/2010 5:17, Robert Schöne wrote:
-> This patch fixes the following behaviour:
-> Currently, the power_frequency event is reported for the cpu (core) which initiated the frequency change.
-> It should be reported for the cpu that actually changes its frequency.
->
-> Example: when using
->   taskset -c 0 echo<new_frequency>  >  /sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed
-> cpu 0 is traced, instead of cpu 1
->
-> Signed of by Robert Schoene<robert.schoene@tu-dresden.de>
->
->
-> diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> index 1b1920f..0a47f10 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> @@ -174,6 +174,7 @@ static void do_drv_write(void *_cmd)
->
->          switch (cmd->type) {
->          case SYSTEM_INTEL_MSR_CAPABLE:
-> +               trace_power_frequency(POWER_PSTATE, cmd->val);
->                  rdmsr(cmd->addr.msr.reg, lo, hi);
->                  lo = (lo&  ~INTEL_MSR_RANGE) | (cmd->val&  INTEL_MSR_RANGE);
->                  wrmsr(cmd->addr.msr.reg, lo, hi);
-> @@ -363,7 +364,6 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
->                  }
->          }
->
-> -       trace_power_frequency(POWER_PSTATE, data->freq_table[next_state].frequency);
->
->          switch (data->cpu_feature) {
->          case SYSTEM_INTEL_MSR_CAPABLE:
->
->
+On Thu, 2010-03-11 at 17:01 -0700, Bjorn Helgaas wrote:
+> These patches are to fix this pci=use_crs regression:
+> 
+>     http://bugzilla.kernel.org/show_bug.cgi?id=15480
+> 
+> The problem is that BIOS reported a PCI host bridge window that overlaps
+> system RAM.  This workaround trims the window to avoid the overlap, which
+> requires information about the conflicting resource.
+> 
+> Yanko, I reworked these a bit, so if you have a chance to retest them
+> and collect another dmesg log, I'd appreciate it.
+> 
+> I'm still hoping for someone to find out how Windows deals with this, but
+> haven't gotten any data yet.
+> 
+> ---
+> 
+> Bjorn Helgaas (3):
+>       resources: add interfaces that return conflict information
+>       x86/PCI: trim _CRS windows when they conflict with previous reservations
+>       PCI: for address space collisions, show conflicting resource
+> 
+> 
+>  arch/x86/pci/acpi.c     |   48 ++++++++++++++++++++++++++++++++++-------------
+>  drivers/pci/setup-res.c |   14 ++++++++------
+>  include/linux/ioport.h  |    2 ++
+>  kernel/resource.c       |   44 ++++++++++++++++++++++++++++++++++++-------
+>  4 files changed, 82 insertions(+), 26 deletions(-)
 
-are you sure this is right?
-it's moving something from outside a switch statement to inside only one prong of a switch statement...
+Applied on top of latest rawhide kernel. Boots without pci=  workarounds
+and works fine so far.
+Dmesg attached to the bug report.
+
+Thanks
 
