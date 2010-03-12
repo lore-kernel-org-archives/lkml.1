@@ -1,67 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932643Ab0CLK5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:57:55 -0500
-Received: from lucidpixels.com ([75.144.35.66]:51359 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932157Ab0CLK5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:57:53 -0500
-Date: Fri, 12 Mar 2010 05:57:53 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33: pci 0000:00:00.0: address space collision / spontaenous
- reboots
-In-Reply-To: <alpine.DEB.2.00.1003120548551.6420@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.1003120556590.15732@p34.internal.lan>
-References: <alpine.DEB.2.00.1003120522550.6420@p34.internal.lan> <alpine.DEB.2.00.1003120548551.6420@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S932368Ab0CLLFL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 06:05:11 -0500
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:3930 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752364Ab0CLLFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 06:05:06 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAH+tmUvCTtAn/2dsb2JhbACaa3O6GoR7BA
+Date: Fri, 12 Mar 2010 12:04:53 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: uClinux development list <uclinux-dev@uclinux.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [uClinux-dev] Re: [PATCH v2] m68knommu: driver for Freescale
+	Coldfire I2C controller.
+Message-ID: <20100312110453.GA16156@frolo.macqel>
+References: <201001101600.41932.sfking@fdwdc.com> <201001111024.05506.sfking@fdwdc.com> <20100124151519.GB28675@fluff.org.uk> <201001251156.31110.sfking@fdwdc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001251156.31110.sfking@fdwdc.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all,
 
+On Mon, Jan 25, 2010 at 11:56:30AM -0800, Steven King wrote:
+> > >
+> > > Add support for the I2C controller used on Freescale/Motorola Coldfire
+> > > MCUs.
+> > >
+> > > Signed-off-by: Steven King <sfking@fdwdc.com>
 
-On Fri, 12 Mar 2010, Justin Piszcz wrote:
+What's the status of this ?
 
->
->
-> On Fri, 12 Mar 2010, Justin Piszcz wrote:
->
->> Hello,
->> 
->> I am trying to figure out why a particular host using a Gigabyte 
->> motherboard
->> (AMD) continues to crash, memory/CPU OK, voltages normal, I see this in
->> the kernel log:
->> 
->> [    0.138774] PCI: Using ACPI for IRQ routing
->> [    0.138825] PCI: pci_cache_line_size set to 64 bytes
->> [    0.138830] pci 0000:00:00.0: address space collision: [mem 
->> 0xe0000000-0xffffffff 64bit] already in use
->> 
->> If memory gets mapped into this space somehow, can that cause a spontaenous
->> reboot?  What is the workaround for this problem?
->> 
->> There are no PCI cards in this system, only a graphics card.
->> 
->> I suppose the next things to try:
->> apic=off
->> lapic=off
->
-> Correction-
-> noapic
-> nolapic
->
+I need to use i2c for a coldfire uclinux project (with a mcf5484) and I
+now have 3 different coldfire i2c drivers, none of which is in mainline.
 
---
+i2c-mcf.c (from uClinux-dist-20090618, but not in http://git.kernel.org/?p=linux/kernel/git/gerg/m68knommu.git;a=summary)
+i2c-mcf548x.c (from ltib-m5475evb-20080808, found as "Linux BSP for MCF5484LITE, MCF5475/85EVB" at http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MCF548X&fpsp=1&tab=Design_Tools_Tab)
+i2c-coldfire.c (from http://lkml.org/lkml/2010/1/11/165)
 
-[    0.029932] pci_root PNP0A03:00: ignoring host bridge windows from ACPI; boot with "pci=use_crs" to use them
+I like to work with mainline sources to be be able to contribute to and benefit
+from collective work.
 
-After booting with pci=use_crs, the collision goes away, as does another
-problem with the jmicron controller, will see if this fixes it.
+Which one has the best chances to be put in mainline ?
 
-Justin.
+Best regards
 
-
+Philippe
