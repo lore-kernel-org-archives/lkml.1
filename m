@@ -1,47 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423Ab0CLKCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 05:02:32 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:45100 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932308Ab0CLKCb (ORCPT
+	id S932339Ab0CLKD2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 05:03:28 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:63887 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932336Ab0CLKD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 05:02:31 -0500
-Date: Fri, 12 Mar 2010 11:02:13 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: pjohn@mvista.com, linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] MIPS: Fix compile error implicit declaration of function
- cpu_local_wrap
-Message-ID: <20100312100212.GA4400@linux-mips.org>
-References: <1268337816.29250.3.camel@localhost.localdomain>
- <4B994E0C.1010503@caviumnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B994E0C.1010503@caviumnetworks.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Fri, 12 Mar 2010 05:03:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=RoTHL7IKnLpoFI9brN99j3HuvMHo+EVICXRw+RfdWR2f8rc7vSVXSRbEVq4B/U91E9
+         aGVqLqEYFih4GcuzC5RxWOxNuLZzeloevUuuD0ERP44zJKdeX1IoBCjiNhDup9OwmtwQ
+         IpFenrxyLvZf4hRMxRd5j1H58hvjliNbA9KlA=
+From: revent82@gmail.com
+To: gregkh@suse.de, andre@bitwigglers.org, peterhuewe@gmx.de,
+       ak@linux.intel.com, eugeni@mandriva.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       revent <revent@router.Premier>
+Subject: [PATCH] Staging:asus_oled: Fixed problem of style tabs in asus_oled.c
+Date: Fri, 12 Mar 2010 15:03:21 +0500
+Message-Id: <1268388201-26333-1-git-send-email-revent82@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 12:09:48PM -0800, David Daney wrote:
+From: revent <revent@router.Premier>
 
-> On 03/11/2010 12:03 PM, Philby John wrote:
-> >The commit 38b7827fc removed cpu_local_xx macros that lead to
-> >a compile error: implicit declaration of function 'cpu_local_wrap',
-> >when compiled for the MIPS Cavium Octeon processors. Revert back
-> >to old code.
-> >
-> >CC: Christoph Lameter<cl@linux-foundation.org>
-> >CC: Tejun Heo<tj@kernel.org>
-> >CC: David Daney<ddaney@caviumnetworks.com>
-> >Signed-off-by: Philby John<pjohn@mvista.com>
-> 
-> Ralf is testing a different patch for this problem.
+---
+ drivers/staging/asus_oled/asus_oled.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Already applied to the lmo tree a few days ago so NACK for the posted
-patch.
+diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+index 7ebecc9..5b279fb 100644
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
+ };
+ 
+ static CLASS_ATTR_STRING(version, S_IRUGO,
+-		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
++			ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
+ 
+ static int __init asus_oled_init(void)
+ {
+-- 
+1.5.6.5
 
-  Ralf
