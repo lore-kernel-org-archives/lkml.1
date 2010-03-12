@@ -1,94 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258Ab0CLJyq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 04:54:46 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:52501 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932168Ab0CLJyk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 04:54:40 -0500
-Subject: Re: [RFC] kmemleak: Is DMI supported ?
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1268328868.2986.547.camel@edumazet-laptop>
-References: <1268328868.2986.547.camel@edumazet-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Fri, 12 Mar 2010 09:54:35 +0000
-Message-ID: <1268387675.3068.19.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Mar 2010 09:54:36.0162 (UTC) FILETIME=[05FECE20:01CAC1CA]
+	id S932241Ab0CLJzd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 04:55:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53801 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932164Ab0CLJza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 04:55:30 -0500
+Date: Fri, 12 Mar 2010 09:54:58 GMT
+From: tip-bot for Jack Steiner <steiner@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20100311184328.GA21433@sgi.com>
+References: <20100311184328.GA21433@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, UV: Fix target_cpus() in x2apic_uv_x.c
+Message-ID: <tip-8447b360a3897bdfb0677107564d1dd9ab6e63be@git.kernel.org>
+Git-Commit-ID: 8447b360a3897bdfb0677107564d1dd9ab6e63be
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Mar 2010 09:54:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+Commit-ID:  8447b360a3897bdfb0677107564d1dd9ab6e63be
+Gitweb:     http://git.kernel.org/tip/8447b360a3897bdfb0677107564d1dd9ab6e63be
+Author:     Jack Steiner <steiner@sgi.com>
+AuthorDate: Thu, 11 Mar 2010 12:43:29 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 12 Mar 2010 10:19:29 +0100
 
-On Thu, 2010-03-11 at 17:34 +0000, Eric Dumazet wrote:
-> On my i686 machine, I have
-> CONFIG_DMI=y
-> 
-> and 12 entries in /sys/firmware/memmap/ like first one named "0" :
-> 
-> $ grep . /sys/firmware/memmap/0/*
-> /sys/firmware/memmap/0/end:0x9f3ff
-> /sys/firmware/memmap/0/start:0x0
-> /sys/firmware/memmap/0/type:System RAM
-> 
-> 
-> All 12 kobjects are allocated in DMI zone between
-> c1001000 b .brk.dmi_alloc
-> c1011000 B __brk_limit)
-> 
-> see arch/x86/kernel/setup.c:124
-> 
-> #ifdef CONFIG_DMI
-> RESERVE_BRK(dmi_alloc, 65536);
-> #endif
-> 
-> Still kmemleak seems to thing their names are unreferenced objects.
+x86, UV: Fix target_cpus() in x2apic_uv_x.c
 
-By default, kmemleak only scans the Data and BSS sections, any other
-memory block that's not allocated via slab needs to be added explicitly.
-In this case, you can add the line below somewhere in the x86 setup.c
-file:
+target_cpu() should initially target all cpus, not just cpu 0.
+Otherwise systems with lots of disks can exhaust the interrupt
+vectors on cpu 0 if a large number of disks are discovered
+before the irq balancer is running.
 
-kmemleak_alloc(dmi_alloc, 65536, 0, 0);
+Note: UV code only...
 
-An alternative would be to add x86 brk scanning explicitly in
-kmemleak.c. It has the advantage that only the initialised parts of the
-BRK are scanned. Something like below (untested):
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20100311184328.GA21433@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/x2apic_uv_x.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5b069e4..2183f99 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -98,6 +98,9 @@
- #include <asm/sections.h>
- #include <asm/processor.h>
- #include <asm/atomic.h>
-+#ifdef CONFIG_X86
-+#include <asm/setup.h>
-+#endif
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index 21db3cb..af0ca80 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -114,11 +114,9 @@ EXPORT_SYMBOL_GPL(uv_possible_blades);
+ unsigned long sn_rtc_cycles_per_second;
+ EXPORT_SYMBOL(sn_rtc_cycles_per_second);
  
- #include <linux/kmemcheck.h>
- #include <linux/kmemleak.h>
-@@ -1166,6 +1169,9 @@ static void kmemleak_scan(void)
- 	/* data/bss scanning */
- 	scan_block(_sdata, _edata, NULL, 1);
- 	scan_block(__bss_start, __bss_stop, NULL, 1);
-+#ifdef CONFIG_X86
-+	scan_block(__brk_base, _brk_end, NULL, 1);
-+#endif
+-/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
+-
+ static const struct cpumask *uv_target_cpus(void)
+ {
+-	return cpumask_of(0);
++	return cpu_online_mask;
+ }
  
- #ifdef CONFIG_SMP
- 	/* per-cpu sections scanning */
-
-
-
--- 
-Catalin
-
+ static void uv_vector_allocation_domain(int cpu, struct cpumask *retmask)
