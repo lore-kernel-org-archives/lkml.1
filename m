@@ -1,186 +1,145 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934773Ab0CMATT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:19:19 -0500
-Received: from kroah.org ([198.145.64.141]:60497 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934729Ab0CMATR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:17 -0500
-Date: Fri, 12 Mar 2010 16:16:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 000/123] 2.6.33.1-stable review
-Message-ID: <20100313001618.GA9811@kroah.com>
+	id S934792Ab0CMAT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:19:28 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:34587 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934780Ab0CMATZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:25 -0500
+X-Greylist: delayed 2286 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Mar 2010 19:19:25 EST
+Date: Fri, 12 Mar 2010 15:41:15 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] Oops on tmpfs remounts with mpol=default
+Message-ID: <20100312234115.GA4542@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="CUfgB8w4ZwR/yMy5"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.31.1 release.
-There are 123 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
 
-Note, I still have a number of outstanding patches that have been
-submitted for this release.  But due to the size, I figured it was best
-to get this release out as soon as possible and then catch up next week
-with the next batch of patches.  So don't worry if you don't see a patch
-you have asked to be included that is not in here.
+--CUfgB8w4ZwR/yMy5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Responses should be made by Monday, March 15, 00:00:00 UTC.
-Anything received after that time might be too late.
+One of our customers reported an Oops when trying to remount a tmpfs mount
+back with  'default' mempolicy after changing it to a non default policy.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.33.1-rc1.gz
-and the diffstat can be found below.
+Upon examination of code, I found that the kernel remount code tries to
+dereference the 'NULL' mempolicy object returned by mpol_new at
+mpol_parse_str.
 
-thanks,
+Attached is the oops snippet.  Please find the proposed fix inline.
 
-greg k-h
+Thanks,
+Kiran
 
- Documentation/kernel-parameters.txt     |    7 +
- Documentation/laptops/thinkpad-acpi.txt |    4 +
- Makefile                                |    2 +-
- arch/Kconfig                            |    2 -
- arch/x86/ia32/ia32_aout.c               |    1 -
- arch/x86/include/asm/io_apic.h          |    1 +
- arch/x86/include/asm/pgalloc.h          |    5 +
- arch/x86/include/asm/uv/uv_hub.h        |    3 +-
- arch/x86/include/asm/vmx.h              |    1 +
- arch/x86/kernel/acpi/boot.c             |    9 +-
- arch/x86/kernel/apic/io_apic.c          |   68 ++-
- arch/x86/kernel/reboot.c                |    8 +
- arch/x86/kvm/emulate.c                  |   55 ++-
- arch/x86/kvm/vmx.c                      |   10 +
- arch/x86/mm/pgtable.c                   |   31 +-
- arch/x86/oprofile/nmi_int.c             |   17 +-
- arch/x86/oprofile/op_model_amd.c        |   42 +--
- arch/x86/oprofile/op_model_p4.c         |    6 -
- arch/x86/oprofile/op_model_ppro.c       |    6 +-
- arch/x86/pci/mmconfig-shared.c          |   17 +-
- arch/x86/xen/enlighten.c                |    7 +
- arch/x86/xen/mmu.c                      |   11 +-
- drivers/ata/ahci.c                      |   12 +-
- drivers/ata/pata_hpt3x2n.c              |   20 +-
- drivers/base/core.c                     |   13 +-
- drivers/base/devtmpfs.c                 |   13 +
- drivers/char/tty_ldisc.c                |   50 +-
- drivers/clocksource/sh_cmt.c            |   32 +-
- drivers/clocksource/sh_mtu2.c           |    6 +-
- drivers/clocksource/sh_tmu.c            |    6 +-
- drivers/gpio/cs5535-gpio.c              |    4 +-
- drivers/gpio/wm831x-gpio.c              |   22 +-
- drivers/gpu/drm/i915/intel_lvds.c       |    7 +
- drivers/gpu/drm/i915/intel_sdvo.c       |   23 +-
- drivers/gpu/drm/radeon/atom.c           |    4 -
- drivers/gpu/drm/ttm/ttm_tt.c            |   18 +-
- drivers/hid/hid-core.c                  |    2 -
- drivers/hid/hid-ids.h                   |    4 -
- drivers/hid/usbhid/hid-core.c           |   28 +-
- drivers/hid/usbhid/usbhid.h             |    2 +
- drivers/hwmon/ams/ams-core.c            |   11 +-
- drivers/hwmon/ams/ams-i2c.c             |    2 +
- drivers/hwmon/ams/ams-pmu.c             |    2 +
- drivers/hwmon/ams/ams.h                 |    1 +
- drivers/hwmon/fschmd.c                  |   15 +-
- drivers/hwmon/tmp401.c                  |    7 +-
- drivers/hwmon/tmp421.c                  |   24 +-
- drivers/macintosh/therm_adt746x.c       |   34 +-
- drivers/md/dm-ioctl.c                   |    9 +-
- drivers/md/dm.c                         |    4 +-
- drivers/media/dvb/dvb-core/dvb_net.c    |    1 +
- drivers/media/video/gspca/mr97310a.c    |    6 +
- drivers/media/video/soc_mediabus.c      |    3 +-
- drivers/mmc/host/s3cmci.c               |    4 +-
- drivers/net/wireless/airo.c             |   34 +-
- drivers/net/wireless/ath/ath5k/ath5k.h  |    1 -
- drivers/net/wireless/ath/ath5k/base.c   |   26 +-
- drivers/net/wireless/ath/ath9k/beacon.c |    9 +-
- drivers/net/wireless/ath/ath9k/hw.c     |   10 +
- drivers/net/wireless/ath/ath9k/main.c   |    6 +-
- drivers/net/wireless/ath/ath9k/phy.h    |    3 +
- drivers/net/wireless/ath/ath9k/rc.c     |   15 +-
- drivers/net/wireless/b43/main.c         |    3 +-
- drivers/net/wireless/b43legacy/main.c   |    2 +
- drivers/net/wireless/p54/p54pci.c       |   18 +-
- drivers/net/wireless/p54/p54usb.c       |    1 +
- drivers/pci/hotplug/ibmphp_ebda.c       |   13 +-
- drivers/platform/x86/Kconfig            |   10 +-
- drivers/platform/x86/eeepc-laptop.c     |    3 +-
- drivers/platform/x86/thinkpad_acpi.c    |  116 +++--
- drivers/rtc/class.c                     |    1 +
- drivers/rtc/rtc-coh901331.c             |    5 +-
- drivers/scsi/mpt2sas/mpt2sas_scsih.c    |   17 +
- drivers/scsi/qla1280.c                  |    4 +
- drivers/serial/imx.c                    |    6 +-
- drivers/staging/Kconfig                 |    2 -
- drivers/staging/Makefile                |    1 -
- drivers/staging/hv/vmbus_drv.c          |   30 +
- drivers/staging/mimio/Kconfig           |   10 -
- drivers/staging/mimio/Makefile          |    1 -
- drivers/staging/mimio/mimio.c           |  914 -------------------------------
- drivers/staging/pohmelfs/inode.c        |   20 +-
- drivers/staging/pohmelfs/netfs.h        |    3 +
- drivers/staging/wlan-ng/Kconfig         |    1 +
- drivers/usb/core/driver.c               |    4 +-
- drivers/usb/core/hcd.c                  |    2 +-
- drivers/usb/core/hcd.h                  |    2 +-
- drivers/usb/core/hub.c                  |   12 +
- drivers/usb/core/usb.c                  |    3 -
- drivers/usb/gadget/f_mass_storage.c     |    1 -
- drivers/usb/host/ohci-pnx4008.c         |    6 +-
- drivers/usb/host/uhci-hcd.c             |    1 +
- drivers/usb/host/xhci-ext-caps.h        |    7 +-
- drivers/usb/serial/cp210x.c             |    3 +-
- drivers/usb/serial/ftdi_sio.c           |    5 +
- drivers/usb/serial/ftdi_sio_ids.h       |   15 +
- drivers/usb/serial/sierra.c             |   19 +-
- drivers/usb/storage/unusual_devs.h      |   88 +++-
- drivers/video/sunxvr500.c               |    1 +
- fs/file_table.c                         |    2 +
- fs/nfs/dns_resolve.c                    |   18 +-
- fs/nfsd/nfs4state.c                     |    2 +
- fs/ocfs2/aops.c                         |    5 +-
- fs/sysfs/dir.c                          |   82 ++-
- include/linux/fs.h                      |    3 +
- include/linux/irq.h                     |    2 +
- include/linux/netdevice.h               |    2 +-
- include/linux/perf_event.h              |    5 +-
- include/linux/sched.h                   |    5 +-
- include/linux/skbuff.h                  |   13 +-
- include/linux/syscalls.h                |    6 +-
- include/trace/ftrace.h                  |    3 +-
- kernel/irq/chip.c                       |   52 ++-
- kernel/perf_event.c                     |  134 ++++--
- kernel/power/snapshot.c                 |    2 +-
- kernel/sched.c                          |   21 +-
- kernel/trace/trace.h                    |    3 +-
- mm/fadvise.c                            |   10 +-
- mm/readahead.c                          |    6 +
- mm/slab.c                               |    6 +-
- net/core/scm.c                          |    2 +
- net/mac80211/agg-tx.c                   |    3 +-
- net/mac80211/rx.c                       |    8 +
- net/mac80211/tx.c                       |    5 +-
- net/netfilter/xt_recent.c               |    4 +-
- net/sunrpc/svc_xprt.c                   |    5 +-
- net/sunrpc/xprtsock.c                   |    5 +
- scripts/get_maintainer.pl               |    4 +-
- security/integrity/ima/ima_iint.c       |    3 +-
- security/selinux/ss/ebitmap.c           |    2 +-
- sound/core/pcm_native.c                 |    8 +-
- sound/pci/hda/hda_intel.c               |    3 +
- sound/pci/hda/patch_analog.c            |    2 +-
- sound/pci/via82xx.c                     |    6 +
- sound/soc/codecs/ak4104.c               |    6 +-
- sound/usb/usbaudio.c                    |   32 ++
- sound/usb/usbmidi.c                     |   24 +-
- sound/usb/usbquirks.h                   |   27 +
- tools/perf/util/symbol.c                |    2 +-
- 139 files changed, 1281 insertions(+), 1408 deletions(-)
+---
+
+Fix an 'oops' when a tmpfs mount point is remounted with the 'default'
+mempolicy.
+
+Upon remounting a tmpfs mount point with 'mpol=default' option, the remount
+code crashed with a null pointer dereference.  The initial problem report was
+on 2.6.27, but the problem exists in mainline 2.6.34-rc  as well. On
+examining the code, we see that mpol_new returns NULL if default mempolicy
+was requested.   This 'NULL' mempolicy is accessed to store the node mask
+resulting in oops.
+
+The following patch fixes the oops by avoiding dereferencing NULL if the
+new mempolicy is NULL.
+The patch also sets 'err' to 0 if MPOL_DEFAULT is passed (err is initialized
+to 1 initially at mpol_parse_str())
+
+
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index bda230e..a86277d 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -2213,10 +2213,14 @@ int mpol_parse_str(char *str, struct mempolicy **mpol, int no_context)
+ 			goto out;
+ 		mode = MPOL_PREFERRED;
+ 		break;
+-
++	case MPOL_DEFAULT:
++		/*
++		 * mpol_new() enforces empty nodemask, ignores flags.
++		 */
++		err = 0;
++		break;
+ 	/*
+ 	 * case MPOL_BIND:    mpol_new() enforces non-empty nodemask.
+-	 * case MPOL_DEFAULT: mpol_new() enforces empty nodemask, ignores flags.
+ 	 */
+ 	}
+ 
+@@ -2250,7 +2254,7 @@ int mpol_parse_str(char *str, struct mempolicy **mpol, int no_context)
+ 		if (ret) {
+ 			err = 1;
+ 			mpol_put(new);
+-		} else if (no_context) {
++		} else if (no_context && new) {
+ 			/* save for contextualization */
+ 			new->w.user_nodemask = nodes;
+ 		}
+
+--CUfgB8w4ZwR/yMy5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=oops
+
+
+[ 1159.848055] BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+[ 1159.856087] IP: [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
+[ 1159.856472] PGD a7dfd067 PUD aa1fe067 PMD 0 
+[ 1159.856472] Oops: 0002 [#1] SMP 
+[ 1159.856472] last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:0a:01.0/local_cpus
+[ 1159.876476] CPU 7 
+[ 1159.876476] Modules linked in: nfs lockd nfs_acl sunrpc ecb cbc md5 aes_generic iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi
+[ 1159.876476] 
+[ 1159.876476] Pid: 6235, comm: mount Not tainted 2.6.34-rc1-00005-g522dba7 #5 B7DW3/B7DW3
+[ 1159.876476] RIP: 0010:[<ffffffff810ac096>]  [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
+[ 1159.876476] RSP: 0018:ffff8800aa125d68  EFLAGS: 00010202
+[ 1159.876476] RAX: 0000000000000000 RBX: ffff8800ab7ed000 RCX: 0000000000000000
+[ 1159.876476] RDX: ffff8800aa125d78 RSI: 0000000000000001 RDI: 0000000000000000
+[ 1159.876476] RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000008
+[ 1159.876476] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000001
+[ 1159.876476] R13: 0000000000000000 R14: 0000000000000000 R15: ffff8800aa125e58
+[ 1159.876476] FS:  00007fc29bc47760(0000) GS:ffff8800ac400000(0000) knlGS:0000000000000000
+[ 1159.876476] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 1159.876476] CR2: 0000000000000010 CR3: 00000000a9a93000 CR4: 00000000000006e0
+[ 1159.876476] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 1159.876476] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[ 1159.876476] Process mount (pid: 6235, threadinfo ffff8800aa124000, task ffff8800ab7ed000)
+[ 1159.876476] Stack:
+[ 1159.876476]  000001fe000001fe 00000001aafe0a80 ffff8800aafe0b48 ffffffff810ccb3f
+[ 1159.876476] <0> 0000000000000000 0000006700000000 0000006800000068 0000000000000000
+[ 1159.876476] <0> ffff8800a7663000 ffff8800a7663005 ffff8800aa125e28 ffff8800aa125de8
+[ 1159.876476] Call Trace:
+[ 1159.876476]  [<ffffffff810ccb3f>] ? mntput_no_expire+0x1f/0xa0
+[ 1159.876476]  [<ffffffff8108c7ac>] ? shmem_parse_options+0x2ac/0x2e0
+[ 1159.876476]  [<ffffffff810c1313>] ? do_path_lookup+0x33/0x60
+[ 1159.876476]  [<ffffffff8108d42d>] ? shmem_remount_fs+0x5d/0x110
+[ 1159.876476]  [<ffffffff810b735f>] ? do_remount_sb+0x7f/0x180
+[ 1159.876476]  [<ffffffff810cdef8>] ? do_mount+0x668/0x800
+[ 1159.876476]  [<ffffffff810cc4fd>] ? copy_mount_options+0x10d/0x180
+[ 1159.876476]  [<ffffffff810ce125>] ? sys_mount+0x95/0xf0
+[ 1159.876476]  [<ffffffff81002302>] ? system_call_fastpath+0x16/0x1b
+[ 1159.876476] Code: 54 24 10 48 8d 74 24 20 48 89 ef e8 a5 e2 ff ff fe 83 cc 04 00 00 85 c0 75 1a 8b 74 24 0c 85 f6 0f 84 b8 fe ff ff 48 8b 44 24 20 <48> 89 45 10 e9 aa fe ff ff 48 85 ed 0f 84 ca 00 00 00 48 89 ef 
+[ 1159.876476] RIP  [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
+[ 1159.876476]  RSP <ffff8800aa125d68>
+[ 1159.876476] CR2: 0000000000000010
+[ 1159.878411] ---[ end trace 0c86a8c1b0b4c73c ]---
+
+--CUfgB8w4ZwR/yMy5--
