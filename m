@@ -1,41 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342Ab0CLRQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 12:16:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47787 "EHLO mx1.redhat.com"
+	id S933435Ab0CLRRS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 12:17:18 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:47827 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933206Ab0CLRQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 12:16:36 -0500
-Message-ID: <4B9A768E.7020101@redhat.com>
-Date: Fri, 12 Mar 2010 12:14:54 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S933238Ab0CLRRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 12:17:16 -0500
+Date: Fri, 12 Mar 2010 18:17:13 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/serial/sunsab.c: adjust the constant used to initialize
+ the interrupt_mask0 fields
+Message-ID: <Pine.LNX.4.64.1003121816500.3043@ask.diku.dk>
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 03/11] mm: Share the anon_vma ref counts between KSM and
- page migration
-References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie> <1268412087-13536-4-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1268412087-13536-4-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/2010 11:41 AM, Mel Gorman wrote:
-> For clarity of review, KSM and page migration have separate refcounts on
-> the anon_vma. While clear, this is a waste of memory. This patch gets
-> KSM and page migration to share their toys in a spirit of harmony.
->
-> Signed-off-by: Mel Gorman<mel@csn.ul.ie>
-> Reviewed-by: Minchan Kim<minchan.kim@gmail.com>
+From: Julia Lawall <julia@diku.dk>
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+SAB82532_ISR0_TCD is declared in drivers/serial/subsab.h as relating to a
+status register, while SAB82532_IMR0_TCD is declared in the same file as
+relating to a mask register.  The latter seems more appropriate for the
+interrupt_mask0 field, and follows the strategy for initializing this field
+elsewhere in the same file.
 
+Both SAB82532_ISR0_TCD and SAB82532_IMR0_TCD have the same value.
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/serial/sunsab.c             |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/serial/sunsab.c b/drivers/serial/sunsab.c
+index d514e28..d2e0321 100644
+--- a/drivers/serial/sunsab.c
++++ b/drivers/serial/sunsab.c
+@@ -474,7 +474,7 @@ static void sunsab_stop_rx(struct uart_port *port)
+ {
+ 	struct uart_sunsab_port *up = (struct uart_sunsab_port *) port;
+ 
+-	up->interrupt_mask0 |= SAB82532_ISR0_TCD;
++	up->interrupt_mask0 |= SAB82532_IMR0_TCD;
+ 	writeb(up->interrupt_mask1, &up->regs->w.imr0);
+ }
+ 
