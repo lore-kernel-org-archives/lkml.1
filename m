@@ -1,87 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761Ab0CMGw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 01:52:29 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:64010 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701Ab0CMGud (ORCPT
+	id S1754617Ab0CMGxI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 01:53:08 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:59081 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754273Ab0CMGxC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 01:50:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=cinpIwaT/C18KHfaceQA+stT4DrrW6qHFd1nB9rBCFqq6c/m32TT2lb0xLt9mELcRJ
-         zhv4jwvpBAtvEfAjTSoNVL+Nji7/7YlLqqlGX6/wapZQaiXJVh7iHH0hX4uOJGURfy5p
-         PVpC932WL0GiBTk2316hl/R+/ogWBgt6Dfl7A=
-From: Rabin Vincent <rabin@rab.in>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Rabin Vincent <rabin@rab.in>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: [PATCH 06/10] ARM: ftrace: add Thumb-2 support
-Date: Sat, 13 Mar 2010 12:19:43 +0530
-Message-Id: <1268462987-8271-7-git-send-email-rabin@rab.in>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1268462987-8271-1-git-send-email-rabin@rab.in>
-References: <1268462987-8271-1-git-send-email-rabin@rab.in>
+	Sat, 13 Mar 2010 01:53:02 -0500
+Date: Sat, 13 Mar 2010 07:52:55 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
+ deprecation)
+Message-ID: <20100313065254.GF12554@elf.ucw.cz>
+References: <20100303075944.GA23354@comet.dominikbrodowski.net>
+ <20100303083010.GA22928@flint.arm.linux.org.uk>
+ <20100305120746.646126b9@lxorguk.ukuu.org.uk>
+ <20100310204546.GA1394@ucw.cz>
+ <20100310210015.GB16230@isilmar.linta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100310210015.GB16230@isilmar.linta.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the mcount routines to build and run on a kernel built with the
-Thumb-2 instruction set:
+On Wed 2010-03-10 22:00:15, Dominik Brodowski wrote:
+> Hey,
+> 
+> On Wed, Mar 10, 2010 at 09:45:46PM +0100, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > So you believe that disabling the button in the graphical environment
+> > > > to allow PCMCIA cards to be removed (such as CF cards) - leaving the
+> > > > user to merely pull out the CF card, while the FS is mounted, is a
+> > > > good idea?
+> > > 
+> > > Do any graphical environments even support the ancient user space
+> > > pcmcica helper stuff ? I can't find any evidence they do but I realise
+> > 
+> > Yes; qtopia shipped with zaurus sl-5500 (collie), and very probably
+> > opie and gpe...
+> > 
+> > Sharp needed operating system for the handheld, and yes it supported
+> > all the hw.
+> 
+> So qtopia still uses the PCMCIA ioctl? Or is it some custom add-on code by
+> zaurus? I'd very much like to see some more source code, what parts of
+> the IOCTL it uses etc. pp. Or at least some pointers...
 
- - Without the BSYM, the following assembler errors appear:
+Well, Alan asked about "any graphical environments even support the
+ancient user space pcmcica helper stuff", and yes I believe there are
+some. I probably have one on ancient collie that's lying
+somewhere. Not sure about sources, I never used those heavily.
 
-   entry-common.S: Assembler messages:
-   entry-common.S:179: Error: invalid immediate for address calculation (value = 0x00000004)
-
- - Without the orr, the lsb is not set on the pointer loaded from
-   ftrace_trace_function, but is set on BSYM(ftrace_stub), leading to the
-   comparison failing even when the pointer is pointing to ftrace_stub.
-
- - The problem with the "mov lr, pc", is that it does not set the lsb when
-   storing the pc in lr.  The called function returns with "bx lr", and the
-   mode changes to ARM.  The blx is to avoid this.
-
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Rabin Vincent <rabin@rab.in>
----
- arch/arm/kernel/entry-common.S |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
-index c3bdb05..573ed3b 100644
---- a/arch/arm/kernel/entry-common.S
-+++ b/arch/arm/kernel/entry-common.S
-@@ -167,7 +167,8 @@ ENTRY(__gnu_mcount_nc)
- 	stmdb	sp!, {r0-r3, lr}
- 	ldr	r0, =ftrace_trace_function
- 	ldr	r2, [r0]
--	adr	r0, ftrace_stub
-+ THUMB(	orr	r2, r2, #1		)
-+	adr	r0, BSYM(ftrace_stub)
- 	cmp	r0, r2
- 	bne	gnu_trace
- 	ldmia	sp!, {r0-r3, ip, lr}
-@@ -177,8 +178,9 @@ gnu_trace:
- 	ldr	r1, [sp, #20]			@ lr of instrumented routine
- 	mov	r0, lr
- 	sub	r0, r0, #MCOUNT_INSN_SIZE
--	mov	lr, pc
--	mov	pc, r2
-+ ARM(	mov	lr, pc			)
-+ ARM(	mov	pc, r2			)
-+ THUMB(	blx	r2			)
- 	ldmia	sp!, {r0-r3, ip, lr}
- 	mov	pc, ip
- ENDPROC(__gnu_mcount_nc)
+								Pavel
 -- 
-1.7.0
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
