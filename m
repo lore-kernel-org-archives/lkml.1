@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935724Ab0CMAeg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:34:36 -0500
-Received: from kroah.org ([198.145.64.141]:47078 "EHLO coco.kroah.org"
+	id S935579Ab0CMAcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:32:55 -0500
+Received: from kroah.org ([198.145.64.141]:46885 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935494Ab0CMAcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:03 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
-Message-Id: <20100313002713.520163391@kvm.kroah.org>
+	id S935411Ab0CMAb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:28 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
+Message-Id: <20100313002709.772868249@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:08 -0800
+Date: Fri, 12 Mar 2010 16:26:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [095/145] hwmon: (tmp421) Restore missing inputs
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [052/145] drm/i915: disable TV hotplug status check
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,73 +24,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit 8d59582a867470a3e0c3eced4a01625ae8dc546b upstream.
+commit 8fcc501831aa5b37a4a5a8cd9dc965be3cacc599 upstream.
 
-An off-by-one error caused some inputs to not be created by the driver
-when they should. TMP421 gets only one input instead of two, TMP422
-gets two instead of three, etc. Fix the bug by listing explicitly the
-number of inputs each device has.
+As we removed TV hotplug, don't check its status ever.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Tested-by: Andre Prendel <andre.prendel@gmx.de>
+Reviewed-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/tmp421.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/gpu/drm/i915/intel_tv.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/drivers/hwmon/tmp421.c
-+++ b/drivers/hwmon/tmp421.c
-@@ -62,9 +62,9 @@ static const u8 TMP421_TEMP_LSB[4]		= {
- #define TMP423_DEVICE_ID			0x23
- 
- static const struct i2c_device_id tmp421_id[] = {
--	{ "tmp421", tmp421 },
--	{ "tmp422", tmp422 },
--	{ "tmp423", tmp423 },
-+	{ "tmp421", 2 },
-+	{ "tmp422", 3 },
-+	{ "tmp423", 4 },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, tmp421_id);
-@@ -74,7 +74,7 @@ struct tmp421_data {
- 	struct mutex update_lock;
- 	char valid;
- 	unsigned long last_updated;
--	int kind;
-+	int channels;
- 	u8 config;
- 	s16 temp[4];
- };
-@@ -110,7 +110,7 @@ static struct tmp421_data *tmp421_update
- 		data->config = i2c_smbus_read_byte_data(client,
- 			TMP421_CONFIG_REG_1);
- 
--		for (i = 0; i <= data->kind; i++) {
-+		for (i = 0; i < data->channels; i++) {
- 			data->temp[i] = i2c_smbus_read_byte_data(client,
- 				TMP421_TEMP_MSB[i]) << 8;
- 			data->temp[i] |= i2c_smbus_read_byte_data(client,
-@@ -169,7 +169,7 @@ static mode_t tmp421_is_visible(struct k
- 	devattr = container_of(a, struct device_attribute, attr);
- 	index = to_sensor_dev_attr(devattr)->index;
- 
--	if (data->kind > index)
-+	if (index < data->channels)
- 		return a->mode;
- 
- 	return 0;
-@@ -277,7 +277,7 @@ static int tmp421_probe(struct i2c_clien
- 
- 	i2c_set_clientdata(client, data);
- 	mutex_init(&data->update_lock);
--	data->kind = id->driver_data;
-+	data->channels = id->driver_data;
- 
- 	err = tmp421_init_client(client);
- 	if (err)
+--- a/drivers/gpu/drm/i915/intel_tv.c
++++ b/drivers/gpu/drm/i915/intel_tv.c
+@@ -1801,8 +1801,6 @@ intel_tv_init(struct drm_device *dev)
+ 	drm_connector_attach_property(connector,
+ 				   dev->mode_config.tv_bottom_margin_property,
+ 				   tv_priv->margin[TV_MARGIN_BOTTOM]);
+-
+-	dev_priv->hotplug_supported_mask |= TV_HOTPLUG_INT_STATUS;
+ out:
+ 	drm_sysfs_connector_add(connector);
+ }
 
 
