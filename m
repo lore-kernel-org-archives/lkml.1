@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935850Ab0CMAuB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:50:01 -0500
-Received: from kroah.org ([198.145.64.141]:47049 "EHLO coco.kroah.org"
+	id S935941Ab0CMA40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:56:26 -0500
+Received: from kroah.org ([198.145.64.141]:46865 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935484Ab0CMAb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:58 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
-Message-Id: <20100313002712.906489368@kvm.kroah.org>
+	id S935406Ab0CMAbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:24 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
+Message-Id: <20100313002709.425536237@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:01 -0800
+Date: Fri, 12 Mar 2010 16:26:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Elina Pasheva <epasheva@sierrawireless.com>
-Subject: [088/145] USB: serial: sierra driver indat_callback fix
+       Jerome Glisse <jglisse@redhat.com>, Dave Airlie <airlied@linux.ie>
+Subject: [048/145] drm/radeon: r6xx/r7xx possible security issue, system ram access
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,55 +24,256 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Elina Pasheva <epasheva@sierrawireless.com>
+From: Jerome Glisse <jglisse@redhat.com>
 
-commit b87c6e86dac1bb5222279cc8ff7e09529e1c4ed9 upstream.
+commit c8c15ff1e90bfc4a2db1ba77a01b3b2783e723fc upstream
 
-A crash has been reported with sierra driver on disconnect with
-Ubuntu/Lucid distribution based on kernel-2.6.32.
-The cause of the crash was determined as "NULL tty pointer was being
-referenced" and the NULL pointer was passed by sierra_indat_callback().
+This patch workaround a possible security issue which can allow
+user to abuse drm on r6xx/r7xx hw to access any system ram memory.
+This patch doesn't break userspace, it detect "valid" old use of
+CB_COLOR[0-7]_FRAG & CB_COLOR[0-7]_TILE registers and overwritte
+the address these registers are pointing to with the one of the
+last color buffer. This workaround will work for old mesa &
+xf86-video-ati and any old user which did use similar register
+programming pattern as those (we expect that there is no others
+user of those ioctl except possibly a malicious one). This patch
+add a warning if it detects such usage, warning encourage people
+to update their mesa & xf86-video-ati. New userspace will submit
+proper relocation.
 
-This patch modifies sierra_indat_callback() function to check for NULL
-tty structure pointer. This modification prevents a crash from happening
-when the device is disconnected.
+Fix for xf86-video-ati / mesa (this kernel patch is enough to
+prevent abuse, fix for userspace are to set proper cs stream and
+avoid kernel warning) :
+http://cgit.freedesktop.org/xorg/driver/xf86-video-ati/commit/?id=95d63e408cc88b6934bec84a0b1ef94dfe8bee7b
+http://cgit.freedesktop.org/mesa/mesa/commit/?id=46dc6fd3ed5ef96cda53641a97bc68c3bc104a9f
 
-This patch fixes the bug reported in Launchpad:
-  https://bugs.launchpad.net/ubuntu/+source/linux/+bug/511157
+Abusing this register to perform system ram memory is not easy,
+here is outline on how it could be achieve. First attacker must
+have access to the drm device and be able to submit command stream
+throught cs ioctl. Then attacker must build a proper command stream
+for r6xx/r7xx hw which will abuse the FRAG or TILE buffer to
+overwrite the GPU GART which is in VRAM. To achieve so attacker
+as to setup CB_COLOR[0-7]_FRAG or CB_COLOR[0-7]_TILE to point
+to the GPU GART, then it has to find a way to write predictable
+value into those buffer (with little cleverness i believe this
+can be done but this is an hard task). Once attacker have such
+program it can overwritte GPU GART to program GPU gart to point
+anywhere in system memory. It then can reusse same method as he
+used to reprogram GART to overwritte the system ram through the
+GART mapping. In the process the attacker has to be carefull to
+not overwritte any sensitive area of the GART table, like ring
+or IB gart entry as it will more then likely lead to GPU lockup.
+Bottom line is that i think it's very hard to use this flaw
+to get system ram access but in theory one can achieve so.
 
-Signed-off-by: Elina Pasheva <epasheva@sierrawireless.com>
+Side note: I am not aware of anyone ever using the GPU as an
+attack vector, nevertheless we take great care in the opensource
+driver to try to detect and forbid malicious use of GPU. I don't
+think the closed source driver are as cautious as we are.
+
+[bwh: Adjusted context for 2.6.32]
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+Signed-off-by: Dave Airlie <airlied@linux.ie>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/sierra.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ drivers/gpu/drm/radeon/r600_cs.c   |   83 +++++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/radeon/r600d.h     |   26 +++++++++++
+ drivers/gpu/drm/radeon/radeon.h    |    1 
+ drivers/gpu/drm/radeon/radeon_cs.c |    1 
+ 4 files changed, 111 insertions(+)
 
---- a/drivers/usb/serial/sierra.c
-+++ b/drivers/usb/serial/sierra.c
-@@ -567,14 +567,17 @@ static void sierra_indat_callback(struct
- 	} else {
- 		if (urb->actual_length) {
- 			tty = tty_port_tty_get(&port->port);
-+			if (tty) {
-+				tty_buffer_request_room(tty,
-+					urb->actual_length);
-+				tty_insert_flip_string(tty, data,
-+					urb->actual_length);
-+				tty_flip_buffer_push(tty);
+--- a/drivers/gpu/drm/radeon/r600_cs.c
++++ b/drivers/gpu/drm/radeon/r600_cs.c
+@@ -36,6 +36,10 @@ static int r600_cs_packet_next_reloc_nom
+ typedef int (*next_reloc_t)(struct radeon_cs_parser*, struct radeon_cs_reloc**);
+ static next_reloc_t r600_cs_packet_next_reloc = &r600_cs_packet_next_reloc_mm;
  
--			tty_buffer_request_room(tty, urb->actual_length);
--			tty_insert_flip_string(tty, data, urb->actual_length);
--			tty_flip_buffer_push(tty);
--
--			tty_kref_put(tty);
--			usb_serial_debug_data(debug, &port->dev, __func__,
--				urb->actual_length, data);
-+				tty_kref_put(tty);
-+				usb_serial_debug_data(debug, &port->dev,
-+					__func__, urb->actual_length, data);
-+			}
- 		} else {
- 			dev_dbg(&port->dev, "%s: empty read urb"
- 				" received\n", __func__);
++struct r600_cs_track {
++	u32	cb_color0_base_last;
++};
++
+ /**
+  * r600_cs_packet_parse() - parse cp packet and point ib index to next packet
+  * @parser:	parser structure holding parsing context.
+@@ -177,6 +181,28 @@ static int r600_cs_packet_next_reloc_nom
+ }
+ 
+ /**
++ * r600_cs_packet_next_is_pkt3_nop() - test if next packet is packet3 nop for reloc
++ * @parser:		parser structure holding parsing context.
++ *
++ * Check next packet is relocation packet3, do bo validation and compute
++ * GPU offset using the provided start.
++ **/
++static inline int r600_cs_packet_next_is_pkt3_nop(struct radeon_cs_parser *p)
++{
++	struct radeon_cs_packet p3reloc;
++	int r;
++
++	r = r600_cs_packet_parse(p, &p3reloc, p->idx);
++	if (r) {
++		return 0;
++	}
++	if (p3reloc.type != PACKET_TYPE3 || p3reloc.opcode != PACKET3_NOP) {
++		return 0;
++	}
++	return 1;
++}
++
++/**
+  * r600_cs_packet_next_vline() - parse userspace VLINE packet
+  * @parser:		parser structure holding parsing context.
+  *
+@@ -337,6 +363,7 @@ static int r600_packet3_check(struct rad
+ 				struct radeon_cs_packet *pkt)
+ {
+ 	struct radeon_cs_reloc *reloc;
++	struct r600_cs_track *track;
+ 	volatile u32 *ib;
+ 	unsigned idx;
+ 	unsigned i;
+@@ -344,6 +371,7 @@ static int r600_packet3_check(struct rad
+ 	int r;
+ 	u32 idx_value;
+ 
++	track = (struct r600_cs_track *)p->track;
+ 	ib = p->ib->ptr;
+ 	idx = pkt->idx + 1;
+ 	idx_value = radeon_get_ib_value(p, idx);
+@@ -503,9 +531,60 @@ static int r600_packet3_check(struct rad
+ 		for (i = 0; i < pkt->count; i++) {
+ 			reg = start_reg + (4 * i);
+ 			switch (reg) {
++			/* This register were added late, there is userspace
++			 * which does provide relocation for those but set
++			 * 0 offset. In order to avoid breaking old userspace
++			 * we detect this and set address to point to last
++			 * CB_COLOR0_BASE, note that if userspace doesn't set
++			 * CB_COLOR0_BASE before this register we will report
++			 * error. Old userspace always set CB_COLOR0_BASE
++			 * before any of this.
++			 */
++			case R_0280E0_CB_COLOR0_FRAG:
++			case R_0280E4_CB_COLOR1_FRAG:
++			case R_0280E8_CB_COLOR2_FRAG:
++			case R_0280EC_CB_COLOR3_FRAG:
++			case R_0280F0_CB_COLOR4_FRAG:
++			case R_0280F4_CB_COLOR5_FRAG:
++			case R_0280F8_CB_COLOR6_FRAG:
++			case R_0280FC_CB_COLOR7_FRAG:
++			case R_0280C0_CB_COLOR0_TILE:
++			case R_0280C4_CB_COLOR1_TILE:
++			case R_0280C8_CB_COLOR2_TILE:
++			case R_0280CC_CB_COLOR3_TILE:
++			case R_0280D0_CB_COLOR4_TILE:
++			case R_0280D4_CB_COLOR5_TILE:
++			case R_0280D8_CB_COLOR6_TILE:
++			case R_0280DC_CB_COLOR7_TILE:
++				if (!r600_cs_packet_next_is_pkt3_nop(p)) {
++					if (!track->cb_color0_base_last) {
++						dev_err(p->dev, "Broken old userspace ? no cb_color0_base supplied before trying to write 0x%08X\n", reg);
++						return -EINVAL;
++					}
++					ib[idx+1+i] = track->cb_color0_base_last;
++					printk_once(KERN_WARNING "You have old & broken userspace "
++						"please consider updating mesa & xf86-video-ati\n");
++				} else {
++					r = r600_cs_packet_next_reloc(p, &reloc);
++					if (r) {
++						dev_err(p->dev, "bad SET_CONTEXT_REG 0x%04X\n", reg);
++						return -EINVAL;
++					}
++					ib[idx+1+i] += (u32)((reloc->lobj.gpu_offset >> 8) & 0xffffffff);
++				}
++				break;
+ 			case DB_DEPTH_BASE:
+ 			case DB_HTILE_DATA_BASE:
+ 			case CB_COLOR0_BASE:
++				r = r600_cs_packet_next_reloc(p, &reloc);
++				if (r) {
++					DRM_ERROR("bad SET_CONTEXT_REG "
++							"0x%04X\n", reg);
++					return -EINVAL;
++				}
++				ib[idx+1+i] += (u32)((reloc->lobj.gpu_offset >> 8) & 0xffffffff);
++				track->cb_color0_base_last = ib[idx+1+i];
++				break;
+ 			case CB_COLOR1_BASE:
+ 			case CB_COLOR2_BASE:
+ 			case CB_COLOR3_BASE:
+@@ -678,8 +757,11 @@ static int r600_packet3_check(struct rad
+ int r600_cs_parse(struct radeon_cs_parser *p)
+ {
+ 	struct radeon_cs_packet pkt;
++	struct r600_cs_track *track;
+ 	int r;
+ 
++	track = kzalloc(sizeof(*track), GFP_KERNEL);
++	p->track = track;
+ 	do {
+ 		r = r600_cs_packet_parse(p, &pkt, p->idx);
+ 		if (r) {
+@@ -757,6 +839,7 @@ int r600_cs_legacy(struct drm_device *de
+ 	/* initialize parser */
+ 	memset(&parser, 0, sizeof(struct radeon_cs_parser));
+ 	parser.filp = filp;
++	parser.dev = &dev->pdev->dev;
+ 	parser.rdev = NULL;
+ 	parser.family = family;
+ 	parser.ib = &fake_ib;
+--- a/drivers/gpu/drm/radeon/r600d.h
++++ b/drivers/gpu/drm/radeon/r600d.h
+@@ -674,4 +674,30 @@
+ #define		S_000E60_SOFT_RESET_TSC(x)		(((x) & 1) << 16)
+ #define		S_000E60_SOFT_RESET_VMC(x)		(((x) & 1) << 17)
+ 
++#define R_005480_HDP_MEM_COHERENCY_FLUSH_CNTL		0x5480
++
++#define R_0280E0_CB_COLOR0_FRAG                      0x0280E0
++#define   S_0280E0_BASE_256B(x)                        (((x) & 0xFFFFFFFF) << 0)
++#define   G_0280E0_BASE_256B(x)                        (((x) >> 0) & 0xFFFFFFFF)
++#define   C_0280E0_BASE_256B                           0x00000000
++#define R_0280E4_CB_COLOR1_FRAG                      0x0280E4
++#define R_0280E8_CB_COLOR2_FRAG                      0x0280E8
++#define R_0280EC_CB_COLOR3_FRAG                      0x0280EC
++#define R_0280F0_CB_COLOR4_FRAG                      0x0280F0
++#define R_0280F4_CB_COLOR5_FRAG                      0x0280F4
++#define R_0280F8_CB_COLOR6_FRAG                      0x0280F8
++#define R_0280FC_CB_COLOR7_FRAG                      0x0280FC
++#define R_0280C0_CB_COLOR0_TILE                      0x0280C0
++#define   S_0280C0_BASE_256B(x)                        (((x) & 0xFFFFFFFF) << 0)
++#define   G_0280C0_BASE_256B(x)                        (((x) >> 0) & 0xFFFFFFFF)
++#define   C_0280C0_BASE_256B                           0x00000000
++#define R_0280C4_CB_COLOR1_TILE                      0x0280C4
++#define R_0280C8_CB_COLOR2_TILE                      0x0280C8
++#define R_0280CC_CB_COLOR3_TILE                      0x0280CC
++#define R_0280D0_CB_COLOR4_TILE                      0x0280D0
++#define R_0280D4_CB_COLOR5_TILE                      0x0280D4
++#define R_0280D8_CB_COLOR6_TILE                      0x0280D8
++#define R_0280DC_CB_COLOR7_TILE                      0x0280DC
++
++
+ #endif
+--- a/drivers/gpu/drm/radeon/radeon.h
++++ b/drivers/gpu/drm/radeon/radeon.h
+@@ -448,6 +448,7 @@ struct radeon_cs_chunk {
+ };
+ 
+ struct radeon_cs_parser {
++	struct device		*dev;
+ 	struct radeon_device	*rdev;
+ 	struct drm_file		*filp;
+ 	/* chunks */
+--- a/drivers/gpu/drm/radeon/radeon_cs.c
++++ b/drivers/gpu/drm/radeon/radeon_cs.c
+@@ -230,6 +230,7 @@ int radeon_cs_ioctl(struct drm_device *d
+ 	memset(&parser, 0, sizeof(struct radeon_cs_parser));
+ 	parser.filp = filp;
+ 	parser.rdev = rdev;
++	parser.dev = rdev->dev;
+ 	r = radeon_cs_parser_init(&parser, data);
+ 	if (r) {
+ 		DRM_ERROR("Failed to initialize parser !\n");
 
 
