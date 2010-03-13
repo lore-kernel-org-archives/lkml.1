@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935923Ab0CMAzN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:55:13 -0500
-Received: from kroah.org ([198.145.64.141]:46925 "EHLO coco.kroah.org"
+	id S935393Ab0CMA6l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:58:41 -0500
+Received: from kroah.org ([198.145.64.141]:46786 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935423Ab0CMAbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:33 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
-Message-Id: <20100313002710.217337979@kvm.kroah.org>
+	id S935325Ab0CMAbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:09 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:08 2010
+Message-Id: <20100313002708.299410332@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:30 -0800
+Date: Fri, 12 Mar 2010 16:26:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [057/145] rndis_wlan: disable stall workaround
+       "David S. Miller" <davem@davemloft.net>
+Subject: [035/145] sparc32: Fix page_to_phys().
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,46 +24,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+From: David S. Miller <davem@davemloft.net>
 
-commit 77593ae28c4c134eaf28ef34ecac3cd4464ecd6e upstream.
+[ Upstream commit 8654164f54bd02787ae91db8526dcae8e7e34eeb ]
 
-Stall workaround doesn't work with bcm4320a devices like with bcm4320b.
-This workaround actually causes more stalls/device freeze on bcm4320a.
-Therefore disable stall workaround by default.
+It doesn't account for phys_base like it should, fix by using
+page_to_pfn().
 
-Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+While we're here, make virt_to_page() use pfn_to_page() as well, so we
+consistently use the asm/memory-model.h abstractions instead of
+open-coding memory model assumptions.
+
+Tested-by: Kristoffer Glembo <kristoffer@gaisler.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rndis_wlan.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/sparc/include/asm/io_32.h   |    2 +-
+ arch/sparc/include/asm/page_32.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/rndis_wlan.c
-+++ b/drivers/net/wireless/rndis_wlan.c
-@@ -83,11 +83,11 @@ MODULE_PARM_DESC(roamdelta,
- 	"set roaming tendency: 0=aggressive, 1=moderate, "
- 				"2=conservative (default: moderate)");
+--- a/arch/sparc/include/asm/io_32.h
++++ b/arch/sparc/include/asm/io_32.h
+@@ -8,7 +8,7 @@
+ #include <asm/page.h>      /* IO address mapping routines need this */
+ #include <asm/system.h>
  
--static int modparam_workaround_interval = 500;
-+static int modparam_workaround_interval;
- module_param_named(workaround_interval, modparam_workaround_interval,
- 							int, 0444);
- MODULE_PARM_DESC(workaround_interval,
--	"set stall workaround interval in msecs (default: 500)");
-+	"set stall workaround interval in msecs (0=disabled) (default: 0)");
+-#define page_to_phys(page)	(((page) - mem_map) << PAGE_SHIFT)
++#define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
  
+ static inline u32 flip_dword (u32 l)
+ {
+--- a/arch/sparc/include/asm/page_32.h
++++ b/arch/sparc/include/asm/page_32.h
+@@ -143,7 +143,7 @@ extern unsigned long pfn_base;
+ #define phys_to_virt		__va
  
- /* various RNDIS OID defs */
-@@ -2550,7 +2550,7 @@ static void rndis_device_poller(struct w
- 	/* Workaround transfer stalls on poor quality links.
- 	 * TODO: find right way to fix these stalls (as stalls do not happen
- 	 * with ndiswrapper/windows driver). */
--	if (priv->last_qual <= 25) {
-+	if (priv->param_workaround_interval > 0 && priv->last_qual <= 25) {
- 		/* Decrease stats worker interval to catch stalls.
- 		 * faster. Faster than 400-500ms causes packet loss,
- 		 * Slower doesn't catch stalls fast enough.
+ #define ARCH_PFN_OFFSET		(pfn_base)
+-#define virt_to_page(kaddr)	(mem_map + ((((unsigned long)(kaddr)-PAGE_OFFSET)>>PAGE_SHIFT)))
++#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+ 
+ #define pfn_valid(pfn)		(((pfn) >= (pfn_base)) && (((pfn)-(pfn_base)) < max_mapnr))
+ #define virt_addr_valid(kaddr)	((((unsigned long)(kaddr)-PAGE_OFFSET)>>PAGE_SHIFT) < max_mapnr)
 
 
