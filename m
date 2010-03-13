@@ -1,54 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885Ab0CMHkF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 02:40:05 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:54260 "EHLO
-	bunyip.billabong.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754445Ab0CMHkD (ORCPT
+	id S1757421Ab0CMHw5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 02:52:57 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:50983 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754445Ab0CMHwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 02:40:03 -0500
-Date: Sat, 13 Mar 2010 18:39:58 +1100
-From: CaT <cat@zip.com.au>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regression? 2.6.23.16 -> 2.6.32.9: ide/libata HD recognition
-Message-ID: <20100313073958.GK2657@zip.com.au>
-References: <20100310041614.GG2657@zip.com.au> <4B998516.1000606@gmail.com>
+	Sat, 13 Mar 2010 02:52:55 -0500
+Date: Sat, 13 Mar 2010 08:52:48 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@codeaurora.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] fix for msm_sdcc MMC driver for 2.6.34-rc1
+Message-ID: <20100313075248.GK12554@elf.ucw.cz>
+References: <1268081936.14857.60.camel@c-dwalke-linux.qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B998516.1000606@gmail.com>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1268081936.14857.60.camel@c-dwalke-linux.qualcomm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 06:04:38PM -0600, Robert Hancock wrote:
-> That sounds like you had a slave with no master on the second IDE  
+On Mon 2010-03-08 12:58:56, Daniel Walker wrote:
+> Just one small trivial fix.
+> 
+> The following changes since commit 6b7b284958d47b77d06745b36bc7f36dab769d9b:
+>   Linus Torvalds (1):
+>         Linux 2.6.33-rc2
+> 
+> are available in the git repository at:
+> 
+>   git://codeaurora.org/quic/kernel/dwalker/linux-msm.git msm-mmc_sdcc
+> 
+> Roel Kluin (1):
+>       msm_sdcc.c: missing brackets in msmsdcc_resume()
 
-Indeed.
+Cool, 2.6.34-rc1 boots on HTC Dream, as did 2.6.33. Does this mean I
+should try to set up MMC, too? MMC worked in your -working-mmc tree in
+2.6.33...
 
-> channel. That really isn't a wise configuration and is prone to break  
-> (some devices don't work in this setup, some BIOSes choke, etc.) since  
-> the standard doesn't really allow this (the spec says that support for  
-> this configuration is "host specific" and not mandatory).
-
-I've never had it cause issues. BIOS has always recognised the HDs and
-linux, until now, has always been more than happy to work with them.
-This is across many different mbs, ide chips and hds.
-
-On this server a lone hdd has been the case for 4 years and has worked
-fine.
-
-> Essentially, fixing the hardware config to set the drive for master if  
-> it's the only device on the channel is likely the best solution overall.
-
-It is what worked, after a lot of futzing around. Still, this is a
-regression (from the pov of someone who just had to futz). Before
-whatever change was made things were fine and futz-free.
-
+									Pavel
 -- 
-  "A search of his car uncovered pornography, a homemade sex aid, women's 
-  stockings and a Jack Russell terrier."
-    - http://www.news.com.au/story/0%2C27574%2C24675808-421%2C00.html
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
