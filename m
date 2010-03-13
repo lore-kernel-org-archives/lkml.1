@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935757Ab0CMArg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:47:36 -0500
-Received: from kroah.org ([198.145.64.141]:47154 "EHLO coco.kroah.org"
+	id S935697Ab0CMApl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:45:41 -0500
+Received: from kroah.org ([198.145.64.141]:47204 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935386Ab0CMAcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:18 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:15 2010
-Message-Id: <20100313002715.275087131@kvm.kroah.org>
+	id S935542Ab0CMAc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:28 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
+Message-Id: <20100313002716.314900993@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:28 -0800
+Date: Fri, 12 Mar 2010 16:27:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yinghai@kernel.org>, Brandon Phililps <bphilips@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [115/145] x86: Avoid race condition in pci_enable_msix()
+       Daniel Sangorrin <daniel.sangorrin@gmail.com>,
+       Andreas Mohr <andi@lisas.de>
+Subject: [127/145] USB: serial: ftdi: add CONTEC vendor and product id
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,215 +25,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Brandon Phiilps <bphilips@suse.de>
+From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
 
-commit ced5b697a76d325e7a7ac7d382dbbb632c765093 upstream.
+commit 46b72d78cb022714c89a9ebc00b9581b550cfca7 upstream.
 
-Keep chip_data in create_irq_nr and destroy_irq.
+This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
+identifiers for CONTEC USB serial converter. I tested it
+with the device COM-1(USB)H
 
-When two drivers are setting up MSI-X at the same time via
-pci_enable_msix() there is a race.  See this dmesg excerpt:
-
-[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
-[   85.170611]   alloc irq_desc for 99 on node -1
-[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
-[   85.170614]   alloc kstat_irqs on node -1
-[   85.170616] alloc irq_2_iommu on node -1
-[   85.170617]   alloc irq_desc for 100 on node -1
-[   85.170619]   alloc kstat_irqs on node -1
-[   85.170621] alloc irq_2_iommu on node -1
-[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
-[   85.170626]   alloc irq_desc for 101 on node -1
-[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
-[   85.170630]   alloc kstat_irqs on node -1
-[   85.170631] alloc irq_2_iommu on node -1
-[   85.170635]   alloc irq_desc for 102 on node -1
-[   85.170636]   alloc kstat_irqs on node -1
-[   85.170639] alloc irq_2_iommu on node -1
-[   85.170646] BUG: unable to handle kernel NULL pointer dereference
-at 0000000000000088
-
-As you can see igb and ixgbe are both alternating on create_irq_nr()
-via pci_enable_msix() in their probe function.
-
-ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
-choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
-calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
-NULL via dynamic_irq_init().
-
-igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
-via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
-
-	cfg_new = irq_desc_ptrs[102]->chip_data;
-	if (cfg_new->vector != 0)
-		continue;
-
-This hits the NULL deref.
-
-Another possible race exists via pci_disable_msix() in a driver or in
-the number of error paths that call free_msi_irqs():
-
-destroy_irq()
-dynamic_irq_cleanup() which sets desc->chip_data = NULL
-...race window...
-desc->chip_data = cfg;
-
-Remove the save and restore code for cfg in create_irq_nr() and
-destroy_irq() and take the desc->lock when checking the irq_cfg.
-
-Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <1265793639-15071-3-git-send-email-yinghai@kernel.org>
-Signed-off-by: Brandon Phililps <bphilips@suse.de>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/apic/io_apic.c |   18 +++-----------
- include/linux/irq.h            |    2 +
- kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
- 3 files changed, 50 insertions(+), 22 deletions(-)
+ drivers/usb/serial/ftdi_sio.c     |    1 +
+ drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
+ 2 files changed, 8 insertions(+)
 
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3165,12 +3165,9 @@ unsigned int create_irq_nr(unsigned int
- 	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -614,6 +614,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(FTDI_VID, FTDI_OCEANIC_PID) },
+ 	{ USB_DEVICE(TTI_VID, TTI_QL355P_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_RM_CANVIEW_PID) },
++	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -494,6 +494,13 @@
+ #define RATOC_PRODUCT_ID_USB60F	0xb020
  
--	if (irq > 0) {
--		dynamic_irq_init(irq);
--		/* restore it, in case dynamic_irq_init clear it */
--		if (desc_new)
--			desc_new->chip_data = cfg_new;
--	}
-+	if (irq > 0)
-+		dynamic_irq_init_keep_chip_data(irq);
+ /*
++ * Contec products (http://www.contec.com)
++ * Submitted by Daniel Sangorrin
++ */
++#define CONTEC_VID		0x06CE	/* Vendor ID */
++#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
 +
- 	return irq;
- }
- 
-@@ -3193,17 +3190,12 @@ void destroy_irq(unsigned int irq)
- {
- 	unsigned long flags;
- 	struct irq_cfg *cfg;
--	struct irq_desc *desc;
- 
--	/* store it, in case dynamic_irq_cleanup clear it */
--	desc = irq_to_desc(irq);
--	cfg = desc->chip_data;
--	dynamic_irq_cleanup(irq);
--	/* connect back irq_cfg */
--	desc->chip_data = cfg;
-+	dynamic_irq_cleanup_keep_chip_data(irq);
- 
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
-+	cfg = irq_to_desc(irq)->chip_data;
- 	__clear_irq_vector(irq, cfg);
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
- 
- /* Dynamic irq helper functions */
- extern void dynamic_irq_init(unsigned int irq);
-+void dynamic_irq_init_keep_chip_data(unsigned int irq);
- extern void dynamic_irq_cleanup(unsigned int irq);
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
- 
- /* Set/get chip/data for an IRQ: */
- extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -18,11 +18,7 @@
- 
- #include "internals.h"
- 
--/**
-- *	dynamic_irq_init - initialize a dynamically allocated irq
-- *	@irq:	irq number to initialize
-- */
--void dynamic_irq_init(unsigned int irq)
-+static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->depth = 1;
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
-@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
- }
- 
- /**
-- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
++/*
+  * Definitions for B&B Electronics products.
   */
--void dynamic_irq_cleanup(unsigned int irq)
-+void dynamic_irq_init(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ *	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_init_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, true);
-+}
-+
-+static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	unsigned long flags;
-@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
- 	}
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-+/**
-+ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ */
-+void dynamic_irq_cleanup(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ *	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, true);
-+}
-+
- 
- /**
-  *	set_irq_chip - set the irq chip for an irq
+ #define BANDB_VID		0x0856	/* B&B Electronics Vendor ID */
 
 
