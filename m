@@ -1,100 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936513Ab0CMBcK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:32:10 -0500
-Received: from kroah.org ([198.145.64.141]:60621 "EHLO coco.kroah.org"
+	id S965270Ab0CMBce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:32:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45663 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934767Ab0CMATs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934858Ab0CMATs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Mar 2010 19:19:48 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:07 2010
-Message-Id: <20100313001507.276320593@kvm.kroah.org>
-User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:02 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Hank Janssen <hjanssen@microsoft.com>
-Subject: [patch 024/123] Staging: hv: match on DMI values to know if we should run.
-In-Reply-To: <20100313001618.GA9811@kroah.com>
-In-Reply-To: <20100313001618.GA9811@kroah.com>
+Date: Sat, 13 Mar 2010 00:19:26 GMT
+From: tip-bot for John Stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       johnstul@us.ibm.com, yasutake.koichi@jp.panasonic.com,
+       dhowells@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, akpm@linux-foundation.org, johnstul@us.ibm.com,
+       tglx@linutronix.de, yasutake.koichi@jp.panasonic.com
+In-Reply-To: <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
+References: <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/cleanup] mn10300: Convert mn10300 to use read/update_persistent_clock
+Message-ID: <tip-f7a56575fa4e62e94a644f72ef8c5d423c073982@git.kernel.org>
+Git-Commit-ID: f7a56575fa4e62e94a644f72ef8c5d423c073982
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:19:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.33-stable review patch.  If anyone has any objections, please let me know.
+Commit-ID:  f7a56575fa4e62e94a644f72ef8c5d423c073982
+Gitweb:     http://git.kernel.org/tip/f7a56575fa4e62e94a644f72ef8c5d423c073982
+Author:     John Stultz <johnstul@us.ibm.com>
+AuthorDate: Wed, 3 Mar 2010 19:57:17 -0800
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Sat, 13 Mar 2010 01:14:09 +0100
 
------------------
+mn10300: Convert mn10300 to use read/update_persistent_clock
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+This patch converts the mn10300 architecture to use the generic
+read_persistent_clock and update_persistent_clock interfaces, reducing
+the amount of arch specific code we have to maintain, and allowing for
+further cleanups in the future.
 
-commit c22090facd354749cfe99a46e903449c7ac07788 upstream.
+I have not built or tested this patch, so help from arch maintainers
+would be appreciated.
 
-The HV core mucks around with specific irqs and other low-level stuff
-and takes forever to determine that it really shouldn't be running on a
-machine.  So instead, trigger off of the DMI system information and
-error out much sooner.  This also allows the module loading tools to
-recognize that this code should be loaded on this type of system.
-
-Cc: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/staging/hv/vmbus_drv.c |   21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+ arch/mn10300/Kconfig       |    3 +++
+ arch/mn10300/kernel/rtc.c  |   27 +++++----------------------
+ arch/mn10300/kernel/time.c |    4 ----
+ 3 files changed, 8 insertions(+), 26 deletions(-)
 
---- a/drivers/staging/hv/vmbus_drv.c
-+++ b/drivers/staging/hv/vmbus_drv.c
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/sysctl.h>
- #include <linux/pci.h>
-+#include <linux/dmi.h>
- #include "osd.h"
- #include "logging.h"
- #include "vmbus.h"
-@@ -947,6 +948,19 @@ static irqreturn_t vmbus_isr(int irq, vo
- 	}
+diff --git a/arch/mn10300/Kconfig b/arch/mn10300/Kconfig
+index 89faaca..1c4565a 100644
+--- a/arch/mn10300/Kconfig
++++ b/arch/mn10300/Kconfig
+@@ -37,6 +37,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ config GENERIC_CALIBRATE_DELAY
+ 	def_bool y
+ 
++config GENERIC_CMOS_UPDATE
++        def_bool y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	def_bool y
+ 
+diff --git a/arch/mn10300/kernel/rtc.c b/arch/mn10300/kernel/rtc.c
+index 7978470..815a933 100644
+--- a/arch/mn10300/kernel/rtc.c
++++ b/arch/mn10300/kernel/rtc.c
+@@ -26,17 +26,15 @@ static long last_rtc_update;
+ /* time for RTC to update itself in ioclks */
+ static unsigned long mn10300_rtc_update_period;
+ 
+-/*
+- * read the current RTC time
+- */
+-unsigned long __init get_initial_rtc_time(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	struct rtc_time tm;
+ 
+ 	get_rtc_time(&tm);
+ 
+-	return mktime(tm.tm_year, tm.tm_mon, tm.tm_mday,
++	ts->tv_sec = mktime(tm.tm_year, tm.tm_mon, tm.tm_mday,
+ 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
++	ts->tv_nsec = 0;
  }
  
-+static struct dmi_system_id __initdata microsoft_hv_dmi_table[] = {
-+	{
-+		.ident = "Hyper-V",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Virtual Machine"),
-+			DMI_MATCH(DMI_BOARD_NAME, "Virtual Machine"),
-+		},
-+	},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(dmi, microsoft_hv_dmi_table);
-+
- static int __init vmbus_init(void)
+ /*
+@@ -110,24 +108,9 @@ static int set_rtc_mmss(unsigned long nowtime)
+ 	return retval;
+ }
+ 
+-void check_rtc_time(void)
++int update_persistent_clock(struct timespec now)
  {
- 	int ret = 0;
-@@ -958,6 +972,9 @@ static int __init vmbus_init(void)
- 		vmbus_loglevel, HIWORD(vmbus_loglevel), LOWORD(vmbus_loglevel));
- 	/* Todo: it is used for loglevel, to be ported to new kernel. */
+-	/* the RTC clock just finished ticking over again this second
+-	 * - if we have an externally synchronized Linux clock, then update
+-	 *   RTC clock accordingly every ~11 minutes. set_rtc_mmss() has to be
+-	 *   called as close as possible to 500 ms before the new second starts.
+-	 */
+-	if ((time_status & STA_UNSYNC) == 0 &&
+-	    xtime.tv_sec > last_rtc_update + 660 &&
+-	    xtime.tv_nsec / 1000 >= 500000 - ((unsigned) TICK_SIZE) / 2 &&
+-	    xtime.tv_nsec / 1000 <= 500000 + ((unsigned) TICK_SIZE) / 2
+-	    ) {
+-		if (set_rtc_mmss(xtime.tv_sec) == 0)
+-			last_rtc_update = xtime.tv_sec;
+-		else
+-			/* do it again in 60s */
+-			last_rtc_update = xtime.tv_sec - 600;
+-	}
++	return set_rtc_mms(now.tv_sec);
+ }
  
-+	if (!dmi_check_system(microsoft_hv_dmi_table))
-+		return -ENODEV;
-+
- 	ret = vmbus_bus_init(VmbusInitialize);
+ /*
+diff --git a/arch/mn10300/kernel/time.c b/arch/mn10300/kernel/time.c
+index 395caf0..8f7f6d2 100644
+--- a/arch/mn10300/kernel/time.c
++++ b/arch/mn10300/kernel/time.c
+@@ -111,7 +111,6 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
+ 		/* advance the kernel's time tracking system */
+ 		profile_tick(CPU_PROFILING);
+ 		do_timer(1);
+-		check_rtc_time();
+ 	}
  
- 	DPRINT_EXIT(VMBUS_DRV);
-@@ -979,10 +996,6 @@ static void __exit vmbus_exit(void)
-  * needed by distro tools to determine if the hyperv drivers should be
-  * installed and/or configured.  We don't do anything else with the table, but
-  * it needs to be present.
-- *
-- * We might consider triggering off of DMI table info as well, as that does
-- * decribe the virtual machine being run on, but not all configuration tools
-- * seem to be able to handle DMI device ids properly.
-  */
- const static struct pci_device_id microsoft_hv_pci_table[] = {
- 	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
-
-
+ 	write_sequnlock(&xtime_lock);
+@@ -139,9 +138,6 @@ void __init time_init(void)
+ 	       " (calibrated against RTC)\n",
+ 	       MN10300_TSCCLK / 1000000, (MN10300_TSCCLK / 10000) % 100);
+ 
+-	xtime.tv_sec = get_initial_rtc_time();
+-	xtime.tv_nsec = 0;
+-
+ 	mn10300_last_tsc = TMTSCBC;
+ 
+ 	/* use timer 0 & 1 cascaded to tick at as close to HZ as possible */
