@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935749Ab0CMAqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:46:10 -0500
-Received: from kroah.org ([198.145.64.141]:47192 "EHLO coco.kroah.org"
+	id S935595Ab0CMAna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:43:30 -0500
+Received: from kroah.org ([198.145.64.141]:47261 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935537Ab0CMAc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:26 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
-Message-Id: <20100313002716.060769225@kvm.kroah.org>
+	id S935574Ab0CMAcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:39 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
+Message-Id: <20100313002717.508317046@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:37 -0800
+Date: Fri, 12 Mar 2010 16:27:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Radek Liboska <liboska@uochb.cas.cz>
-Subject: [124/145] USB: ftdi_sio: new device id for papouch AD4USB
+       Gleb Natapov <gleb@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [141/145] KVM: x86 emulator: Check CPL level during privilege instruction emulation
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,47 +24,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Radek Liboska <liboska@uochb.cas.cz>
+From: Gleb Natapov <gleb@redhat.com>
 
-commit a7787e508acb4378d62f4584bae3dd1cd0ba3eac upstream.
+commit e92805ac1228626c59c865f2f4e9059b9fb8c97b upstream.
 
-added new device pid (PAPOUCH_AD4USB_PID) to ftdi_sio.h and ftdi_sio.c
+Add CPL checking in case emulator is tricked into emulating
+privilege instruction from userspace.
 
-AD4USB measuring converter is a 4-input A/D converter which enables the
-user to measure to four current inputs ranging from 0(4) to 20 mA or
-voltage between 0 and 10 V. The measured values are then transferred to
-a superior system in digital form. The AD4USB communicates via USB.
-Powered is also via USB.  datasheet in english is here:
-http://www.papouch.com/shop/scripts/pdf/ad4usb_en.pdf
-
-
-Signed-off-by: Radek Liboska <liboska@uochb.cas.cz>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c     |    1 +
- drivers/usb/serial/ftdi_sio_ids.h |    1 +
- 2 files changed, 2 insertions(+)
+ arch/x86/kvm/emulate.c |   35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -697,6 +697,7 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_REU_TINY_PID) },
- 	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
-+	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_AD4USB_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
- 	{ USB_DEVICE(ALTI2_VID, ALTI2_N3_PID) },
---- a/drivers/usb/serial/ftdi_sio_ids.h
-+++ b/drivers/usb/serial/ftdi_sio_ids.h
-@@ -968,6 +968,7 @@
- #define PAPOUCH_VID			0x5050	/* Vendor ID */
- #define PAPOUCH_TMU_PID			0x0400	/* TMU USB Thermometer */
- #define PAPOUCH_QUIDO4x4_PID		0x0900	/* Quido 4/4 Module */
-+#define PAPOUCH_AD4USB_PID		0x8003	/* AD4USB Measurement Module */
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -75,6 +75,7 @@
+ #define Group       (1<<14)     /* Bits 3:5 of modrm byte extend opcode */
+ #define GroupDual   (1<<15)     /* Alternate decoding of mod == 3 */
+ #define GroupMask   0xff        /* Group number stored in bits 0:7 */
++#define Priv        (1<<27) /* instruction generates #GP if current CPL != 0 */
+ /* Source 2 operand type */
+ #define Src2None    (0<<29)
+ #define Src2CL      (1<<29)
+@@ -204,7 +205,7 @@ static u32 opcode_table[256] = {
+ 	SrcNone | ByteOp | ImplicitOps, SrcNone | ImplicitOps,
+ 	/* 0xF0 - 0xF7 */
+ 	0, 0, 0, 0,
+-	ImplicitOps, ImplicitOps, Group | Group3_Byte, Group | Group3,
++	ImplicitOps | Priv, ImplicitOps, Group | Group3_Byte, Group | Group3,
+ 	/* 0xF8 - 0xFF */
+ 	ImplicitOps, 0, ImplicitOps, ImplicitOps,
+ 	ImplicitOps, ImplicitOps, Group | Group4, Group | Group5,
+@@ -212,16 +213,20 @@ static u32 opcode_table[256] = {
  
- /*
-  * Marvell SheevaPlug
+ static u32 twobyte_table[256] = {
+ 	/* 0x00 - 0x0F */
+-	0, Group | GroupDual | Group7, 0, 0, 0, ImplicitOps, ImplicitOps, 0,
+-	ImplicitOps, ImplicitOps, 0, 0, 0, ImplicitOps | ModRM, 0, 0,
++	0, Group | GroupDual | Group7, 0, 0,
++	0, ImplicitOps, ImplicitOps | Priv, 0,
++	ImplicitOps | Priv, ImplicitOps | Priv, 0, 0,
++	0, ImplicitOps | ModRM, 0, 0,
+ 	/* 0x10 - 0x1F */
+ 	0, 0, 0, 0, 0, 0, 0, 0, ImplicitOps | ModRM, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0x20 - 0x2F */
+-	ModRM | ImplicitOps, ModRM, ModRM | ImplicitOps, ModRM, 0, 0, 0, 0,
++	ModRM | ImplicitOps | Priv, ModRM | Priv,
++	ModRM | ImplicitOps | Priv, ModRM | Priv,
++	0, 0, 0, 0,
+ 	0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0x30 - 0x3F */
+-	ImplicitOps, 0, ImplicitOps, 0,
+-	ImplicitOps, ImplicitOps, 0, 0,
++	ImplicitOps | Priv, 0, ImplicitOps | Priv, 0,
++	ImplicitOps, ImplicitOps | Priv, 0, 0,
+ 	0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0x40 - 0x47 */
+ 	DstReg | SrcMem | ModRM | Mov, DstReg | SrcMem | ModRM | Mov,
+@@ -313,9 +318,9 @@ static u32 group_table[] = {
+ 	SrcMem | ModRM | Stack, 0,
+ 	SrcMem | ModRM | Stack, 0, SrcMem | ModRM | Stack, 0,
+ 	[Group7*8] =
+-	0, 0, ModRM | SrcMem, ModRM | SrcMem,
++	0, 0, ModRM | SrcMem | Priv, ModRM | SrcMem | Priv,
+ 	SrcNone | ModRM | DstMem | Mov, 0,
+-	SrcMem16 | ModRM | Mov, SrcMem | ModRM | ByteOp,
++	SrcMem16 | ModRM | Mov | Priv, SrcMem | ModRM | ByteOp | Priv,
+ 	[Group8*8] =
+ 	0, 0, 0, 0,
+ 	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+@@ -326,7 +331,7 @@ static u32 group_table[] = {
+ 
+ static u32 group2_table[] = {
+ 	[Group7*8] =
+-	SrcNone | ModRM, 0, 0, SrcNone | ModRM,
++	SrcNone | ModRM | Priv, 0, 0, SrcNone | ModRM,
+ 	SrcNone | ModRM | DstMem | Mov, 0,
+ 	SrcMem16 | ModRM | Mov, 0,
+ 	[Group9*8] =
+@@ -1573,12 +1578,6 @@ emulate_sysexit(struct x86_emulate_ctxt
+ 		return -1;
+ 	}
+ 
+-	/* sysexit must be called from CPL 0 */
+-	if (kvm_x86_ops->get_cpl(ctxt->vcpu) != 0) {
+-		kvm_inject_gp(ctxt->vcpu, 0);
+-		return -1;
+-	}
+-
+ 	setup_syscalls_segments(ctxt, &cs, &ss);
+ 
+ 	if ((c->rex_prefix & 0x8) != 0x0)
+@@ -1642,6 +1641,12 @@ x86_emulate_insn(struct x86_emulate_ctxt
+ 	memcpy(c->regs, ctxt->vcpu->arch.regs, sizeof c->regs);
+ 	saved_eip = c->eip;
+ 
++	/* Privileged instruction can be executed only in CPL=0 */
++	if ((c->d & Priv) && kvm_x86_ops->get_cpl(ctxt->vcpu)) {
++		kvm_inject_gp(ctxt->vcpu, 0);
++		goto done;
++	}
++
+ 	if (((c->d & ModRM) && (c->modrm_mod != 3)) || (c->d & MemAbs))
+ 		memop = c->modrm_ea;
+ 
 
 
