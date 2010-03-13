@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934924Ab0CMBTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:19:51 -0500
-Received: from kroah.org ([198.145.64.141]:60946 "EHLO coco.kroah.org"
+	id S934960Ab0CMAUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:20:33 -0500
+Received: from kroah.org ([198.145.64.141]:60630 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934961Ab0CMAUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:34 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:11 2010
-Message-Id: <20100313001511.814182092@kvm.kroah.org>
+	id S934863Ab0CMATu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:50 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:07 2010
+Message-Id: <20100313001507.449548684@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:54 -0800
+Date: Fri, 12 Mar 2010 16:12:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 076/123] netfilter: xt_recent: fix buffer overflow
+       Peter Huewe <peterhuewe@gmx.de>, Simon Horman <horms@verge.net.au>
+Subject: [patch 026/123] Staging: wlan-ng: Add select WEXT_PRIV to Kconfig to prevent build failure
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,38 +26,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Tim Gardner <tim.gardner@canonical.com>
+From: Peter Huewe <peterhuewe@gmx.de>
 
-commit 2c08522e5d2f0af2d6f05be558946dcbf8173683 upstream.
+commit 8a8e29752dfdba014b866d3c587d3409e57263dd upstream.
 
-e->index overflows e->stamps[] every ip_pkt_list_tot packets.
+Without WEXT_PRIV set the p80211wext.c fails to build due to unknown fields in
+the iw_handler_def struct.
+Those fields are enclosed in WEXT_PRIV conditionals in the prototype
+of iw_handler_def in include/net/iw_handler.h
 
-Consider the case when ip_pkt_list_tot==1; the first packet received is stored
-in e->stamps[0] and e->index is initialized to 1. The next received packet
-timestamp is then stored at e->stamps[1] in recent_entry_update(),
-a buffer overflow because the maximum e->stamps[] index is 0.
-
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Acked-by: Simon Horman <horms@verge.net.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/xt_recent.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/wlan-ng/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/netfilter/xt_recent.c
-+++ b/net/netfilter/xt_recent.c
-@@ -173,10 +173,10 @@ recent_entry_init(struct recent_table *t
- 
- static void recent_entry_update(struct recent_table *t, struct recent_entry *e)
- {
-+	e->index %= ip_pkt_list_tot;
- 	e->stamps[e->index++] = jiffies;
- 	if (e->index > e->nstamps)
- 		e->nstamps = e->index;
--	e->index %= ip_pkt_list_tot;
- 	list_move_tail(&e->lru_list, &t->lru_list);
- }
- 
+--- a/drivers/staging/wlan-ng/Kconfig
++++ b/drivers/staging/wlan-ng/Kconfig
+@@ -1,6 +1,7 @@
+ config PRISM2_USB
+ 	tristate "Prism2.5/3 USB driver"
+ 	depends on WLAN && USB && WIRELESS_EXT
++	select WEXT_PRIV
+ 	default n
+ 	---help---
+ 	  This is the wlan-ng prism 2.5/3 USB driver for a wide range of
 
 
