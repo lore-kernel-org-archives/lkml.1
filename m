@@ -1,23 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935396Ab0CMAbR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:31:17 -0500
-Received: from kroah.org ([198.145.64.141]:46625 "EHLO coco.kroah.org"
+	id S935846Ab0CMAxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:53:24 -0500
+Received: from kroah.org ([198.145.64.141]:46968 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935322Ab0CMAah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:37 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:06 2010
-Message-Id: <20100313002706.092303674@kvm.kroah.org>
+	id S935401Ab0CMAbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:42 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:11 2010
+Message-Id: <20100313002711.165444000@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:25:43 -0800
+Date: Fri, 12 Mar 2010 16:26:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [010/145] iwlwifi: error checking for number of tfds in queue
+       Jean Delvare <khali@linux-fr.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Stelian Pop <stelian@popies.net>,
+       Michael Hanselmann <linux-kernel@hansmi.ch>
+Subject: [068/145] macintosh/hwmon/ams: Fix device removal sequence
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,99 +27,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Wey-Yi Guy <wey-yi.w.guy@intel.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit a239a8b47cc0e5e6d7416a89f340beac06d5edaa upstream.
+commit 98ceb75c7c14eada76b0aa9f03a635a735cee3cb upstream.
 
-When receive reply_tx and ready to decrement the count for number of
-tfds in queue, do error checking to prevent error condition and
-tfds_in_queue become negative number.
+Some code that is in ams_exit() (the module exit code) should instead
+be called when the device (not module) is removed. It probably doesn't
+make much of a difference in the PMU case, but in the I2C case it does
+matter.
 
-Signed-off-by: Wey-Yi Guy <wey-yi.w.guy@intel.com>
-Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+I make no guarantee that my fix isn't racy, I'm not familiar enough
+with the ams driver code to tell for sure.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Tested-by: Christian Kujau <lists@nerdbynature.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stelian Pop <stelian@popies.net>
+Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c |    4 ++--
- drivers/net/wireless/iwlwifi/iwl-core.h |    2 ++
- drivers/net/wireless/iwlwifi/iwl-tx.c   |   16 +++++++++++++++-
- 4 files changed, 20 insertions(+), 4 deletions(-)
+ drivers/hwmon/ams/ams-core.c |   11 +++++++----
+ drivers/hwmon/ams/ams-i2c.c  |    2 ++
+ drivers/hwmon/ams/ams-pmu.c  |    2 ++
+ drivers/hwmon/ams/ams.h      |    1 +
+ 4 files changed, 12 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/iwlwifi/iwl-4965.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
-@@ -2134,7 +2134,7 @@ static void iwl4965_rx_reply_tx(struct i
- 			IWL_DEBUG_TX_REPLY(priv, "Retry scheduler reclaim scd_ssn "
- 					   "%d index %d\n", scd_ssn , index);
- 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
+--- a/drivers/hwmon/ams/ams-core.c
++++ b/drivers/hwmon/ams/ams-core.c
+@@ -213,7 +213,7 @@ int __init ams_init(void)
+ 	return -ENODEV;
+ }
  
- 			if (priv->mac80211_registered &&
- 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
---- a/drivers/net/wireless/iwlwifi/iwl-5000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
-@@ -1264,7 +1264,7 @@ static void iwl5000_rx_reply_tx(struct i
- 					scd_ssn , index, txq_id, txq->swq_id);
+-void ams_exit(void)
++void ams_sensor_detach(void)
+ {
+ 	/* Remove input device */
+ 	ams_input_exit();
+@@ -221,9 +221,6 @@ void ams_exit(void)
+ 	/* Remove attributes */
+ 	device_remove_file(&ams_info.of_dev->dev, &dev_attr_current);
  
- 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
+-	/* Shut down implementation */
+-	ams_info.exit();
+-
+ 	/* Flush interrupt worker
+ 	 *
+ 	 * We do this after ams_info.exit(), because an interrupt might
+@@ -239,6 +236,12 @@ void ams_exit(void)
+ 	pmf_unregister_irq_client(&ams_freefall_client);
+ }
  
- 			if (priv->mac80211_registered &&
- 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
-@@ -1294,7 +1294,7 @@ static void iwl5000_rx_reply_tx(struct i
- 
- 		freed = iwl_tx_queue_reclaim(priv, txq_id, index);
- 		if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
- 
- 		if (priv->mac80211_registered &&
- 		    (iwl_queue_space(&txq->q) > txq->q.low_mark))
---- a/drivers/net/wireless/iwlwifi/iwl-core.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.h
-@@ -410,6 +410,8 @@ void iwl_hw_txq_ctx_free(struct iwl_priv
- int iwl_hw_tx_queue_init(struct iwl_priv *priv,
- 			 struct iwl_tx_queue *txq);
- int iwl_txq_update_write_ptr(struct iwl_priv *priv, struct iwl_tx_queue *txq);
-+void iwl_free_tfds_in_queue(struct iwl_priv *priv,
-+			    int sta_id, int tid, int freed);
- int iwl_tx_queue_init(struct iwl_priv *priv, struct iwl_tx_queue *txq,
- 		      int slots_num, u32 txq_id);
- void iwl_tx_queue_free(struct iwl_priv *priv, int txq_id);
---- a/drivers/net/wireless/iwlwifi/iwl-tx.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
-@@ -119,6 +119,20 @@ int iwl_txq_update_write_ptr(struct iwl_
- EXPORT_SYMBOL(iwl_txq_update_write_ptr);
- 
- 
-+void iwl_free_tfds_in_queue(struct iwl_priv *priv,
-+			    int sta_id, int tid, int freed)
++static void __exit ams_exit(void)
 +{
-+	if (priv->stations[sta_id].tid[tid].tfds_in_queue >= freed)
-+		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+	else {
-+		IWL_ERR(priv, "free more than tfds_in_queue (%u:%d)\n",
-+			priv->stations[sta_id].tid[tid].tfds_in_queue,
-+			freed);
-+		priv->stations[sta_id].tid[tid].tfds_in_queue = 0;
-+	}
++	/* Shut down implementation */
++	ams_info.exit();
 +}
-+EXPORT_SYMBOL(iwl_free_tfds_in_queue);
 +
- /**
-  * iwl_tx_queue_free - Deallocate DMA queue.
-  * @txq: Transmit queue to deallocate.
-@@ -1485,7 +1499,7 @@ void iwl_rx_reply_compressed_ba(struct i
- 	if (txq->q.read_ptr != (ba_resp_scd_ssn & 0xff)) {
- 		/* calculate mac80211 ampdu sw queue to wake */
- 		int freed = iwl_tx_queue_reclaim(priv, scd_flow, index);
--		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
+ MODULE_AUTHOR("Stelian Pop, Michael Hanselmann");
+ MODULE_DESCRIPTION("Apple Motion Sensor driver");
+ MODULE_LICENSE("GPL");
+--- a/drivers/hwmon/ams/ams-i2c.c
++++ b/drivers/hwmon/ams/ams-i2c.c
+@@ -238,6 +238,8 @@ static int ams_i2c_probe(struct i2c_clie
+ static int ams_i2c_remove(struct i2c_client *client)
+ {
+ 	if (ams_info.has_device) {
++		ams_sensor_detach();
++
+ 		/* Disable interrupts */
+ 		ams_i2c_set_irq(AMS_IRQ_ALL, 0);
  
- 		if ((iwl_queue_space(&txq->q) > txq->q.low_mark) &&
- 		    priv->mac80211_registered &&
+--- a/drivers/hwmon/ams/ams-pmu.c
++++ b/drivers/hwmon/ams/ams-pmu.c
+@@ -133,6 +133,8 @@ static void ams_pmu_get_xyz(s8 *x, s8 *y
+ 
+ static void ams_pmu_exit(void)
+ {
++	ams_sensor_detach();
++
+ 	/* Disable interrupts */
+ 	ams_pmu_set_irq(AMS_IRQ_ALL, 0);
+ 
+--- a/drivers/hwmon/ams/ams.h
++++ b/drivers/hwmon/ams/ams.h
+@@ -61,6 +61,7 @@ extern struct ams ams_info;
+ 
+ extern void ams_sensors(s8 *x, s8 *y, s8 *z);
+ extern int ams_sensor_attach(void);
++extern void ams_sensor_detach(void);
+ 
+ extern int ams_pmu_init(struct device_node *np);
+ extern int ams_i2c_init(struct device_node *np);
 
 
