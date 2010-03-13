@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935771Ab0CMAsQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:48:16 -0500
-Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
+	id S935498Ab0CMAu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:50:58 -0500
+Received: from kroah.org ([198.145.64.141]:47040 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935509Ab0CMAcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:14 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
-Message-Id: <20100313002714.734756416@kvm.kroah.org>
+	id S935480Ab0CMAb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:56 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
+Message-Id: <20100313002712.727383566@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:22 -0800
+Date: Fri, 12 Mar 2010 16:26:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [109/145] thinkpad-acpi: make driver events work in NVRAM poll mode
+       Alan Cox <alan@linux.intel.com>
+Subject: [086/145] tty: Fix the ldisc hangup race
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,81 +24,121 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Alan Cox <alan@linux.intel.com>
 
-commit 7f0cf712a74fcc3ad21f0bde95bd32c2f2cc3888 upstream.
+commit 638b9648ab51c9c549ff5735d3de519ef6199df3 upstream.
 
-Thadeu Lima de Souza Cascardo reports this:
+This was noticed by Matthias Urlichs and he proposed a fix. This patch
+does the fixing a different way to avoid introducing several new race
+conditions into the code.
 
-Brightness notification does not work until the user writes to
-hotkey_mask attribute.  That's because the polling thread will only run
-if hotkey_user_mask is set and someone is reading the input device or
-if hotkey_driver_mask is set.  In this second case, this condition is
-not tested after the mask is changed, because the brightness and
-volume drivers are started after the hotkey drivers.
+The problem case is TTY_DRIVER_RESET_TERMIOS = 0. In that case while we
+abort the ldisc change, the hangup processing has not cleaned up and restarted
+the ldisc either.
 
-Fix tpacpi_hotkey_driver_mask_set() to call hotkey_poll_setup(), so
-that the poller kthread will be started when needed.
+We can't restart the ldisc stuff in the set_ldisc as we don't know what
+the hangup did and may touch stuff we shouldn't as we are no longer
+supposed to influence the tty at that point in case it has been re-opened
+before we get rescheduled.
 
-Reported-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Tested-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Instead do it the simple way. Always re-init the ldisc on the hangup, but
+use TTY_DRIVER_RESET_TERMIOS to indicate that we should force N_TTY.
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/thinkpad_acpi.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/char/tty_ldisc.c |   50 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 30 insertions(+), 20 deletions(-)
 
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -2073,6 +2073,7 @@ static struct attribute_set *hotkey_dev_
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -687,12 +687,13 @@ static void tty_reset_termios(struct tty
+ /**
+  *	tty_ldisc_reinit	-	reinitialise the tty ldisc
+  *	@tty: tty to reinit
++ *	@ldisc: line discipline to reinitialize
+  *
+- *	Switch the tty back to N_TTY line discipline and leave the
+- *	ldisc state closed
++ *	Switch the tty to a line discipline and leave the ldisc
++ *	state closed
+  */
  
- static void tpacpi_driver_event(const unsigned int hkey_event);
- static void hotkey_driver_event(const unsigned int scancode);
-+static void hotkey_poll_setup(const bool may_warn);
+-static void tty_ldisc_reinit(struct tty_struct *tty)
++static void tty_ldisc_reinit(struct tty_struct *tty, int ldisc)
+ {
+ 	struct tty_ldisc *ld;
  
- /* HKEY.MHKG() return bits */
- #define TP_HOTKEY_TABLET_MASK (1 << 3)
-@@ -2254,6 +2255,8 @@ static int tpacpi_hotkey_driver_mask_set
- 
- 	rc = hotkey_mask_set((hotkey_acpi_mask | hotkey_driver_mask) &
- 							~hotkey_source_mask);
-+	hotkey_poll_setup(true);
-+
- 	mutex_unlock(&hotkey_mutex);
- 
- 	return rc;
-@@ -2538,7 +2541,7 @@ static void hotkey_poll_stop_sync(void)
+@@ -702,10 +703,10 @@ static void tty_ldisc_reinit(struct tty_
+ 	/*
+ 	 *	Switch the line discipline back
+ 	 */
+-	ld = tty_ldisc_get(N_TTY);
++	ld = tty_ldisc_get(ldisc);
+ 	BUG_ON(IS_ERR(ld));
+ 	tty_ldisc_assign(tty, ld);
+-	tty_set_termios_ldisc(tty, N_TTY);
++	tty_set_termios_ldisc(tty, ldisc);
  }
  
- /* call with hotkey_mutex held */
--static void hotkey_poll_setup(bool may_warn)
-+static void hotkey_poll_setup(const bool may_warn)
+ /**
+@@ -726,6 +727,8 @@ static void tty_ldisc_reinit(struct tty_
+ void tty_ldisc_hangup(struct tty_struct *tty)
  {
- 	const u32 poll_driver_mask = hotkey_driver_mask & hotkey_source_mask;
- 	const u32 poll_user_mask = hotkey_user_mask & hotkey_source_mask;
-@@ -2569,7 +2572,7 @@ static void hotkey_poll_setup(bool may_w
+ 	struct tty_ldisc *ld;
++	int reset = tty->driver->flags & TTY_DRIVER_RESET_TERMIOS;
++	int err = 0;
+ 
+ 	/*
+ 	 * FIXME! What are the locking issues here? This may me overdoing
+@@ -753,25 +756,32 @@ void tty_ldisc_hangup(struct tty_struct
+ 	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
+ 	/*
+ 	 * Shutdown the current line discipline, and reset it to
+-	 * N_TTY.
++	 * N_TTY if need be.
++	 *
++	 * Avoid racing set_ldisc or tty_ldisc_release
+ 	 */
+-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+-		/* Avoid racing set_ldisc or tty_ldisc_release */
+-		mutex_lock(&tty->ldisc_mutex);
+-		tty_ldisc_halt(tty);
+-		if (tty->ldisc) {	/* Not yet closed */
+-			/* Switch back to N_TTY */
+-			tty_ldisc_reinit(tty);
+-			/* At this point we have a closed ldisc and we want to
+-			   reopen it. We could defer this to the next open but
+-			   it means auditing a lot of other paths so this is
+-			   a FIXME */
++	mutex_lock(&tty->ldisc_mutex);
++	tty_ldisc_halt(tty);
++	/* At this point we have a closed ldisc and we want to
++	   reopen it. We could defer this to the next open but
++	   it means auditing a lot of other paths so this is
++	   a FIXME */
++	if (tty->ldisc) {	/* Not yet closed */
++		if (reset == 0) {
++			tty_ldisc_reinit(tty, tty->termios->c_line);
++			err = tty_ldisc_open(tty, tty->ldisc);
++		}
++		/* If the re-open fails or we reset then go to N_TTY. The
++		   N_TTY open cannot fail */
++		if (reset || err) {
++			tty_ldisc_reinit(tty, N_TTY);
+ 			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
+-			tty_ldisc_enable(tty);
+ 		}
+-		mutex_unlock(&tty->ldisc_mutex);
+-		tty_reset_termios(tty);
++		tty_ldisc_enable(tty);
  	}
++	mutex_unlock(&tty->ldisc_mutex);
++	if (reset)
++		tty_reset_termios(tty);
  }
  
--static void hotkey_poll_setup_safe(bool may_warn)
-+static void hotkey_poll_setup_safe(const bool may_warn)
- {
- 	mutex_lock(&hotkey_mutex);
- 	hotkey_poll_setup(may_warn);
-@@ -2587,7 +2590,11 @@ static void hotkey_poll_set_freq(unsigne
- 
- #else /* CONFIG_THINKPAD_ACPI_HOTKEY_POLL */
- 
--static void hotkey_poll_setup_safe(bool __unused)
-+static void hotkey_poll_setup(const bool __unused)
-+{
-+}
-+
-+static void hotkey_poll_setup_safe(const bool __unused)
- {
- }
- 
+ /**
 
 
