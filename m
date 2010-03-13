@@ -1,50 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400Ab0CMMFV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 07:05:21 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:53413 "EHLO smtp.wine.ocn.ne.jp"
+	id S1758125Ab0CMMMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 07:12:43 -0500
+Received: from smtp2-g21.free.fr ([212.27.42.2]:42913 "EHLO smtp2-g21.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755631Ab0CMMFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 07:05:19 -0500
-To: error27@gmail.com, jmorris@namei.org
-Cc: takedakn@nttdata.co.jp, serue@us.ibm.com, haradats@nttdata.co.jp,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [patch] tomoyo: fix potential use after free
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20100313111422.GA2594@bicker>
-In-Reply-To: <20100313111422.GA2594@bicker>
-Message-Id: <201003132105.CDF15561.OVOFHStLJFFQMO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sat, 13 Mar 2010 21:05:13 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757068Ab0CMMMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 07:12:41 -0500
+Message-ID: <4B9B812F.3030306@free.fr>
+Date: Sat, 13 Mar 2010 13:12:31 +0100
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.8.1.23) Gecko/20090823 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+CC: Siarhei Liakh <sliakh.lkml@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [tip:x86/mm] x86, mm: NX protection for kernel data
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Carpenter wrote:
+Hi,
 
-> The original code returns a freed pointer.  This function is expected to 
-> return NULL on errors.
+> > looking for c17ebdb8 in system.map points to a location in pgd_lock:
+> > ============================================
+> > $grep c17ebd System.map
+> > c17ebd68 d bios_check_work
+> > c17ebda8 d highmem_pages
+> > c17ebdac D pgd_lock
+> > c17ebdc8 D pgd_list
+> > c17ebdd0 D show_unhandled_signals
+> > c17ebdd4 d cpa_lock
+> > c17ebdf0 d memtype_lock
+> > ============================================
+> >
+> > I've looked at the lock debugging and could not find any place that
+> > would look like an attempt to execute data. This would lead me to
+> > think that calling set_memory_nx from kernel_init somehow confuses the
+> > lock debugging subsystem, or set_memory_nx does not change page
+> > attributes in a safe manner (for example when a lock is stored inside
+> > the page whose attributes are being changed).
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> I've done some extra debugging and it really does look like the crash
+> happens when we are setting NX on a large page which has pgd_lock
+> inside it.
+> 
+> Here is a trace of printk's that I added to troubleshoot this issue:
+> =========================
+> [    3.072003] try_preserve_large_page - enter
+> [    3.073185] try_preserve_large_page - address: 0xc1600000
+> [    3.074513] try_preserve_large_page - 2M page
+> [    3.075606] try_preserve_large_page - about to call static_protections
+> [    3.076000] try_preserve_large_page - back from static_protections
+> [    3.076000] try_preserve_large_page - past loop
+> [    3.076000] try_preserve_large_page - new_prot != old_prot
+> [    3.076000] try_preserve_large_page - the address is aligned and
+> the number of pages covers the full range
+> [    3.076000] try_preserve_large_page - about to call __set_pmd_pte
+> [    3.076000] __set_pmd_pte - enter
+> [    3.076000] __set_pmd_pte - address: 0xc1600000
+> [    3.076000] __set_pmd_pte - about to call
+> set_pte_atomic(*0xc18c0058(low=0x16001e3, high=0x0), (low=0x16001e1,
+> high=0x80000000))
+> [lock-up here]
+> =========================
+> 
 
-Oh, thank you.
-James, please send this patch to 2.6.34-rc1 .
+This may be stupid but :
 
-Acked-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-> diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-> index ff51f10..ef89947 100644
-> --- a/security/tomoyo/common.c
-> +++ b/security/tomoyo/common.c
-> @@ -886,6 +886,7 @@ static struct tomoyo_profile *tomoyo_find_or_assign_new_profile(const unsigned
->  	ptr = kmalloc(sizeof(*ptr), GFP_KERNEL);
->  	if (!tomoyo_memory_ok(ptr)) {
->  		kfree(ptr);
-> +		ptr = NULL;
->  		goto ok;
->  	}
->  	for (i = 0; i < TOMOYO_MAX_CONTROL_INDEX; i++)
+0xc1600000 2MB page is in 0xc1600000-0xc1800000 range.  pgd_lock (0xc17ebdac) seems to be in that range.
+
+You change attribute from (low=0x16001e3, high=0x0) to (low=0x16001e1, high=0x80000000). IE you set
+NX bit (bit 63), but you also clear R/W bit (bit 2). So the page become read only, but you are using a lock
+inside this page that need RW access. So you got a page fault.
+
+
+Now I don't know what should be done.
+Is that normal we set the page RO ?
+
+Matthieu
