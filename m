@@ -1,75 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922Ab0CMOIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 09:08:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:42776 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757339Ab0CMOIY (ORCPT
+	id S1759223Ab0CMO1A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 09:27:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49108 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757987Ab0CMO07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 09:08:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JUsBNwoXHijMfcegp8jARamcE5waF4qsiI6Plwsj0dyfh9sZU9+q4IKHNrkOf0TgCi
-         cxjmUrpbzX9ZmHcpQSKMi24w7gw88g8qBTMt4hP4qaTGe5f4eruMA4364m57T1y3hUXp
-         0iK2xzqgpa5UMOKNouG0OIR1A2e+K01FQtJ/s=
-Date: Sat, 13 Mar 2010 17:08:19 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86,perf: Unmask LVTPC only if we have APIC supported
-Message-ID: <20100313140819.GC18623@lenovo>
-References: <20100313081116.GA5179@lenovo> <20100313122432.GA10810@elte.hu> <20100313123256.GC5179@lenovo> <20100313124036.GA17769@elte.hu> <20100313134256.GB18623@lenovo> <20100313135022.GA4267@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100313135022.GA4267@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 13 Mar 2010 09:26:59 -0500
+Date: Sat, 13 Mar 2010 06:25:53 -0500
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-mtd@lists.infradead.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Kreuzer, Michael (NSN - DE/Ulm)" <michael.kreuzer@nsn.com>
+Subject: Re: [Patch] fix MTD CFI/LPDDR flash driver huge latency bug
+Message-Id: <20100313062553.2bdec297.akpm@linux-foundation.org>
+In-Reply-To: <1268483490.6339.21.camel@wall-e>
+References: <1267894137.18869.0.camel@wall-e>
+	<20100312142344.174bd46f.akpm@linux-foundation.org>
+	<1268483490.6339.21.camel@wall-e>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 13, 2010 at 02:50:22PM +0100, Ingo Molnar wrote:
-[ ... ]
+On Sat, 13 Mar 2010 13:31:30 +0100 Stefani Seibold <stefani@seibold.net> wrote:
+
+> Am Freitag, den 12.03.2010, 14:23 -0800 schrieb Andrew Morton:
+> > On Sat, 06 Mar 2010 17:48:57 +0100
+> > Stefani Seibold <stefani@seibold.net> wrote:
+> > 
+> > > This patch fix a huge latency problem in the MTD CFI and LPDDR flash
+> > > drivers.
 > > > 
-> > > apic_write() is really just equivalent to a spin_lock() on UP without 
-> > > UP_IOAPIC set - it should do nothing. So if it does something and fails the 
-> > > build, then that should be fixed - not the P4 PMU code.
+> > > The use of a memcpy() during a spinlock operation will cause very long
+> > > thread context switch delays if the flash chip bandwidth is low and the
+> > > data to be copied large, because a spinlock will disable preemption.
 > > > 
-> > > 	Ingo
+> > > For example: A flash with 6,5 MB/s bandwidth will cause under ubifs,
+> > > which request sometimes 128 KB (the flash erase size), a preemption
+> > > delay of 20 milliseconds. High priority threads will not be served
+> > > during this time, regardless whether this threads access the flash or
+> > > not. This behavior breaks real time.
 > > > 
+> > > The patch change all the use of spin_lock operations for xxxx->mutex
+> > > into mutex operations, which is exact what the name says and means. 
+> > > 
+> > > There is no performance regression since the mutex is normally not
+> > > acquired.
 > > 
-> > Looking at code a bit and config deps I think the former proposal with
-> > #ifdef is minimal (in amount of changes) and sufficient. perf_event.c
-> > uses #ifdef CONFIG_X86_LOCAL_APIC for the very same reason.
+> > hm, big scary patch.  Are you sure this mutex is never taken from
+> > atomic or irq contexts?  Is it ully tested with all relevant debug options
+> > and lockdep enabled?
 > > 
-> > The former issue with config dependencies is that we may need to compile 
-> > perf_event.c without CONFIG_LOCAL_APIC support at all (and this is a case 
-> > for which you've posted the config). CONFIG_LOCAL_APIC deps on X86_UP_APIC, 
-> > the config has no X86_UP_APIC support and as result -- no CONFIG_LOCAL_APIC 
-> > and no apic.o compiled.
 > > 
-> > So, as expected, no apic_write/read and friends there. We may introduce 
-> > apic_write/read weak(s) but this would only mess the code more and would 
-> > smell unpleasant I think :) .
-> > 
-> > All-in-once: unresolved external symbol here, which could be fixed either by 
-> > introducing dummy symbol, or conditional compilation. I think the second is 
-> > preferred if the issue is just one line code.
-> > 
-> > Or you mean something different and I took a wrong mind-path?
 > 
-> Well it's not just one line of code as (like you mentioned) perf_event.c is 
-> affected as well.
+> I have analyzed this drivers and IMHO i don't think there will be used
+> from irq or atomic contexts. There is no request interrupt and there are
+> a lot msleep and add_wait_queues/schedule calls during holding the
+> mutex, which are not very useful in a irq or atomic context. But i don't
+> know the whole mtd stack. 
 > 
-> Introducing a dummy (NOP) placeholder method is what we are doing in all the 
-> other cases (such as spin_lock()), we dont pollute the kernel with #ifdefs.
+> I tested the patch with the following kernel debug options:
 > 
-> 	Ingo
+> CONFIG_DEBUG_KERNEL=y
+> CONFIG_DETECT_SOFTLOCKUP=y
+> CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+> CONFIG_SCHED_DEBUG=y
+> CONFIG_SCHEDSTATS=y
+> CONFIG_TIMER_STATS=y
+> CONFIG_DEBUG_MUTEXES=y
+> CONFIG_DEBUG_SPINLOCK_SLEEP=y
 > 
 
-ok, understood what you mean. will back with patch.
+Neato.  As was mentioned, one thing to check is the mtdoops path. 
+oopses can happen with locks held, from IRQ context, etc.
 
-	-- Cyrill
+If we're trying to take that mutex in oops context then I guess that's
+fixable by just not taking it and hoping for the best.  Or, better,
+mutex_trylock() and conditional mutex_unlock() to try to be nice to
+possible concurrent activity on other CPUs.
+
