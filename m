@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935741Ab0CMAev (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:34:51 -0500
-Received: from kroah.org ([198.145.64.141]:47078 "EHLO coco.kroah.org"
+	id S935693Ab0CMAeJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:34:09 -0500
+Received: from kroah.org ([198.145.64.141]:46998 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935371Ab0CMAcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:04 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
-Message-Id: <20100313002713.699240697@kvm.kroah.org>
+	id S935464Ab0CMAbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:49 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
+Message-Id: <20100313002711.946414203@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:10 -0800
+Date: Fri, 12 Mar 2010 16:26:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [097/145] scm: Only support SCM_RIGHTS on unix domain sockets.
+       Sebastien Alaiwan <sebastien.alaiwan@gmail.com>,
+       Clemens Ladisch <clemens@ladisch.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [077/145] ALSA: USB MIDI support for Access Music VirusTI
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,34 +25,133 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
 
-commit 76dadd76c265a0cdb5a76aa4eef03fcc9639b388 upstream.
+commit d39e82db73eb876c60d00f00219d767b3be30307 upstream.
 
-We use scm_send and scm_recv on both unix domain and
-netlink sockets, but only unix domain sockets support
-everything required for file descriptor passing,
-so error if someone attempts to pass file descriptors
-over netlink sockets.
+Here's a patch that adds MIDI support through USB for one of the Access
+Music synths, the VirusTI.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+The synth uses standard USBMIDI protocol on its USB interface 3, although
+it does signal "vendor specific" class. A magic string has to be sent on
+interface 3 to enable the sending of MIDI from the synth (this string was
+found by sniffing usb communication of the Windows driver). This is all
+my patch does, and it works on my computer.
+
+Please note that the synth can also do standard usb audio I/O on its
+interfaces 2&3, which already works with the current snd-usb-audio driver,
+except for the audio input from the synth. I'm going to work on it when I
+have some time.
+
+Signed-off-by: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/scm.c |    2 ++
- 1 file changed, 2 insertions(+)
+ sound/usb/usbaudio.c  |   32 ++++++++++++++++++++++++++++++++
+ sound/usb/usbmidi.c   |    6 ++++++
+ sound/usb/usbquirks.h |   27 +++++++++++++++++++++++++++
+ 3 files changed, 65 insertions(+)
 
---- a/net/core/scm.c
-+++ b/net/core/scm.c
-@@ -156,6 +156,8 @@ int __scm_send(struct socket *sock, stru
- 		switch (cmsg->cmsg_type)
- 		{
- 		case SCM_RIGHTS:
-+			if (!sock->ops || sock->ops->family != PF_UNIX)
-+				goto error;
- 			err=scm_fp_copy(cmsg, &p->fp);
- 			if (err<0)
- 				goto error;
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -3326,6 +3326,32 @@ static int snd_usb_cm6206_boot_quirk(str
+ }
+ 
+ /*
++ * This call will put the synth in "USB send" mode, i.e it will send MIDI
++ * messages through USB (this is disabled at startup). The synth will
++ * acknowledge by sending a sysex on endpoint 0x85 and by displaying a USB
++ * sign on its LCD. Values here are chosen based on sniffing USB traffic
++ * under Windows.
++ */
++static int snd_usb_accessmusic_boot_quirk(struct usb_device *dev)
++{
++	int err, actual_length;
++
++	/* "midi send" enable */
++	static const u8 seq[] = { 0x4e, 0x73, 0x52, 0x01 };
++
++	void *buf = kmemdup(seq, ARRAY_SIZE(seq), GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	err = usb_interrupt_msg(dev, usb_sndintpipe(dev, 0x05), buf,
++			ARRAY_SIZE(seq), &actual_length, 1000);
++	kfree(buf);
++	if (err < 0)
++		return err;
++
++	return 0;
++}
++
++/*
+  * Setup quirks
+  */
+ #define AUDIOPHILE_SET			0x01 /* if set, parse device_setup */
+@@ -3616,6 +3642,12 @@ static void *snd_usb_audio_probe(struct
+ 			goto __err_val;
+ 	}
+ 
++	/* Access Music VirusTI Desktop */
++	if (id == USB_ID(0x133e, 0x0815)) {
++		if (snd_usb_accessmusic_boot_quirk(dev) < 0)
++			goto __err_val;
++	}
++
+ 	/*
+ 	 * found a config.  now register to ALSA
+ 	 */
+--- a/sound/usb/usbmidi.c
++++ b/sound/usb/usbmidi.c
+@@ -1360,6 +1360,12 @@ static struct port_info {
+ 	EXTERNAL_PORT(0x086a, 0x0001, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0002, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0003, 4, "%s Broadcast"),
++	/* Access Music Virus TI */
++	EXTERNAL_PORT(0x133e, 0x0815, 0, "%s MIDI"),
++	PORT_INFO(0x133e, 0x0815, 1, "%s Synth", 0,
++		SNDRV_SEQ_PORT_TYPE_MIDI_GENERIC |
++		SNDRV_SEQ_PORT_TYPE_HARDWARE |
++		SNDRV_SEQ_PORT_TYPE_SYNTHESIZER),
+ };
+ 
+ static struct port_info *find_port_info(struct snd_usb_midi* umidi, int number)
+--- a/sound/usb/usbquirks.h
++++ b/sound/usb/usbquirks.h
+@@ -2050,6 +2050,33 @@ YAMAHA_DEVICE(0x7010, "UB99"),
+ 	}
+ },
+ 
++/* Access Music devices */
++{
++	/* VirusTI Desktop */
++	USB_DEVICE_VENDOR_SPEC(0x133e, 0x0815),
++	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
++		.ifnum = QUIRK_ANY_INTERFACE,
++		.type = QUIRK_COMPOSITE,
++		.data = &(const struct snd_usb_audio_quirk[]) {
++			{
++				.ifnum = 3,
++				.type = QUIRK_MIDI_FIXED_ENDPOINT,
++				.data = &(const struct snd_usb_midi_endpoint_info) {
++					.out_cables = 0x0003,
++					.in_cables  = 0x0003
++				}
++			},
++			{
++				.ifnum = 4,
++				.type = QUIRK_IGNORE_INTERFACE
++			},
++			{
++				.ifnum = -1
++			}
++		}
++	}
++},
++
+ /* */
+ {
+ 	/* aka. Serato Scratch Live DJ Box */
 
 
