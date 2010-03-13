@@ -1,84 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855Ab0CMC3M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 21:29:12 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32833 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757304Ab0CMC3K (ORCPT
+	id S1757924Ab0CMCas (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 21:30:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46547 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756456Ab0CMCar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 21:29:10 -0500
-Date: Sat, 13 Mar 2010 03:28:55 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] arch/mips/txx9/generic: init dynamic bin_attribute
-	structures
-Message-ID: <20100313022855.GD4034@pengutronix.de>
-References: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de> <1268377431-11671-2-git-send-email-w.sang@pengutronix.de> <20100312183450.GC8736@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DiL7RhKs8rK9YGuF"
-Content-Disposition: inline
-In-Reply-To: <20100312183450.GC8736@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 12 Mar 2010 21:30:47 -0500
+X-Authority-Analysis: v=1.0 c=1 a=8OTfl9jic9UA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=meVymXHHAAAA:8 a=lv2ZgClW7LWqcdrlDAcA:9 a=y09ZD6wMTvxKSuaELE8pV8NWK_QA:4 a=PUjeQqilurYA:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: Using tracing_off() in __schedule_bug()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Chase Douglas <chase.douglas@canonical.com>
+Cc: linux-kernel@vger.kernel.org, kernel-team <kernel-team@lists.ubuntu.com>
+In-Reply-To: <40ec3ea41003121812j7cb349e4g1c455ae096da35cd@mail.gmail.com>
+References: <40ec3ea41003120732w5f44a2ebq728047e742f32bba@mail.gmail.com>
+	 <1268436844.4471.783.camel@gandalf.stny.rr.com>
+	 <40ec3ea41003121812j7cb349e4g1c455ae096da35cd@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 12 Mar 2010 21:30:44 -0500
+Message-ID: <1268447444.4471.789.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-03-12 at 21:12 -0500, Chase Douglas wrote:
+> On Fri, Mar 12, 2010 at 6:34 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
 
---DiL7RhKs8rK9YGuF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > Hmm, thinking about it more, I would rather have a separate function,
+> > that would call tracing_off() if some variable is set. By default it
+> > would be set, but in case you want to keep tracing after a bug is hit,
+> > you can have a way to disable it.
+> >
+> > I need to write up a patch soon. Thanks for bring this up.
+> 
+> I'd be happy to help out in this endeavor if you'd like. I'm wondering
+> if there shouldn't be multiple levels of tracing_off support specified
+> at boot time (disabled on WARNING, BUG, __schedule_bug, OOPS) in an
+> ordered priority way. I.e. tracing_off_bug would leave tracing on for
+> WARNING's, but turn it off for BUG's, schedule bugs, and oopses. The
+> default would be tracing_off_warn, which would call tracing_off on all
+> of the above.
 
-On Fri, Mar 12, 2010 at 10:34:51AM -0800, Dmitry Torokhov wrote:
-> On Fri, Mar 12, 2010 at 08:03:49AM +0100, Wolfram Sang wrote:
-> > Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this require=
-ment.
-> > Found with coccinelle, but fixed manually. Compile tested on X86 where
-> > possible.
-> >=20
->=20
-> Regarding all 3 - it looks like these dynamically alocated attributes
-> could be converted to statically allocated ones. I'd recommend doing
-> that instead (in fact, I posted patch for the firmware_class couple days
-> ago).
+I think that's a bit over-engineering. I'd suggest that you either want
+to disable tracing on an error or you don't. I could add a tracing
+option that lets you stop it. Keep it simple. If it becomes complex, no
+one will use it.
 
-I agree for the firmware-patch. Regarding the MIPS one, 'size' might differ=
- and
-'private' will differ per instance. Regarding the RTC driver, 'size' might =
-also
-differ. I don't know if somebody really wants two RTCs or the SRAM for MIPS=
- can
-be instantiated more than once. Unless somebody with actual hardware jumps =
-in,
-I'd say better safe than sorry.
+-- Steve
 
-Thanks for the comment!
 
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---DiL7RhKs8rK9YGuF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkua+GcACgkQD27XaX1/VRsmUgCgxpG37bpkUetDGyW/fT8vhGaU
-9XoAoIbuIfLRmEolrdu01v0d4cjAMYZJ
-=pKV6
------END PGP SIGNATURE-----
-
---DiL7RhKs8rK9YGuF--
