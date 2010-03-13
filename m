@@ -1,57 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936451Ab0CMB2g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:28:36 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:38752 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934901Ab0CMB22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 20:28:28 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=IhkEejdgsKxbmSVJySd6mEojNOsHklqPQd9akTUy1J2n1kQcodYuqDLgwfUzA39SAjL+jtT4mfX3PTKF2KSIZzniHdr7W3X2LwVBwtUNQ/bmG1PfMGwK+S5oDUseKULV;
-Date: Fri, 12 Mar 2010 17:27:38 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Chihau Chau <chihau@gmail.com>
-Cc: rjw@sisk.pl, kaneshige.kenji@jp.fujitsu.com, yu.zhao@intel.com,
-       bjorn.helgaas@hp.com, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chihau Chau <chihau@gmail.com>
-Subject: Re: [PATCH] Drivers: pci: code style cleanup
-Message-ID: <20100312172738.522f435f@jbarnes-piketon>
-In-Reply-To: <1268329983-2603-1-git-send-email-chihau@gmail.com>
-References: <1268329983-2603-1-git-send-email-chihau@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	id S934888Ab0CMB3F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:29:05 -0500
+Received: from kroah.org ([198.145.64.141]:60697 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934891Ab0CMAUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:00 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:08 2010
+Message-Id: <20100313001508.598177460@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:12:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Robert Richter <robert.richter@amd.com>
+Subject: [patch 039/123] oprofile/x86: fix msr access to reserved counters
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 14:53:03 -0300
-Chihau Chau <chihau@gmail.com> wrote:
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-> From: Chihau Chau <chihau@gmail.com>
-> 
-> This is a code style cleanup related with spaces, like a lot of trailing
-> withspaces, spaces before a TAB, to use "foo * bar" instead of "foo *bar"
-> and to put a else sentence below close brace '}'.
-> 
-> Signed-off-by: Chihau Chau <chihau@gmail.com>
+-----------------
 
-Unless you're doing some other work in this area and include this patch
-in a larger patchset, I'm inclined to reject it, since it just creates
-churn for others for no good reason.
+From: Robert Richter <robert.richter@amd.com>
 
-In other words, if developer A is making real changes in these areas
-that would invalidate developer B's patches, that's fine.  But I don't
-think it's ok to let cleanup patches invalidate developer B's work.
+commit cfc9c0b450176a077205ef39092f0dc1a04e020a upstream.
 
-Hope that's clear.  Don't get me wrong, I like the fact that in Linux
-we're not afraid to clean stuff up.  I just don't like it getting in
-the way of real work.
+During switching virtual counters there is access to perfctr msrs. If
+the counter is not available this fails due to an invalid
+address. This patch fixes this.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/oprofile/op_model_amd.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -85,7 +85,7 @@ static void op_mux_switch_ctrl(struct op
+ 	/* enable active counters */
+ 	for (i = 0; i < NUM_COUNTERS; ++i) {
+ 		int virt = op_x86_phys_to_virt(i);
+-		if (!counter_config[virt].enabled)
++		if (!reset_value[virt])
+ 			continue;
+ 		rdmsrl(msrs->controls[i].addr, val);
+ 		val &= model->reserved;
+@@ -121,7 +121,8 @@ static void op_amd_setup_ctrs(struct op_
+ 
+ 	/* setup reset_value */
+ 	for (i = 0; i < NUM_VIRT_COUNTERS; ++i) {
+-		if (counter_config[i].enabled)
++		if (counter_config[i].enabled
++		    && msrs->counters[op_x86_virt_to_phys(i)].addr)
+ 			reset_value[i] = counter_config[i].count;
+ 		else
+ 			reset_value[i] = 0;
+@@ -146,9 +147,7 @@ static void op_amd_setup_ctrs(struct op_
+ 	/* enable active counters */
+ 	for (i = 0; i < NUM_COUNTERS; ++i) {
+ 		int virt = op_x86_phys_to_virt(i);
+-		if (!counter_config[virt].enabled)
+-			continue;
+-		if (!msrs->counters[i].addr)
++		if (!reset_value[virt])
+ 			continue;
+ 
+ 		/* setup counter registers */
+
+
