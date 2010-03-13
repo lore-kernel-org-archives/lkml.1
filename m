@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935686Ab0CMAd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:33:58 -0500
-Received: from kroah.org ([198.145.64.141]:47006 "EHLO coco.kroah.org"
+	id S935616Ab0CMAoE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:44:04 -0500
+Received: from kroah.org ([198.145.64.141]:47241 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935404Ab0CMAbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:48 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:11 2010
-Message-Id: <20100313002711.861767217@kvm.kroah.org>
+	id S935562Ab0CMAcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:35 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
+Message-Id: <20100313002717.077815089@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:49 -0800
+Date: Fri, 12 Mar 2010 16:27:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jaroslav Kysela <perex@perex.cz>
-Subject: [076/145] ALSA: pcm core - fix fifo_size channels interval check
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [136/145] NFS: Fix an allocation-under-spinlock bug
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,33 +24,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jaroslav Kysela <perex@perex.cz>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 3be522a9514f58e0596db34898a514df206cadc5 upstream.
+commit ebed9203b68a4f333ce5d17e874b26c3afcfeff1 upstream.
 
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+sunrpc_cache_update() will always call detail->update() from inside the
+detail->hash_lock, so it cannot allocate memory.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/pcm_native.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ fs/nfs/dns_resolve.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -314,10 +314,10 @@ int snd_pcm_hw_refine(struct snd_pcm_sub
- 	if (!params->info)
- 		params->info = hw->info & ~SNDRV_PCM_INFO_FIFO_IN_FRAMES;
- 	if (!params->fifo_size) {
--		if (snd_mask_min(&params->masks[SNDRV_PCM_HW_PARAM_FORMAT]) ==
--		    snd_mask_max(&params->masks[SNDRV_PCM_HW_PARAM_FORMAT]) &&
--                    snd_mask_min(&params->masks[SNDRV_PCM_HW_PARAM_CHANNELS]) ==
--                    snd_mask_max(&params->masks[SNDRV_PCM_HW_PARAM_CHANNELS])) {
-+		m = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
-+		i = hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
-+		if (snd_mask_min(m) == snd_mask_max(m) &&
-+                    snd_interval_min(i) == snd_interval_max(i)) {
- 			changed = substream->ops->ioctl(substream,
- 					SNDRV_PCM_IOCTL1_FIFO_SIZE, params);
- 			if (changed < 0)
+--- a/fs/nfs/dns_resolve.c
++++ b/fs/nfs/dns_resolve.c
+@@ -36,6 +36,19 @@ struct nfs_dns_ent {
+ };
+ 
+ 
++static void nfs_dns_ent_update(struct cache_head *cnew,
++		struct cache_head *ckey)
++{
++	struct nfs_dns_ent *new;
++	struct nfs_dns_ent *key;
++
++	new = container_of(cnew, struct nfs_dns_ent, h);
++	key = container_of(ckey, struct nfs_dns_ent, h);
++
++	memcpy(&new->addr, &key->addr, key->addrlen);
++	new->addrlen = key->addrlen;
++}
++
+ static void nfs_dns_ent_init(struct cache_head *cnew,
+ 		struct cache_head *ckey)
+ {
+@@ -49,8 +62,7 @@ static void nfs_dns_ent_init(struct cach
+ 	new->hostname = kstrndup(key->hostname, key->namelen, GFP_KERNEL);
+ 	if (new->hostname) {
+ 		new->namelen = key->namelen;
+-		memcpy(&new->addr, &key->addr, key->addrlen);
+-		new->addrlen = key->addrlen;
++		nfs_dns_ent_update(cnew, ckey);
+ 	} else {
+ 		new->namelen = 0;
+ 		new->addrlen = 0;
+@@ -234,7 +246,7 @@ static struct cache_detail nfs_dns_resol
+ 	.cache_show = nfs_dns_show,
+ 	.match = nfs_dns_match,
+ 	.init = nfs_dns_ent_init,
+-	.update = nfs_dns_ent_init,
++	.update = nfs_dns_ent_update,
+ 	.alloc = nfs_dns_ent_alloc,
+ };
+ 
 
 
