@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936347Ab0CMBTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:19:00 -0500
-Received: from kroah.org ([198.145.64.141]:60966 "EHLO coco.kroah.org"
+	id S936378Ab0CMBTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:19:17 -0500
+Received: from kroah.org ([198.145.64.141]:60961 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934978Ab0CMAUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:40 -0500
+	id S934976Ab0CMAUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:39 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
-Message-Id: <20100313001512.067454511@kvm.kroah.org>
+Message-Id: <20100313001511.981386918@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:57 -0800
+Date: Fri, 12 Mar 2010 16:12:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Felix Fietkau <nbd@openwrt.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 079/123] mac80211: do not transmit frames on unconfigured 4-addr vlan interfaces
+       Ben Hutchings <ben@decadent.org.uk>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 078/123] sunxvr500: Additional PCI id for sunxvr500 driver
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,37 +27,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Felix Fietkau <nbd@openwrt.org>
+From: Ben Hutchings <ben@decadent.org.uk>
 
-commit 3f0e0b220f80075ce15483b20458192c0ac27426 upstream.
+commit 275143e9b237dd7e0b6d01660fd9b8acd9922fa7 upstream.
 
-If frames are transmitted on 4-addr ap vlan interfaces with no station,
-they end up being transmitted unencrypted, even if the ap interface
-uses WPA. This patch add some sanity checking to make sure that this
-does not happen.
+Intergraph bought 3D Labs and some XVR-500 chips have Intergraph's
+vendor id.
 
-Signed-off-by: Felix Fietkau <nbd@openwrt.org>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Reported-by: Jurij Smakov <jurij@wooyd.org>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/tx.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/sunxvr500.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/mac80211/tx.c
-+++ b/net/mac80211/tx.c
-@@ -1052,8 +1052,11 @@ ieee80211_tx_prepare(struct ieee80211_su
+--- a/drivers/video/sunxvr500.c
++++ b/drivers/video/sunxvr500.c
+@@ -400,6 +400,7 @@ static void __devexit e3d_pci_unregister
  
- 	hdr = (struct ieee80211_hdr *) skb->data;
- 
--	if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN)
-+	if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN) {
- 		tx->sta = rcu_dereference(sdata->u.vlan.sta);
-+		if (!tx->sta && sdata->dev->ieee80211_ptr->use_4addr)
-+			return TX_DROP;
-+	}
- 	if (!tx->sta)
- 		tx->sta = sta_info_get(local, hdr->addr1);
- 
+ static struct pci_device_id e3d_pci_table[] = {
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a0),	},
++	{	PCI_DEVICE(0x1091, 0x7a0),			},
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a2),	},
+ 	{	.vendor = PCI_VENDOR_ID_3DLABS,
+ 		.device = PCI_ANY_ID,
 
 
