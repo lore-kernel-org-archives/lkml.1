@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759260Ab0CMOzh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 09:55:37 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:63334 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758355Ab0CMOz3 (ORCPT
+	id S1759270Ab0CMOzp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 09:55:45 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:56329 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759228Ab0CMOzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 09:55:29 -0500
+	Sat, 13 Mar 2010 09:55:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Wk3rnkQ1sfqxRB2k23vZjYY2DUMtuRNHZRzYPAw+srdmgS4Ww4bWsEDvlq1ltJT6Qt
-         32NHbOyCQg+HY8nYrjQCNOG758BiF+r61SH5ogDpKA5YvTZaP8e3PTUiYapIBu37M3/9
-         eh8UYUbzw6wJMrzehUf4U3njE7lzghvgeYoCo=
+        b=GMtixVNw1ix7j2QRRCDrydu+Tysdmk5gVJ5BlAeQ9pWCaCWX6LmANvsr8Xu4MENNdB
+         3TAAdxYODGxGYsV2A8QW7ffS+iKy/IFiLAoiWFBhFFOubChABTBtNOGW4yjjrp+oqYs+
+         j8uP/yFvWdCxVXARRsiIAXhAvH5mVy0paazco=
 From: Jason Wong <tsanghan@gmail.com>
 To: gregkh@suse.de
 Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
        Jason Wong <tsanghan@gmail.com>
-Subject: [PATCH 5/9] Staging: comedi: adv_pci1710: fixed multiple brace coding style issue
-Date: Sat, 13 Mar 2010 22:53:30 +0800
-Message-Id: <1268492014-6355-6-git-send-email-tsanghan@gmail.com>
+Subject: [PATCH 7/9] Staging: comedi: cb_das16_cs: fixed multiple brace coding style issue
+Date: Sat, 13 Mar 2010 22:53:32 +0800
+Message-Id: <1268492014-6355-8-git-send-email-tsanghan@gmail.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <Jason Wong <tsanghan@gmail.com>
 References: <Jason Wong <tsanghan@gmail.com>
@@ -27,73 +27,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed multiple coding style issue.
+Fixed multiple coding style issue
 
 Signed-off-by: Jason Wong <tsanghan@gmail.com>
 ---
- drivers/staging/comedi/drivers/adv_pci1710.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/staging/comedi/drivers/cb_das16_cs.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/comedi/drivers/adv_pci1710.c b/drivers/staging/comedi/drivers/adv_pci1710.c
-index 394d2ea..f5bb286 100644
---- a/drivers/staging/comedi/drivers/adv_pci1710.c
-+++ b/drivers/staging/comedi/drivers/adv_pci1710.c
-@@ -657,9 +657,9 @@ static void interrupt_pci1710_every_sample(void *d)
- #endif
- 		++s->async->cur_chan;
+diff --git a/drivers/staging/comedi/drivers/cb_das16_cs.c b/drivers/staging/comedi/drivers/cb_das16_cs.c
+index bc375e7..bf8271f 100644
+--- a/drivers/staging/comedi/drivers/cb_das16_cs.c
++++ b/drivers/staging/comedi/drivers/cb_das16_cs.c
+@@ -174,16 +174,16 @@ static int das16cs_attach(struct comedi_device *dev,
+ 	printk("I/O base=0x%04lx ", dev->iobase);
  
--		if (s->async->cur_chan >= devpriv->ai_n_chan) {
-+		if (s->async->cur_chan >= devpriv->ai_n_chan)
- 			s->async->cur_chan = 0;
--		}
-+
- 
- 		if (s->async->cur_chan == 0) {	/*  one scan done */
- 			devpriv->ai_act_scan++;
-@@ -863,12 +863,12 @@ static int pci171x_ai_docmd_and_mode(int mode, struct comedi_device *dev,
- 		devpriv->ai_eos = 0;
- 	}
- 
--	if ((devpriv->ai_scans == 0) || (devpriv->ai_scans == -1)) {
-+	if ((devpriv->ai_scans == 0) || (devpriv->ai_scans == -1))
- 		devpriv->neverending_ai = 1;
--	} /* well, user want neverending */
--	else {
-+	/* well, user want neverending */
-+	else
- 		devpriv->neverending_ai = 0;
+ 	printk("fingerprint:\n");
+-	for (i = 0; i < 48; i += 2) {
++	for (i = 0; i < 48; i += 2)
+ 		printk("%04x ", inw(dev->iobase + i));
 -	}
 +
- 	switch (mode) {
- 	case 1:
- 	case 2:
-@@ -1109,11 +1109,11 @@ static int pci171x_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
- 	devpriv->ai_timer1 = 0;
- 	devpriv->ai_timer2 = 0;
+ 	printk("\n");
  
--	if (cmd->stop_src == TRIG_COUNT) {
-+	if (cmd->stop_src == TRIG_COUNT)
- 		devpriv->ai_scans = cmd->stop_arg;
--	} else {
-+	else
- 		devpriv->ai_scans = 0;
+ 	ret = request_irq(link->irq.AssignedIRQ, das16cs_interrupt,
+ 			  IRQF_SHARED, "cb_das16_cs", dev);
+-	if (ret < 0) {
++	if (ret < 0)
+ 		return ret;
+-	}
++
+ 	dev->irq = link->irq.AssignedIRQ;
+ 	printk("irq=%u ", dev->irq);
+ 
+@@ -261,9 +261,9 @@ static int das16cs_detach(struct comedi_device *dev)
+ {
+ 	printk("comedi%d: das16cs: remove\n", dev->minor);
+ 
+-	if (dev->irq) {
++	if (dev->irq)
+ 		free_irq(dev->irq, dev);
 -	}
 +
  
- 	if (cmd->scan_begin_src == TRIG_FOLLOW) {	/*  mode 1, 2, 3 */
- 		if (cmd->convert_src == TRIG_TIMER) {	/*  mode 1 and 2 */
-@@ -1593,9 +1593,9 @@ static int pci1710_detach(struct comedi_device *dev)
- 		if (dev->irq)
- 			free_irq(dev->irq, dev);
- 		if (devpriv->pcidev) {
--			if (dev->iobase) {
-+			if (dev->iobase)
- 				comedi_pci_disable(devpriv->pcidev);
--			}
-+
- 			pci_dev_put(devpriv->pcidev);
- 		}
- 	}
+ 	return 0;
+ }
 -- 
 1.7.0
 
