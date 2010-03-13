@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935721Ab0CMAqF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:46:05 -0500
-Received: from kroah.org ([198.145.64.141]:47197 "EHLO coco.kroah.org"
+	id S935585Ab0CMAco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:32:44 -0500
+Received: from kroah.org ([198.145.64.141]:46850 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935538Ab0CMAc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:27 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
-Message-Id: <20100313002716.145822977@kvm.kroah.org>
+	id S935400Ab0CMAbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:21 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
+Message-Id: <20100313002709.257615380@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:38 -0800
+Date: Fri, 12 Mar 2010 16:26:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andreas Mohr <andi@lisas.de>
-Subject: [125/145] USB: ftdi_sio: add device IDs (several ELV, one Mindstorms NXT)
+       Jerome Glisse <jglisse@redhat.com>, Dave Airlie <airlied@linux.ie>
+Subject: [046/145] drm/radeon/kms: Forbid creation of framebuffer with no valid GEM object
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,141 +24,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Andreas Mohr <andi@lisas.de>
+From: Jerome Glisse <jglisse@redhat.com>
 
-commit 65e1ec6751b3eefee6d94161185e78736366126f upstream.
+commit 7e71c9e2e7704ebf044d4a964e02fbd2098a173f upstream.
 
-- add FTDI device IDs for several ELV devices and NXTCam of Lego Mindstorms NXT
-- add hopefully helpful new_id comment
-- remove less helpful "Due to many user requests for multiple ELV devices we enable
-  them by default." comment (we simply add _all_ known devices - an
-  enduser shouldn't have to fiddle with obscure module parameters...).
-- add myself to DRIVER_AUTHOR
+This will avoid oops if at later point the fb is use. Trying to create
+a framebuffer with no valid GEM object is bogus and should be forbidden
+as this patch does.
 
-The missing NXTCam ID has been found at
-http://www.unixboard.de/vb3/showthread.php?t=44155
-, ELV devices taken from ELV Windows .inf file.
-
-Signed-off-by: Andreas Mohr <andi@lisas.de>
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+Signed-off-by: Dave Airlie <airlied@linux.ie>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c     |   24 +++++++++++++++++++++---
- drivers/usb/serial/ftdi_sio_ids.h |   17 +++++++++++++++++
- 2 files changed, 38 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/radeon/radeon_display.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -50,7 +50,7 @@
-  * Version Information
-  */
- #define DRIVER_VERSION "v1.5.0"
--#define DRIVER_AUTHOR "Greg Kroah-Hartman <greg@kroah.com>, Bill Ryder <bryder@sgi.com>, Kuba Ober <kuba@mareimbrium.org>"
-+#define DRIVER_AUTHOR "Greg Kroah-Hartman <greg@kroah.com>, Bill Ryder <bryder@sgi.com>, Kuba Ober <kuba@mareimbrium.org>, Andreas Mohr"
- #define DRIVER_DESC "USB FTDI Serial Converters Driver"
+--- a/drivers/gpu/drm/radeon/radeon_display.c
++++ b/drivers/gpu/drm/radeon/radeon_display.c
+@@ -599,7 +599,11 @@ radeon_user_framebuffer_create(struct dr
+ 	struct drm_gem_object *obj;
  
- static int debug;
-@@ -145,10 +145,15 @@ static struct ftdi_sio_quirk ftdi_HE_TIR
+ 	obj = drm_gem_object_lookup(dev, file_priv, mode_cmd->handle);
+-
++	if (obj ==  NULL) {
++		dev_err(&dev->pdev->dev, "No GEM object associated to handle 0x%08X, "
++			"can't create framebuffer\n", mode_cmd->handle);
++		return NULL;
++	}
+ 	return radeon_framebuffer_create(dev, mode_cmd, obj);
+ }
  
- 
- 
-+/*
-+ * Device ID not listed? Test via module params product/vendor or
-+ * /sys/bus/usb/ftdi_sio/new_id, then send patch/report!
-+ */
- static struct usb_device_id id_table_combined [] = {
- 	{ USB_DEVICE(FTDI_VID, FTDI_AMC232_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_CANUSB_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_CANDAPTER_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_NXTCAM_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_SCS_DEVICE_0_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_SCS_DEVICE_1_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_SCS_DEVICE_2_PID) },
-@@ -552,9 +557,16 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(FTDI_VID, FTDI_IBS_PEDO_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_IBS_PROD_PID) },
- 	/*
--	 * Due to many user requests for multiple ELV devices we enable
--	 * them by default.
-+	 * ELV devices:
- 	 */
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_USR_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_MSM1_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_KL100_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS550_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EC3000_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS888_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_TWS550_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FEM_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_CLI7000_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_PPS7330_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_TFM100_PID) },
-@@ -571,11 +583,17 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_PCK100_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_RFP500_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FS20SIG_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UTP8_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS300PC_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS444PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EM1010PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_HS485_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UMS100_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_TFD128_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FM3RX_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS777_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_SDMUSBQSS_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_MASTERDEVEL2_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_FUTURE_0_PID) },
---- a/drivers/usb/serial/ftdi_sio_ids.h
-+++ b/drivers/usb/serial/ftdi_sio_ids.h
-@@ -38,6 +38,8 @@
- /* www.candapter.com Ewert Energy Systems CANdapter device */
- #define FTDI_CANDAPTER_PID 0x9F80 /* Product Id */
- 
-+#define FTDI_NXTCAM_PID		0xABB8 /* NXTCam for Mindstorms NXT */
-+
- /* OOCDlink by Joern Kaipf <joernk@web.de>
-  * (http://www.joernonline.de/dw/doku.php?id=start&idx=projects:oocdlink) */
- #define FTDI_OOCDLINK_PID	0xbaf8	/* Amontec JTAGkey */
-@@ -161,22 +163,37 @@
- /*
-  * ELV USB devices submitted by Christian Abt of ELV (www.elv.de).
-  * All of these devices use FTDI's vendor ID (0x0403).
-+ * Further IDs taken from ELV Windows .inf file.
-  *
-  * The previously included PID for the UO 100 module was incorrect.
-  * In fact, that PID was for ELV's UR 100 USB-RS232 converter (0xFB58).
-  *
-  * Armin Laeuger originally sent the PID for the UM 100 module.
-  */
-+#define FTDI_ELV_USR_PID	0xE000	/* ELV Universal-Sound-Recorder */
-+#define FTDI_ELV_MSM1_PID	0xE001	/* ELV Mini-Sound-Modul */
-+#define FTDI_ELV_KL100_PID	0xE002	/* ELV Kfz-Leistungsmesser KL 100 */
-+#define FTDI_ELV_WS550_PID	0xE004	/* WS 550 */
-+#define FTDI_ELV_EC3000_PID	0xE006	/* ENERGY CONTROL 3000 USB */
-+#define FTDI_ELV_WS888_PID	0xE008	/* WS 888 */
-+#define FTDI_ELV_TWS550_PID	0xE009	/* Technoline WS 550 */
-+#define FTDI_ELV_FEM_PID	0xE00A	/* Funk Energie Monitor */
- #define FTDI_ELV_FHZ1300PC_PID	0xE0E8	/* FHZ 1300 PC */
- #define FTDI_ELV_WS500_PID	0xE0E9	/* PC-Wetterstation (WS 500) */
- #define FTDI_ELV_HS485_PID	0xE0EA	/* USB to RS-485 adapter */
-+#define FTDI_ELV_UMS100_PID	0xE0EB	/* ELV USB Master-Slave Schaltsteckdose UMS 100 */
-+#define FTDI_ELV_TFD128_PID	0xE0EC	/* ELV Temperatur-Feuchte-Datenlogger TFD 128 */
-+#define FTDI_ELV_FM3RX_PID	0xE0ED	/* ELV Messwertuebertragung FM3 RX */
-+#define FTDI_ELV_WS777_PID	0xE0EE	/* Conrad WS 777 */
- #define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
- #define FTDI_ELV_CSI8_PID	0xE0F0	/* Computer-Schalt-Interface (CSI 8) */
- #define FTDI_ELV_EM1000DL_PID	0xE0F1	/* PC-Datenlogger fuer Energiemonitor (EM 1000 DL) */
- #define FTDI_ELV_PCK100_PID	0xE0F2	/* PC-Kabeltester (PCK 100) */
- #define FTDI_ELV_RFP500_PID	0xE0F3	/* HF-Leistungsmesser (RFP 500) */
- #define FTDI_ELV_FS20SIG_PID	0xE0F4	/* Signalgeber (FS 20 SIG) */
-+#define FTDI_ELV_UTP8_PID	0xE0F5	/* ELV UTP 8 */
- #define FTDI_ELV_WS300PC_PID	0xE0F6	/* PC-Wetterstation (WS 300 PC) */
-+#define FTDI_ELV_WS444PC_PID	0xE0F7	/* Conrad WS 444 PC */
- #define FTDI_PHI_FISCO_PID      0xE40B  /* PHI Fisco USB to Serial cable */
- #define FTDI_ELV_UAD8_PID	0xF068	/* USB-AD-Wandler (UAD 8) */
- #define FTDI_ELV_UDA7_PID	0xF069	/* USB-DA-Wandler (UDA 7) */
 
 
