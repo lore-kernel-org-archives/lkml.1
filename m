@@ -1,67 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195Ab0CMNPe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 08:15:34 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:61708 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759166Ab0CMNPc convert rfc822-to-8bit (ORCPT
+	id S1759200Ab0CMNQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 08:16:16 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:54635 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759179Ab0CMNQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 08:15:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=cU7jKGyVeSCYMJPwa2QTMOaQgnLg9oN4qnl5kbYQNfg0Pzg4FuLTmOUvhZ5uemK9Po
-         esNV5e4VR6K42SuAxaypExSr3jMUQiRP4L4boklNYWokFrjRHKOzlZ7PX9oAyfTTx4tD
-         rNuRbffVkGrutQlFNT5N1GelWBAGPOXKQbac8=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: scary warning in atags.c -- 2.6.34-rc1
-Date: Sat, 13 Mar 2010 14:15:00 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-2-amd64; KDE/4.3.4; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-References: <20100313103913.GA9812@elf.ucw.cz>
-In-Reply-To: <20100313103913.GA9812@elf.ucw.cz>
+	Sat, 13 Mar 2010 08:16:14 -0500
+Date: Sun, 14 Mar 2010 00:16:09 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: howto combat highly pathologic latencies on a server?
+Message-ID: <20100313131609.GH4732@dastard>
+References: <201003101817.42812.hpj@urpla.net>
+ <20100310232940.GB16344@discord.disaster>
+ <201003111758.50224.hpj@urpla.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201003131415.00156.marek.vasut@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201003111758.50224.hpj@urpla.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne So 13. března 2010 11:39:13 Pavel Machek napsal(a):
-> Hi!
+On Thu, Mar 11, 2010 at 05:58:49PM +0100, Hans-Peter Jansen wrote:
+> On Thursday 11 March 2010, 00:29:40 Dave Chinner wrote:
+> > On Wed, Mar 10, 2010 at 06:17:42PM +0100, Hans-Peter Jansen wrote:
+> > >
+> > > The xfs filesystems are mounted with rw,noatime,attr2,nobarrier,noquota
+> > > (yes, I do have a BBU on the areca, and disk write cache is effectively
+> > > turned off).
+> >
+> > Make sure the filesystem has the "lazy-count=1" attribute set (use
+> > xfs_info to check, xfs_admin to change). That will remove the
+> > superblock from most transactions and significant reduce latency of
+> > transactions as they serialise while locking it...
 > 
-> Scary warning on HTC Dream:
+> Done that now on my local test system, but on one of its filesystems, 
+> xfs_admin -c1 didn't succeed, it simply stopped (waiting for a futex):
 > 
-> [    0.220000] ------------[ cut here ]------------
-> [    0.220000] WARNING: at arch/arm/kernel/atags.c:60
-> init_atags_procfs+0x5c/0xe8()
-> [    0.220000] Modules linked in:
-> [    0.220000] [<c0025250>] (unwind_backtrace+0x0/0xdc) from
-> [<c0032e1c>] (warn_slowp)
-> [    0.220000] [<c0032e1c>] (warn_slowpath_common+0x4c/0x80) from
-> [<c000b4b8>] (init_)
-> [    0.220000] [<c000b4b8>] (init_atags_procfs+0x5c/0xe8) from
-> [<c002033c>] (do_one_i)
-> [    0.220000] [<c002033c>] (do_one_initcall+0x5c/0x1bc) from
-> [<c0008584>] (kernel_in)
-> [    0.220000] [<c0008584>] (kernel_init+0x94/0x148) from [<c00217b4>]
-> (kernel_thread)
-> [    0.220000] ---[ end trace 1b75b31a2719ed1c ]---
-> [    0.230000] bio: create slab <bio-0> at 0
-> [    0.230000] Switching to clocksource dg_timer
+> Famous last syscall:
+> 6750  futex(0x868330c8, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
 > 
-> Hmm, what are atags anyway?
-> 							Pavel
+> Consequently, xfs_repair behaved similar, hanging in phase 6, traversing 
+> filesystem... I have a huge strace from this run, if someone is interested.
 > 
-Atags are data passed by the bootloader to kernel (like memory size, machine id 
-...).
+> It's an 3 TB Raid 5 array (4 * 1 TB hd) with one FS also driven by areca:
+> 
+> meta-data=/dev/sdb1              isize=256    agcount=4, agsize=183105406 
+> blks
+>          =                       sectsz=512   attr=2
+> data     =                       bsize=4096   blocks=732421623, imaxpct=5
+>          =                       sunit=0      swidth=0 blks
+> naming   =version 2              bsize=4096   ascii-ci=0
+> log      =internal               bsize=4096   blocks=32768, version=2
+>          =                       sectsz=512   sunit=0 blks, lazy-count=1
+> realtime =none                   extsz=4096   blocks=0, rtextents=0
+> 
+> Luckily, xfs_repair -P finally did succeed. Phuah.. 
+> 
+> This is with: xfs_repair version 2.10.1.
+> 
+> After calling xfs_admin -c1, all filesystems showed differences in 
+> superblock features (from a xfs_repair -n run). Is xfs_repair mandatory, or 
+> does the initial mount fix this automatically? 
+
+Mandatory - there are extra fields in the AGF headers that track
+free space btree block usage (the tree itself) that need to be
+calculated correctly. This allows the block usage in the filesystem
+to be tracked from the AGFs rather than the superblock, hence
+removing the single poにnt of contention in the allocation path...
+
+xfs_repair does this calculation for us - putting that code into the
+kernel to avoid running repair is a lot of work for a relatively
+rare operation....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
