@@ -1,64 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718Ab0CMCHQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 21:07:16 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:33046 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753996Ab0CMCHN (ORCPT
+	id S1757049Ab0CMCHe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 21:07:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49553 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756773Ab0CMCHc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 21:07:13 -0500
-Subject: swiotlb detection should be memory hotplug aware ?
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Len Brown <lenb@kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Petr Vandrovec <petr@vmware.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 12 Mar 2010 18:07:12 -0800
-Message-Id: <1268446032.13691.69.camel@ank32>
+	Fri, 12 Mar 2010 21:07:32 -0500
+X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=tcELkqsd59R4Hq9tiooA:9 a=XbPSTbfnZV9Yn_hZtdhx6dNlQQcA:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4B95C2AF.7010508@cn.fujitsu.com>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
+	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
+	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	 <20100305171614.GC5244@nowhere>  <4B94A816.4090608@cn.fujitsu.com>
+	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>
+	 <4B95AE4E.6060700@cn.fujitsu.com>
+	 <1268101394.10871.1861.camel@gandalf.stny.rr.com>
+	 <4B95C2AF.7010508@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 12 Mar 2010 21:07:29 -0500
+Message-ID: <1268446049.4471.787.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Tue, 2010-03-09 at 11:38 +0800, Li Zefan wrote:
 
-Looking at the current code swiotlb is initialized for 64bit kernels
-only when the max_pfn value is greater than 4G (MAX_DMA32_PFN value). 
-So in cases when the initial memory is less than 4GB the kernel boots
-without enabling swiotlb, when we hotadd memory to such a kernel and go
-beyond the 4G limit, swiotlb is still disabled. As a result when any
-32bit devices start using this newly added memory beyond 4G, the kernel
-starts spitting error messages like below or in some cases it causes
-kernel panics.
+> The segfault is from userspace. This is a segfault I just got:
+> 
+> ftrace_stack_ma[14989]: segfault at fe2e ip 00000000004474c0 sp 00007fffb97e38c0 error 4 in bash[400000+d1000]
 
-<3>[ 815.921504] nommu_map_sg: overflow 32ffd6000+4096 of device mask ffffffff
-<3>[ 815.944860] nommu_map_sg: overflow 32ffd6000+4096 of device mask ffffffff
-<3>[ 815.968808] nommu_map_sg: overflow 32ffd6000+4096 of device mask ffffffff
-<3>[ 815.992821] nommu_map_sg: overflow 32ffd6000+4096 of device mask ffffffff
-<3>[ 816.016796] nommu_map_sg: overflow 32ffd6000+4096 of device mask ffffffff
+Li and Lai,
 
-For systems which have no HW-IOMMU but are capable of memory hotadd this
-can be a potential problem. IMO, there can be few possible solutions to
-this.
+Thanks a lot for reporting all this, and writing the ftrace_stress_test.
+I've fixed all the bugs that it has reported (to my knowledge) and after
+a little more testing I will soon be sending a patch series out.
 
-1. Enable swiotlb for all 64bit kernels which have memory hot-add
-support.
-2. Instead of checking the max_pfn value in pci_swiotlb_detect, check
-for max_hotpluggable_pfn (or some such) value. Though I don't see such a
-value readily available. I could parse the SRAT and get hotplug memory
-information but that will make swiotlb detection logic a little too
-complex. A quick look around srat_xx.c files and the acpi_memhotplug
-module didn't find any useful API that could be used directly either.
-So was wondering if any of you are aware of an easy way to get such
-information ? 
+Just wanted to say thanks again, your efforts have helped out
+tremendously!
 
-Let me know if you have any other ideas as well.
+Americo,
 
-Thanks in advance, 
-Alok
+I still do not know why the function graph tracer is making your system
+unusable. I'll look more into that when I get a chance. So far, I have
+not had any issues on any of my boxes.
+
+-- Steve
+
 
