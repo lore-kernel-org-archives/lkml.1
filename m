@@ -1,62 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935573Ab0CMAci (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:32:38 -0500
-Received: from kroah.org ([198.145.64.141]:46838 "EHLO coco.kroah.org"
+	id S935106Ab0CMAZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:25:53 -0500
+Received: from kroah.org ([198.145.64.141]:32889 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935399Ab0CMAbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:19 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
-Message-Id: <20100313002709.080540894@kvm.kroah.org>
+	id S935066Ab0CMAVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:11 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.460754892@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:17 -0800
+Date: Fri, 12 Mar 2010 16:13:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David J. Choi" <david.choi@micrel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [044/145] drivers/net: ks8851_mll ethernet network driver
-In-Reply-To: <20100313002816.GA18903@kroah.com>
+       Gleb Natapov <gleb@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [patch 118/123] KVM: x86 emulator: Add group9 instruction decoding
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let me know.
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-----------------
-From: Choi, David <David.Choi@Micrel.Com>
+-----------------
 
-[ Upstream commit aeedba8bd2cf2f6f7b45bc7853754a03bc926797 ]
+From: Gleb Natapov <gleb@redhat.com>
 
-Hello David Miller,
+commit 60a29d4ea4e7b6b95d9391ebc8625b0426f3a363 upstream.
 
-I fix a bug in ks8851_mll driver, which has existed since 2.6.32-rc6.
+Use groups mechanism to decode 0F C7 instructions.
 
->From : David J. Choi <david.choi@micrel.com>
-
-Fix a bug that the data pointers in the interrupt handler are set wrong, which is related with the 5th parameter of request_irq().
-
-Signed-off-by: David J. Choi <david.choi@micrel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ks8851_mll.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/emulate.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
---- a/drivers/net/ks8851_mll.c
-+++ b/drivers/net/ks8851_mll.c
-@@ -854,8 +854,8 @@ static void ks_update_link_status(struct
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -88,7 +88,7 @@
+ enum {
+ 	Group1_80, Group1_81, Group1_82, Group1_83,
+ 	Group1A, Group3_Byte, Group3, Group4, Group5, Group7,
+-	Group8,
++	Group8, Group9,
+ };
  
- static irqreturn_t ks_irq(int irq, void *pw)
- {
--	struct ks_net *ks = pw;
--	struct net_device *netdev = ks->netdev;
-+	struct net_device *netdev = pw;
-+	struct ks_net *ks = netdev_priv(netdev);
- 	u16 status;
+ static u32 opcode_table[256] = {
+@@ -272,7 +272,8 @@ static u32 twobyte_table[256] = {
+ 	0, 0, ByteOp | DstReg | SrcMem | ModRM | Mov,
+ 	    DstReg | SrcMem16 | ModRM | Mov,
+ 	/* 0xC0 - 0xCF */
+-	0, 0, 0, DstMem | SrcReg | ModRM | Mov, 0, 0, 0, ImplicitOps | ModRM,
++	0, 0, 0, DstMem | SrcReg | ModRM | Mov,
++	0, 0, 0, Group | GroupDual | Group9,
+ 	0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xD0 - 0xDF */
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+@@ -328,6 +329,8 @@ static u32 group_table[] = {
+ 	0, 0, 0, 0,
+ 	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+ 	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
++	[Group9*8] =
++	0, ImplicitOps | ModRM, 0, 0, 0, 0, 0, 0,
+ };
  
- 	/*this should be the first in IRQ handler */
+ static u32 group2_table[] = {
+@@ -335,6 +338,8 @@ static u32 group2_table[] = {
+ 	SrcNone | ModRM, 0, 0, SrcNone | ModRM,
+ 	SrcNone | ModRM | DstMem | Mov, 0,
+ 	SrcMem16 | ModRM | Mov, 0,
++	[Group9*8] =
++	0, 0, 0, 0, 0, 0, 0, 0,
+ };
+ 
+ /* EFLAGS bit definitions. */
 
 
