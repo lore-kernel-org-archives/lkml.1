@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935330Ab0CMAak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:30:40 -0500
-Received: from kroah.org ([198.145.64.141]:46574 "EHLO coco.kroah.org"
+	id S935447Ab0CMAbn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:31:43 -0500
+Received: from kroah.org ([198.145.64.141]:46682 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935272Ab0CMAa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:29 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:05 2010
-Message-Id: <20100313002705.491180729@kvm.kroah.org>
+	id S935220Ab0CMAav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:30:51 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:07 2010
+Message-Id: <20100313002707.085818296@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:25:36 -0800
+Date: Fri, 12 Mar 2010 16:25:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Richard Guenther <rguenther@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [003/145] V4L/DVB: dvb: l64781.ko broken with gcc 4.5
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [021/145] ACPI: Be in TS_POLLING state during mwait based C-state entry
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,48 +25,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Richard Guenther <rguenther@suse.de>
+From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 
-commit c1db53b36633e6a7511dbec7c372f01a31528f0c upstream.
+commit d306ebc28649b89877a22158fe0076f06cc46f60 upstream.
 
-I'm trying to fix it on the GCC side (PR43007), but the module is
-quite stupid in using ULL constants to operate on u32 values:
+ACPI deep C-state entry had a long standing bug/missing feature, wherein we were sending
+resched IPIs when an idle CPU is in mwait based deep C-state. Only mwait based C1 was using
+the write to the monitored address to wake up mwait'ing CPU.
 
-static int apply_frontend_param (struct dvb_frontend* fe, struct
-dvb_frontend_parameters *param)
-{
-...
- static const u32 ppm = 8000;
- u32 spi_bias;
-...
+This patch changes the code to retain TS_POLLING bit if we are entering an mwait based
+deep C-state.
 
- spi_bias *= 1000ULL;
- spi_bias /= 1000ULL + ppm/1000;
+The patch has been verified to reduce the number of resched IPIs in general and also
+improves the performance/power on workloads with low system utilization (i.e., when mwait based
+deep C-states are being used).
 
-which causes current GCC 4.5 to emit calls to __udivdi3 for i?86 again.
+Fixes "netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f"
+http://marc.info/?l=linux-kernel&m=126441481427331&w=4
 
-This patch fixes this issue.
-
-Signed-off-by: Richard Guenther <rguenther@suse.de>
+Reported-by: Lin Ming <ming.m.lin@intel.com>
+Tested-by: Alex Shi <alex.shi@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
 ---
- drivers/media/dvb/frontends/l64781.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/processor_idle.c |   28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
---- a/drivers/media/dvb/frontends/l64781.c
-+++ b/drivers/media/dvb/frontends/l64781.c
-@@ -192,8 +192,8 @@ static int apply_frontend_param (struct
- 	spi_bias *= qam_tab[p->constellation];
- 	spi_bias /= p->code_rate_HP + 1;
- 	spi_bias /= (guard_tab[p->guard_interval] + 32);
--	spi_bias *= 1000ULL;
--	spi_bias /= 1000ULL + ppm/1000;
-+	spi_bias *= 1000;
-+	spi_bias /= 1000 + ppm/1000;
- 	spi_bias *= p->code_rate_HP;
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -888,12 +888,14 @@ static int acpi_idle_enter_simple(struct
+ 		return(acpi_idle_enter_c1(dev, state));
  
- 	val0x04 = (p->transmission_mode << 2) | p->guard_interval;
+ 	local_irq_disable();
+-	current_thread_info()->status &= ~TS_POLLING;
+-	/*
+-	 * TS_POLLING-cleared state must be visible before we test
+-	 * NEED_RESCHED:
+-	 */
+-	smp_mb();
++	if (cx->entry_method != ACPI_CSTATE_FFH) {
++		current_thread_info()->status &= ~TS_POLLING;
++		/*
++		 * TS_POLLING-cleared state must be visible before we test
++		 * NEED_RESCHED:
++		 */
++		smp_mb();
++	}
+ 
+ 	if (unlikely(need_resched())) {
+ 		current_thread_info()->status |= TS_POLLING;
+@@ -973,12 +975,14 @@ static int acpi_idle_enter_bm(struct cpu
+ 	}
+ 
+ 	local_irq_disable();
+-	current_thread_info()->status &= ~TS_POLLING;
+-	/*
+-	 * TS_POLLING-cleared state must be visible before we test
+-	 * NEED_RESCHED:
+-	 */
+-	smp_mb();
++	if (cx->entry_method != ACPI_CSTATE_FFH) {
++		current_thread_info()->status &= ~TS_POLLING;
++		/*
++		 * TS_POLLING-cleared state must be visible before we test
++		 * NEED_RESCHED:
++		 */
++		smp_mb();
++	}
+ 
+ 	if (unlikely(need_resched())) {
+ 		current_thread_info()->status |= TS_POLLING;
 
 
