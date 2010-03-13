@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936386Ab0CMBUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:20:38 -0500
-Received: from kroah.org ([198.145.64.141]:60930 "EHLO coco.kroah.org"
+	id S934904Ab0CMAU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:20:26 -0500
+Received: from kroah.org ([198.145.64.141]:60605 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934952Ab0CMAUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:31 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:11 2010
-Message-Id: <20100313001511.628373592@kvm.kroah.org>
+	id S934841Ab0CMATp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:45 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:07 2010
+Message-Id: <20100313001506.929414064@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:52 -0800
+Date: Fri, 12 Mar 2010 16:11:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bob Copeland <me@bobcopeland.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 074/123] ath5k: use correct packet type when transmitting
+       Thomas Gleixner <tglx@linutronix.de>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 020/123] x86/PCI: Prevent mmconfig memory corruption
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,76 +28,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Bob Copeland <me@bobcopeland.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 2ac2927a953a01c83df255118922cce1523d1a18 upstream.
+commit bb8d41330ce27edb91adb6922d3f8e1a8923f727 upstream.
 
-The hardware needs to know what type of frames are being
-sent in order to fill in various fields, for example the
-timestamp in probe responses (before this patch, it was
-always 0).  Set it correctly when initializing the TX
-descriptor.
+commit ff097ddd4 (x86/PCI: MMCONFIG: manage pci_mmcfg_region as a
+list, not a table) introduced a nasty memory corruption when
+pci_mmcfg_list is empty.
 
-Signed-off-by: Bob Copeland <me@bobcopeland.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+pci_mmcfg_check_end_bus_number() dereferences pci_mmcfg_list.prev even
+when the list is empty. The following write hits some variable near to
+pci_mmcfg_list.
+
+Further down a similar problem exists, where cfg->list.next is
+dereferenced unconditionally and a comparison with some variable near
+to pci_mmcfg_list happens.
+
+Add a check for the last element into the for_each_entry() loop and
+remove all the other crappy logic which is just a leftover of the old
+array based code which was replaced by the list conversion.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath/ath5k/ath5k.h |    1 -
- drivers/net/wireless/ath/ath5k/base.c  |   26 +++++++++++++++++++++++++-
- 2 files changed, 25 insertions(+), 2 deletions(-)
+ arch/x86/pci/mmconfig-shared.c |   17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
---- a/drivers/net/wireless/ath/ath5k/ath5k.h
-+++ b/drivers/net/wireless/ath/ath5k/ath5k.h
-@@ -541,7 +541,6 @@ struct ath5k_txq_info {
- /*
-  * Transmit packet types.
-  * used on tx control descriptor
-- * TODO: Use them inside base.c corectly
-  */
- enum ath5k_pkt_type {
- 	AR5K_PKT_TYPE_NORMAL		= 0,
---- a/drivers/net/wireless/ath/ath5k/base.c
-+++ b/drivers/net/wireless/ath/ath5k/base.c
-@@ -1246,6 +1246,29 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc
- 	return 0;
- }
+--- a/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -303,22 +303,17 @@ static void __init pci_mmcfg_check_end_b
+ {
+ 	struct pci_mmcfg_region *cfg, *cfgx;
  
-+static enum ath5k_pkt_type get_hw_packet_type(struct sk_buff *skb)
-+{
-+	struct ieee80211_hdr *hdr;
-+	enum ath5k_pkt_type htype;
-+	__le16 fc;
+-	/* last one*/
+-	cfg = list_entry(pci_mmcfg_list.prev, typeof(*cfg), list);
+-	if (cfg)
+-		if (cfg->end_bus < cfg->start_bus)
+-			cfg->end_bus = 255;
+-
+-	if (list_is_singular(&pci_mmcfg_list))
+-		return;
+-
+-	/* don't overlap please */
++	/* Fixup overlaps */
+ 	list_for_each_entry(cfg, &pci_mmcfg_list, list) {
+ 		if (cfg->end_bus < cfg->start_bus)
+ 			cfg->end_bus = 255;
+ 
++		/* Don't access the list head ! */
++		if (cfg->list.next == &pci_mmcfg_list)
++			break;
 +
-+	hdr = (struct ieee80211_hdr *)skb->data;
-+	fc = hdr->frame_control;
-+
-+	if (ieee80211_is_beacon(fc))
-+		htype = AR5K_PKT_TYPE_BEACON;
-+	else if (ieee80211_is_probe_resp(fc))
-+		htype = AR5K_PKT_TYPE_PROBE_RESP;
-+	else if (ieee80211_is_atim(fc))
-+		htype = AR5K_PKT_TYPE_ATIM;
-+	else if (ieee80211_is_pspoll(fc))
-+		htype = AR5K_PKT_TYPE_PSPOLL;
-+	else
-+		htype = AR5K_PKT_TYPE_NORMAL;
-+
-+	return htype;
-+}
-+
- static int
- ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf,
- 		  struct ath5k_txq *txq)
-@@ -1300,7 +1323,8 @@ ath5k_txbuf_setup(struct ath5k_softc *sc
- 			sc->vif, pktlen, info));
+ 		cfgx = list_entry(cfg->list.next, typeof(*cfg), list);
+-		if (cfg != cfgx && cfg->end_bus >= cfgx->start_bus)
++		if (cfg->end_bus >= cfgx->start_bus)
+ 			cfg->end_bus = cfgx->start_bus - 1;
  	}
- 	ret = ah->ah_setup_tx_desc(ah, ds, pktlen,
--		ieee80211_get_hdrlen_from_skb(skb), AR5K_PKT_TYPE_NORMAL,
-+		ieee80211_get_hdrlen_from_skb(skb),
-+		get_hw_packet_type(skb),
- 		(sc->power_level * 2),
- 		hw_rate,
- 		info->control.rates[0].count, keyidx, ah->ah_tx_ant, flags,
+ }
 
 
