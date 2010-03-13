@@ -1,21 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936245Ab0CMBJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:09:53 -0500
-Received: from kroah.org ([198.145.64.141]:46742 "EHLO coco.kroah.org"
+	id S936281Ab0CMBKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:10:25 -0500
+Received: from kroah.org ([198.145.64.141]:46718 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935375Ab0CMAa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:59 -0500
+	id S935368Ab0CMAa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:30:57 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:07 2010
-Message-Id: <20100313002707.689325964@kvm.kroah.org>
+Message-Id: <20100313002707.516438708@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:01 -0800
+Date: Fri, 12 Mar 2010 16:25:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [028/145] HID: remove TENX iBuddy from blacklist
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Chuck Lever <chuck.lever@oracle.com>
+Subject: [026/145] vfs: take f_lock on modifying f_mode after open time
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,55 +28,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jiri Kosina <jkosina@suse.cz>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-commit 4bb9508bbbb06f10bc3e249dd34375b4a4d6bfc0 upstream.
+commit 42e49608683ab25fbbbf9c40edb944601e543882 upstream.
 
-There were multiple reports which indicate that vendor messed up horribly
-and the same VID/PID combination is used for completely different devices,
-some of them requiring the blacklist entry and other not.
+We'll introduce FMODE_RANDOM which will be runtime modified.  So protect
+all runtime modification to f_mode with f_lock to avoid races.
 
-Remove the blacklist entry for this combination of VID/PID completely, and let
-the user decide and unbind the driver via sysfs eventually, if needed. Proper
-fix would be fixing the vendor.
-
-
-2.6.32-stable review patch.  If anyone has any objections, please let me know.http://lkml.org/lkml/2009/2/10/434
-
-----------------
-http://bugzilla.kernel.org/show_bug.cgi?id=13411
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Chuck Lever <chuck.lever@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/hid-core.c |    2 --
- drivers/hid/hid-ids.h  |    4 ----
- 2 files changed, 6 deletions(-)
+ fs/file_table.c     |    2 ++
+ fs/nfsd/nfs4state.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1658,8 +1658,6 @@ static const struct hid_device_id hid_ig
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_PANJIT, 0x0004) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_PHILIPS, USB_DEVICE_ID_PHILIPS_IEEE802154_DONGLE) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_POWERCOM, USB_DEVICE_ID_POWERCOM_UPS) },
--	{ HID_USB_DEVICE(USB_VENDOR_ID_TENX, USB_DEVICE_ID_TENX_IBUDDY1) },
--	{ HID_USB_DEVICE(USB_VENDOR_ID_TENX, USB_DEVICE_ID_TENX_IBUDDY2) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_LABPRO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_GOTEMP) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_SKIP) },
---- a/drivers/hid/hid-ids.h
-+++ b/drivers/hid/hid-ids.h
-@@ -392,10 +392,6 @@
- #define USB_VENDOR_ID_SUNPLUS		0x04fc
- #define USB_DEVICE_ID_SUNPLUS_WDESKTOP	0x05d8
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -420,7 +420,9 @@ retry:
+ 			continue;
+ 		if (!(f->f_mode & FMODE_WRITE))
+ 			continue;
++		spin_lock(&f->f_lock);
+ 		f->f_mode &= ~FMODE_WRITE;
++		spin_unlock(&f->f_lock);
+ 		if (file_check_writeable(f) != 0)
+ 			continue;
+ 		file_release_write(f);
+--- a/fs/nfsd/nfs4state.c
++++ b/fs/nfsd/nfs4state.c
+@@ -2002,7 +2002,9 @@ nfs4_file_downgrade(struct file *filp, u
+ {
+ 	if (share_access & NFS4_SHARE_ACCESS_WRITE) {
+ 		drop_file_write_access(filp);
++		spin_lock(&filp->f_lock);
+ 		filp->f_mode = (filp->f_mode | FMODE_READ) & ~FMODE_WRITE;
++		spin_unlock(&filp->f_lock);
+ 	}
+ }
  
--#define USB_VENDOR_ID_TENX		0x1130
--#define USB_DEVICE_ID_TENX_IBUDDY1	0x0001
--#define USB_DEVICE_ID_TENX_IBUDDY2	0x0002
--
- #define USB_VENDOR_ID_THRUSTMASTER	0x044f
- 
- #define USB_VENDOR_ID_TOPMAX		0x0663
 
 
