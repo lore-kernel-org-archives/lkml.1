@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934960Ab0CMAUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:20:33 -0500
-Received: from kroah.org ([198.145.64.141]:60630 "EHLO coco.kroah.org"
+	id S935700Ab0CMBU2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:20:28 -0500
+Received: from kroah.org ([198.145.64.141]:60897 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934863Ab0CMATu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:50 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:07 2010
-Message-Id: <20100313001507.449548684@kvm.kroah.org>
+	id S934955Ab0CMAUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:31 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:11 2010
+Message-Id: <20100313001511.723976159@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:04 -0800
+Date: Fri, 12 Mar 2010 16:12:53 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Huewe <peterhuewe@gmx.de>, Simon Horman <horms@verge.net.au>
-Subject: [patch 026/123] Staging: wlan-ng: Add select WEXT_PRIV to Kconfig to prevent build failure
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 075/123] b43/b43legacy: Wake queues in wireless_core_start
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,32 +27,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Peter Huewe <peterhuewe@gmx.de>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit 8a8e29752dfdba014b866d3c587d3409e57263dd upstream.
+commit 0866b03c7d7dee8a34ffa527ecda426c0f405518 upstream.
 
-Without WEXT_PRIV set the p80211wext.c fails to build due to unknown fields in
-the iw_handler_def struct.
-Those fields are enclosed in WEXT_PRIV conditionals in the prototype
-of iw_handler_def in include/net/iw_handler.h
+If b43 or b43legacy are deauthenticated or disconnected, there is a
+possibility that a reconnection is tried with the queues stopped in
+mac80211. To prevent this, start the queues before setting
+STAT_INITIALIZED.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-Acked-by: Simon Horman <horms@verge.net.au>
+In b43, a similar change has been in place (twice) in the
+wireless_core_init() routine. Remove the duplicate and add similar
+code to b43legacy.
+
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/staging/wlan-ng/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/wireless/b43/main.c       |    3 +--
+ drivers/net/wireless/b43legacy/main.c |    2 ++
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/staging/wlan-ng/Kconfig
-+++ b/drivers/staging/wlan-ng/Kconfig
-@@ -1,6 +1,7 @@
- config PRISM2_USB
- 	tristate "Prism2.5/3 USB driver"
- 	depends on WLAN && USB && WIRELESS_EXT
-+	select WEXT_PRIV
- 	default n
- 	---help---
- 	  This is the wlan-ng prism 2.5/3 USB driver for a wide range of
+--- a/drivers/net/wireless/b43/main.c
++++ b/drivers/net/wireless/b43/main.c
+@@ -3970,6 +3970,7 @@ static int b43_wireless_core_start(struc
+ 	}
+ 
+ 	/* We are ready to run. */
++	ieee80211_wake_queues(dev->wl->hw);
+ 	b43_set_status(dev, B43_STAT_STARTED);
+ 
+ 	/* Start data flow (TX/RX). */
+@@ -4379,8 +4380,6 @@ static int b43_wireless_core_init(struct
+ 
+ 	ieee80211_wake_queues(dev->wl->hw);
+ 
+-	ieee80211_wake_queues(dev->wl->hw);
+-
+ 	b43_set_status(dev, B43_STAT_INITIALIZED);
+ 
+ out:
+--- a/drivers/net/wireless/b43legacy/main.c
++++ b/drivers/net/wireless/b43legacy/main.c
+@@ -2921,6 +2921,7 @@ static int b43legacy_wireless_core_start
+ 		goto out;
+ 	}
+ 	/* We are ready to run. */
++	ieee80211_wake_queues(dev->wl->hw);
+ 	b43legacy_set_status(dev, B43legacy_STAT_STARTED);
+ 
+ 	/* Start data flow (TX/RX) */
+@@ -3341,6 +3342,7 @@ static int b43legacy_wireless_core_init(
+ 	b43legacy_security_init(dev);
+ 	b43legacy_rng_init(wl);
+ 
++	ieee80211_wake_queues(dev->wl->hw);
+ 	b43legacy_set_status(dev, B43legacy_STAT_INITIALIZED);
+ 
+ 	b43legacy_leds_init(dev);
 
 
