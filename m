@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934927Ab0CMBYz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:24:55 -0500
-Received: from kroah.org ([198.145.64.141]:60762 "EHLO coco.kroah.org"
+	id S936454Ab0CMBZE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:25:04 -0500
+Received: from kroah.org ([198.145.64.141]:60721 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934922Ab0CMAUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:13 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:10 2010
-Message-Id: <20100313001509.980265580@kvm.kroah.org>
+	id S934918Ab0CMAUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:11 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:09 2010
+Message-Id: <20100313001509.720967103@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:33 -0800
+Date: Fri, 12 Mar 2010 16:12:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@linux.intel.com>
-Subject: [patch 055/123] tty: Fix the ldisc hangup race
+       Tejun Heo <tj@kernel.org>
+Subject: [patch 052/123] driver-core: fix race condition in get_device_parent()
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,121 +26,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Alan Cox <alan@linux.intel.com>
+From: Tejun Heo <tj@kernel.org>
 
-commit 638b9648ab51c9c549ff5735d3de519ef6199df3 upstream.
+commit 77d3d7c1d561f49f755d7390f0764dff90765974 upstream.
 
-This was noticed by Matthias Urlichs and he proposed a fix. This patch
-does the fixing a different way to avoid introducing several new race
-conditions into the code.
+sysfs is creating several devices in cuse class concurrently and with
+CONFIG_SYSFS_DEPRECATED turned off, it triggers the following oops.
 
-The problem case is TTY_DRIVER_RESET_TERMIOS = 0. In that case while we
-abort the ldisc change, the hangup processing has not cleaned up and restarted
-the ldisc either.
+ BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
+ IP: [<ffffffff81158b0a>] sysfs_addrm_start+0x4a/0xf0
+ PGD 75bb067 PUD 75be067 PMD 0
+ Oops: 0000 [#1] PREEMPT SMP
+ last sysfs file: /sys/devices/system/cpu/cpu7/topology/core_siblings
+ CPU 1
+ Modules linked in: cuse fuse
+ Pid: 4737, comm: osspd Not tainted 2.6.31-work #77
+ RIP: 0010:[<ffffffff81158b0a>]  [<ffffffff81158b0a>] sysfs_addrm_start+0x4a/0xf0
+ RSP: 0018:ffff88000042f8f8  EFLAGS: 00010296
+ RAX: ffff88000042ffd8 RBX: 0000000000000000 RCX: 0000000000000000
+ RDX: 0000000000000000 RSI: ffff880007eef660 RDI: 0000000000000001
+ RBP: ffff88000042f918 R08: 0000000000000000 R09: 0000000000000000
+ R10: 0000000000000001 R11: ffffffff81158b0a R12: ffff88000042f928
+ R13: 00000000fffffff4 R14: 0000000000000000 R15: ffff88000042f9a0
+ FS:  00007fe93905a950(0000) GS:ffff880008600000(0000) knlGS:0000000000000000
+ CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+ CR2: 0000000000000038 CR3: 00000000077c9000 CR4: 00000000000006e0
+ DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+ DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+ Process osspd (pid: 4737, threadinfo ffff88000042e000, task ffff880007eef040)
+ Stack:
+  ffff880005da10e8 0000000011cc8d6e ffff88000042f928 ffff880003d28a28
+ <0> ffff88000042f988 ffffffff811592d7 0000000000000000 0000000000000000
+ <0> 0000000000000000 0000000000000000 ffff88000042f958 0000000011cc8d6e
+ Call Trace:
+  [<ffffffff811592d7>] create_dir+0x67/0xe0
+  [<ffffffff811593a8>] sysfs_create_dir+0x58/0xb0
+  [<ffffffff8128ca7c>] ? kobject_add_internal+0xcc/0x220
+  [<ffffffff812942e1>] ? vsnprintf+0x3c1/0xb90
+  [<ffffffff8128cab7>] kobject_add_internal+0x107/0x220
+  [<ffffffff8128cd37>] kobject_add_varg+0x47/0x80
+  [<ffffffff8128ce53>] kobject_add+0x53/0x90
+  [<ffffffff81357d84>] device_add+0xd4/0x690
+  [<ffffffff81356c2b>] ? dev_set_name+0x4b/0x70
+  [<ffffffffa001a884>] cuse_process_init_reply+0x2b4/0x420 [cuse]
+  ...
 
-We can't restart the ldisc stuff in the set_ldisc as we don't know what
-the hangup did and may touch stuff we shouldn't as we are no longer
-supposed to influence the tty at that point in case it has been re-opened
-before we get rescheduled.
+The problem is that kobject_add_internal() first adds a kobject to the
+kset and then try to create sysfs directory for it.  If the creation
+fails, it remove the kobject from the kset.  get_device_parent()
+accesses class_dirs kset while only holding class_dirs.list_lock to
+see whether the cuse class dir exists.  But when it exists, it may not
+have finished initialization yet or may fail and get removed soon.  In
+the above case, the former happened so the second one ends up trying
+to create subdirectory under NULL sysfs_dirent.
 
-Instead do it the simple way. Always re-init the ldisc on the hangup, but
-use TTY_DRIVER_RESET_TERMIOS to indicate that we should force N_TTY.
+Fix it by grabbing a mutex in get_device_parent().
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Colin Guthrie <cguthrie@mandriva.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tty_ldisc.c |   50 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 30 insertions(+), 20 deletions(-)
+ drivers/base/core.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -706,12 +706,13 @@ static void tty_reset_termios(struct tty
- /**
-  *	tty_ldisc_reinit	-	reinitialise the tty ldisc
-  *	@tty: tty to reinit
-+ *	@ldisc: line discipline to reinitialize
-  *
-- *	Switch the tty back to N_TTY line discipline and leave the
-- *	ldisc state closed
-+ *	Switch the tty to a line discipline and leave the ldisc
-+ *	state closed
-  */
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -607,6 +607,7 @@ static struct kobject *get_device_parent
+ 	int retval;
  
--static void tty_ldisc_reinit(struct tty_struct *tty)
-+static void tty_ldisc_reinit(struct tty_struct *tty, int ldisc)
- {
- 	struct tty_ldisc *ld;
+ 	if (dev->class) {
++		static DEFINE_MUTEX(gdp_mutex);
+ 		struct kobject *kobj = NULL;
+ 		struct kobject *parent_kobj;
+ 		struct kobject *k;
+@@ -623,6 +624,8 @@ static struct kobject *get_device_parent
+ 		else
+ 			parent_kobj = &parent->kobj;
  
-@@ -721,10 +722,10 @@ static void tty_ldisc_reinit(struct tty_
- 	/*
- 	 *	Switch the line discipline back
- 	 */
--	ld = tty_ldisc_get(N_TTY);
-+	ld = tty_ldisc_get(ldisc);
- 	BUG_ON(IS_ERR(ld));
- 	tty_ldisc_assign(tty, ld);
--	tty_set_termios_ldisc(tty, N_TTY);
-+	tty_set_termios_ldisc(tty, ldisc);
- }
- 
- /**
-@@ -745,6 +746,8 @@ static void tty_ldisc_reinit(struct tty_
- void tty_ldisc_hangup(struct tty_struct *tty)
- {
- 	struct tty_ldisc *ld;
-+	int reset = tty->driver->flags & TTY_DRIVER_RESET_TERMIOS;
-+	int err = 0;
- 
- 	/*
- 	 * FIXME! What are the locking issues here? This may me overdoing
-@@ -772,25 +775,32 @@ void tty_ldisc_hangup(struct tty_struct
- 	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
- 	/*
- 	 * Shutdown the current line discipline, and reset it to
--	 * N_TTY.
-+	 * N_TTY if need be.
-+	 *
-+	 * Avoid racing set_ldisc or tty_ldisc_release
- 	 */
--	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
--		/* Avoid racing set_ldisc or tty_ldisc_release */
--		mutex_lock(&tty->ldisc_mutex);
--		tty_ldisc_halt(tty);
--		if (tty->ldisc) {	/* Not yet closed */
--			/* Switch back to N_TTY */
--			tty_ldisc_reinit(tty);
--			/* At this point we have a closed ldisc and we want to
--			   reopen it. We could defer this to the next open but
--			   it means auditing a lot of other paths so this is
--			   a FIXME */
-+	mutex_lock(&tty->ldisc_mutex);
-+	tty_ldisc_halt(tty);
-+	/* At this point we have a closed ldisc and we want to
-+	   reopen it. We could defer this to the next open but
-+	   it means auditing a lot of other paths so this is
-+	   a FIXME */
-+	if (tty->ldisc) {	/* Not yet closed */
-+		if (reset == 0) {
-+			tty_ldisc_reinit(tty, tty->termios->c_line);
-+			err = tty_ldisc_open(tty, tty->ldisc);
++		mutex_lock(&gdp_mutex);
++
+ 		/* find our class-directory at the parent and reference it */
+ 		spin_lock(&dev->class->p->class_dirs.list_lock);
+ 		list_for_each_entry(k, &dev->class->p->class_dirs.list, entry)
+@@ -631,20 +634,26 @@ static struct kobject *get_device_parent
+ 				break;
+ 			}
+ 		spin_unlock(&dev->class->p->class_dirs.list_lock);
+-		if (kobj)
++		if (kobj) {
++			mutex_unlock(&gdp_mutex);
+ 			return kobj;
 +		}
-+		/* If the re-open fails or we reset then go to N_TTY. The
-+		   N_TTY open cannot fail */
-+		if (reset || err) {
-+			tty_ldisc_reinit(tty, N_TTY);
- 			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
--			tty_ldisc_enable(tty);
- 		}
--		mutex_unlock(&tty->ldisc_mutex);
--		tty_reset_termios(tty);
-+		tty_ldisc_enable(tty);
- 	}
-+	mutex_unlock(&tty->ldisc_mutex);
-+	if (reset)
-+		tty_reset_termios(tty);
- }
  
- /**
+ 		/* or create a new class-directory at the parent device */
+ 		k = kobject_create();
+-		if (!k)
++		if (!k) {
++			mutex_unlock(&gdp_mutex);
+ 			return NULL;
++		}
+ 		k->kset = &dev->class->p->class_dirs;
+ 		retval = kobject_add(k, parent_kobj, "%s", dev->class->name);
+ 		if (retval < 0) {
++			mutex_unlock(&gdp_mutex);
+ 			kobject_put(k);
+ 			return NULL;
+ 		}
+ 		/* do not emit an uevent for this simple "glue" directory */
++		mutex_unlock(&gdp_mutex);
+ 		return k;
+ 	}
+ 
 
 
