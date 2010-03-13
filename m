@@ -1,22 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935614Ab0CMAdJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:33:09 -0500
-Received: from kroah.org ([198.145.64.141]:46914 "EHLO coco.kroah.org"
+	id S935829Ab0CMAuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:50:12 -0500
+Received: from kroah.org ([198.145.64.141]:47045 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935418Ab0CMAbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:31 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
-Message-Id: <20100313002710.037693826@kvm.kroah.org>
+	id S935481Ab0CMAb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:57 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
+Message-Id: <20100313002712.813649794@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:28 -0800
+Date: Fri, 12 Mar 2010 16:27:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [055/145] rndis_wlan: handle NL80211_AUTHTYPE_AUTOMATIC
+       Baruch Siach <baruch@tkos.co.il>, Alan Cox <alan@linux.intel.com>,
+       Sascha Hauer <s.hauer@pengutronix.de>, Oskar Schirmer <os@emlix.com>,
+       Fabian Godehardt <fg@emlix.com>,
+       =?UTF-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [087/145] serial: imx: fix NULL dereference Oops when pdata == NULL
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,34 +27,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+From: Baruch Siach <baruch@tkos.co.il>
 
-commit 634a555ce3ee5ea1fdcaee8b4ac9ce7b54f301ac upstream.
+commit bbcd18d1b37413d25eaf4580682b1b8e4a09ff5e upstream.
 
-rndis_wlan didn't know about NL80211_AUTHTYPE_AUTOMATIC and simple
-setup with 'iwconfig wlan essid no-encrypt' would fail (ENOSUPP).
+The platform code doesn't have to provide platform data to get sensible
+default behaviour from the imx serial driver.
 
-v2: use NDIS_80211_AUTH_AUTO_SWITCH instead of _OPEN.
-    This will make device try shared key auth first, then open.
+This patch does not handle NULL dereference in the IrDA case, which still
+requires a valid platform data pointer (in imx_startup()/imx_shutdown()),
+since I don't know whether there is a sensible default behaviour, or
+should the operation just fail cleanly.
 
-Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Cc: Baruch Siach <baruch@tkos.co.il>
+Cc: Alan Cox <alan@linux.intel.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Oskar Schirmer <os@emlix.com>
+Cc: Fabian Godehardt <fg@emlix.com>
+Cc: Daniel Glöckner <dg@emlix.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rndis_wlan.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/serial/imx.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/rndis_wlan.c
-+++ b/drivers/net/wireless/rndis_wlan.c
-@@ -1072,6 +1072,8 @@ static int set_auth_mode(struct usbnet *
- 		auth_mode = NDIS_80211_AUTH_SHARED;
- 	else if (auth_type == NL80211_AUTHTYPE_OPEN_SYSTEM)
- 		auth_mode = NDIS_80211_AUTH_OPEN;
-+	else if (auth_type == NL80211_AUTHTYPE_AUTOMATIC)
-+		auth_mode = NDIS_80211_AUTH_AUTO_SWITCH;
- 	else
- 		return -ENOTSUPP;
+--- a/drivers/serial/imx.c
++++ b/drivers/serial/imx.c
+@@ -1279,7 +1279,7 @@ static int serial_imx_probe(struct platf
+ 		sport->use_irda = 1;
+ #endif
  
+-	if (pdata->init) {
++	if (pdata && pdata->init) {
+ 		ret = pdata->init(pdev);
+ 		if (ret)
+ 			goto clkput;
+@@ -1292,7 +1292,7 @@ static int serial_imx_probe(struct platf
+ 
+ 	return 0;
+ deinit:
+-	if (pdata->exit)
++	if (pdata && pdata->exit)
+ 		pdata->exit(pdev);
+ clkput:
+ 	clk_put(sport->clk);
+@@ -1321,7 +1321,7 @@ static int serial_imx_remove(struct plat
+ 
+ 	clk_disable(sport->clk);
+ 
+-	if (pdata->exit)
++	if (pdata && pdata->exit)
+ 		pdata->exit(pdev);
+ 
+ 	iounmap(sport->port.membase);
 
 
