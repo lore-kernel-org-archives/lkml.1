@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935238Ab0CMA0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:26:46 -0500
-Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	id S935260Ab0CMA3O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:29:14 -0500
+Received: from kroah.org ([198.145.64.141]:32810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935052Ab0CMAVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:07 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
-Message-Id: <20100313001514.929300670@kvm.kroah.org>
+	id S935036Ab0CMAVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:00 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
+Message-Id: <20100313001514.152987883@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:30 -0800
+Date: Fri, 12 Mar 2010 16:13:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 112/123] NFS: Fix an allocation-under-spinlock bug
+       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [patch 103/123] drm/i915: Use a dmi quirk to skip a broken SDVO TV output.
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,60 +26,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit ebed9203b68a4f333ce5d17e874b26c3afcfeff1 upstream.
+commit 6070a4a928f8c92b9fae7d6717ebbb05f425d6b2 upstream.
 
-sunrpc_cache_update() will always call detail->update() from inside the
-detail->hash_lock, so it cannot allocate memory.
+This IBM system has a multi-function SDVO card that reports both VGA
+and TV, but the system has no TV connector.  The TV connector always
+reported as connected, which would lead to poor modesetting choices.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+https://bugs.freedesktop.org/show_bug.cgi?id=25787
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Tested-by: Vance <liangghv@sg.ibm.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/dns_resolve.c |   18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/i915/intel_sdvo.c |   23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
---- a/fs/nfs/dns_resolve.c
-+++ b/fs/nfs/dns_resolve.c
-@@ -36,6 +36,19 @@ struct nfs_dns_ent {
- };
+--- a/drivers/gpu/drm/i915/intel_sdvo.c
++++ b/drivers/gpu/drm/i915/intel_sdvo.c
+@@ -35,6 +35,7 @@
+ #include "i915_drm.h"
+ #include "i915_drv.h"
+ #include "intel_sdvo_regs.h"
++#include <linux/dmi.h>
  
+ static char *tv_format_names[] = {
+ 	"NTSC_M"   , "NTSC_J"  , "NTSC_443",
+@@ -2283,6 +2284,25 @@ intel_sdvo_get_slave_addr(struct drm_dev
+ 		return 0x72;
+ }
  
-+static void nfs_dns_ent_update(struct cache_head *cnew,
-+		struct cache_head *ckey)
++static int intel_sdvo_bad_tv_callback(const struct dmi_system_id *id)
 +{
-+	struct nfs_dns_ent *new;
-+	struct nfs_dns_ent *key;
-+
-+	new = container_of(cnew, struct nfs_dns_ent, h);
-+	key = container_of(ckey, struct nfs_dns_ent, h);
-+
-+	memcpy(&new->addr, &key->addr, key->addrlen);
-+	new->addrlen = key->addrlen;
++	DRM_DEBUG_KMS("Ignoring bad SDVO TV connector for %s\n", id->ident);
++	return 1;
 +}
 +
- static void nfs_dns_ent_init(struct cache_head *cnew,
- 		struct cache_head *ckey)
++static struct dmi_system_id intel_sdvo_bad_tv[] = {
++	{
++		.callback = intel_sdvo_bad_tv_callback,
++		.ident = "IntelG45/ICH10R/DME1737",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM CORPORATION"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "4800784"),
++		},
++	},
++
++	{ }	/* terminating entry */
++};
++
+ static bool
+ intel_sdvo_output_setup(struct intel_output *intel_output, uint16_t flags)
  {
-@@ -49,8 +62,7 @@ static void nfs_dns_ent_init(struct cach
- 	new->hostname = kstrndup(key->hostname, key->namelen, GFP_KERNEL);
- 	if (new->hostname) {
- 		new->namelen = key->namelen;
--		memcpy(&new->addr, &key->addr, key->addrlen);
--		new->addrlen = key->addrlen;
-+		nfs_dns_ent_update(cnew, ckey);
- 	} else {
- 		new->namelen = 0;
- 		new->addrlen = 0;
-@@ -234,7 +246,7 @@ static struct cache_detail nfs_dns_resol
- 	.cache_show = nfs_dns_show,
- 	.match = nfs_dns_match,
- 	.init = nfs_dns_ent_init,
--	.update = nfs_dns_ent_init,
-+	.update = nfs_dns_ent_update,
- 	.alloc = nfs_dns_ent_alloc,
- };
+@@ -2323,7 +2343,8 @@ intel_sdvo_output_setup(struct intel_out
+ 					(1 << INTEL_SDVO_NON_TV_CLONE_BIT) |
+ 					(1 << INTEL_ANALOG_CLONE_BIT);
+ 		}
+-	} else if (flags & SDVO_OUTPUT_SVID0) {
++	} else if ((flags & SDVO_OUTPUT_SVID0) &&
++		   !dmi_check_system(intel_sdvo_bad_tv)) {
  
+ 		sdvo_priv->controlled_output = SDVO_OUTPUT_SVID0;
+ 		encoder->encoder_type = DRM_MODE_ENCODER_TVDAC;
 
 
