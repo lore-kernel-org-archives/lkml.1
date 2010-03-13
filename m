@@ -1,64 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935278Ab0CMRo6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 12:44:58 -0500
-Received: from mail.perches.com ([173.55.12.10]:1681 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934366Ab0CMRo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 12:44:56 -0500
-Subject: Re: [PATCH] vsprintf.c: Use noinline_for_stack
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-In-Reply-To: <alpine.LFD.2.00.1003130734420.3719@i5.linux-foundation.org>
-References: <cover.1267682641.git.joe@perches.com>
-	 <20100304143837.af39845d.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
-	 <1267911399.849.39.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-	 <1267914654.849.81.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
-	 <1267918554.849.89.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
-	 <alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
-	 <1267924214.1937.12.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
-	 <1267929215.1937.18.camel@Joe-Laptop.home>
-	 <20100312162559.a8e51777.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1003130734420.3719@i5.linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 13 Mar 2010 09:44:55 -0800
-Message-ID: <1268502295.30289.44.camel@Joe-Laptop.home>
+	id S1759002Ab0CMR4W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 12:56:22 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35937 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758900Ab0CMR4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 12:56:19 -0500
+X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=yXL9yh5uDUXjRgDlxN0A:9 a=TkCly0IQbWQrXvEIar8FHDgzqQwA:4 a=PUjeQqilurYA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1268446049.4471.787.camel@gandalf.stny.rr.com>
+References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
+	 <1267710847.10871.102.camel@gandalf.stny.rr.com>
+	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	 <20100305171614.GC5244@nowhere>  <4B94A816.4090608@cn.fujitsu.com>
+	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>
+	 <4B95AE4E.6060700@cn.fujitsu.com>
+	 <1268101394.10871.1861.camel@gandalf.stny.rr.com>
+	 <4B95C2AF.7010508@cn.fujitsu.com>
+	 <1268446049.4471.787.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Sat, 13 Mar 2010 12:56:16 -0500
+Message-ID: <1268502976.4471.798.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-13 at 07:35 -0800, Linus Torvalds wrote:
-> On Fri, 12 Mar 2010, Andrew Morton wrote:
-> > nice.
-> But the kallsyms_lookup()/sprint_symbol() functions don't take a 
-> length parameter, so we have to do the worst-case thing (which itself has 
-> tons of unnecessary padding).
+On Fri, 2010-03-12 at 21:07 -0500, Steven Rostedt wrote:
+> On Tue, 2010-03-09 at 11:38 +0800, Li Zefan wrote:
+> 
+> > The segfault is from userspace. This is a segfault I just got:
+> > 
+> > ftrace_stack_ma[14989]: segfault at fe2e ip 00000000004474c0 sp 00007fffb97e38c0 error 4 in bash[400000+d1000]
+> 
+> Li and Lai,
+> 
+> Thanks a lot for reporting all this, and writing the ftrace_stress_test.
+> I've fixed all the bugs that it has reported (to my knowledge) and after
+> a little more testing I will soon be sending a patch series out.
 
-I sent a patch once about that using a struct
-because I didn't like the unbounded sprint
-http://lkml.org/lkml/2009/4/15/16
+Li,
 
-> Gaah. We do _not_ want a kmalloc() or something like that in this path, 
-> since its' very much used for oopses (which in turn may be due to various 
-> slab bugs etc).
+I ran your test for 13 hours on three different machines. I did not hit
+any more errors. Although I see a lockdep warning (not a locking problem
+but the WARN_ON in fork.c is triggering). I'll look into that on Monday.
 
-Perhaps a new snprint_symbol function with the
-other kallsyms... functions changed as necessary.
+Please take the new patches that Ingo just pushed to Linus, if you find
+any more bugs, please let me know right away.
 
-thoughts?
+Thanks!
+
+-- Steve
+
 
