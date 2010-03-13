@@ -1,77 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935392Ab0CMAb2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:31:28 -0500
-Received: from kroah.org ([198.145.64.141]:46632 "EHLO coco.kroah.org"
+	id S935234Ab0CMA2L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:28:11 -0500
+Received: from kroah.org ([198.145.64.141]:32844 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935326Ab0CMAai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:38 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:06 2010
-Message-Id: <20100313002706.179713931@kvm.kroah.org>
+	id S935046Ab0CMAVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:05 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
+Message-Id: <20100313001514.500692297@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:25:44 -0800
+Date: Fri, 12 Mar 2010 16:13:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Halperin <dhalperi@cs.washington.edu>,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [011/145] iwlwifi: set HT flags after channel in rxon
-In-Reply-To: <20100313002816.GA18903@kroah.com>
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 107/123] SUNRPC: Handle EINVAL error returns from the TCP connect operation
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let me know.
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-----------------
-From: Dan Halperin <dhalperi@cs.washington.edu>
+-----------------
 
-commit 5e2f75b8993a0d83d469388b50716dd5551f2eb4 upstream.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-The HT extension channel settings require priv->staging_rxon.channel to be
-accurate. However, iwl_set_rxon_ht was being called before iwl_set_rxon_channel
-and thus HT40 could be broken unless another call to iwl_mac_config came in.
+commit 9fcfe0c83c3b04a759cde6b8c5f961237f17808b upstream.
 
-This problem was recently introduced by "iwlwifi: Fix to set correct ht
-configuration"
+This can, for instance, happen if the user specifies a link local IPv6
+address.
 
-The particular setting in which I noticed this was monitor mode:
-
-	iwconfig wlan0 mode monitor
-	ifconfig wlan0 up
-	./iw wlan0 set channel 64 HT40-
-	#./iw wlan0 set channel 64 HT40-
-	tcpdump -i wlan0 -y IEEE802_11_RADIO
-
-would only catch HT40 packets if I issued the IW command twice.
-
->From visual inspection, iwl_set_rxon_channel does not depend on
-iwl_set_rxon_ht, so simply swapping them should be safe and fixes this problem.
-
-Signed-off-by: Daniel Halperin <dhalperi@cs.washington.edu>
-Acked-by: Wey-Yi Guy <wey-yi.w.guy@intel.com>
-Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sunrpc/xprtsock.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/net/wireless/iwlwifi/iwl-core.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.c
-@@ -2645,8 +2645,8 @@ int iwl_mac_config(struct ieee80211_hw *
- 		if ((le16_to_cpu(priv->staging_rxon.channel) != ch))
- 			priv->staging_rxon.flags = 0;
- 
--		iwl_set_rxon_ht(priv, ht_conf);
- 		iwl_set_rxon_channel(priv, conf->channel);
-+		iwl_set_rxon_ht(priv, ht_conf);
- 
- 		iwl_set_flags_for_band(priv, conf->channel->band);
- 		spin_unlock_irqrestore(&priv->lock, flags);
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -1912,6 +1912,11 @@ static void xs_tcp_setup_socket(struct r
+ 	case -EALREADY:
+ 		xprt_clear_connecting(xprt);
+ 		return;
++	case -EINVAL:
++		/* Happens, for instance, if the user specified a link
++		 * local IPv6 address without a scope-id.
++		 */
++		goto out;
+ 	}
+ out_eagain:
+ 	status = -EAGAIN;
 
 
