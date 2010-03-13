@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935204Ab0CMAZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:25:56 -0500
-Received: from kroah.org ([198.145.64.141]:32885 "EHLO coco.kroah.org"
+	id S934789Ab0CMA0z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:26:55 -0500
+Received: from kroah.org ([198.145.64.141]:32863 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935063Ab0CMAVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:10 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
-Message-Id: <20100313001515.372453718@kvm.kroah.org>
+	id S935026Ab0CMAVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:06 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
+Message-Id: <20100313001514.840305535@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:35 -0800
+Date: Fri, 12 Mar 2010 16:13:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Gleb Natapov <gleb@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: [patch 117/123] KVM: x86 emulator: Forbid modifying CS segment register by mov instruction
+       James Hogan <james@albanarts.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Alessandro Zummo <a.zummo@towertech.it>
+Subject: [patch 111/123] rtc-coh901331: fix braces in resume code
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,35 +28,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Gleb Natapov <gleb@redhat.com>
+From: James Hogan <james@albanarts.com>
 
-commit 8b9f44140bc4afd2698413cd9960c3912168ee91 upstream.
+commit 5a98c04d78c896d52baef20ffc11f6d1ba6eb786 upstream.
 
-Inject #UD if guest attempts to do so. This is in accordance to Intel
-SDM.
+The else part of the if statement is indented but does not have braces
+around it. It clearly should since it uses clk_enable and clk_disable
+which are supposed to balance.
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: James Hogan <james@albanarts.com>
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/emulate.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/rtc/rtc-coh901331.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kvm/emulate.c
-+++ b/arch/x86/kvm/emulate.c
-@@ -1987,6 +1987,12 @@ special_insn:
- 		int err;
+--- a/drivers/rtc/rtc-coh901331.c
++++ b/drivers/rtc/rtc-coh901331.c
+@@ -271,12 +271,13 @@ static int coh901331_resume(struct platf
+ {
+ 	struct coh901331_port *rtap = dev_get_drvdata(&pdev->dev);
  
- 		sel = c->src.val;
-+
-+		if (c->modrm_reg == VCPU_SREG_CS) {
-+			kvm_queue_exception(ctxt->vcpu, UD_VECTOR);
-+			goto done;
-+		}
-+
- 		if (c->modrm_reg == VCPU_SREG_SS)
- 			toggle_interruptibility(ctxt, X86_SHADOW_INT_MOV_SS);
- 
+-	if (device_may_wakeup(&pdev->dev))
++	if (device_may_wakeup(&pdev->dev)) {
+ 		disable_irq_wake(rtap->irq);
+-	else
++	} else {
+ 		clk_enable(rtap->clk);
+ 		writel(rtap->irqmaskstore, rtap->virtbase + COH901331_IRQ_MASK);
+ 		clk_disable(rtap->clk);
++	}
+ 	return 0;
+ }
+ #else
 
 
