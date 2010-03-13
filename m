@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936457Ab0CMB1h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:27:37 -0500
-Received: from kroah.org ([198.145.64.141]:60734 "EHLO coco.kroah.org"
+	id S936458Ab0CMB1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:27:45 -0500
+Received: from kroah.org ([198.145.64.141]:60728 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934905Ab0CMAUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934826Ab0CMAUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Mar 2010 19:20:07 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:09 2010
-Message-Id: <20100313001509.198197165@kvm.kroah.org>
+Message-Id: <20100313001509.107183568@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:24 -0800
+Date: Fri, 12 Mar 2010 16:12:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sebastien Alaiwan <sebastien.alaiwan@gmail.com>,
        Clemens Ladisch <clemens@ladisch.de>, Jaroslav Kysela <perex@perex.cz>
-Subject: [patch 046/123] ALSA: USB MIDI support for Access Music VirusTI
+Subject: [patch 045/123] ALSA: usb-audio: reduce MIDI packet size to work around broken firmware
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,133 +26,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit d39e82db73eb876c60d00f00219d767b3be30307 upstream.
+commit f167e1d073278fe231bbdd5d6c24fb9d091aa544 upstream.
 
-Here's a patch that adds MIDI support through USB for one of the Access
-Music synths, the VirusTI.
+Extend the list of devices whose firmware does not expect more than one
+USB MIDI packet in one USB packet.
 
-The synth uses standard USBMIDI protocol on its USB interface 3, although
-it does signal "vendor specific" class. A magic string has to be sent on
-interface 3 to enable the sending of MIDI from the synth (this string was
-found by sniffing usb communication of the Windows driver). This is all
-my patch does, and it works on my computer.
+bug report: https://bugtrack.alsa-project.org/alsa-bug/view.php?id=3752
 
-Please note that the synth can also do standard usb audio I/O on its
-interfaces 2&3, which already works with the current snd-usb-audio driver,
-except for the audio input from the synth. I'm going to work on it when I
-have some time.
-
-Signed-off-by: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
 Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c  |   32 ++++++++++++++++++++++++++++++++
- sound/usb/usbmidi.c   |    6 ++++++
- sound/usb/usbquirks.h |   27 +++++++++++++++++++++++++++
- 3 files changed, 65 insertions(+)
+ sound/usb/usbmidi.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -3327,6 +3327,32 @@ static int snd_usb_cm6206_boot_quirk(str
- }
- 
- /*
-+ * This call will put the synth in "USB send" mode, i.e it will send MIDI
-+ * messages through USB (this is disabled at startup). The synth will
-+ * acknowledge by sending a sysex on endpoint 0x85 and by displaying a USB
-+ * sign on its LCD. Values here are chosen based on sniffing USB traffic
-+ * under Windows.
-+ */
-+static int snd_usb_accessmusic_boot_quirk(struct usb_device *dev)
-+{
-+	int err, actual_length;
-+
-+	/* "midi send" enable */
-+	static const u8 seq[] = { 0x4e, 0x73, 0x52, 0x01 };
-+
-+	void *buf = kmemdup(seq, ARRAY_SIZE(seq), GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	err = usb_interrupt_msg(dev, usb_sndintpipe(dev, 0x05), buf,
-+			ARRAY_SIZE(seq), &actual_length, 1000);
-+	kfree(buf);
-+	if (err < 0)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/*
-  * Setup quirks
-  */
- #define AUDIOPHILE_SET			0x01 /* if set, parse device_setup */
-@@ -3624,6 +3650,12 @@ static void *snd_usb_audio_probe(struct
- 			goto __err_val;
- 	}
- 
-+	/* Access Music VirusTI Desktop */
-+	if (id == USB_ID(0x133e, 0x0815)) {
-+		if (snd_usb_accessmusic_boot_quirk(dev) < 0)
-+			goto __err_val;
-+	}
-+
- 	/*
- 	 * found a config.  now register to ALSA
- 	 */
 --- a/sound/usb/usbmidi.c
 +++ b/sound/usb/usbmidi.c
-@@ -1419,6 +1419,12 @@ static struct port_info {
- 	EXTERNAL_PORT(0x086a, 0x0001, 8, "%s Broadcast"),
- 	EXTERNAL_PORT(0x086a, 0x0002, 8, "%s Broadcast"),
- 	EXTERNAL_PORT(0x086a, 0x0003, 4, "%s Broadcast"),
-+	/* Access Music Virus TI */
-+	EXTERNAL_PORT(0x133e, 0x0815, 0, "%s MIDI"),
-+	PORT_INFO(0x133e, 0x0815, 1, "%s Synth", 0,
-+		SNDRV_SEQ_PORT_TYPE_MIDI_GENERIC |
-+		SNDRV_SEQ_PORT_TYPE_HARDWARE |
-+		SNDRV_SEQ_PORT_TYPE_SYNTHESIZER),
- };
- 
- static struct port_info *find_port_info(struct snd_usb_midi* umidi, int number)
---- a/sound/usb/usbquirks.h
-+++ b/sound/usb/usbquirks.h
-@@ -2073,6 +2073,33 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 	}
- },
- 
-+/* Access Music devices */
-+{
-+	/* VirusTI Desktop */
-+	USB_DEVICE_VENDOR_SPEC(0x133e, 0x0815),
-+	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
-+		.ifnum = QUIRK_ANY_INTERFACE,
-+		.type = QUIRK_COMPOSITE,
-+		.data = &(const struct snd_usb_audio_quirk[]) {
-+			{
-+				.ifnum = 3,
-+				.type = QUIRK_MIDI_FIXED_ENDPOINT,
-+				.data = &(const struct snd_usb_midi_endpoint_info) {
-+					.out_cables = 0x0003,
-+					.in_cables  = 0x0003
-+				}
-+			},
-+			{
-+				.ifnum = 4,
-+				.type = QUIRK_IGNORE_INTERFACE
-+			},
-+			{
-+				.ifnum = -1
-+			}
-+		}
+@@ -1162,10 +1162,22 @@ static int snd_usbmidi_out_endpoint_crea
+ 		pipe = usb_sndintpipe(umidi->dev, ep_info->out_ep);
+ 	else
+ 		pipe = usb_sndbulkpipe(umidi->dev, ep_info->out_ep);
+-	if (umidi->usb_id == USB_ID(0x0a92, 0x1020)) /* ESI M4U */
+-		ep->max_transfer = 4;
+-	else
++	switch (umidi->usb_id) {
++	default:
+ 		ep->max_transfer = usb_maxpacket(umidi->dev, pipe, 1);
++		break;
++		/*
++		 * Various chips declare a packet size larger than 4 bytes, but
++		 * do not actually work with larger packets:
++		 */
++	case USB_ID(0x0a92, 0x1020): /* ESI M4U */
++	case USB_ID(0x1430, 0x474b): /* RedOctane GH MIDI INTERFACE */
++	case USB_ID(0x15ca, 0x0101): /* Textech USB Midi Cable */
++	case USB_ID(0x15ca, 0x1806): /* Textech USB Midi Cable */
++	case USB_ID(0x1a86, 0x752d): /* QinHeng CH345 "USB2.0-MIDI" */
++		ep->max_transfer = 4;
++		break;
 +	}
-+},
-+
- /* */
- {
- 	/* aka. Serato Scratch Live DJ Box */
+ 	for (i = 0; i < OUTPUT_URBS; ++i) {
+ 		buffer = usb_buffer_alloc(umidi->dev,
+ 					  ep->max_transfer, GFP_KERNEL,
 
 
