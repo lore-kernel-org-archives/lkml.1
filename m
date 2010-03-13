@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965280Ab0CMBfo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:35:44 -0500
-Received: from kroah.org ([198.145.64.141]:60538 "EHLO coco.kroah.org"
+	id S936548Ab0CMBgQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:36:16 -0500
+Received: from kroah.org ([198.145.64.141]:60531 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934808Ab0CMATg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:36 -0500
+	id S934802Ab0CMATf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:35 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:05 2010
-Message-Id: <20100313001505.873349402@kvm.kroah.org>
+Message-Id: <20100313001505.692774660@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:11:46 -0800
+Date: Fri, 12 Mar 2010 16:11:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Neukum <oliver@neukum.org>, David Fries <david@fries.net>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 008/123] HID: usbhid: introduce timeout for stuck ctrl/out URBs
+       Dan Williams <dcbw@redhat.com>, Stanislaw Gruszka <sgruszka@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 006/123] airo: fix setting zero length WEP key
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,102 +27,84 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Stanislaw Gruszka <sgruszka@redhat.com>
 
-commit 858155fbcc0cd713f6382c527bb1c3abc0ed6d00 upstream.
+commit f09c256375c7cf1e112b8ef6306cdd313490d7c0 upstream.
 
-Some devices do not react to a control request (seen on APC UPS's) resulting in
-a slow stream of messages, "generic-usb ... control queue full".  Therefore
-request needs a timeout.
+Patch prevents call set_wep_key() with zero key length. That fix long
+standing regression since commit c0380693520b1a1e4f756799a0edc379378b462a
+"airo: clean up WEP key operations". Additionally print call trace when
+someone will try to use improper parameters, and remove key.len = 0
+assignment, because it is in not possible code path.
 
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
-Signed-off-by: David Fries <david@fries.net>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Reported-by: Chris Siebenmann <cks-rhbugzilla@cs.toronto.edu>
+Bisected-by: Chris Siebenmann <cks-rhbugzilla@cs.toronto.edu>
+Tested-by: Chris Siebenmann <cks@cs.toronto.edu>
+Cc: Dan Williams <dcbw@redhat.com>
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hid-core.c |   28 ++++++++++++++++++++++++++--
- drivers/hid/usbhid/usbhid.h   |    2 ++
- 2 files changed, 28 insertions(+), 2 deletions(-)
+ drivers/net/wireless/airo.c |   34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
 
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -316,6 +316,7 @@ static int hid_submit_out(struct hid_dev
- 			err_hid("usb_submit_urb(out) failed");
- 			return -1;
- 		}
-+		usbhid->last_out = jiffies;
- 	} else {
- 		/*
- 		 * queue work to wake up the device.
-@@ -377,6 +378,7 @@ static int hid_submit_ctrl(struct hid_de
- 			err_hid("usb_submit_urb(ctrl) failed");
- 			return -1;
- 		}
-+		usbhid->last_ctrl = jiffies;
- 	} else {
- 		/*
- 		 * queue work to wake up the device.
-@@ -512,9 +514,20 @@ static void __usbhid_submit_report(struc
- 		usbhid->out[usbhid->outhead].report = report;
- 		usbhid->outhead = head;
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -5254,11 +5254,7 @@ static int set_wep_key(struct airo_info
+ 	WepKeyRid wkr;
+ 	int rc;
  
--		if (!test_and_set_bit(HID_OUT_RUNNING, &usbhid->iofl))
-+		if (!test_and_set_bit(HID_OUT_RUNNING, &usbhid->iofl)) {
- 			if (hid_submit_out(hid))
- 				clear_bit(HID_OUT_RUNNING, &usbhid->iofl);
+-	if (keylen == 0) {
+-		airo_print_err(ai->dev->name, "%s: key length to set was zero",
+-			       __func__);
+-		return -1;
+-	}
++	WARN_ON(keylen == 0);
+ 
+ 	memset(&wkr, 0, sizeof(wkr));
+ 	wkr.len = cpu_to_le16(sizeof(wkr));
+@@ -6405,11 +6401,7 @@ static int airo_set_encode(struct net_de
+ 		if (dwrq->length > MIN_KEY_SIZE)
+ 			key.len = MAX_KEY_SIZE;
+ 		else
+-			if (dwrq->length > 0)
+-				key.len = MIN_KEY_SIZE;
+-			else
+-				/* Disable the key */
+-				key.len = 0;
++			key.len = MIN_KEY_SIZE;
+ 		/* Check if the key is not marked as invalid */
+ 		if(!(dwrq->flags & IW_ENCODE_NOKEY)) {
+ 			/* Cleanup */
+@@ -6590,12 +6582,22 @@ static int airo_set_encodeext(struct net
+ 		default:
+ 			return -EINVAL;
+ 		}
+-		/* Send the key to the card */
+-		rc = set_wep_key(local, idx, key.key, key.len, perm, 1);
+-		if (rc < 0) {
+-			airo_print_err(local->dev->name, "failed to set WEP key"
+-			               " at index %d: %d.", idx, rc);
+-			return rc;
++		if (key.len == 0) {
++			rc = set_wep_tx_idx(local, idx, perm, 1);
++			if (rc < 0) {
++				airo_print_err(local->dev->name,
++					       "failed to set WEP transmit index to %d: %d.",
++					       idx, rc);
++				return rc;
++			}
 +		} else {
-+			/*
-+			 * the queue is known to run
-+			 * but an earlier request may be stuck
-+			 * we may need to time out
-+			 * no race because this is called under
-+			 * spinlock
-+			 */
-+			if (time_after(jiffies, usbhid->last_out + HZ * 5))
-+				usb_unlink_urb(usbhid->urbout);
-+		}
- 		return;
++			rc = set_wep_key(local, idx, key.key, key.len, perm, 1);
++			if (rc < 0) {
++				airo_print_err(local->dev->name,
++					       "failed to set WEP key at index %d: %d.",
++					       idx, rc);
++				return rc;
++			}
+ 		}
  	}
  
-@@ -535,9 +548,20 @@ static void __usbhid_submit_report(struc
- 	usbhid->ctrl[usbhid->ctrlhead].dir = dir;
- 	usbhid->ctrlhead = head;
- 
--	if (!test_and_set_bit(HID_CTRL_RUNNING, &usbhid->iofl))
-+	if (!test_and_set_bit(HID_CTRL_RUNNING, &usbhid->iofl)) {
- 		if (hid_submit_ctrl(hid))
- 			clear_bit(HID_CTRL_RUNNING, &usbhid->iofl);
-+	} else {
-+		/*
-+		 * the queue is known to run
-+		 * but an earlier request may be stuck
-+		 * we may need to time out
-+		 * no race because this is called under
-+		 * spinlock
-+		 */
-+		if (time_after(jiffies, usbhid->last_ctrl + HZ * 5))
-+			usb_unlink_urb(usbhid->urbctrl);
-+	}
- }
- 
- void usbhid_submit_report(struct hid_device *hid, struct hid_report *report, unsigned char dir)
---- a/drivers/hid/usbhid/usbhid.h
-+++ b/drivers/hid/usbhid/usbhid.h
-@@ -80,12 +80,14 @@ struct usbhid_device {
- 	unsigned char ctrlhead, ctrltail;                               /* Control fifo head & tail */
- 	char *ctrlbuf;                                                  /* Control buffer */
- 	dma_addr_t ctrlbuf_dma;                                         /* Control buffer dma */
-+	unsigned long last_ctrl;						/* record of last output for timeouts */
- 
- 	struct urb *urbout;                                             /* Output URB */
- 	struct hid_output_fifo out[HID_CONTROL_FIFO_SIZE];              /* Output pipe fifo */
- 	unsigned char outhead, outtail;                                 /* Output pipe fifo head & tail */
- 	char *outbuf;                                                   /* Output buffer */
- 	dma_addr_t outbuf_dma;                                          /* Output buffer dma */
-+	unsigned long last_out;							/* record of last output for timeouts */
- 
- 	spinlock_t lock;						/* fifo spinlock */
- 	unsigned long iofl;                                             /* I/O flags (CTRL_RUNNING, OUT_RUNNING) */
 
 
