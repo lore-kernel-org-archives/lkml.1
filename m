@@ -1,50 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933926Ab0CMUWa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 15:22:30 -0500
-Received: from mail.perches.com ([173.55.12.10]:1691 "EHLO mail.perches.com"
+	id S933976Ab0CMUYh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 15:24:37 -0500
+Received: from smtp.infotech.no ([82.134.31.41]:49551 "EHLO elrond.infotech.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933030Ab0CMUWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 15:22:24 -0500
-Subject: Re: [PATCH] NET: tg3: fix brace, switch, and comma spacing coding
- style in tg3.c This is a patch to the tg3.c file that aligns switch and
- case statements, else statements following braces, and inserts a space
- after commas listed in the coding style g
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: thisdyingdream@gmail.com, sjharms@gmail.com, mcarlson@broadcom.com,
-       mchan@broadcom.com, benli@broadcom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sharms@ubuntu.com
-In-Reply-To: <20100313.115555.209991546.davem@davemloft.net>
-References: <b6bf7b051003131152t38c8b1e1m33e8844468b9e46a@mail.gmail.com>
-	 <20100313.115555.209991546.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 13 Mar 2010 12:22:22 -0800
-Message-ID: <1268511742.30289.74.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
+	id S932971Ab0CMUYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 15:24:35 -0500
+X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Mar 2010 15:24:35 EST
+Message-ID: <4B9BF2B8.5090004@interlog.com>
+Date: Sat, 13 Mar 2010 15:16:56 -0500
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] final scsi updates for 2.6.34-rc1
+References: <1268242604.22601.25.camel@mulgrave.site> <alpine.LFD.2.00.1003121008420.3719@i5.linux-foundation.org> 	<1268418441.2802.61.camel@mulgrave.site> <2c0942db1003131135m1bea386dx4dd7990832cfbfea@mail.gmail.com>
+In-Reply-To: <2c0942db1003131135m1bea386dx4dd7990832cfbfea@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-13 at 11:55 -0800, David Miller wrote:
-> From: Steven Harms <thisdyingdream@gmail.com>
-> Date: Sat, 13 Mar 2010 14:52:26 -0500
+Ray Lee wrote:
+> On Fri, Mar 12, 2010 at 10:27 AM, James Bottomley wrote:
+>> I do always have a tree ready in the first days of the merge window.  It
+>> was, in fact, here:
 > 
-> > Would you like me to submit the patch adding only the spaces after
-> > commas and leave the rest of the defines as is, or discard the changes
-> > all together?
+> [...]
 > 
-> I would like you to toss them altogether.
+>> The slight problem is that I accumulate updates (like almost everyone
+>> else) from the few days before the merge window opened up until about
+>> the middle of the second week.  That's what goes into the final pull,
+>> plus assorted bug fixes that showed up during the window.
+> 
+> You appear to being using git as a sort of baroque CVS. Fixes that
+> arrive after the beginning of the merge window should be put into a
+> separate branch other than the one ready for submission. Features that
+> arrive after the beginning of the merge window should be placed into
+> yet another branch destined for the next merge window.
 
-I think that Steven got off on the wrong foot
-a bit by adding the parentheses to the defines.
+Ray,
+I'm sure that James will appreciate your insightful
+advice. And Alan Cox is probably waiting for your
+thoughts on the design of serial device drivers.
 
-I think the other changes he suggested are
-tree-wide style consistency only and are ok.
+Amazing that after yet another Linus rant, people
+crawl out of the woodwork to attack the victim.
 
-Perhaps you might reconsider later, after
-net-next reopens.
+Doug Gilbert
 
 
