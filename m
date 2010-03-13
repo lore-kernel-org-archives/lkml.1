@@ -1,97 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828Ab0CMRA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 12:00:27 -0500
-Received: from www84.your-server.de ([213.133.104.84]:51942 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360Ab0CMRAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 12:00:25 -0500
-Subject: Re: [Patch] fix MTD CFI/LPDDR flash driver huge latency bug
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mtd@lists.infradead.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Kreuzer, Michael (NSN - DE/Ulm)" <michael.kreuzer@nsn.com>
-In-Reply-To: <20100313062553.2bdec297.akpm@linux-foundation.org>
-References: <1267894137.18869.0.camel@wall-e>
-	 <20100312142344.174bd46f.akpm@linux-foundation.org>
-	 <1268483490.6339.21.camel@wall-e>
-	 <20100313062553.2bdec297.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 13 Mar 2010 18:00:44 +0100
-Message-ID: <1268499644.27883.94.camel@wall-e>
+	id S932949Ab0CMRCj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 12:02:39 -0500
+Received: from 1wt.eu ([62.212.114.60]:58948 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752360Ab0CMRCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 12:02:37 -0500
+Date: Sat, 13 Mar 2010 18:01:31 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Tim Gardner <tim.gardner@canonical.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Patrick McHardy <kaber@trash.net>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [104/145] netfilter: xt_recent: fix false match
+Message-ID: <20100313170131.GL12342@1wt.eu>
+References: <20100313002816.GA18903@kroah.com> <20100313002714.299272135@kvm.kroah.org> <20100313062446.GG12342@1wt.eu> <4B9BA3C3.50403@canonical.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3.1 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B9BA3C3.50403@canonical.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 13.03.2010, 06:25 -0500 schrieb Andrew Morton:
-> On Sat, 13 Mar 2010 13:31:30 +0100 Stefani Seibold <stefani@seibold.net> wrote:
+On Sat, Mar 13, 2010 at 07:40:03AM -0700, Tim Gardner wrote:
+> On 03/12/2010 11:24 PM, Willy Tarreau wrote:
+> >On Fri, Mar 12, 2010 at 04:27:17PM -0800, Greg KH wrote:
+> >>2.6.32-stable review patch.  If anyone has any objections, please let me 
+> >>know.
+> >>
+> >>----------------
+> >>From: Tim Gardner<tim.gardner@canonical.com>
+> >>
+> >>commit 8ccb92ad41cb311e52ad1b1fe77992c7f47a3b63 upstream.
+> >>
+> >>A rule with a zero hit_count will always match.
+> >>
+> >>Signed-off-by: Tim Gardner<tim.gardner@canonical.com>
+> >>Signed-off-by: Patrick McHardy<kaber@trash.net>
+> >>Signed-off-by: Greg Kroah-Hartman<gregkh@suse.de>
+> >>
+> >>---
+> >>  net/netfilter/xt_recent.c |    2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >>--- a/net/netfilter/xt_recent.c
+> >>+++ b/net/netfilter/xt_recent.c
+> >>@@ -260,7 +260,7 @@ recent_mt(const struct sk_buff *skb, con
+> >>  		for (i = 0; i<  e->nstamps; i++) {
+> >>  			if (info->seconds&&  time_after(time, e->stamps[i]))
+> >>  				continue;
+> >>-			if (++hits>= info->hit_count) {
+> >>+			if (info->hit_count&&  ++hits>= info->hit_count) {
+> >>  				ret = !ret;
+> >>  				break;
+> >>  			}
+> >
+> >I don't know if this has any undesired side effect or not, but the
+> >logic is changed now since "hits" will not be increased anymore when
+> >info->hit_count is zero. And the code does not make it obvious to me
+> >what the intended purpose was.
+> >
+> >For this reason I always find it dangerous to change variables in
+> >if() conditions because it's where we change operations the most
+> >frequently when fixing bugs.
+> >
+> >Willy
+> >
 > 
-> > Am Freitag, den 12.03.2010, 14:23 -0800 schrieb Andrew Morton:
-> > > On Sat, 06 Mar 2010 17:48:57 +0100
-> > > Stefani Seibold <stefani@seibold.net> wrote:
-> > > 
-> > > The patch change all the use of spin_lock operations for xxxx->mutex
-> > > > into mutex operations, which is exact what the name says and means. 
-> > > > 
-> > > > There is no performance regression since the mutex is normally not
-> > > > acquired.
-> > > 
-> > > hm, big scary patch.  Are you sure this mutex is never taken from
-> > > atomic or irq contexts?  Is it ully tested with all relevant debug options
-> > > and lockdep enabled?
-> > > 
-> > > 
-> > 
-> > I have analyzed this drivers and IMHO i don't think there will be used
-> > from irq or atomic contexts. There is no request interrupt and there are
-> > a lot msleep and add_wait_queues/schedule calls during holding the
-> > mutex, which are not very useful in a irq or atomic context. But i don't
-> > know the whole mtd stack. 
-> > 
-> > I tested the patch with the following kernel debug options:
-> > 
-> > CONFIG_DEBUG_KERNEL=y
-> > CONFIG_DETECT_SOFTLOCKUP=y
-> > CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-> > CONFIG_SCHED_DEBUG=y
-> > CONFIG_SCHEDSTATS=y
-> > CONFIG_TIMER_STATS=y
-> > CONFIG_DEBUG_MUTEXES=y
-> > CONFIG_DEBUG_SPINLOCK_SLEEP=y
-> > 
-> 
-> Neato.  As was mentioned, one thing to check is the mtdoops path. 
-> oopses can happen with locks held, from IRQ context, etc.
-> 
+> Willy - I agree with you that changing variables in an if() clause can 
+> be dangerous. I did consider the possibility for side effects in this 
+> case, but decided to go with the simplest patch since 'hits' is local to 
+> the scope of the the surrounding else if() clause and is used in no 
+> other place.
 
-Okay, i didn't checked that case. But the old code has also a dead lock,
-if the oops occurred during the spinlock(xxx->mutex) was held. With the
-new mutex solution the change is bigger to run into that deadlock due
-the possible preemption. 
+indeed, but before the patch, "hits" was increased at every
+pass in the loop. Now it's only increased for passes which
+have a non-zero hit_count, so in theory it can change the
+result of the test for further passes of the loop. I just
+don't know if it can have any effect, but I trust you since
+you had to understand the code for the change :-)
 
-But i did a "grep" at the whole mtd code and there is no panic_write
-function assigned to mtd_info struct for the CFI flash chips. So this
-problem will currently never occure.
-
-> If we're trying to take that mutex in oops context then I guess that's
-> fixable by just not taking it and hoping for the best.  Or, better,
-> mutex_trylock() and conditional mutex_unlock() to try to be nice to
-> possible concurrent activity on other CPUs.
-> 
-
-Concurrent access are dangerous and in most cases are not possible,
-that's why the spinlock(xxxx->mutex) was for.
-
-I also did some concurrency checks like:
-
-cat /dev/zero >/flash/aa & cat /dev/zero >/flash/bb
-
-without and side effects.
-
+Regards,
+Willy
 
