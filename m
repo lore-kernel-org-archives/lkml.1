@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935892Ab0CMAwv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:52:51 -0500
-Received: from kroah.org ([198.145.64.141]:46975 "EHLO coco.kroah.org"
+	id S935453Ab0CMAtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:49:20 -0500
+Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935445Ab0CMAbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:43 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:11 2010
-Message-Id: <20100313002711.252635229@kvm.kroah.org>
+	id S935492Ab0CMAcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:01 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
+Message-Id: <20100313002713.345954425@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:42 -0800
+Date: Fri, 12 Mar 2010 16:27:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Robert Richter <robert.richter@amd.com>
-Subject: [069/145] oprofile/x86: fix perfctr nmi reservation for mulitplexing
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: [093/145] gpiolib: Actually set output state in wm831x_gpio_direction_output()
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,106 +25,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Robert Richter <robert.richter@amd.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-commit 68dc819ce829f7e7977a56524e710473bdb55115 upstream.
+commit 3383d23d86791503559cb87837491af37469d9e5 upstream.
 
-Multiple virtual counters share one physical counter. The reservation
-of virtual counters fails due to duplicate allocation of the same
-counter. The counters are already reserved. Thus, virtual counter
-reservation may removed at all. This also makes the code easier.
+wm831x_gpio_direction_output() ignored the state passed into it.
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/oprofile/nmi_int.c      |   11 ++++++-----
- arch/x86/oprofile/op_model_amd.c |   19 -------------------
- 2 files changed, 6 insertions(+), 24 deletions(-)
+ drivers/gpio/wm831x-gpio.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -179,7 +179,6 @@ static void nmi_cpu_setup_mux(int cpu, s
- 		if (counter_config[i].enabled) {
- 			multiplex[i].saved = -(u64)counter_config[i].count;
- 		} else {
--			multiplex[i].addr  = 0;
- 			multiplex[i].saved = 0;
- 		}
- 	}
-@@ -189,25 +188,27 @@ static void nmi_cpu_setup_mux(int cpu, s
+--- a/drivers/gpio/wm831x-gpio.c
++++ b/drivers/gpio/wm831x-gpio.c
+@@ -61,23 +61,31 @@ static int wm831x_gpio_get(struct gpio_c
+ 		return 0;
+ }
  
- static void nmi_cpu_save_mpx_registers(struct op_msrs *msrs)
+-static int wm831x_gpio_direction_out(struct gpio_chip *chip,
+-				     unsigned offset, int value)
++static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
  {
-+	struct op_msr *counters = msrs->counters;
- 	struct op_msr *multiplex = msrs->multiplex;
- 	int i;
+ 	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+ 	struct wm831x *wm831x = wm831x_gpio->wm831x;
  
- 	for (i = 0; i < model->num_counters; ++i) {
- 		int virt = op_x86_phys_to_virt(i);
--		if (multiplex[virt].addr)
--			rdmsrl(multiplex[virt].addr, multiplex[virt].saved);
-+		if (counters[i].addr)
-+			rdmsrl(counters[i].addr, multiplex[virt].saved);
- 	}
+-	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+-			       WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
++	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
++			value << offset);
  }
  
- static void nmi_cpu_restore_mpx_registers(struct op_msrs *msrs)
+-static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
++static int wm831x_gpio_direction_out(struct gpio_chip *chip,
++				     unsigned offset, int value)
  {
-+	struct op_msr *counters = msrs->counters;
- 	struct op_msr *multiplex = msrs->multiplex;
- 	int i;
+ 	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+ 	struct wm831x *wm831x = wm831x_gpio->wm831x;
++	int ret;
  
- 	for (i = 0; i < model->num_counters; ++i) {
- 		int virt = op_x86_phys_to_virt(i);
--		if (multiplex[virt].addr)
--			wrmsrl(multiplex[virt].addr, multiplex[virt].saved);
-+		if (counters[i].addr)
-+			wrmsrl(counters[i].addr, multiplex[virt].saved);
- 	}
+-	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
+-			value << offset);
++	ret = wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
++			      WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
++	if (ret < 0)
++		return ret;
++
++	/* Can only set GPIO state once it's in output mode */
++	wm831x_gpio_set(chip, offset, value);
++
++	return 0;
  }
  
---- a/arch/x86/oprofile/op_model_amd.c
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -76,19 +76,6 @@ static struct op_ibs_config ibs_config;
- 
- #ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
- 
--static void op_mux_fill_in_addresses(struct op_msrs * const msrs)
--{
--	int i;
--
--	for (i = 0; i < NUM_VIRT_COUNTERS; i++) {
--		int hw_counter = op_x86_virt_to_phys(i);
--		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i))
--			msrs->multiplex[i].addr = MSR_K7_PERFCTR0 + hw_counter;
--		else
--			msrs->multiplex[i].addr = 0;
--	}
--}
--
- static void op_mux_switch_ctrl(struct op_x86_model_spec const *model,
- 			       struct op_msrs const * const msrs)
- {
-@@ -107,10 +94,6 @@ static void op_mux_switch_ctrl(struct op
- 	}
- }
- 
--#else
--
--static inline void op_mux_fill_in_addresses(struct op_msrs * const msrs) { }
--
- #endif
- 
- /* functions for op_amd_spec */
-@@ -132,8 +115,6 @@ static void op_amd_fill_in_addresses(str
- 		else
- 			msrs->controls[i].addr = 0;
- 	}
--
--	op_mux_fill_in_addresses(msrs);
- }
- 
- static void op_amd_setup_ctrs(struct op_x86_model_spec const *model,
+ #ifdef CONFIG_DEBUG_FS
 
 
