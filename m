@@ -1,145 +1,219 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934792Ab0CMAT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:19:28 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:34587 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934780Ab0CMATZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:25 -0500
-X-Greylist: delayed 2286 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Mar 2010 19:19:25 EST
-Date: Fri, 12 Mar 2010 15:41:15 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] Oops on tmpfs remounts with mpol=default
-Message-ID: <20100312234115.GA4542@localhost.localdomain>
+	id S934844Ab0CMATp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:19:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45532 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934765Ab0CMATc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:32 -0500
+Date: Sat, 13 Mar 2010 00:19:10 GMT
+From: tip-bot for John Stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, johnstul@us.ibm.com, tglx@linutronix.de,
+       rth@twiddle.net
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       rth@twiddle.net
+In-Reply-To: <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
+References: <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/cleanup] alpha: Convert alpha to use read/update_persistent_clock
+Message-ID: <tip-1e871be1aa97babb467a929d6adcb1960659928b@git.kernel.org>
+Git-Commit-ID: 1e871be1aa97babb467a929d6adcb1960659928b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="CUfgB8w4ZwR/yMy5"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:19:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  1e871be1aa97babb467a929d6adcb1960659928b
+Gitweb:     http://git.kernel.org/tip/1e871be1aa97babb467a929d6adcb1960659928b
+Author:     John Stultz <johnstul@us.ibm.com>
+AuthorDate: Wed, 3 Mar 2010 19:57:16 -0800
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Sat, 13 Mar 2010 01:14:08 +0100
 
---CUfgB8w4ZwR/yMy5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+alpha: Convert alpha to use read/update_persistent_clock
 
-One of our customers reported an Oops when trying to remount a tmpfs mount
-back with  'default' mempolicy after changing it to a non default policy.
+This patch converts the alpha architecture to use the generic
+read_persistent_clock and update_persistent_clock interfaces, reducing
+the amount of arch specific code we have to maintain, and allowing for
+further cleanups in the future.
 
-Upon examination of code, I found that the kernel remount code tries to
-dereference the 'NULL' mempolicy object returned by mpol_new at
-mpol_parse_str.
+I have not built or tested this patch, so help from arch maintainers
+would be appreciated.
 
-Attached is the oops snippet.  Please find the proposed fix inline.
-
-Thanks,
-Kiran
-
+igned-off-by: John Stultz <johnstul@us.ibm.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
+ arch/alpha/Kconfig       |    3 +
+ arch/alpha/kernel/time.c |  101 +++++++++++++++++++++------------------------
+ 2 files changed, 50 insertions(+), 54 deletions(-)
 
-Fix an 'oops' when a tmpfs mount point is remounted with the 'default'
-mempolicy.
-
-Upon remounting a tmpfs mount point with 'mpol=default' option, the remount
-code crashed with a null pointer dereference.  The initial problem report was
-on 2.6.27, but the problem exists in mainline 2.6.34-rc  as well. On
-examining the code, we see that mpol_new returns NULL if default mempolicy
-was requested.   This 'NULL' mempolicy is accessed to store the node mask
-resulting in oops.
-
-The following patch fixes the oops by avoiding dereferencing NULL if the
-new mempolicy is NULL.
-The patch also sets 'err' to 0 if MPOL_DEFAULT is passed (err is initialized
-to 1 initially at mpol_parse_str())
-
-
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index bda230e..a86277d 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -2213,10 +2213,14 @@ int mpol_parse_str(char *str, struct mempolicy **mpol, int no_context)
- 			goto out;
- 		mode = MPOL_PREFERRED;
- 		break;
--
-+	case MPOL_DEFAULT:
-+		/*
-+		 * mpol_new() enforces empty nodemask, ignores flags.
-+		 */
-+		err = 0;
-+		break;
- 	/*
- 	 * case MPOL_BIND:    mpol_new() enforces non-empty nodemask.
--	 * case MPOL_DEFAULT: mpol_new() enforces empty nodemask, ignores flags.
- 	 */
- 	}
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index bd7261e..75fff7e 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -54,6 +54,9 @@ config ARCH_USES_GETTIMEOFFSET
+ 	bool
+ 	default y
  
-@@ -2250,7 +2254,7 @@ int mpol_parse_str(char *str, struct mempolicy **mpol, int no_context)
- 		if (ret) {
- 			err = 1;
- 			mpol_put(new);
--		} else if (no_context) {
-+		} else if (no_context && new) {
- 			/* save for contextualization */
- 			new->w.user_nodemask = nodes;
- 		}
-
---CUfgB8w4ZwR/yMy5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=oops
-
-
-[ 1159.848055] BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
-[ 1159.856087] IP: [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
-[ 1159.856472] PGD a7dfd067 PUD aa1fe067 PMD 0 
-[ 1159.856472] Oops: 0002 [#1] SMP 
-[ 1159.856472] last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:0a:01.0/local_cpus
-[ 1159.876476] CPU 7 
-[ 1159.876476] Modules linked in: nfs lockd nfs_acl sunrpc ecb cbc md5 aes_generic iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi
-[ 1159.876476] 
-[ 1159.876476] Pid: 6235, comm: mount Not tainted 2.6.34-rc1-00005-g522dba7 #5 B7DW3/B7DW3
-[ 1159.876476] RIP: 0010:[<ffffffff810ac096>]  [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
-[ 1159.876476] RSP: 0018:ffff8800aa125d68  EFLAGS: 00010202
-[ 1159.876476] RAX: 0000000000000000 RBX: ffff8800ab7ed000 RCX: 0000000000000000
-[ 1159.876476] RDX: ffff8800aa125d78 RSI: 0000000000000001 RDI: 0000000000000000
-[ 1159.876476] RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000008
-[ 1159.876476] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000001
-[ 1159.876476] R13: 0000000000000000 R14: 0000000000000000 R15: ffff8800aa125e58
-[ 1159.876476] FS:  00007fc29bc47760(0000) GS:ffff8800ac400000(0000) knlGS:0000000000000000
-[ 1159.876476] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 1159.876476] CR2: 0000000000000010 CR3: 00000000a9a93000 CR4: 00000000000006e0
-[ 1159.876476] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 1159.876476] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[ 1159.876476] Process mount (pid: 6235, threadinfo ffff8800aa124000, task ffff8800ab7ed000)
-[ 1159.876476] Stack:
-[ 1159.876476]  000001fe000001fe 00000001aafe0a80 ffff8800aafe0b48 ffffffff810ccb3f
-[ 1159.876476] <0> 0000000000000000 0000006700000000 0000006800000068 0000000000000000
-[ 1159.876476] <0> ffff8800a7663000 ffff8800a7663005 ffff8800aa125e28 ffff8800aa125de8
-[ 1159.876476] Call Trace:
-[ 1159.876476]  [<ffffffff810ccb3f>] ? mntput_no_expire+0x1f/0xa0
-[ 1159.876476]  [<ffffffff8108c7ac>] ? shmem_parse_options+0x2ac/0x2e0
-[ 1159.876476]  [<ffffffff810c1313>] ? do_path_lookup+0x33/0x60
-[ 1159.876476]  [<ffffffff8108d42d>] ? shmem_remount_fs+0x5d/0x110
-[ 1159.876476]  [<ffffffff810b735f>] ? do_remount_sb+0x7f/0x180
-[ 1159.876476]  [<ffffffff810cdef8>] ? do_mount+0x668/0x800
-[ 1159.876476]  [<ffffffff810cc4fd>] ? copy_mount_options+0x10d/0x180
-[ 1159.876476]  [<ffffffff810ce125>] ? sys_mount+0x95/0xf0
-[ 1159.876476]  [<ffffffff81002302>] ? system_call_fastpath+0x16/0x1b
-[ 1159.876476] Code: 54 24 10 48 8d 74 24 20 48 89 ef e8 a5 e2 ff ff fe 83 cc 04 00 00 85 c0 75 1a 8b 74 24 0c 85 f6 0f 84 b8 fe ff ff 48 8b 44 24 20 <48> 89 45 10 e9 aa fe ff ff 48 85 ed 0f 84 ca 00 00 00 48 89 ef 
-[ 1159.876476] RIP  [<ffffffff810ac096>] mpol_parse_str+0x1c6/0x2b0
-[ 1159.876476]  RSP <ffff8800aa125d68>
-[ 1159.876476] CR2: 0000000000000010
-[ 1159.878411] ---[ end trace 0c86a8c1b0b4c73c ]---
-
---CUfgB8w4ZwR/yMy5--
++config GENERIC_CMOS_UPDATE
++        def_bool y
++
+ config ZONE_DMA
+ 	bool
+ 	default y
+diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
+index 5d08266..5465e93 100644
+--- a/arch/alpha/kernel/time.c
++++ b/arch/alpha/kernel/time.c
+@@ -75,8 +75,6 @@ static struct {
+ 	__u32 last_time;
+ 	/* ticks/cycle * 2^48 */
+ 	unsigned long scaled_ticks_per_cycle;
+-	/* last time the CMOS clock got updated */
+-	time_t last_rtc_update;
+ 	/* partial unused tick */
+ 	unsigned long partial_tick;
+ } state;
+@@ -91,6 +89,52 @@ static inline __u32 rpcc(void)
+     return result;
+ }
+ 
++int update_persistent_clock(struct timespec now)
++{
++	return set_rtc_mmss(now.tv_sec);
++}
++
++void read_persistent_clock(struct timespec *ts)
++{
++	unsigned int year, mon, day, hour, min, sec, epoch;
++
++	sec = CMOS_READ(RTC_SECONDS);
++	min = CMOS_READ(RTC_MINUTES);
++	hour = CMOS_READ(RTC_HOURS);
++	day = CMOS_READ(RTC_DAY_OF_MONTH);
++	mon = CMOS_READ(RTC_MONTH);
++	year = CMOS_READ(RTC_YEAR);
++
++	if (!(CMOS_READ(RTC_CONTROL) & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
++		sec = bcd2bin(sec);
++		min = bcd2bin(min);
++		hour = bcd2bin(hour);
++		day = bcd2bin(day);
++		mon = bcd2bin(mon);
++		year = bcd2bin(year);
++	}
++
++	/* PC-like is standard; used for year >= 70 */
++	epoch = 1900;
++	if (year < 20)
++		epoch = 2000;
++	else if (year >= 20 && year < 48)
++		/* NT epoch */
++		epoch = 1980;
++	else if (year >= 48 && year < 70)
++		/* Digital UNIX epoch */
++		epoch = 1952;
++
++	printk(KERN_INFO "Using epoch = %d\n", epoch);
++
++	if ((year += epoch) < 1970)
++		year += 100;
++
++	ts->tv_sec = mktime(year, mon, day, hour, min, sec);
++}
++
++
++
+ /*
+  * timer_interrupt() needs to keep up the real-time clock,
+  * as well as call the "do_timer()" routine every clocktick
+@@ -123,19 +167,6 @@ irqreturn_t timer_interrupt(int irq, void *dev)
+ 	if (nticks)
+ 		do_timer(nticks);
+ 
+-	/*
+-	 * If we have an externally synchronized Linux clock, then update
+-	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
+-	 * called as close as possible to 500 ms before the new second starts.
+-	 */
+-	if (ntp_synced()
+-	    && xtime.tv_sec > state.last_rtc_update + 660
+-	    && xtime.tv_nsec >= 500000 - ((unsigned) TICK_SIZE) / 2
+-	    && xtime.tv_nsec <= 500000 + ((unsigned) TICK_SIZE) / 2) {
+-		int tmp = set_rtc_mmss(xtime.tv_sec);
+-		state.last_rtc_update = xtime.tv_sec - (tmp ? 600 : 0);
+-	}
+-
+ 	write_sequnlock(&xtime_lock);
+ 
+ #ifndef CONFIG_SMP
+@@ -304,7 +335,7 @@ rpcc_after_update_in_progress(void)
+ void __init
+ time_init(void)
+ {
+-	unsigned int year, mon, day, hour, min, sec, cc1, cc2, epoch;
++	unsigned int cc1, cc2;
+ 	unsigned long cycle_freq, tolerance;
+ 	long diff;
+ 
+@@ -348,43 +379,6 @@ time_init(void)
+ 	   bogomips yet, but this is close on a 500Mhz box.  */
+ 	__delay(1000000);
+ 
+-	sec = CMOS_READ(RTC_SECONDS);
+-	min = CMOS_READ(RTC_MINUTES);
+-	hour = CMOS_READ(RTC_HOURS);
+-	day = CMOS_READ(RTC_DAY_OF_MONTH);
+-	mon = CMOS_READ(RTC_MONTH);
+-	year = CMOS_READ(RTC_YEAR);
+-
+-	if (!(CMOS_READ(RTC_CONTROL) & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-		sec = bcd2bin(sec);
+-		min = bcd2bin(min);
+-		hour = bcd2bin(hour);
+-		day = bcd2bin(day);
+-		mon = bcd2bin(mon);
+-		year = bcd2bin(year);
+-	}
+-
+-	/* PC-like is standard; used for year >= 70 */
+-	epoch = 1900;
+-	if (year < 20)
+-		epoch = 2000;
+-	else if (year >= 20 && year < 48)
+-		/* NT epoch */
+-		epoch = 1980;
+-	else if (year >= 48 && year < 70)
+-		/* Digital UNIX epoch */
+-		epoch = 1952;
+-
+-	printk(KERN_INFO "Using epoch = %d\n", epoch);
+-
+-	if ((year += epoch) < 1970)
+-		year += 100;
+-
+-	xtime.tv_sec = mktime(year, mon, day, hour, min, sec);
+-	xtime.tv_nsec = 0;
+-
+-        wall_to_monotonic.tv_sec -= xtime.tv_sec;
+-        wall_to_monotonic.tv_nsec = 0;
+ 
+ 	if (HZ > (1<<16)) {
+ 		extern void __you_loose (void);
+@@ -394,7 +388,6 @@ time_init(void)
+ 	state.last_time = cc1;
+ 	state.scaled_ticks_per_cycle
+ 		= ((unsigned long) HZ << FIX_SHIFT) / cycle_freq;
+-	state.last_rtc_update = 0;
+ 	state.partial_tick = 0L;
+ 
+ 	/* Startup the timer source. */
