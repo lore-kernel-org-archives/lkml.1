@@ -1,58 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935662Ab0CMApg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:45:36 -0500
-Received: from kroah.org ([198.145.64.141]:47209 "EHLO coco.kroah.org"
+	id S935182Ab0CMAWk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:22:40 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47411 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935544Ab0CMAc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:29 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
-Message-Id: <20100313002716.399259107@kvm.kroah.org>
-User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:41 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@linux.intel.com>
-Subject: [128/145] USB: cp210x: Add 81E8 (Zephyr Bioharness)
-In-Reply-To: <20100313002816.GA18903@kroah.com>
+	id S935116Ab0CMAWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:22:32 -0500
+Date: Sat, 13 Mar 2010 00:21:34 GMT
+From: tip-bot for John Stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       geert@linux-m68k.org, akpm@linux-foundation.org, johnstul@us.ibm.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       geert@linux-m68k.org, johnstul@us.ibm.com, akpm@linux-foundation.org,
+       tglx@linutronix.de
+In-Reply-To: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
+References: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/cleanup] m68k: Convert m68k to use read/update_persistent_clock
+Message-ID: <tip-ffbcad49e79cd82428010b44a87401446ea7f370@git.kernel.org>
+Git-Commit-ID: ffbcad49e79cd82428010b44a87401446ea7f370
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:21:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let me know.
+Commit-ID:  ffbcad49e79cd82428010b44a87401446ea7f370
+Gitweb:     http://git.kernel.org/tip/ffbcad49e79cd82428010b44a87401446ea7f370
+Author:     John Stultz <johnstul@us.ibm.com>
+AuthorDate: Wed, 3 Mar 2010 19:57:26 -0800
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Sat, 13 Mar 2010 01:14:13 +0100
 
-----------------
-From: Alan Cox <alan@linux.intel.com>
+m68k: Convert m68k to use read/update_persistent_clock
 
-commit bd07c551aae5d2200c7b195142e5ba63f26424da upstream.
+This patch converts the m68k architecture to use the generic
+read_persistent_clock and update_persistent_clock interfaces, reducing
+the amount of arch specific code we have to maintain, and allowing for
+further cleanups in the future.
 
-As reported in
-http://bugzilla.kernel.org/show_bug.cgi?id=10980
+I have not built or tested this patch, so help from arch maintainers
+would be appreciated.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/usb/serial/cp210x.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/m68k/kernel/time.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/serial/cp210x.c
-+++ b/drivers/usb/serial/cp210x.c
-@@ -91,11 +91,12 @@ static struct usb_device_id id_table []
- 	{ USB_DEVICE(0x10C4, 0x81C8) }, /* Lipowsky Industrie Elektronik GmbH, Baby-JTAG */
- 	{ USB_DEVICE(0x10C4, 0x81E2) }, /* Lipowsky Industrie Elektronik GmbH, Baby-LIN */
- 	{ USB_DEVICE(0x10C4, 0x81E7) }, /* Aerocomm Radio */
-+	{ USB_DEVICE(0x10C4, 0x81E8) }, /* Zephyr Bioharness */
- 	{ USB_DEVICE(0x10C4, 0x81F2) }, /* C1007 HF band RFID controller */
- 	{ USB_DEVICE(0x10C4, 0x8218) }, /* Lipowsky Industrie Elektronik GmbH, HARP-1 */
- 	{ USB_DEVICE(0x10C4, 0x822B) }, /* Modem EDGE(GSM) Comander 2 */
- 	{ USB_DEVICE(0x10C4, 0x826B) }, /* Cygnal Integrated Products, Inc., Fasttrax GPS demostration module */
--	{ USB_DEVICE(0x10c4, 0x8293) }, /* Telegesys ETRX2USB */
-+	{ USB_DEVICE(0x10C4, 0x8293) }, /* Telegesys ETRX2USB */
- 	{ USB_DEVICE(0x10C4, 0x82F9) }, /* Procyon AVS */
- 	{ USB_DEVICE(0x10C4, 0x8341) }, /* Siemens MC35PU GPRS Modem */
- 	{ USB_DEVICE(0x10C4, 0x8382) }, /* Cygnal Integrated Products, Inc. */
-
-
+diff --git a/arch/m68k/kernel/time.c b/arch/m68k/kernel/time.c
+index 17dc2a3..4926b38 100644
+--- a/arch/m68k/kernel/time.c
++++ b/arch/m68k/kernel/time.c
+@@ -73,21 +73,24 @@ static irqreturn_t timer_interrupt(int irq, void *dummy)
+ 	return IRQ_HANDLED;
+ }
+ 
+-void __init time_init(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	struct rtc_time time;
++	ts->tv_sec = 0;
++	ts->tv_nsec = 0;
+ 
+ 	if (mach_hwclk) {
+ 		mach_hwclk(0, &time);
+ 
+ 		if ((time.tm_year += 1900) < 1970)
+ 			time.tm_year += 100;
+-		xtime.tv_sec = mktime(time.tm_year, time.tm_mon, time.tm_mday,
++		ts->tv_sec = mktime(time.tm_year, time.tm_mon, time.tm_mday,
+ 				      time.tm_hour, time.tm_min, time.tm_sec);
+-		xtime.tv_nsec = 0;
+ 	}
+-	wall_to_monotonic.tv_sec = -xtime.tv_sec;
++}
+ 
++void __init time_init(void)
++{
+ 	mach_sched_init(timer_interrupt);
+ }
+ 
