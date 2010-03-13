@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935745Ab0CMAfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:35:16 -0500
-Received: from kroah.org ([198.145.64.141]:47078 "EHLO coco.kroah.org"
+	id S935734Ab0CMAfH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:35:07 -0500
+Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935497Ab0CMAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935475Ab0CMAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Mar 2010 19:32:07 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
-Message-Id: <20100313002713.961784920@kvm.kroah.org>
+Message-Id: <20100313002714.047757249@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:13 -0800
+Date: Fri, 12 Mar 2010 16:27:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Felix Fietkau <nbd@openwrt.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [100/145] ath9k: disable RIFS search for AR91xx based chips
+Subject: [101/145] ath5k: use correct packet type when transmitting
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,58 +25,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Felix Fietkau <nbd@openwrt.org>
+From: Bob Copeland <me@bobcopeland.com>
 
-commit 7bfbae10dc10a5c94a780d117a57e875d77e8e5a upstream.
+commit 2ac2927a953a01c83df255118922cce1523d1a18 upstream.
 
-While ath9k does not support RIFS yet, the ability to receive RIFS
-frames is currently enabled for most chipsets in the initvals.
-This is causing baseband related issues on AR9160 and AR9130 based
-chipsets, which can lock up under certain conditions.
+The hardware needs to know what type of frames are being
+sent in order to fill in various fields, for example the
+timestamp in probe responses (before this patch, it was
+always 0).  Set it correctly when initializing the TX
+descriptor.
 
-This patch fixes these issues by overriding the initvals, effectively
-disabling RIFS for all affected chipsets.
-
-Signed-off-by: Felix Fietkau <nbd@openwrt.org>
-Acked-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath/ath9k/hw.c  |   10 ++++++++++
- drivers/net/wireless/ath/ath9k/phy.h |    3 +++
- 2 files changed, 13 insertions(+)
+ drivers/net/wireless/ath/ath5k/ath5k.h |    1 -
+ drivers/net/wireless/ath/ath5k/base.c  |   26 +++++++++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/ath/ath9k/hw.c
-+++ b/drivers/net/wireless/ath/ath9k/hw.c
-@@ -1295,6 +1295,16 @@ static void ath9k_hw_override_ini(struct
- 	 * Necessary to avoid issues on AR5416 2.0
- 	 */
- 	REG_WRITE(ah, 0x9800 + (651 << 2), 0x11);
-+
-+	/*
-+	 * Disable RIFS search on some chips to avoid baseband
-+	 * hang issues.
-+	 */
-+	if (AR_SREV_9100(ah) || AR_SREV_9160(ah)) {
-+		val = REG_READ(ah, AR_PHY_HEAVY_CLIP_FACTOR_RIFS);
-+		val &= ~AR_PHY_RIFS_INIT_DELAY;
-+		REG_WRITE(ah, AR_PHY_HEAVY_CLIP_FACTOR_RIFS, val);
-+	}
+--- a/drivers/net/wireless/ath/ath5k/ath5k.h
++++ b/drivers/net/wireless/ath/ath5k/ath5k.h
+@@ -546,7 +546,6 @@ struct ath5k_txq_info {
+ /*
+  * Transmit packet types.
+  * used on tx control descriptor
+- * TODO: Use them inside base.c corectly
+  */
+ enum ath5k_pkt_type {
+ 	AR5K_PKT_TYPE_NORMAL		= 0,
+--- a/drivers/net/wireless/ath/ath5k/base.c
++++ b/drivers/net/wireless/ath/ath5k/base.c
+@@ -1220,6 +1220,29 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc
+ 	return 0;
  }
  
- static u32 ath9k_hw_def_ini_fixup(struct ath_hw *ah,
---- a/drivers/net/wireless/ath/ath9k/phy.h
-+++ b/drivers/net/wireless/ath/ath9k/phy.h
-@@ -368,6 +368,9 @@ bool ath9k_hw_init_rf(struct ath_hw *ah,
- 
- #define AR_PHY_HEAVY_CLIP_ENABLE         0x99E0
- 
-+#define AR_PHY_HEAVY_CLIP_FACTOR_RIFS    0x99EC
-+#define AR_PHY_RIFS_INIT_DELAY         0x03ff0000
++static enum ath5k_pkt_type get_hw_packet_type(struct sk_buff *skb)
++{
++	struct ieee80211_hdr *hdr;
++	enum ath5k_pkt_type htype;
++	__le16 fc;
 +
- #define AR_PHY_M_SLEEP      0x99f0
- #define AR_PHY_REFCLKDLY    0x99f4
- #define AR_PHY_REFCLKPD     0x99f8
++	hdr = (struct ieee80211_hdr *)skb->data;
++	fc = hdr->frame_control;
++
++	if (ieee80211_is_beacon(fc))
++		htype = AR5K_PKT_TYPE_BEACON;
++	else if (ieee80211_is_probe_resp(fc))
++		htype = AR5K_PKT_TYPE_PROBE_RESP;
++	else if (ieee80211_is_atim(fc))
++		htype = AR5K_PKT_TYPE_ATIM;
++	else if (ieee80211_is_pspoll(fc))
++		htype = AR5K_PKT_TYPE_PSPOLL;
++	else
++		htype = AR5K_PKT_TYPE_NORMAL;
++
++	return htype;
++}
++
+ static int
+ ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf,
+ 		  struct ath5k_txq *txq)
+@@ -1274,7 +1297,8 @@ ath5k_txbuf_setup(struct ath5k_softc *sc
+ 			sc->vif, pktlen, info));
+ 	}
+ 	ret = ah->ah_setup_tx_desc(ah, ds, pktlen,
+-		ieee80211_get_hdrlen_from_skb(skb), AR5K_PKT_TYPE_NORMAL,
++		ieee80211_get_hdrlen_from_skb(skb),
++		get_hw_packet_type(skb),
+ 		(sc->power_level * 2),
+ 		hw_rate,
+ 		info->control.rates[0].count, keyidx, ah->ah_tx_ant, flags,
 
 
