@@ -1,22 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935766Ab0CMAfV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:35:21 -0500
-Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
+	id S935582Ab0CMArn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:47:43 -0500
+Received: from kroah.org ([198.145.64.141]:47144 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935500Ab0CMAcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:09 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
-Message-Id: <20100313002714.214269789@kvm.kroah.org>
+	id S935517Ab0CMAcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:17 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:15 2010
+Message-Id: <20100313002715.174356688@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:16 -0800
+Date: Fri, 12 Mar 2010 16:27:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [103/145] netfilter: xt_recent: fix buffer overflow
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?q?Pasi=20K=C3=A4rkk=C3=A4inen?= <pasik@iki.fi>,
+       <xen-devel@lists.xensource.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [114/145] x86, xen: Disable highmem PTE allocation even when CONFIG_HIGHPTE=y
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,38 +27,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Tim Gardner <tim.gardner@canonical.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-commit 2c08522e5d2f0af2d6f05be558946dcbf8173683 upstream.
+commit 817a824b75b1475f1b067c8cee318c7b4d66fcde upstream.
 
-e->index overflows e->stamps[] every ip_pkt_list_tot packets.
+There's a path in the pagefault code where the kernel deliberately
+breaks its own locking rules by kmapping a high pte page without
+holding the pagetable lock (in at least page_check_address). This
+breaks Xen's ability to track the pinned/unpinned state of the
+page. There does not appear to be a viable workaround for this
+behaviour so simply disable HIGHPTE for all Xen guests.
 
-Consider the case when ip_pkt_list_tot==1; the first packet received is stored
-in e->stamps[0] and e->index is initialized to 1. The next received packet
-timestamp is then stored at e->stamps[1] in recent_entry_update(),
-a buffer overflow because the maximum e->stamps[] index is 0.
-
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+LKML-Reference: <1267204562-11844-1-git-send-email-ian.campbell@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Pasi Kärkkäinen <pasik@iki.fi>
+Cc: <xen-devel@lists.xensource.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/xt_recent.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/xen/enlighten.c |    7 +++++++
+ arch/x86/xen/mmu.c       |   11 ++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
---- a/net/netfilter/xt_recent.c
-+++ b/net/netfilter/xt_recent.c
-@@ -173,10 +173,10 @@ recent_entry_init(struct recent_table *t
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -48,6 +48,7 @@
+ #include <asm/traps.h>
+ #include <asm/setup.h>
+ #include <asm/desc.h>
++#include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/reboot.h>
+@@ -1092,6 +1093,12 @@ asmlinkage void __init xen_start_kernel(
  
- static void recent_entry_update(struct recent_table *t, struct recent_entry *e)
+ 	__supported_pte_mask |= _PAGE_IOMAP;
+ 
++	/*
++	 * Prevent page tables from being allocated in highmem, even
++	 * if CONFIG_HIGHPTE is enabled.
++	 */
++	__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
++
+ #ifdef CONFIG_X86_64
+ 	/* Work out if we support NX */
+ 	check_efer();
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1432,14 +1432,15 @@ static void *xen_kmap_atomic_pte(struct
  {
-+	e->index %= ip_pkt_list_tot;
- 	e->stamps[e->index++] = jiffies;
- 	if (e->index > e->nstamps)
- 		e->nstamps = e->index;
--	e->index %= ip_pkt_list_tot;
- 	list_move_tail(&e->lru_list, &t->lru_list);
- }
+ 	pgprot_t prot = PAGE_KERNEL;
  
++	/*
++	 * We disable highmem allocations for page tables so we should never
++	 * see any calls to kmap_atomic_pte on a highmem page.
++	 */
++	BUG_ON(PageHighMem(page));
++
+ 	if (PagePinned(page))
+ 		prot = PAGE_KERNEL_RO;
+ 
+-	if (0 && PageHighMem(page))
+-		printk("mapping highpte %lx type %d prot %s\n",
+-		       page_to_pfn(page), type,
+-		       (unsigned long)pgprot_val(prot) & _PAGE_RW ? "WRITE" : "READ");
+-
+ 	return kmap_atomic_prot(page, type, prot);
+ }
+ #endif
 
 
