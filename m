@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935823Ab0CMAtw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:49:52 -0500
-Received: from kroah.org ([198.145.64.141]:47054 "EHLO coco.kroah.org"
+	id S935885Ab0CMAye (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:54:34 -0500
+Received: from kroah.org ([198.145.64.141]:46938 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935487Ab0CMAb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:59 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
-Message-Id: <20100313002713.077411801@kvm.kroah.org>
+	id S935328Ab0CMAbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:37 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
+Message-Id: <20100313002710.566936817@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:03 -0800
+Date: Fri, 12 Mar 2010 16:26:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Luotao Fu <l.fu@pengutronix.de>, Jean Delvare <khali@linux-fr.org>
-Subject: [090/145] USB: fix I2C API usage in ohci-pnx4008.
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Hank Janssen <hjanssen@microsoft.com>
+Subject: [061/145] Staging: hv: add a pci device table
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,49 +25,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Luotao Fu <l.fu@pengutronix.de>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit 8740cc7d0c532e098cc428251c08befd14f087d8 upstream.
+commit 9a775dbd4e8c87b7d35549183145321c7205404e upstream.
 
-i2c_board_info doesn't contain a member called name. i2c_register_client
-call does not exist.
+This allows the HV core to be properly found and autoloaded
+by the system tools.
 
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
-Acked-by: Jean Delvare <khali@linux-fr.org>
+It uses the Microsoft virtual VGA device to trigger this.
+
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-pnx4008.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/hv/vmbus_drv.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
---- a/drivers/usb/host/ohci-pnx4008.c
-+++ b/drivers/usb/host/ohci-pnx4008.c
-@@ -327,7 +327,7 @@ static int __devinit usb_hcd_pnx4008_pro
- 	}
- 	i2c_adap = i2c_get_adapter(2);
- 	memset(&i2c_info, 0, sizeof(struct i2c_board_info));
--	strlcpy(i2c_info.name, "isp1301_pnx", I2C_NAME_SIZE);
-+	strlcpy(i2c_info.type, "isp1301_pnx", I2C_NAME_SIZE);
- 	isp1301_i2c_client = i2c_new_probed_device(i2c_adap, &i2c_info,
- 						   normal_i2c);
- 	i2c_put_adapter(i2c_adap);
-@@ -411,7 +411,7 @@ out3:
- out2:
- 	clk_put(usb_clk);
- out1:
--	i2c_unregister_client(isp1301_i2c_client);
-+	i2c_unregister_device(isp1301_i2c_client);
- 	isp1301_i2c_client = NULL;
- out_i2c_driver:
- 	i2c_del_driver(&isp1301_driver);
-@@ -430,7 +430,7 @@ static int usb_hcd_pnx4008_remove(struct
- 	pnx4008_unset_usb_bits();
- 	clk_disable(usb_clk);
- 	clk_put(usb_clk);
--	i2c_unregister_client(isp1301_i2c_client);
-+	i2c_unregister_device(isp1301_i2c_client);
- 	isp1301_i2c_client = NULL;
- 	i2c_del_driver(&isp1301_driver);
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -24,6 +24,7 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/sysctl.h>
++#include <linux/pci.h>
+ #include "osd.h"
+ #include "logging.h"
+ #include "vmbus.h"
+@@ -973,6 +974,22 @@ static void __exit vmbus_exit(void)
+ 	return;
+ }
  
++/*
++ * We use a PCI table to determine if we should autoload this driver  This is
++ * needed by distro tools to determine if the hyperv drivers should be
++ * installed and/or configured.  We don't do anything else with the table, but
++ * it needs to be present.
++ *
++ * We might consider triggering off of DMI table info as well, as that does
++ * decribe the virtual machine being run on, but not all configuration tools
++ * seem to be able to handle DMI device ids properly.
++ */
++const static struct pci_device_id microsoft_hv_pci_table[] = {
++	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
++	{ 0 }
++};
++MODULE_DEVICE_TABLE(pci, microsoft_hv_pci_table);
++
+ MODULE_LICENSE("GPL");
+ module_param(vmbus_irq, int, S_IRUGO);
+ module_param(vmbus_loglevel, int, S_IRUGO);
 
 
