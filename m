@@ -1,74 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935287Ab0CMA34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:29:56 -0500
-Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	id S935591Ab0CMAmq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:42:46 -0500
+Received: from kroah.org ([198.145.64.141]:47269 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935029Ab0CMAU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:58 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
-Message-Id: <20100313001513.880016929@kvm.kroah.org>
+	id S935578Ab0CMAck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:40 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
+Message-Id: <20100313002717.681248723@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:18 -0800
+Date: Fri, 12 Mar 2010 16:27:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Sangorrin <daniel.sangorrin@gmail.com>,
-       Andreas Mohr <andi@lisas.de>
-Subject: [patch 100/123] USB: serial: ftdi: add CONTEC vendor and product id
-In-Reply-To: <20100313001618.GA9811@kroah.com>
-In-Reply-To: <20100313001618.GA9811@kroah.com>
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [143/145] sched: Fix SMT scheduler regression in find_busiest_queue()
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.33-stable review patch.  If anyone has any objections, please let me know.
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
------------------
+----------------
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+commit 9000f05c6d1607f79c0deacf42b09693be673f4c upstream.
 
-commit 46b72d78cb022714c89a9ebc00b9581b550cfca7 upstream.
+Fix a SMT scheduler performance regression that is leading to a scenario
+where SMT threads in one core are completely idle while both the SMT threads
+in another core (on the same socket) are busy.
 
-This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
-identifiers for CONTEC USB serial converter. I tested it
-with the device COM-1(USB)H
+This is caused by this commit (with the problematic code highlighted)
 
-Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>
+   commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
+   Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+   Date:   Tue Sep 1 10:34:38 2009 +0200
+
+   sched: Try to deal with low capacity
+
+   @@ -4203,15 +4223,18 @@ find_busiest_queue()
+   ...
+	for_each_cpu(i, sched_group_cpus(group)) {
+   +	unsigned long power = power_of(i);
+
+   ...
+
+   -	wl = weighted_cpuload(i);
+   +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+   +	wl /= power;
+
+   -	if (rq->nr_running == 1 && wl > imbalance)
+   +	if (capacity && rq->nr_running == 1 && wl > imbalance)
+		continue;
+
+On a SMT system, power of the HT logical cpu will be 589 and
+the scheduler load imbalance (for scenarios like the one mentioned above)
+can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
+the weighted load with the power will result in "wl > imbalance" and
+ultimately resulting in find_busiest_queue() return NULL, causing
+load_balance() to think that the load is well balanced. But infact
+one of the tasks can be moved to the idle core for optimal performance.
+
+We don't need to use the weighted load (wl) scaled by the cpu power to
+compare with  imabalance. In that condition, we already know there is only a
+single task "rq->nr_running == 1" and the comparison between imbalance,
+wl is to make sure that we select the correct priority thread which matches
+imbalance. So we really need to compare the imabalnce with the original
+weighted load of the cpu and not the scaled load.
+
+But in other conditions where we want the most hammered(busiest) cpu, we can
+use scaled load to ensure that we consider the cpu power in addition to the
+actual load on that cpu, so that we can move the load away from the
+guy that is getting most hammered with respect to the actual capacity,
+as compared with the rest of the cpu's in that busiest group.
+
+Fix it.
+
+Reported-by: Ma Ling <ling.ma@intel.com>
+Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c     |    1 +
- drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
- 2 files changed, 8 insertions(+)
+ kernel/sched.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -614,6 +614,7 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(FTDI_VID, FTDI_OCEANIC_PID) },
- 	{ USB_DEVICE(TTI_VID, TTI_QL355P_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_RM_CANVIEW_PID) },
-+	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
---- a/drivers/usb/serial/ftdi_sio_ids.h
-+++ b/drivers/usb/serial/ftdi_sio_ids.h
-@@ -494,6 +494,13 @@
- #define RATOC_PRODUCT_ID_USB60F	0xb020
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4098,12 +4098,23 @@ find_busiest_queue(struct sched_group *g
+ 			continue;
  
- /*
-+ * Contec products (http://www.contec.com)
-+ * Submitted by Daniel Sangorrin
-+ */
-+#define CONTEC_VID		0x06CE	/* Vendor ID */
-+#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
+ 		rq = cpu_rq(i);
+-		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+-		wl /= power;
++		wl = weighted_cpuload(i);
+ 
++		/*
++		 * When comparing with imbalance, use weighted_cpuload()
++		 * which is not scaled with the cpu power.
++		 */
+ 		if (capacity && rq->nr_running == 1 && wl > imbalance)
+ 			continue;
+ 
++		/*
++		 * For the load comparisons with the other cpu's, consider
++		 * the weighted_cpuload() scaled with the cpu power, so that
++		 * the load can be moved away from the cpu that is potentially
++		 * running at a lower capacity.
++		 */
++		wl = (wl * SCHED_LOAD_SCALE) / power;
 +
-+/*
-  * Definitions for B&B Electronics products.
-  */
- #define BANDB_VID		0x0856	/* B&B Electronics Vendor ID */
+ 		if (wl > max_load) {
+ 			max_load = wl;
+ 			busiest = rq;
 
 
