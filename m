@@ -1,44 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752443Ab0CMGLv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 01:11:51 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:21521 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216Ab0CMGLu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 01:11:50 -0500
-Subject: Re: Regression in i915 on 2.6.34-rc1
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: dri-devel@lists.sourceforge.net, airlied@linux.ie,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1268458676.28444.9.camel@dc7800.home>
-References: <20100311003358.58194366@redhat.com>
-	 <20100312182519.3723e970@redhat.com> <1268458676.28444.9.camel@dc7800.home>
-Content-Type: text/plain
-Date: Fri, 12 Mar 2010 23:04:26 -0700
-Message-Id: <1268460266.28444.10.camel@dc7800.home>
+	id S1752873Ab0CMGZK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 01:25:10 -0500
+Received: from 1wt.eu ([62.212.114.60]:58146 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752260Ab0CMGZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 01:25:09 -0500
+Date: Sat, 13 Mar 2010 07:24:46 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Patrick McHardy <kaber@trash.net>, akpm@linux-foundation.org,
+       Tim Gardner <tim.gardner@canonical.com>, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [104/145] netfilter: xt_recent: fix false match
+Message-ID: <20100313062446.GG12342@1wt.eu>
+References: <20100313002816.GA18903@kroah.com> <20100313002714.299272135@kvm.kroah.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100313002714.299272135@kvm.kroah.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 22:37 -0700, Bjorn Helgaas wrote:
-> On Fri, 2010-03-12 at 18:25 -0700, Pete Zaitcev wrote:
-> > On Thu, 11 Mar 2010 00:33:58 -0700, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> > 
-> > I apologise for answering to myself, but while there was no answer,
-> > git bisect found the offending commit and I verified that it was
-> > the culprit. Also, I am adding Bjorn and Jesse to cc:.
-> > 
-> > > I seem to hit a sudden regression in 2.6.34-rc1: the modeset fails.
-> > > On this box it also means, no way to start X, which is unfortunate.
+On Fri, Mar 12, 2010 at 04:27:17PM -0800, Greg KH wrote:
+> 2.6.32-stable review patch.  If anyone has any objections, please let me know.
+> 
+> ----------------
+> From: Tim Gardner <tim.gardner@canonical.com>
+> 
+> commit 8ccb92ad41cb311e52ad1b1fe77992c7f47a3b63 upstream.
+> 
+> A rule with a zero hit_count will always match.
+> 
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  net/netfilter/xt_recent.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/net/netfilter/xt_recent.c
+> +++ b/net/netfilter/xt_recent.c
+> @@ -260,7 +260,7 @@ recent_mt(const struct sk_buff *skb, con
+>  		for (i = 0; i < e->nstamps; i++) {
+>  			if (info->seconds && time_after(time, e->stamps[i]))
+>  				continue;
+> -			if (++hits >= info->hit_count) {
+> +			if (info->hit_count && ++hits >= info->hit_count) {
+>  				ret = !ret;
+>  				break;
+>  			}
 
-Oh, and I forgot to mention: booting with "pci=nocrs" should be a
-workaround while we figure out the problem.
+I don't know if this has any undesired side effect or not, but the
+logic is changed now since "hits" will not be increased anymore when
+info->hit_count is zero. And the code does not make it obvious to me
+what the intended purpose was.
 
-Bjorn
+For this reason I always find it dangerous to change variables in
+if() conditions because it's where we change operations the most
+frequently when fixing bugs.
 
+Willy
 
