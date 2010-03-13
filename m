@@ -1,55 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935973Ab0CMVTL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 16:19:11 -0500
-Received: from server78.greatnet.de ([83.133.96.102]:42762 "EHLO
-	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935358Ab0CMVTG (ORCPT
+	id S1759332Ab0CMVgI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 16:36:08 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:38693 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759309Ab0CMVgA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 16:19:06 -0500
-X-Greylist: delayed 506 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Mar 2010 16:19:06 EST
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-To: herbert@gondor.apana.org.au
-Cc: bridge@lists.linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Henrik Kretzschmar <henne@nachtwindheim.de>
-Subject: [PATCH] [PATCH]: CONFIG_BRIDGE_IGMP_SNOOPING must depend on CONFIG_INET
-Date: Sat, 13 Mar 2010 22:10:11 +0100
-Message-Id: <1268514611-7930-1-git-send-email-henne@nachtwindheim.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <[PATCH]: CONFIG_BRIDGE_IGMP_SNOOPING must depend on CONFIG_INET>
-References: <[PATCH]: CONFIG_BRIDGE_IGMP_SNOOPING must depend on CONFIG_INET>
+	Sat, 13 Mar 2010 16:36:00 -0500
+Date: Sat, 13 Mar 2010 16:35:59 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+cc: Jiri Kosina <jkosina@suse.cz>, <linux-input@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
+       Nicu Pavel <npavel@ituner.com>
+Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
+In-Reply-To: <20100313203953.0f3436b3@neptune.home>
+Message-ID: <Pine.LNX.4.44L0.1003131635170.19476-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linking the kernel fails with the the following error message,
-if CONFIG_BRIDGE_IGMP_SNOOPING is set and CONFIG_INET is not set.
+On Sat, 13 Mar 2010, Bruno [UTF-8] Prémont wrote:
 
-net/built-in.o: In function `br_multicast_alloc_query':
-br_multicast.c:(.text+0x52045): undefined reference to `ip_send_check'
+> Is something like below acceptable? (from error handling point of view
+> it makes no difference...)
+> 
+> Thanks,
+> Bruno
+> 
+> file: drivers/hid/hid-core.c
+> 
+>  int hid_add_device(struct hid_device *hdev)
+>  {
+>          static atomic_t id = ATOMIC_INIT(0);
+>          int ret;
+>  
+>          if (WARN_ON(hdev->status & HID_STAT_ADDED))
+>                  return -EBUSY;
+>  
+>          /* we need to kill them here, otherwise they will stay allocated to
+>           * wait for coming driver */
+>          if (hid_ignore(hdev))
+>                  return -ENODEV;
+>  
+>          /* XXX hack, any other cleaner solution after the driver core
+>           * is converted to allow more than 20 bytes as the device name? */
+>          dev_set_name(&hdev->dev, "%04X:%04X:%04X.%04X", hdev->bus,
+>                       hdev->vendor, hdev->product, atomic_inc_return(&id));
+>  
+> +        hid_debug_register(hdev, dev_name(&hdev->dev));
+>          ret = device_add(&hdev->dev);
+>          if (!ret)
+>                  hdev->status |= HID_STAT_ADDED;
+>  
+> -        hid_debug_register(hdev, dev_name(&hdev->dev));
+>  
+>          return ret;
+>  }
 
-This patch is tested.
+If the device_add() fails, you should undo the hid_debug_register() 
+call.
 
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
-
----
- net/bridge/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/bridge/Kconfig b/net/bridge/Kconfig
-index 19a6b96..52ef2dc 100644
---- a/net/bridge/Kconfig
-+++ b/net/bridge/Kconfig
-@@ -34,7 +34,7 @@ config BRIDGE
- 
- config BRIDGE_IGMP_SNOOPING
- 	bool "IGMP snooping"
--	depends on BRIDGE
-+	depends on BRIDGE && INET
- 	default y
- 	---help---
- 	  If you say Y here, then the Ethernet bridge will be able selectively
--- 
-1.6.3.3
+Alan Stern
 
