@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935802Ab0CMAsl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:48:41 -0500
-Received: from kroah.org ([198.145.64.141]:47093 "EHLO coco.kroah.org"
+	id S935780Ab0CMArt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:47:49 -0500
+Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935498Ab0CMAcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:08 -0500
+	id S935512Ab0CMAcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:15 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
-Message-Id: <20100313002714.132831672@kvm.kroah.org>
+Message-Id: <20100313002714.911259308@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:15 -0800
+Date: Fri, 12 Mar 2010 16:27:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [102/145] b43/b43legacy: Wake queues in wireless_core_start
+       Tao Ma <tao.ma@oracle.com>, Joel Becker <joel.becker@oracle.com>
+Subject: [111/145] ocfs2: Only bug out in direct io write for reflinked extent.
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,64 +24,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Tao Ma <tao.ma@oracle.com>
 
-commit 0866b03c7d7dee8a34ffa527ecda426c0f405518 upstream.
+commit cbaee472f274ea9a98aabe47025f6e5551acadcb upstream.
 
-If b43 or b43legacy are deauthenticated or disconnected, there is a
-possibility that a reconnection is tried with the queues stopped in
-mac80211. To prevent this, start the queues before setting
-STAT_INITIALIZED.
+In ocfs2_direct_IO_get_blocks, we only need to bug out
+in case of we are going to write a recounted extent rec.
 
-In b43, a similar change has been in place (twice) in the
-wireless_core_init() routine. Remove the duplicate and add similar
-code to b43legacy.
+What a silly bug introduced by me!
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/b43/main.c       |    3 +--
- drivers/net/wireless/b43legacy/main.c |    2 ++
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ fs/ocfs2/aops.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/b43/main.c
-+++ b/drivers/net/wireless/b43/main.c
-@@ -3967,6 +3967,7 @@ static int b43_wireless_core_start(struc
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -591,8 +591,9 @@ static int ocfs2_direct_IO_get_blocks(st
+ 		goto bail;
  	}
  
- 	/* We are ready to run. */
-+	ieee80211_wake_queues(dev->wl->hw);
- 	b43_set_status(dev, B43_STAT_STARTED);
- 
- 	/* Start data flow (TX/RX). */
-@@ -4376,8 +4377,6 @@ static int b43_wireless_core_init(struct
- 
- 	ieee80211_wake_queues(dev->wl->hw);
- 
--	ieee80211_wake_queues(dev->wl->hw);
--
- 	b43_set_status(dev, B43_STAT_INITIALIZED);
- 
- out:
---- a/drivers/net/wireless/b43legacy/main.c
-+++ b/drivers/net/wireless/b43legacy/main.c
-@@ -2921,6 +2921,7 @@ static int b43legacy_wireless_core_start
- 		goto out;
- 	}
- 	/* We are ready to run. */
-+	ieee80211_wake_queues(dev->wl->hw);
- 	b43legacy_set_status(dev, B43legacy_STAT_STARTED);
- 
- 	/* Start data flow (TX/RX) */
-@@ -3341,6 +3342,7 @@ static int b43legacy_wireless_core_init(
- 	b43legacy_security_init(dev);
- 	b43legacy_rng_init(wl);
- 
-+	ieee80211_wake_queues(dev->wl->hw);
- 	b43legacy_set_status(dev, B43legacy_STAT_INITIALIZED);
- 
- 	b43legacy_leds_init(dev);
+-	/* We should already CoW the refcounted extent. */
+-	BUG_ON(ext_flags & OCFS2_EXT_REFCOUNTED);
++	/* We should already CoW the refcounted extent in case of create. */
++	BUG_ON(create && (ext_flags & OCFS2_EXT_REFCOUNTED));
++
+ 	/*
+ 	 * get_more_blocks() expects us to describe a hole by clearing
+ 	 * the mapped bit on bh_result().
 
 
