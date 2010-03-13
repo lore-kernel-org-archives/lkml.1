@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935290Ab0CMBOK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:14:10 -0500
-Received: from kroah.org ([198.145.64.141]:46597 "EHLO coco.kroah.org"
+	id S936287Ab0CMBOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:14:18 -0500
+Received: from kroah.org ([198.145.64.141]:46590 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935315Ab0CMAae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:34 -0500
+	id S935313Ab0CMAac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:30:32 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:05 2010
-Message-Id: <20100313002705.836357664@kvm.kroah.org>
+Message-Id: <20100313002705.748295913@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:25:40 -0800
+Date: Fri, 12 Mar 2010 16:25:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ben Hutchings <ben@decadent.org.uk>,
+       Jean Delvare <khali@linux-fr.org>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [007/145] V4L/DVB: cxusb: Select all required frontend and tuner modules
+Subject: [006/145] V4L/DVB: bttv: Move I2C IR initialization
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,37 +25,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Ben Hutchings <ben@decadent.org.uk>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit fc4a7f93087a48619005111895dcaa115f807399 upstream.
+commit 2434466432464110b5307757e0285dd41f15512e upstream.
 
-cxusb uses the atbm8830 and lgs8gxx (not lgs8gl5) frontends and the
-max2165 tuner, so it needs to select them.
+Move I2C IR initialization from just after I2C bus setup to right
+before non-I2C IR initialization. This avoids the case where an I2C IR
+device is blocking audio support (at least the PV951 suffers from
+this). It is also more logical to group IR support together,
+regardless of the connectivity.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+This fixes bug #15184:
+http://bugzilla.kernel.org/show_bug.cgi?id=15184
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/dvb-usb/Kconfig |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/media/video/bt8xx/bttv-driver.c |    1 +
+ drivers/media/video/bt8xx/bttv-i2c.c    |    8 ++++++--
+ drivers/media/video/bt8xx/bttvp.h       |    1 +
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
---- a/drivers/media/dvb/dvb-usb/Kconfig
-+++ b/drivers/media/dvb/dvb-usb/Kconfig
-@@ -112,11 +112,13 @@ config DVB_USB_CXUSB
- 	select DVB_MT352 if !DVB_FE_CUSTOMISE
- 	select DVB_ZL10353 if !DVB_FE_CUSTOMISE
- 	select DVB_DIB7000P if !DVB_FE_CUSTOMISE
--	select DVB_LGS8GL5 if !DVB_FE_CUSTOMISE
- 	select DVB_TUNER_DIB0070 if !DVB_FE_CUSTOMISE
-+	select DVB_ATBM8830 if !DVB_FE_CUSTOMISE
-+	select DVB_LGS8GXX if !DVB_FE_CUSTOMISE
- 	select MEDIA_TUNER_SIMPLE if !MEDIA_TUNER_CUSTOMISE
- 	select MEDIA_TUNER_XC2028 if !MEDIA_TUNER_CUSTOMISE
- 	select MEDIA_TUNER_MXL5005S if !MEDIA_TUNER_CUSTOMISE
-+	select MEDIA_TUNER_MAX2165 if !MEDIA_TUNER_CUSTOMISE
- 	help
- 	  Say Y here to support the Conexant USB2.0 hybrid reference design.
- 	  Currently, only DVB and ATSC modes are supported, analog mode
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -4468,6 +4468,7 @@ static int __devinit bttv_probe(struct p
+ 		request_modules(btv);
+ 	}
+ 
++	init_bttv_i2c_ir(btv);
+ 	bttv_input_init(btv);
+ 
+ 	/* everything is fine */
+--- a/drivers/media/video/bt8xx/bttv-i2c.c
++++ b/drivers/media/video/bt8xx/bttv-i2c.c
+@@ -388,7 +388,12 @@ int __devinit init_bttv_i2c(struct bttv
+ 	if (0 == btv->i2c_rc && i2c_scan)
+ 		do_i2c_scan(btv->c.v4l2_dev.name, &btv->i2c_client);
+ 
+-	/* Instantiate the IR receiver device, if present */
++	return btv->i2c_rc;
++}
++
++/* Instantiate the I2C IR receiver device, if present */
++void __devinit init_bttv_i2c_ir(struct bttv *btv)
++{
+ 	if (0 == btv->i2c_rc) {
+ 		struct i2c_board_info info;
+ 		/* The external IR receiver is at i2c address 0x34 (0x35 for
+@@ -408,7 +413,6 @@ int __devinit init_bttv_i2c(struct bttv
+ 		strlcpy(info.type, "ir_video", I2C_NAME_SIZE);
+ 		i2c_new_probed_device(&btv->c.i2c_adap, &info, addr_list);
+ 	}
+-	return btv->i2c_rc;
+ }
+ 
+ int __devexit fini_bttv_i2c(struct bttv *btv)
+--- a/drivers/media/video/bt8xx/bttvp.h
++++ b/drivers/media/video/bt8xx/bttvp.h
+@@ -279,6 +279,7 @@ extern unsigned int bttv_debug;
+ extern unsigned int bttv_gpio;
+ extern void bttv_gpio_tracking(struct bttv *btv, char *comment);
+ extern int init_bttv_i2c(struct bttv *btv);
++extern void init_bttv_i2c_ir(struct bttv *btv);
+ extern int fini_bttv_i2c(struct bttv *btv);
+ 
+ #define bttv_printk if (bttv_verbose) printk
 
 
