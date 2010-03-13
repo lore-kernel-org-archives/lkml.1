@@ -1,68 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685Ab0CMXWA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 18:22:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38203 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755242Ab0CMXV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 18:21:59 -0500
-X-Authenticated: #352556
-X-Provags-ID: V01U2FsdGVkX1+9HhE+uNi98qIJBMVGV9Jm2fTQtOVuWkEi3adb+8
-	FOTkBY5Ivau66G
-Message-ID: <4B9C1E14.8070400@gmx.net>
-Date: Sun, 14 Mar 2010 00:21:56 +0100
-From: Joachim Otahal <Jou@gmx.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.8) Gecko/20100205 SeaMonkey/2.0.3
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: md devices: Suggestion for in place time and checksum within the
- RAID
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.56000000000000005
+	id S1759400Ab0CMXmd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 18:42:33 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:48900 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754801Ab0CMXmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 18:42:31 -0500
+From: Neil Grogan <neil@grogan.ie>
+To: gregkh@suse.de, bzolnier@gmail.com
+Cc: neil@grogan.ie, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Staging: rt2860: Fix coding style errors in pci_main_dev.c This is a patch to the pci_main_dev.c file that fixes all coding style error Signed-off-by: Neil Grogan <neil@grogan.ie>
+Date: Sat, 13 Mar 2010 23:42:12 +0000
+Message-Id: <1268523732-29613-1-git-send-email-neil@grogan.ie>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current Situation in RAID:
-If a drive fails silently and is giving out wrong data instead of read 
-errors there is no way to detect that corruption (no fun, I had that a 
-few times already).
-Even in RAID1 with three drives there is no "two over three" voting 
-mechanism.
+---
+ drivers/staging/rt2860/pci_main_dev.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
 
-A workaround for that problem would be:
-Adding one sector to each chunk to store the time (in nanoseconds 
-resolution) + CRC or ECC value of the whole stripe, making it possible 
-to see and handle such errors below the filesystem level.
-Time in nanoseconds only to differ between those many writes that 
-actually happen, it does not really matter how precise the time actually 
-is, just every stripe update should have a different time value from the 
-previous update.
-It would be an easy way to know which chunks are actually the latest (or 
-which contain correct data in case one out of three+ chunks has a wrong 
-time upon reading). A random uniqe ID or counter could also do the job 
-of the time value if anyone prefers, but I doubt since the collision 
-possibility would be higher.
-The use of CRC or ECC or whatever hash should be obvious, their 
-existence would make it easy to detect drive degration, even in a RAID0 
-or LINEAR.
-Bad side: Adding this might break the on the fly raid expansion 
-capabilities. A workaround might be using 8K(+ one sector) chunks by 
-default upon creation or the need to specify the chunk size on creation 
-(like 8k+1 sector) if future expansion capabilities are actually wanted 
-with RAID0/4/5/6, but that is a different issue anyway.
-
-Question:
-Will RAID4/5/6 in the future use the parity upon read too? Currently it 
-would not detect wrong data reads from the parity chunk, resulting in a 
-disaster when it is actually needed.
-
-Do those plans already exist and my post was completely useless?
-
-Sorry that I cannot give patches, my last kernel patch + compile was 
-2.2.26, since then I never compiled a kernel.
-
-Joachim Otahal
+diff --git a/drivers/staging/rt2860/pci_main_dev.c b/drivers/staging/rt2860/pci_main_dev.c
+index 6af4304..4c20a7d 100644
+--- a/drivers/staging/rt2860/pci_main_dev.c
++++ b/drivers/staging/rt2860/pci_main_dev.c
+@@ -107,12 +107,12 @@ MODULE_VERSION(STA_DRIVER_VERSION);
+ /* */
+ static struct pci_driver rt2860_driver = {
+ name:	"rt2860",
+-id_table:rt2860_pci_tbl,
+-probe:	rt2860_probe,
+-remove:__devexit_p(rt2860_remove_one),
++id_table : rt2860_pci_tbl,
++probe : rt2860_probe,
++remove : __devexit_p(rt2860_remove_one),
+ #ifdef CONFIG_PM
+-suspend:rt2860_suspend,
+-resume:rt2860_resume,
++suspend : rt2860_suspend,
++resume : rt2860_resume,
+ #endif
+ };
+ 
+@@ -280,7 +280,9 @@ static int __devinit rt2860_probe(IN struct pci_dev *pci_dev,
+ 
+ /*PCIDevInit============================================== */
+ 	/* wake up and enable device */
+-	if ((rv = pci_enable_device(pci_dev)) != 0) {
++	rv = pci_enable_device(pci_dev);
++
++	if (rv != 0) {
+ 		DBGPRINT(RT_DEBUG_ERROR,
+ 			 ("Enable PCI device failed, errno=%d!\n", rv));
+ 		return rv;
+@@ -288,7 +290,9 @@ static int __devinit rt2860_probe(IN struct pci_dev *pci_dev,
+ 
+ 	print_name = (char *)pci_name(pci_dev);
+ 
+-	if ((rv = pci_request_regions(pci_dev, print_name)) != 0) {
++	rv = pci_request_regions(pci_dev, print_name);
++
++	if (rv != 0) {
+ 		DBGPRINT(RT_DEBUG_ERROR,
+ 			 ("Request PCI resource failed, errno=%d!\n", rv));
+ 		goto err_out;
+@@ -1106,8 +1110,7 @@ void RTMPrt3xSetPCIePowerLinkCtrl(struct rt_rtmp_adapter *pAd)
+ 		HostConfiguration = 0;
+ 		if (pAd->StaCfg.PSControl.field.rt30xxForceASPMTest == 1) {
+ 			DBGPRINT(RT_DEBUG_TRACE, ("Enter,PSM : Force ASPM \n"));
+-
+-			/* Skip non-exist deice right away */
++			/* Skip non-exist device right away */
+ 			if ((pAd->HostLnkCtrlOffset != 0)) {
+ 				PCI_REG_READ_WORD(pObj->parent_pci_dev,
+ 						  pAd->HostLnkCtrlOffset,
+-- 
+1.6.3.3
 
