@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289Ab0CMOz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 09:55:57 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:56329 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759265Ab0CMOzw (ORCPT
+	id S1759273Ab0CMO4f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 09:56:35 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:63334 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759244Ab0CMOzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 09:55:52 -0500
+	Sat, 13 Mar 2010 09:55:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mD+PrvYwA7vyBt1Hyzq/itDMoZEAn/amK0Rw9d7F6is0O5ryKE1Rl4VNVQ7a2kBbFd
-         ccgEdJO74hkm9ApCB3zyQPCHBlyv1HZIp3cgs1Xf8apnuvZh9T9Rdt19UE9NW94dJ093
-         u5rkx++eiRyf8Z24rqZ1r5GZEM9OZQT9BahM4=
+        b=eBZQmAB/9ONb3Vvw2jbb5P7ZJPRsEbuDf67ewxHDpu8EuCol0hun2UzVY0I4r37OPZ
+         9yfOgMssoQiBHlYS6YpG5FGsKI72nyntyPmFRgdn1+nAvFQIcbtX/IbI6ot5801PaJZ2
+         vC2fW8wrK8xtac5w414Tsp//dw9qOamE4UcaM=
 From: Jason Wong <tsanghan@gmail.com>
 To: gregkh@suse.de
 Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
        Jason Wong <tsanghan@gmail.com>
-Subject: [PATCH 9/9] Staging: comedi: cb_pcidas64: fixed a coding style missed in the previosu patch
-Date: Sat, 13 Mar 2010 22:53:34 +0800
-Message-Id: <1268492014-6355-10-git-send-email-tsanghan@gmail.com>
+Subject: [PATCH 4/9] Staging: comedi: adl_pci9118: fixed multiple brace coding style issue
+Date: Sat, 13 Mar 2010 22:53:29 +0800
+Message-Id: <1268492014-6355-5-git-send-email-tsanghan@gmail.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <Jason Wong <tsanghan@gmail.com>
 References: <Jason Wong <tsanghan@gmail.com>
@@ -27,26 +27,254 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed a coding style issue.
+Fixed multiple coding style issue.
 
 Signed-off-by: Jason Wong <tsanghan@gmail.com>
 ---
- drivers/staging/comedi/drivers/cb_pcidas64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/staging/comedi/drivers/adl_pci9118.c |   98 +++++++++++++-------------
+ 1 files changed, 49 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/staging/comedi/drivers/cb_pcidas64.c b/drivers/staging/comedi/drivers/cb_pcidas64.c
-index 1d43d0d..f17cb09 100644
---- a/drivers/staging/comedi/drivers/cb_pcidas64.c
-+++ b/drivers/staging/comedi/drivers/cb_pcidas64.c
-@@ -1921,7 +1921,7 @@ static int detach(struct comedi_device *dev)
- 						    ao_dma_desc_bus_addr);
- 			if (priv(dev)->main_phys_iobase)
- 				comedi_pci_disable(priv(dev)->hw_dev);
--	
+diff --git a/drivers/staging/comedi/drivers/adl_pci9118.c b/drivers/staging/comedi/drivers/adl_pci9118.c
+index 9934a3c..ab083aa 100644
+--- a/drivers/staging/comedi/drivers/adl_pci9118.c
++++ b/drivers/staging/comedi/drivers/adl_pci9118.c
+@@ -393,11 +393,11 @@ static int pci9118_insn_write_ao(struct comedi_device *dev,
+ 	int n, chanreg, ch;
+ 
+ 	ch = CR_CHAN(insn->chanspec);
+-	if (ch) {
++	if (ch)
+ 		chanreg = PCI9118_DA2;
+-	} else {
++	else
+ 		chanreg = PCI9118_DA1;
+-	}
 +
- 			pci_dev_put(priv(dev)->hw_dev);
- 		}
+ 
+ 	for (n = 0; n < insn->n; n++) {
+ 		outl(data[n], dev->iobase + chanreg);
+@@ -560,11 +560,11 @@ static void pci9118_ai_munge(struct comedi_device *dev,
+ 	for (i = 0; i < num_samples; i++) {
+ 		if (devpriv->usedma)
+ 			array[i] = be16_to_cpu(array[i]);
+-		if (devpriv->ai16bits) {
++		if (devpriv->ai16bits)
+ 			array[i] ^= 0x8000;
+-		} else {
++		else
+ 			array[i] = (array[i] >> 4) & 0x0fff;
+-		}
++
  	}
+ }
+ 
+@@ -790,20 +790,20 @@ static int pci9118_ai_cmdtest(struct comedi_device *dev,
+ 		err++;
+ 
+ 	tmp = cmd->scan_begin_src;
+-	if (devpriv->master) {
++	if (devpriv->master)
+ 		cmd->scan_begin_src &= TRIG_TIMER | TRIG_EXT | TRIG_FOLLOW;
+-	} else {
++	else
+ 		cmd->scan_begin_src &= TRIG_FOLLOW;
+-	}
++
+ 	if (!cmd->scan_begin_src || tmp != cmd->scan_begin_src)
+ 		err++;
+ 
+ 	tmp = cmd->convert_src;
+-	if (devpriv->master) {
++	if (devpriv->master)
+ 		cmd->convert_src &= TRIG_TIMER | TRIG_EXT | TRIG_NOW;
+-	} else {
++	else
+ 		cmd->convert_src &= TRIG_TIMER | TRIG_EXT;
+-	}
++
+ 	if (!cmd->convert_src || tmp != cmd->convert_src)
+ 		err++;
+ 
+@@ -1043,12 +1043,12 @@ static int Compute_and_setup_dma(struct comedi_device *dev)
+ 	DPRINTK("1 dmalen0=%d dmalen1=%d ai_data_len=%d\n", dmalen0, dmalen1,
+ 		devpriv->ai_data_len);
+ 	/*  isn't output buff smaller that our DMA buff? */
+-	if (dmalen0 > (devpriv->ai_data_len)) {
++	if (dmalen0 > (devpriv->ai_data_len))
+ 		dmalen0 = devpriv->ai_data_len & ~3L;	/*  allign to 32bit down */
+-	}
+-	if (dmalen1 > (devpriv->ai_data_len)) {
++
++	if (dmalen1 > (devpriv->ai_data_len))
+ 		dmalen1 = devpriv->ai_data_len & ~3L;	/*  allign to 32bit down */
+-	}
++
+ 	DPRINTK("2 dmalen0=%d dmalen1=%d \n", dmalen0, dmalen1);
+ 
+ 	/*  we want wake up every scan? */
+@@ -1294,9 +1294,9 @@ static int pci9118_ai_docmd_dma(struct comedi_device *dev,
+ 		return -EIO;
+ 	};
+ 
+-	if (devpriv->ai12_startstop) {
++	if (devpriv->ai12_startstop)
+ 		pci9118_exttrg_add(dev, EXTTRG_AI);	/*  activate EXT trigger */
+-	}
++
+ 
+ 	devpriv->int_ai_func = interrupt_pci9118_ai_dma;	/* transfer function */
+ 
+@@ -1369,12 +1369,12 @@ static int pci9118_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
+ 	}
+ 
+ 	/*  use sample&hold signal? */
+-	if (cmd->convert_src == TRIG_NOW) {
++	if (cmd->convert_src == TRIG_NOW)
+ 		devpriv->usessh = 1;
+-	} /*  yes */
+-	else {
++	/*  yes */
++	else
+ 		devpriv->usessh = 0;
+-	}			/*  no */
++	/*  no */
+ 
+ 	DPRINTK("1 neverending=%d scans=%u usessh=%d ai_startstop=0x%2x\n",
+ 		devpriv->ai_neverending, devpriv->ai_scans, devpriv->usessh,
+@@ -1388,12 +1388,12 @@ static int pci9118_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
+ 		devpriv->usedma = 1;
+ 		if ((cmd->flags & TRIG_WAKE_EOS) &&
+ 		    (devpriv->ai_n_scanlen == 1)) {
+-			if (cmd->convert_src == TRIG_NOW) {
++			if (cmd->convert_src == TRIG_NOW)
+ 				devpriv->ai_add_back = 1;
+-			}
+-			if (cmd->convert_src == TRIG_TIMER) {
++
++			if (cmd->convert_src == TRIG_TIMER)
+ 				devpriv->usedma = 0;	/*  use INT transfer if scanlist have only one channel */
+-			}
++
+ 		}
+ 		if ((cmd->flags & TRIG_WAKE_EOS) &&
+ 		    (devpriv->ai_n_scanlen & 1) &&
+@@ -1456,11 +1456,11 @@ static int pci9118_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
+ 	/*  compute timers settings */
+ 	/*  simplest way, fr=4Mhz/(tim1*tim2), channel manipulation without timers effect */
+ 	if (((cmd->scan_begin_src == TRIG_FOLLOW) || (cmd->scan_begin_src == TRIG_EXT) || (cmd->scan_begin_src == TRIG_INT)) && (cmd->convert_src == TRIG_TIMER)) {	/*  both timer is used for one time */
+-		if (cmd->scan_begin_src == TRIG_EXT) {
++		if (cmd->scan_begin_src == TRIG_EXT)
+ 			devpriv->ai_do = 4;
+-		} else {
++		else
+ 			devpriv->ai_do = 1;
+-		}
++
+ 		pci9118_calc_divisors(devpriv->ai_do, dev, s,
+ 				      &cmd->scan_begin_arg, &cmd->convert_arg,
+ 				      devpriv->ai_flags,
+@@ -1597,17 +1597,17 @@ static int setup_channel_list(struct comedi_device *dev,
+ 
+ 	/*  All is ok, so we can setup channel/range list */
+ 
+-	if (!bipolar) {
++	if (!bipolar)
+ 		devpriv->AdControlReg |= AdControl_UniP;	/*  set unibipolar */
+-	} else {
++	else
+ 		devpriv->AdControlReg &= ((~AdControl_UniP) & 0xff);	/*  enable bipolar */
+-	}
+ 
+-	if (differencial) {
++
++	if (differencial)
+ 		devpriv->AdControlReg |= AdControl_Diff;	/*  enable diff inputs */
+-	} else {
++	else
+ 		devpriv->AdControlReg &= ((~AdControl_Diff) & 0xff);	/*  set single ended inputs */
+-	}
++
+ 
+ 	outl(devpriv->AdControlReg, dev->iobase + PCI9118_ADCNTRL);	/*  setup mode */
+ 
+@@ -1673,9 +1673,9 @@ static int setup_channel_list(struct comedi_device *dev,
+ 	}
+ #ifdef PCI9118_EXTDEBUG
+ 	DPRINTK("CHL: ");
+-	for (i = 0; i <= (useeos * n_chan); i++) {
++	for (i = 0; i <= (useeos * n_chan); i++)
+ 		DPRINTK("%04x ", devpriv->chanlist[i]);
+-	}
++
+ 	DPRINTK("\n ");
+ #endif
+ #endif
+@@ -1897,11 +1897,11 @@ static int pci9118_attach(struct comedi_device *dev,
+ 
+ 	opt_bus = it->options[0];
+ 	opt_slot = it->options[1];
+-	if (it->options[3] & 1) {
++	if (it->options[3] & 1)
+ 		master = 0;	/*  user don't want use bus master */
+-	} else {
++	else
+ 		master = 1;
+-	}
++
+ 
+ 	ret = alloc_private(dev, sizeof(struct pci9118_private));
+ 	if (ret < 0) {
+@@ -1944,9 +1944,9 @@ static int pci9118_attach(struct comedi_device *dev,
+ 		return -EIO;
+ 	}
+ 
+-	if (master) {
++	if (master)
+ 		pci_set_master(pcidev);
+-	}
++
+ 
+ 	pci_bus = pcidev->bus->number;
+ 	pci_slot = PCI_SLOT(pcidev->devfn);
+@@ -2025,9 +2025,9 @@ static int pci9118_attach(struct comedi_device *dev,
+ 		if (devpriv->usemux > 256)
+ 			devpriv->usemux = 256;	/*  max 256 channels! */
+ 		if (it->options[4] > 0)
+-			if (devpriv->usemux > 128) {
++			if (devpriv->usemux > 128)
+ 				devpriv->usemux = 128;	/*  max 128 channels with softare S&H! */
+-			}
++
+ 		printk(", ext. mux %d channels", devpriv->usemux);
+ 	}
+ 
+@@ -2054,11 +2054,11 @@ static int pci9118_attach(struct comedi_device *dev,
+ 	dev->read_subdev = s;
+ 	s->type = COMEDI_SUBD_AI;
+ 	s->subdev_flags = SDF_READABLE | SDF_COMMON | SDF_GROUND | SDF_DIFF;
+-	if (devpriv->usemux) {
++	if (devpriv->usemux)
+ 		s->n_chan = devpriv->usemux;
+-	} else {
++	else
+ 		s->n_chan = this_board->n_aichan;
+-	}
++
+ 	s->maxdata = this_board->ai_maxdata;
+ 	s->len_chanlist = this_board->n_aichanlist;
+ 	s->range_table = this_board->rangelist_ai;
+@@ -2129,9 +2129,9 @@ static int pci9118_detach(struct comedi_device *dev)
+ 		if (dev->irq)
+ 			free_irq(dev->irq, dev);
+ 		if (devpriv->pcidev) {
+-			if (dev->iobase) {
++			if (dev->iobase)
+ 				comedi_pci_disable(devpriv->pcidev);
+-			}
++
+ 			pci_dev_put(devpriv->pcidev);
+ 		}
+ 		if (devpriv->dmabuf_virt[0])
 -- 
 1.7.0
 
