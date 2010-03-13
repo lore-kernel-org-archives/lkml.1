@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935061Ab0CMAVd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:21:33 -0500
-Received: from kroah.org ([198.145.64.141]:60969 "EHLO coco.kroah.org"
+	id S935130Ab0CMAVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:21:51 -0500
+Received: from kroah.org ([198.145.64.141]:32810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935001Ab0CMAUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:48 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
-Message-Id: <20100313001512.840411200@kvm.kroah.org>
+	id S935022Ab0CMAU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:56 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
+Message-Id: <20100313001513.701350020@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:06 -0800
+Date: Fri, 12 Mar 2010 16:13:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jslaby@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ollie Wild <aaw@google.com>,
-       x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 088/123] x86, ia32_aout: do not kill argument mapping
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       Michal Nazarewicz <m.nazarewicz@samsung.com>
+Subject: [patch 098/123] USB: f_mass_storage: fix crash on bind() error
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,42 +27,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Jiri Slaby <jslaby@suse.cz>
+From: Peter Korsgaard <jacmet@sunsite.dk>
 
-commit 318f6b228ba88a394ef560efc1bfe028ad5ae6b6 upstream.
+commit 8e7e61dfbf1ec6418bf89505980b158a8d00d877 upstream.
 
-Do not set current->mm->mmap to NULL in 32-bit emulation on 64-bit
-load_aout_binary after flush_old_exec as it would destroy already
-set brpm mapping with arguments.
+init_completion() hasn't been called yet and the thread isn't created
+if we end up here, so don't call complete() on thread_notifier.
 
-Introduced by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
-mm: variable length argument support
-where the argument mapping in bprm was added.
-
-[ hpa: this is a regression from 2.6.22... time to kill a.out? ]
-
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-LKML-Reference: <1265831716-7668-1-git-send-email-jslaby@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ollie Wild <aaw@google.com>
-Cc: x86@kernel.org
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Acked-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/ia32/ia32_aout.c |    1 -
+ drivers/usb/gadget/f_mass_storage.c |    1 -
  1 file changed, 1 deletion(-)
 
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -327,7 +327,6 @@ static int load_aout_binary(struct linux
- 	current->mm->free_area_cache = TASK_UNMAPPED_BASE;
- 	current->mm->cached_hole_size = 0;
- 
--	current->mm->mmap = NULL;
- 	install_exec_creds(bprm);
- 	current->flags &= ~PF_FORKNOEXEC;
+--- a/drivers/usb/gadget/f_mass_storage.c
++++ b/drivers/usb/gadget/f_mass_storage.c
+@@ -2852,7 +2852,6 @@ error_release:
+ 	/* Call fsg_common_release() directly, ref might be not
+ 	 * initialised */
+ 	fsg_common_release(&common->ref);
+-	complete(&common->thread_notifier);
+ 	return ERR_PTR(rc);
+ }
  
 
 
