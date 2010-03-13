@@ -1,67 +1,174 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617Ab0CMGxI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 01:53:08 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:59081 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754273Ab0CMGxC (ORCPT
+	id S1758862Ab0CMG5H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 01:57:07 -0500
+Received: from mail-gx0-f227.google.com ([209.85.217.227]:60814 "EHLO
+	mail-gx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758834Ab0CMG5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 01:53:02 -0500
-Date: Sat, 13 Mar 2010 07:52:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
- deprecation)
-Message-ID: <20100313065254.GF12554@elf.ucw.cz>
-References: <20100303075944.GA23354@comet.dominikbrodowski.net>
- <20100303083010.GA22928@flint.arm.linux.org.uk>
- <20100305120746.646126b9@lxorguk.ukuu.org.uk>
- <20100310204546.GA1394@ucw.cz>
- <20100310210015.GB16230@isilmar.linta.de>
+	Sat, 13 Mar 2010 01:57:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references:mime-version:content-type:content-transfer-encoding;
+        b=ddBHuU6Mdl7LC3AKsXoMCc/Buzewyh98pfrcARm1aZ4EcHdKItR2w+mYaGNRqB98nU
+         sX6BnvfS0Egw92xJ/NNyd/dceBzzzNukM5RBm9AD94hb2P8RsPyYkP+iq6YqqTzFcRNE
+         uqCb7RqNVGTDY3sPTclyGdwCzBeGLCpYff1gQ=
+From: Rabin Vincent <rabin@rab.in>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Rabin Vincent <rabin@rab.in>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 01/10] ARM: ftrace: clean up mcount assembly indentation
+Date: Sat, 13 Mar 2010 12:19:38 +0530
+Message-Id: <1268462987-8271-2-git-send-email-rabin@rab.in>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1268462987-8271-1-git-send-email-rabin@rab.in>
+References: <1268462987-8271-1-git-send-email-rabin@rab.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100310210015.GB16230@isilmar.linta.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2010-03-10 22:00:15, Dominik Brodowski wrote:
-> Hey,
-> 
-> On Wed, Mar 10, 2010 at 09:45:46PM +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > So you believe that disabling the button in the graphical environment
-> > > > to allow PCMCIA cards to be removed (such as CF cards) - leaving the
-> > > > user to merely pull out the CF card, while the FS is mounted, is a
-> > > > good idea?
-> > > 
-> > > Do any graphical environments even support the ancient user space
-> > > pcmcica helper stuff ? I can't find any evidence they do but I realise
-> > 
-> > Yes; qtopia shipped with zaurus sl-5500 (collie), and very probably
-> > opie and gpe...
-> > 
-> > Sharp needed operating system for the handheld, and yes it supported
-> > all the hw.
-> 
-> So qtopia still uses the PCMCIA ioctl? Or is it some custom add-on code by
-> zaurus? I'd very much like to see some more source code, what parts of
-> the IOCTL it uses etc. pp. Or at least some pointers...
+The mcount implementation currently uses a different indentation style
+from the rest of the file (and the rest of the ARM assembly in the
+kernel).  Clean it up.
 
-Well, Alan asked about "any graphical environments even support the
-ancient user space pcmcica helper stuff", and yes I believe there are
-some. I probably have one on ancient collie that's lying
-somewhere. Not sure about sources, I never used those heavily.
+Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+---
+ arch/arm/kernel/entry-common.S |   88 ++++++++++++++++++++--------------------
+ 1 files changed, 44 insertions(+), 44 deletions(-)
 
-								Pavel
+diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
+index 2c1db77..0b042bd 100644
+--- a/arch/arm/kernel/entry-common.S
++++ b/arch/arm/kernel/entry-common.S
+@@ -94,73 +94,73 @@ ENDPROC(ret_from_fork)
+ #ifdef CONFIG_FUNCTION_TRACER
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ ENTRY(mcount)
+-	stmdb sp!, {r0-r3, lr}
+-	mov r0, lr
+-	sub r0, r0, #MCOUNT_INSN_SIZE
++	stmdb	sp!, {r0-r3, lr}
++	mov	r0, lr
++	sub	r0, r0, #MCOUNT_INSN_SIZE
+ 
+ 	.globl mcount_call
+ mcount_call:
+-	bl ftrace_stub
+-	ldr lr, [fp, #-4]			@ restore lr
+-	ldmia sp!, {r0-r3, pc}
++	bl	ftrace_stub
++	ldr	lr, [fp, #-4]			@ restore lr
++	ldmia	sp!, {r0-r3, pc}
+ 
+ ENTRY(ftrace_caller)
+-	stmdb sp!, {r0-r3, lr}
+-	ldr r1, [fp, #-4]
+-	mov r0, lr
+-	sub r0, r0, #MCOUNT_INSN_SIZE
++	stmdb	sp!, {r0-r3, lr}
++	ldr	r1, [fp, #-4]
++	mov	r0, lr
++	sub	r0, r0, #MCOUNT_INSN_SIZE
+ 
+ 	.globl ftrace_call
+ ftrace_call:
+-	bl ftrace_stub
+-	ldr lr, [fp, #-4]			@ restore lr
+-	ldmia sp!, {r0-r3, pc}
++	bl	ftrace_stub
++	ldr	lr, [fp, #-4]			@ restore lr
++	ldmia	sp!, {r0-r3, pc}
+ 
+ #else
+ 
+ ENTRY(__gnu_mcount_nc)
+-	stmdb sp!, {r0-r3, lr}
+-	ldr r0, =ftrace_trace_function
+-	ldr r2, [r0]
+-	adr r0, ftrace_stub
+-	cmp r0, r2
+-	bne gnu_trace
+-	ldmia sp!, {r0-r3, ip, lr}
+-	mov pc, ip
++	stmdb	sp!, {r0-r3, lr}
++	ldr	r0, =ftrace_trace_function
++	ldr	r2, [r0]
++	adr	r0, ftrace_stub
++	cmp	r0, r2
++	bne	gnu_trace
++	ldmia	sp!, {r0-r3, ip, lr}
++	mov	pc, ip
+ 
+ gnu_trace:
+-	ldr r1, [sp, #20]			@ lr of instrumented routine
+-	mov r0, lr
+-	sub r0, r0, #MCOUNT_INSN_SIZE
+-	mov lr, pc
+-	mov pc, r2
+-	ldmia sp!, {r0-r3, ip, lr}
+-	mov pc, ip
++	ldr	r1, [sp, #20]			@ lr of instrumented routine
++	mov	r0, lr
++	sub	r0, r0, #MCOUNT_INSN_SIZE
++	mov	lr, pc
++	mov	pc, r2
++	ldmia	sp!, {r0-r3, ip, lr}
++	mov	pc, ip
+ 
+ ENTRY(mcount)
+-	stmdb sp!, {r0-r3, lr}
+-	ldr r0, =ftrace_trace_function
+-	ldr r2, [r0]
+-	adr r0, ftrace_stub
+-	cmp r0, r2
+-	bne trace
+-	ldr lr, [fp, #-4]			@ restore lr
+-	ldmia sp!, {r0-r3, pc}
++	stmdb	sp!, {r0-r3, lr}
++	ldr	r0, =ftrace_trace_function
++	ldr	r2, [r0]
++	adr	r0, ftrace_stub
++	cmp	r0, r2
++	bne	trace
++	ldr	lr, [fp, #-4]			@ restore lr
++	ldmia	sp!, {r0-r3, pc}
+ 
+ trace:
+-	ldr r1, [fp, #-4]			@ lr of instrumented routine
+-	mov r0, lr
+-	sub r0, r0, #MCOUNT_INSN_SIZE
+-	mov lr, pc
+-	mov pc, r2
+-	ldr lr, [fp, #-4]			@ restore lr
+-	ldmia sp!, {r0-r3, pc}
++	ldr	r1, [fp, #-4]			@ lr of instrumented routine
++	mov	r0, lr
++	sub	r0, r0, #MCOUNT_INSN_SIZE
++	mov	lr, pc
++	mov	pc, r2
++	ldr	lr, [fp, #-4]			@ restore lr
++	ldmia	sp!, {r0-r3, pc}
+ 
+ #endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+ 	.globl ftrace_stub
+ ftrace_stub:
+-	mov pc, lr
++	mov	pc, lr
+ 
+ #endif /* CONFIG_FUNCTION_TRACER */
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.0
+
