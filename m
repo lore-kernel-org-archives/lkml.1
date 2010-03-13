@@ -1,92 +1,300 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935242Ab0CMLcL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 06:32:11 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:16926 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932420Ab0CMLcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 06:32:08 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAAYGm0vCTtAn/2dsb2JhbACab3O3cYR7BA
-Date: Sat, 13 Mar 2010 12:31:50 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH vfat] allow retrieving entries with trailing dots
-Message-ID: <20100313113150.GA11907@frolo.macqel>
-References: <20100310123257.GA2899@frolo.macqel> <87d3zc1bjo.fsf@devron.myhome.or.jp> <20100310161429.GA16799@frolo.macqel> <87hboow105.fsf@devron.myhome.or.jp> <20100310235808.GA4353@frolo.macqel> <87bpevryxt.fsf@devron.myhome.or.jp> <20100311120214.GA23767@frolo.macqel> <87y6hzni82.fsf@devron.myhome.or.jp>
+	id S935320Ab0CMLfn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 06:35:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64702 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933354Ab0CMLfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 06:35:41 -0500
+Date: Sat, 13 Mar 2010 12:33:48 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [PATCH 1/2] exec: Rediff wrecked bits of usermodehelper
+	overhaul
+Message-ID: <20100313113348.GA8718@redhat.com>
+References: <20100312204535.GA6723@hmsreliant.think-freely.org> <20100312205051.GB6723@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87y6hzni82.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20100312205051.GB6723@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ogawa,
+Neil, you confused the ordering ;)
 
-On Thu, Mar 11, 2010 at 09:41:33PM +0900, OGAWA Hirofumi wrote:
-> Philippe De Muyter <phdm@macqel.be> writes:
-> 
-> >> > This is unavoidable.
-> >
-> > We could perhaps reduce the disadvantage by moving the logic (test first
-> > with the trailing dots, and then without if needed) into fat_search_long
-> > instead of putting it in vfat_find as my patch proposal does.  This way
-> > the name to find would only be compared once to unrelated entries,
-> > instead of possibly twice as my patch does.
-> >
-> > But therefore I need your help : fat_search_long isn't easy to read/modify.
-> >
-> > The logic could be modified as such :
-> >     - if the searched name contains trailing dots, first compare
-> > 	the truncated part to the same length of the directory entry
-> >     - if they are the same, test the length of the rest of the directory entry
-> > 	- if length_of_rest is 0, this could be the matching entry,
-> > 	    but there could be a better one later; keep searching till the end.
-> > 	- if length_of_rest is not 0, compare the rest with the trailing dots
-> > 	    - if rests are equal, we have found it; return
-> > 	    - if rests are unequal, continue searching
-> >
-> >> 
-> >> We would be able to introduce new mount option to do it if needed.
-> >
-> > A new mount option should be the last programming option.  It is better to
-> > automatically do the right thing than to require the user to figure out
-> > he must add a mount option in /etc/fstab or whatever.  Remember this is
-> > for hot-plug disks.
-> 
-> Sorry, but I'm not thinking this is primary one. So, requiring option
-> for it to avoid disadvantage of normal users, it sounds good.
-> 
-> >> This changed vfat_find(), so, this patch will change the behavior of all
-> >> callers more or less. And the behavior seems to be really strange, you
-> >> can remove "a.", but you can't create it?
-> >
-> > Yes, you can remove any existing file, but if you want to create a file, 
-> > the name creation rules are kept unchanged. So, creating "a." will
-> > succeed, it will actually be called "a" on disk, but you can still refer
-> > to it as "a." : that will succeed.  That's the strange part of the behavior
-> > but that part is already present for compatibility reasons nor you nor me
-> > can do anything about :(
-> >
-> >> The behavior sounds random, right?
-> >
-> > It's a compromise to avoid creating name entries that are not universally
-> > accepted, but to allow accessing existing files and directories.
-> >
-> > The mount option could be useful then to allow the creation of file and
-> > directory names with trailing dot, but consistency between getdents and
-> > stat/open must be automatic.
-> 
-> No, this breaks consistency. With this patch, unlink("a."), then
-> open("a.", O_CREAT) and write(), the result depend on existent
-> files. This patch is providing two files on one name.
+This is "2/2", the second patch. And the next email is "1/2".
 
-To avoid that, we could remember that we have found a filename with a trailing
-dot (in that directory or in the whole disk), and if that's the case then
-we are allowed to create filenames with trailing dots.
 
-Philippe
+On 03/12, Neil Horman wrote:
+>
+> Rediff of the usermodehelper changes after all the wreckage.  This patch
+> encompasses the patches that were formally in -mm as:
+> 
+> kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
+> kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limitcleanup.patch
+> 
+> kmod: replace call_usermodehelper_pipe() with use of umh init function and resolve limit
+> 
+> The first patch in this series introduced an init function to the
+> call_usermodehelper api so that processes could be customized by caller.
+> This patch takes advantage of that fact, by customizing the helper in
+> do_coredump to create the pipe and set its core limit to one (for our
+> recusrsion check).  This lets us clean up the previous uglyness in the
+> usermodehelper internals and factor call_usermodehelper out entirely.
+> While I'm at it, we can also modify the helper setup to look for a core
+> limit value of 1 rather than zero for our recursion check
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> CC: Oleg Nesterov <oleg@redhat.com>
+> CC: Andi Kleen <andi@firstfloor.org>
+> 
+> 
+>  fs/exec.c            |   63 ++++++++++++++++++++++++++++++++++-----
+>  include/linux/kmod.h |    7 ----
+>  kernel/kmod.c        |   82 ---------------------------------------------------
+>  3 files changed, 56 insertions(+), 96 deletions(-)
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index f351cdb..64a50b4 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -1784,6 +1784,50 @@ static void wait_for_dump_helpers(struct file *file)
+>  }
+>  
+>  
+> +/*
+> + * uhm_pipe_setup
+> + * helper function to customize the process used
+> + * to collect the core in userspace.  Specifically
+> + * it sets up a pipe and installs it as fd 0 (stdin)
+> + * for the process.  Returns 0 on success, or
+> + * PTR_ERR on failure.
+> + * Note that it also sets the core limit to 1.  This
+> + * is a special value that we use to trap recursive
+> + * core dumps
+> + */
+> +static int umh_pipe_setup(struct subprocess_info *info)
+> +{
+> +	struct file *rp, *wp;
+> +	struct fdtable *fdt;
+> +	struct coredump_params *cp = (struct coredump_params *)info->data;
+> +	struct files_struct *cf = current->files;
+> +
+> +	wp = create_write_pipe(0);
+> +	if (IS_ERR(wp))
+> +		return PTR_ERR(wp);
+> +
+> +	rp = create_read_pipe(wp, 0);
+> +	if (IS_ERR(rp)) {
+> +		free_write_pipe(wp);
+> +		return PTR_ERR(rp);
+> +	}
+> +
+> +	cp->file = wp;
+> +
+> +	sys_close(0);
+> +	fd_install(0, rp);
+> +	spin_lock(&cf->file_lock);
+> +	fdt = files_fdtable(cf);
+> +	FD_SET(0, fdt->open_fds);
+> +	FD_CLR(0, fdt->close_on_exec);
+> +	spin_unlock(&cf->file_lock);
+> +
+> +	/* and disallow core files too */
+> +	current->signal->rlim[RLIMIT_CORE] = (struct rlimit){1, 1};
+> +
+> +	return 0;
+> +}
+> +
+>  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  {
+>  	struct core_state core_state;
+> @@ -1871,15 +1915,15 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  		goto fail_unlock;
+>  
+>   	if (ispipe) {
+> -		if (cprm.limit == 0) {
+> +		if (cprm.limit == 1) {
+>  			/*
+>  			 * Normally core limits are irrelevant to pipes, since
+>  			 * we're not writing to the file system, but we use
+> -			 * cprm.limit of 0 here as a speacial value. Any
+> -			 * non-zero limit gets set to RLIM_INFINITY below, but
+> +			 * cprm.limit of 1 here as a speacial value. Any
+> +			 * non-1 limit gets set to RLIM_INFINITY below, but
+>  			 * a limit of 0 skips the dump.  This is a consistent
+>  			 * way to catch recursive crashes.  We can still crash
+> -			 * if the core_pattern binary sets RLIM_CORE =  !0
+> +			 * if the core_pattern binary sets RLIM_CORE =  !1
+>  			 * but it runs as root, and can do lots of stupid things
+>  			 * Note that we use task_tgid_vnr here to grab the pid
+>  			 * of the process group leader.  That way we get the
+> @@ -1887,7 +1931,7 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  			 * core_pattern process dies.
+>  			 */
+>  			printk(KERN_WARNING
+> -				"Process %d(%s) has RLIMIT_CORE set to 0\n",
+> +				"Process %d(%s) has RLIMIT_CORE set to 1\n",
+>  				task_tgid_vnr(current), current->comm);
+>  			printk(KERN_WARNING "Aborting core\n");
+>  			goto fail_unlock;
+> @@ -1911,8 +1955,13 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  		cprm.limit = RLIM_INFINITY;
+>  
+>  		/* SIGPIPE can happen, but it's just never processed */
+> -		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+> -				&cprm.file)) {
+> +		cprm.file = NULL;
+> +		if (call_usermodehelper_fns(helper_argv[0], helper_argv, NULL,
+> +					    UMH_WAIT_EXEC, umh_pipe_setup,
+> +					    NULL, &cprm)) {
+> +			if (cprm.file)
+> +				filp_close(cprm.file, NULL);
+> +
+>   			printk(KERN_INFO "Core dump to %s pipe failed\n",
+>  			       corename);
+>  			goto fail_dropcount;
+> diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+> index f9edf63..5c05877 100644
+> --- a/include/linux/kmod.h
+> +++ b/include/linux/kmod.h
+> @@ -62,7 +62,6 @@ struct subprocess_info {
+>  	char **envp;
+>  	enum umh_wait wait;
+>  	int retval;
+> -	struct file *stdin;
+>  	int (*init)(struct subprocess_info *info);
+>  	void (*cleanup)(struct subprocess_info *info);
+>  	void *data;
+> @@ -75,8 +74,6 @@ struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
+>  /* Set various pieces of state into the subprocess_info structure */
+>  void call_usermodehelper_setkeys(struct subprocess_info *info,
+>  				 struct key *session_keyring);
+> -int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+> -				  struct file **filp);
+>  void call_usermodehelper_setfns(struct subprocess_info *info,
+>  		    int (*init)(struct subprocess_info *info),
+>  		    void (*cleanup)(struct subprocess_info *info),
+> @@ -132,10 +129,6 @@ call_usermodehelper_keys(char *path, char **argv, char **envp,
+>  
+>  extern void usermodehelper_init(void);
+>  
+> -struct file;
+> -extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
+> -				    struct file **filp);
+> -
+>  extern int usermodehelper_disable(void);
+>  extern void usermodehelper_enable(void);
+>  
+> diff --git a/kernel/kmod.c b/kernel/kmod.c
+> index 531ef62..d154454 100644
+> --- a/kernel/kmod.c
+> +++ b/kernel/kmod.c
+> @@ -147,23 +147,6 @@ static int ____call_usermodehelper(void *data)
+>  	commit_creds(sub_info->cred);
+>  	sub_info->cred = NULL;
+>  
+> -	/* Install input pipe when needed */
+> -	if (sub_info->stdin) {
+> -		struct files_struct *f = current->files;
+> -		struct fdtable *fdt;
+> -		/* no races because files should be private here */
+> -		sys_close(0);
+> -		fd_install(0, sub_info->stdin);
+> -		spin_lock(&f->file_lock);
+> -		fdt = files_fdtable(f);
+> -		FD_SET(0, fdt->open_fds);
+> -		FD_CLR(0, fdt->close_on_exec);
+> -		spin_unlock(&f->file_lock);
+> -
+> -		/* and disallow core files too */
+> -		current->signal->rlim[RLIMIT_CORE] = (struct rlimit){0, 0};
+> -	}
+> -
+>  	/* We can run anywhere, unlike our parent keventd(). */
+>  	set_cpus_allowed_ptr(current, cpu_all_mask);
+>  
+> @@ -429,35 +412,6 @@ void call_usermodehelper_setfns(struct subprocess_info *info,
+>  EXPORT_SYMBOL(call_usermodehelper_setfns);
+>  
+>  /**
+> - * call_usermodehelper_stdinpipe - set up a pipe to be used for stdin
+> - * @sub_info: a subprocess_info returned by call_usermodehelper_setup
+> - * @filp: set to the write-end of a pipe
+> - *
+> - * This constructs a pipe, and sets the read end to be the stdin of the
+> - * subprocess, and returns the write-end in *@filp.
+> - */
+> -int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+> -				  struct file **filp)
+> -{
+> -	struct file *f;
+> -
+> -	f = create_write_pipe(0);
+> -	if (IS_ERR(f))
+> -		return PTR_ERR(f);
+> -	*filp = f;
+> -
+> -	f = create_read_pipe(f, 0);
+> -	if (IS_ERR(f)) {
+> -		free_write_pipe(*filp);
+> -		return PTR_ERR(f);
+> -	}
+> -	sub_info->stdin = f;
+> -
+> -	return 0;
+> -}
+> -EXPORT_SYMBOL(call_usermodehelper_stdinpipe);
+> -
+> -/**
+>   * call_usermodehelper_exec - start a usermode application
+>   * @sub_info: information about the subprocessa
+>   * @wait: wait for the application to finish and return status.
+> @@ -504,42 +458,6 @@ unlock:
+>  }
+>  EXPORT_SYMBOL(call_usermodehelper_exec);
+>  
+> -/**
+> - * call_usermodehelper_pipe - call a usermode helper process with a pipe stdin
+> - * @path: path to usermode executable
+> - * @argv: arg vector for process
+> - * @envp: environment for process
+> - * @filp: set to the write-end of a pipe
+> - *
+> - * This is a simple wrapper which executes a usermode-helper function
+> - * with a pipe as stdin.  It is implemented entirely in terms of
+> - * lower-level call_usermodehelper_* functions.
+> - */
+> -int call_usermodehelper_pipe(char *path, char **argv, char **envp,
+> -			     struct file **filp)
+> -{
+> -	struct subprocess_info *sub_info;
+> -	int ret;
+> -
+> -	sub_info = call_usermodehelper_setup(path, argv, envp,
+> -					     GFP_KERNEL);
+> -	if (sub_info == NULL)
+> -		return -ENOMEM;
+> -
+> -	ret = call_usermodehelper_stdinpipe(sub_info, filp);
+> -	if (ret < 0) {
+> -		call_usermodehelper_freeinfo(sub_info);
+> -		return ret;
+> -	}
+> -
+> -	ret = call_usermodehelper_exec(sub_info, UMH_WAIT_EXEC);
+> -	if (ret < 0)	/* Failed to execute helper, close pipe */
+> -		filp_close(*filp, NULL);
+> -
+> -	return ret;
+> -}
+> -EXPORT_SYMBOL(call_usermodehelper_pipe);
+> -
+>  void __init usermodehelper_init(void)
+>  {
+>  	khelper_wq = create_singlethread_workqueue("khelper");
+
