@@ -1,55 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935216Ab0CMKj0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 05:39:26 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:47965 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933354Ab0CMKjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 05:39:24 -0500
-Date: Sat, 13 Mar 2010 11:39:13 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Subject: scary warning in atags.c -- 2.6.34-rc1
-Message-ID: <20100313103913.GA9812@elf.ucw.cz>
+	id S1757156Ab0CMKpt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 05:45:49 -0500
+Received: from mail.in-ulm.de ([217.10.8.10]:34593 "HELO mail.in-ulm.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751226Ab0CMKps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 05:45:48 -0500
+Date: Sat, 13 Mar 2010 11:45:46 +0100
+From: Christian Ehrhardt <lk@c--e.de>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Rik van Riel <riel@redhat.com>
+Subject: [PATCH 0/2] rmap: Fix Bugzilla Bug #5493
+Message-ID: <20100313104546.GA16643@lisa.in-ulm.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-Scary warning on HTC Dream:
+Hi,
 
-[    0.220000] ------------[ cut here ]------------                                   
-[    0.220000] WARNING: at arch/arm/kernel/atags.c:60
-init_atags_procfs+0x5c/0xe8()   
-[    0.220000] Modules linked in:                                                     
-[    0.220000] [<c0025250>] (unwind_backtrace+0x0/0xdc) from
-[<c0032e1c>] (warn_slowp)
-[    0.220000] [<c0032e1c>] (warn_slowpath_common+0x4c/0x80) from
-[<c000b4b8>] (init_)
-[    0.220000] [<c000b4b8>] (init_atags_procfs+0x5c/0xe8) from
-[<c002033c>] (do_one_i)
-[    0.220000] [<c002033c>] (do_one_initcall+0x5c/0x1bc) from
-[<c0008584>] (kernel_in)
-[    0.220000] [<c0008584>] (kernel_init+0x94/0x148) from [<c00217b4>]
-(kernel_thread)
-[    0.220000] ---[ end trace 1b75b31a2719ed1c ]---                                   
-[    0.230000] bio: create slab <bio-0> at 0                                          
-[    0.230000] Switching to clocksource dg_timer                                      
+this set of two patches fixes Bugzilla Bug #5493.
 
-Hmm, what are atags anyway?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+      http://bugzilla.kernel.org/show_bug.cgi?id=5493
+
+The first patch makes the vma prio tree code reusable. This patch
+should not contain any functional changes.
+
+The second patch uses the prio tree code for the vmas associated with
+an anon_vma. This allows us to replace the linear searches in rmap.c
+with prio tree iterations that are much more efficient if there are
+many vmas associated with an anon_vma.
+
+The runtime of the test program in the bug report reduces from half an
+hour to about two minutes on the VBox instance used for testing.
+
+The patch is against a current vanilla kernel that already includes the
+vma linking patches from Rik.
+
+Diffstat for both patches combined:
+
+ arch/arm/mm/fault-armv.c   |    3 +-
+ arch/arm/mm/flush.c        |    3 +-
+ arch/parisc/kernel/cache.c |    3 +-
+ arch/x86/mm/hugetlbpage.c  |    3 +-
+ fs/hugetlbfs/inode.c       |    3 +-
+ fs/inode.c                 |    2 +-
+ include/linux/mm.h         |   32 ++++++++--
+ include/linux/mm_types.h   |   10 +---
+ include/linux/prio_tree.h  |   17 +++++-
+ include/linux/rmap.h       |   88 +++++++++++++++++---------
+ kernel/fork.c              |    2 +-
+ lib/prio_tree.c            |   14 +++-
+ mm/filemap_xip.c           |    3 +-
+ mm/fremap.c                |    2 +-
+ mm/hugetlb.c               |    3 +-
+ mm/ksm.c                   |   25 ++++++--
+ mm/memory-failure.c        |    9 ++-
+ mm/memory.c                |    5 +-
+ mm/mmap.c                  |   43 ++++++++-----
+ mm/nommu.c                 |   12 ++--
+ mm/prio_tree.c             |  148 +++++++++++++++++++++-----------------------
+ mm/rmap.c                  |   41 ++++++++----
+ 22 files changed, 284 insertions(+), 187 deletions(-)
+
+     regards    Christian
+
