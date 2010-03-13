@@ -1,75 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936Ab0CMRff (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 12:35:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:2700 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757069Ab0CMRfd (ORCPT
+	id S934192Ab0CMRhU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 12:37:20 -0500
+Received: from cpe-74-67-89-75.stny.res.rr.com ([74.67.89.75]:41247 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932937Ab0CMRhT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 12:35:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=r8XAhcJpBcw47lHef8BSuxHrE/rYwod0aBqSBMcgkf2PxFPx2nM4iApvX45I7xPLoB
-         V5kdq5RU00LgBMEvl4vqddbkhwUyBZRjzz03pYpTker7Ui2p7tQ6FA+ULjwa+MC2Picu
-         NtExnmQiCIB3AVMmOnvdAwWZj7pn3pW/6U9Kc=
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Johan Hovold <jhovold@gmail.com>, Alan Cox <alan@linux.intel.com>,
-       Daniel Mack <daniel@caiaq.de>, Mark Adamson <mark.adamson@ftdichip.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alessio Igor Bogani <abogani@texware.it>
-Subject: [PATCH] USB: ftdi_sio: Fix locking for change_speed() function
-Date: Sat, 13 Mar 2010 18:35:14 +0100
-Message-Id: <1268501714-5464-1-git-send-email-abogani@texware.it>
-X-Mailer: git-send-email 1.6.3.3
+	Sat, 13 Mar 2010 12:37:19 -0500
+Subject: Re: [PATCH 03/10] ftrace: allow building without frame pointers
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Rabin Vincent <rabin@rab.in>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1268462987-8271-4-git-send-email-rabin@rab.in>
+References: <1268462987-8271-1-git-send-email-rabin@rab.in>
+	 <1268462987-8271-4-git-send-email-rabin@rab.in>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sat, 13 Mar 2010 12:36:32 -0500
+Message-ID: <1268501792.3366.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The change_speed() function should be serialized against multiple calls.
-Use the cfg_lock mutex to do this.
+On Sat, 2010-03-13 at 12:19 +0530, Rabin Vincent wrote:
+> With current gcc, compiling with both -pg and -fomit-frame-pointer is
+> not allowed.  However, -pg can be used to build without actually
+> specying -fno-omit-frame-pointer, upon which the defaut behaviour for
+> the target will be used.
+> 
+> On ARM, it is not possible to build a Thumb-2 kernel with
+> -fno-omit-frame-pointer (FRAME_POINTERS depends on !THUMB2_KERNEL). In
+> order to support ftrace for Thumb-2, we need to be able to allow a
+> combination of FUNCTION_TRACER and !FRAME_POINTER.  We do this by
+> omitting -fomit-frame-pointer if ftrace is enabled.
+> 
+> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> ---
+> v2: Better comment.
+> 
+>  Makefile |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 08ff02d..61404e0 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -546,8 +546,15 @@ endif
+>  ifdef CONFIG_FRAME_POINTER
+>  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+>  else
+> +# Some targets (ARM with Thumb2, for example), can't be built with frame
+> +# pointers.  For those, we don't have FUNCTION_TRACER automatically
+> +# select FRAME_POINTER.  However, FUNCTION_TRACER adds -pg, and this is
+> +# incompatible with -fomit-frame-pointer with current GCC, so we don't use
+> +# -fomit-frame-pointer with FUNCTION_TRACER.
+> +ifndef CONFIG_FUNCTION_TRACER
+>  KBUILD_CFLAGS	+= -fomit-frame-pointer
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
----
- drivers/usb/serial/ftdi_sio.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+I believe this is correct, but have you tested this on other archs other
+than ARM? I can do it for x86 and PPC, but it will need to wait as those
+machines are currently performing stress tests.
 
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 6af0dfa..830f423 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -91,7 +91,7 @@ struct ftdi_private {
- 	unsigned long tx_outstanding_bytes;
- 	unsigned long tx_outstanding_urbs;
- 	unsigned short max_packet_size;
--	struct mutex cfg_lock; /* Avoid mess by parallel calls of config ioctl() */
-+	struct mutex cfg_lock; /* Avoid mess by parallel calls of config ioctl() and change_speed() */
- };
- 
- /* struct ftdi_sio_quirk is used by devices requiring special attention. */
-@@ -1272,8 +1272,8 @@ check_and_exit:
- 	     (priv->flags & ASYNC_SPD_MASK)) ||
- 	    (((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST) &&
- 	     (old_priv.custom_divisor != priv->custom_divisor))) {
--		mutex_unlock(&priv->cfg_lock);
- 		change_speed(tty, port);
-+		mutex_unlock(&priv->cfg_lock);
- 	}
- 	else
- 		mutex_unlock(&priv->cfg_lock);
-@@ -2264,9 +2264,11 @@ static void ftdi_set_termios(struct tty_struct *tty,
- 		clear_mctrl(port, TIOCM_DTR | TIOCM_RTS);
- 	} else {
- 		/* set the baudrate determined before */
-+		mutex_lock(&priv->cfg_lock);
- 		if (change_speed(tty, port))
- 			dev_err(&port->dev, "%s urb failed to set baudrate\n",
- 				__func__);
-+		mutex_unlock(&priv->cfg_lock);
- 		/* Ensure RTS and DTR are raised when baudrate changed from 0 */
- 		if (!old_termios || (old_termios->c_cflag & CBAUD) == B0)
- 			set_mctrl(port, TIOCM_DTR | TIOCM_RTS);
--- 
-1.6.3.3
+-- Steve
+
+>  endif
+> +endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+>  KBUILD_CFLAGS	+= -g
 
