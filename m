@@ -1,78 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451Ab0CMQWY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 11:22:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56616 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754609Ab0CMQWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 11:22:22 -0500
-Date: Sat, 13 Mar 2010 16:21:37 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, peterz@infradead.org, ming.m.lin@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, peterz@infradead.org, ming.m.lin@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100313081116.GA5179@lenovo>
-References: <20100313081116.GA5179@lenovo>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] x86, perf: Unmask LVTPC only if we have APIC supported
-Message-ID: <tip-8576e1971663ffdb6139041de97cdd2e1d4791cc@git.kernel.org>
-Git-Commit-ID: 8576e1971663ffdb6139041de97cdd2e1d4791cc
-X-Mailer: tip-git-log-daemon
+	id S933295Ab0CMQ3z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 11:29:55 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:56969 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932284Ab0CMQ3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 11:29:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=wdWES3zd6Jz8/mYrQiFTNZ7UxV9rpKteKcJfxJXxjjzJm3LUWd15AUIFdnYj21N+Cm
+         WRGJDZQgHW65Jy1Dqhv4eixoINMcP3L12zpqkuvRI2P6nUVOEfvsBG29MaPxPL4IydYr
+         i5Vltq7SLzoXo4zQdWiHcFwJKkFgF23+CcjZ8=
+From: Markus Rathgeb <rathgeb.markus@googlemail.com>
+To: zinx@epicsol.org
+Subject: [PATCH 2.6.33] hid-tmff: Add RGT ff clutch device id
+Date: Sat, 13 Mar 2010 17:29:43 +0100
+User-Agent: KMail/1.13.1 (Linux/2.6.33-gentoo; KDE/4.4.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 16:21:39 +0000 (UTC)
+Content-Type: multipart/signed;
+  boundary="nextPart1752502.yV2X9y86Vr";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003131729.48645.rathgeb.markus@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8576e1971663ffdb6139041de97cdd2e1d4791cc
-Gitweb:     http://git.kernel.org/tip/8576e1971663ffdb6139041de97cdd2e1d4791cc
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Sat, 13 Mar 2010 11:11:16 +0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 13 Mar 2010 13:32:27 +0100
+--nextPart1752502.yV2X9y86Vr
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-x86, perf: Unmask LVTPC only if we have APIC supported
+=46rom: Markus Rathgeb
 
-Ingo reported:
+This patch enables force feedback for the "RGT Force Feedback CLUTCH Racing=
+ Wheel".
+It only modifies hid-core.c (hid_blacklist) and hid-tmff.c to add the new U=
+SB IDs.
 
- |
- | There's a build failure on -tip with the P4 driver, on UP 32-bit, if
- | PERF_EVENTS is enabled but UP_APIC is disabled:
- |
- | arch/x86/built-in.o: In function `p4_pmu_handle_irq':
- | perf_event.c:(.text+0xa756): undefined reference to `apic'
- | perf_event.c:(.text+0xa76e): undefined reference to `apic'
- |
+Signed-off-by: Markus Rathgeb <rathgeb.markus@googlemail.com>
+=2D--
+=2D-- a/a/drivers/hid/hid-core.c
++++ b/b/drivers/hid/hid-core.c
+@@ -1347,6 +1347,7 @@ static const struct hid_device_id hid_blacklist[] =3D=
+ {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb653) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED, USB_DEVICE_ID_TOPSEED_CYBERLINK) =
+},
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_TWINHAN, USB_DEVICE_ID_TWINHAN_IR_REMOTE) =
+},
+diff --git a/a/drivers/hid/hid-tmff.c b/b/drivers/hid/hid-tmff.c
+index 167ea74..c32f32c 100644
+=2D-- a/a/drivers/hid/hid-tmff.c
++++ b/b/drivers/hid/hid-tmff.c
+@@ -251,6 +251,8 @@ static const struct hid_device_id tm_devices[] =3D {
+ 		.driver_data =3D (unsigned long)ff_rumble },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),	/* FGT Rumble Force=
+ Wheel */
+ 		.driver_data =3D (unsigned long)ff_rumble },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb653),	/* RGT Force Feedba=
+ck CLUTCH Raging Wheel */
++		.driver_data =3D (unsigned long)ff_joystick },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654),	/* FGT Force Feedba=
+ck Wheel */
+ 		.driver_data =3D (unsigned long)ff_joystick },
+ 	{ }
 
-So we have to unmask LVTPC only if we're configured to have one.
+=2D-=20
+Markus Rathgeb
+Public Key Server: http://wwwkeys.us.pgp.net/ bzw. hkp://wwwkeys.us.pgp.net/
+Public Key Server: http://stinkfoot.org:11371/ bzw. hkp://stinkfoot.org
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-CC: Lin Ming <ming.m.lin@intel.com>
-CC: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <20100313081116.GA5179@lenovo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/perf_event_p4.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+--nextPart1752502.yV2X9y86Vr
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-diff --git a/arch/x86/kernel/cpu/perf_event_p4.c b/arch/x86/kernel/cpu/perf_event_p4.c
-index 381f593..ef861da 100644
---- a/arch/x86/kernel/cpu/perf_event_p4.c
-+++ b/arch/x86/kernel/cpu/perf_event_p4.c
-@@ -365,8 +365,10 @@ static int p4_pmu_handle_irq(struct pt_regs *regs)
- 	}
- 
- 	if (handled) {
-+#ifdef CONFIG_X86_LOCAL_APIC
- 		/* p4 quirk: unmask it again */
- 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
-+#endif
- 		inc_irq_stat(apic_perf_irqs);
- 	}
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iEYEABECAAYFAkubvXwACgkQuSMlFb8kR62CXACcDxHLAyCfzoQgCA8QHdlj7VmT
+FHcAn0YoXJw3+jsnlzg4FcCH/3q91CaB
+=IRUA
+-----END PGP SIGNATURE-----
+
+--nextPart1752502.yV2X9y86Vr--
