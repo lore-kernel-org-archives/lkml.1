@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934967Ab0CMBU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:20:58 -0500
-Received: from kroah.org ([198.145.64.141]:60926 "EHLO coco.kroah.org"
+	id S934970Ab0CMBVJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:21:09 -0500
+Received: from kroah.org ([198.145.64.141]:60747 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934951Ab0CMAUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:31 -0500
+	id S934939Ab0CMAUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:30 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:11 2010
-Message-Id: <20100313001511.540224117@kvm.kroah.org>
+Message-Id: <20100313001511.455968532@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:51 -0800
+Date: Fri, 12 Mar 2010 16:12:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Felix Fietkau <nbd@openwrt.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 073/123] ath9k: disable RIFS search for AR91xx based chips
+Subject: [patch 072/123] ath9k: fix rate control fallback rate selection
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,56 +29,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Felix Fietkau <nbd@openwrt.org>
 
-commit 7bfbae10dc10a5c94a780d117a57e875d77e8e5a upstream.
+commit 5c0ba62fd4b2dce08055a89600f1d834f9f0fe9e upstream.
 
-While ath9k does not support RIFS yet, the ability to receive RIFS
-frames is currently enabled for most chipsets in the initvals.
-This is causing baseband related issues on AR9160 and AR9130 based
-chipsets, which can lock up under certain conditions.
+When selecting the tx fallback rate, rc.c used a separate variable
+'nrix' for storing the next rate index, however it did not use that as
+reference for further rate index lowering. Because of that, it ended up
+reusing the same rate for multiple multi-rate retry stages, thus
+decreasing delivery probability under changing link conditions.
 
-This patch fixes these issues by overriding the initvals, effectively
-disabling RIFS for all affected chipsets.
+This patch removes the separate (unnecessary) variable and fixes
+fallback the way it was intended to work.
+This should result in increased throughput and better link stability.
 
 Signed-off-by: Felix Fietkau <nbd@openwrt.org>
-Acked-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath/ath9k/hw.c  |   10 ++++++++++
- drivers/net/wireless/ath/ath9k/phy.h |    3 +++
- 2 files changed, 13 insertions(+)
+ drivers/net/wireless/ath/ath9k/rc.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
---- a/drivers/net/wireless/ath/ath9k/hw.c
-+++ b/drivers/net/wireless/ath/ath9k/hw.c
-@@ -1345,6 +1345,16 @@ static void ath9k_hw_override_ini(struct
- 	 * Necessary to avoid issues on AR5416 2.0
- 	 */
- 	REG_WRITE(ah, 0x9800 + (651 << 2), 0x11);
-+
-+	/*
-+	 * Disable RIFS search on some chips to avoid baseband
-+	 * hang issues.
-+	 */
-+	if (AR_SREV_9100(ah) || AR_SREV_9160(ah)) {
-+		val = REG_READ(ah, AR_PHY_HEAVY_CLIP_FACTOR_RIFS);
-+		val &= ~AR_PHY_RIFS_INIT_DELAY;
-+		REG_WRITE(ah, AR_PHY_HEAVY_CLIP_FACTOR_RIFS, val);
-+	}
- }
+--- a/drivers/net/wireless/ath/ath9k/rc.c
++++ b/drivers/net/wireless/ath/ath9k/rc.c
+@@ -668,7 +668,7 @@ static void ath_get_rate(void *priv, str
+ 	struct ieee80211_tx_rate *rates = tx_info->control.rates;
+ 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
+ 	__le16 fc = hdr->frame_control;
+-	u8 try_per_rate, i = 0, rix, nrix;
++	u8 try_per_rate, i = 0, rix;
+ 	int is_probe = 0;
  
- static u32 ath9k_hw_def_ini_fixup(struct ath_hw *ah,
---- a/drivers/net/wireless/ath/ath9k/phy.h
-+++ b/drivers/net/wireless/ath/ath9k/phy.h
-@@ -384,6 +384,9 @@ bool ath9k_hw_set_rf_regs(struct ath_hw
+ 	if (rate_control_send_low(sta, priv_sta, txrc))
+@@ -688,26 +688,25 @@ static void ath_get_rate(void *priv, str
  
- #define AR_PHY_HEAVY_CLIP_ENABLE         0x99E0
+ 	rate_table = sc->cur_rate_table;
+ 	rix = ath_rc_get_highest_rix(sc, ath_rc_priv, rate_table, &is_probe);
+-	nrix = rix;
  
-+#define AR_PHY_HEAVY_CLIP_FACTOR_RIFS    0x99EC
-+#define AR_PHY_RIFS_INIT_DELAY         0x03ff0000
-+
- #define AR_PHY_M_SLEEP      0x99f0
- #define AR_PHY_REFCLKDLY    0x99f4
- #define AR_PHY_REFCLKPD     0x99f8
+ 	if (is_probe) {
+ 		/* set one try for probe rates. For the
+ 		 * probes don't enable rts */
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       1, nrix, 0);
++				       1, rix, 0);
+ 
+ 		/* Get the next tried/allowed rate. No RTS for the next series
+ 		 * after the probe rate
+ 		 */
+-		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &nrix);
++		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &rix);
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       try_per_rate, nrix, 0);
++				       try_per_rate, rix, 0);
+ 
+ 		tx_info->flags |= IEEE80211_TX_CTL_RATE_CTRL_PROBE;
+ 	} else {
+ 		/* Set the choosen rate. No RTS for first series entry. */
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       try_per_rate, nrix, 0);
++				       try_per_rate, rix, 0);
+ 	}
+ 
+ 	/* Fill in the other rates for multirate retry */
+@@ -716,10 +715,10 @@ static void ath_get_rate(void *priv, str
+ 		if (i + 1 == 4)
+ 			try_per_rate = 4;
+ 
+-		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &nrix);
++		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &rix);
+ 		/* All other rates in the series have RTS enabled */
+ 		ath_rc_rate_set_series(rate_table, &rates[i], txrc,
+-				       try_per_rate, nrix, 1);
++				       try_per_rate, rix, 1);
+ 	}
+ 
+ 	/*
 
 
