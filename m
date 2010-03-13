@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935548Ab0CMBQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:16:58 -0500
-Received: from kroah.org ([198.145.64.141]:60985 "EHLO coco.kroah.org"
+	id S935355Ab0CMBRL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:17:11 -0500
+Received: from kroah.org ([198.145.64.141]:60969 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934998Ab0CMAUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:47 -0500
+	id S934965Ab0CMAUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:46 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
-Message-Id: <20100313001512.752710119@kvm.kroah.org>
+Message-Id: <20100313001512.683183873@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:05 -0800
+Date: Fri, 12 Mar 2010 16:13:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tao Ma <tao.ma@oracle.com>, Joel Becker <joel.becker@oracle.com>
-Subject: [patch 087/123] ocfs2: Only bug out in direct io write for reflinked extent.
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [patch 086/123] thinkpad-acpi: lock down video output state access
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,36 +26,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Tao Ma <tao.ma@oracle.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit cbaee472f274ea9a98aabe47025f6e5551acadcb upstream.
+commit b525c06cdbd8a3963f0173ccd23f9147d4c384b5 upstream.
 
-In ocfs2_direct_IO_get_blocks, we only need to bug out
-in case of we are going to write a recounted extent rec.
+Given the right combination of ThinkPad and X.org, just reading the
+video output control state is enough to hard-crash X.org.
 
-What a silly bug introduced by me!
+Until the day I somehow find out a model or BIOS cut date to not
+provide this feature to ThinkPads that can do video switching through
+X RandR, change permissions so that only processes with CAP_SYS_ADMIN
+can access any sort of video output control state.
 
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+This bug could be considered a local DoS I suppose, as it allows any
+non-privledged local user to cause some versions of X.org to
+hard-crash some ThinkPads.
+
+Reported-by: Jidanni <jidanni@jidanni.org>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ocfs2/aops.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ Documentation/laptops/thinkpad-acpi.txt |    4 ++++
+ drivers/platform/x86/Kconfig            |   10 ++++++++--
+ drivers/platform/x86/thinkpad_acpi.c    |   15 +++++++++++++--
+ 3 files changed, 25 insertions(+), 4 deletions(-)
 
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -577,8 +577,9 @@ static int ocfs2_direct_IO_get_blocks(st
- 		goto bail;
+--- a/Documentation/laptops/thinkpad-acpi.txt
++++ b/Documentation/laptops/thinkpad-acpi.txt
+@@ -650,6 +650,10 @@ LCD, CRT or DVI (if available). The foll
+ 	echo expand_toggle > /proc/acpi/ibm/video
+ 	echo video_switch > /proc/acpi/ibm/video
+ 
++NOTE: Access to this feature is restricted to processes owning the
++CAP_SYS_ADMIN capability for safety reasons, as it can interact badly
++enough with some versions of X.org to crash it.
++
+ Each video output device can be enabled or disabled individually.
+ Reading /proc/acpi/ibm/video shows the status of each device.
+ 
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -319,9 +319,15 @@ config THINKPAD_ACPI_VIDEO
+ 	  server running, phase of the moon, and the current mood of
+ 	  Schroedinger's cat.  If you can use X.org's RandR to control
+ 	  your ThinkPad's video output ports instead of this feature,
+-	  don't think twice: do it and say N here to save some memory.
++	  don't think twice: do it and say N here to save memory and avoid
++	  bad interactions with X.org.
+ 
+-	  If you are not sure, say Y here.
++	  NOTE: access to this feature is limited to processes with the
++	  CAP_SYS_ADMIN capability, to avoid local DoS issues in platforms
++	  where it interacts badly with X.org.
++
++	  If you are not sure, say Y here but do try to check if you could
++	  be using X.org RandR instead.
+ 
+ config THINKPAD_ACPI_HOTKEY_POLL
+ 	bool "Support NVRAM polling for hot keys"
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -286,6 +286,7 @@ struct ibm_init_struct {
+ 	char param[32];
+ 
+ 	int (*init) (struct ibm_init_struct *);
++	mode_t base_procfs_mode;
+ 	struct ibm_struct *data;
+ };
+ 
+@@ -4629,6 +4630,10 @@ static int video_read(struct seq_file *m
+ 		return 0;
  	}
  
--	/* We should already CoW the refcounted extent. */
--	BUG_ON(ext_flags & OCFS2_EXT_REFCOUNTED);
-+	/* We should already CoW the refcounted extent in case of create. */
-+	BUG_ON(create && (ext_flags & OCFS2_EXT_REFCOUNTED));
++	/* Even reads can crash X.org, so... */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
 +
- 	/*
- 	 * get_more_blocks() expects us to describe a hole by clearing
- 	 * the mapped bit on bh_result().
+ 	status = video_outputsw_get();
+ 	if (status < 0)
+ 		return status;
+@@ -4662,6 +4667,10 @@ static int video_write(char *buf)
+ 	if (video_supported == TPACPI_VIDEO_NONE)
+ 		return -ENODEV;
+ 
++	/* Even reads can crash X.org, let alone writes... */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
+ 	enable = 0;
+ 	disable = 0;
+ 
+@@ -8506,9 +8515,10 @@ static int __init ibm_init(struct ibm_in
+ 		"%s installed\n", ibm->name);
+ 
+ 	if (ibm->read) {
+-		mode_t mode;
++		mode_t mode = iibm->base_procfs_mode;
+ 
+-		mode = S_IRUGO;
++		if (!mode)
++			mode = S_IRUGO;
+ 		if (ibm->write)
+ 			mode |= S_IWUSR;
+ 		entry = proc_create_data(ibm->name, mode, proc_dir,
+@@ -8699,6 +8709,7 @@ static struct ibm_init_struct ibms_init[
+ #ifdef CONFIG_THINKPAD_ACPI_VIDEO
+ 	{
+ 		.init = video_init,
++		.base_procfs_mode = S_IRUSR,
+ 		.data = &video_driver_data,
+ 	},
+ #endif
 
 
