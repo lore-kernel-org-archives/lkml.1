@@ -1,53 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933721Ab0CMLXG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 06:23:06 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:56908 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759012Ab0CMLXB (ORCPT
+	id S935057Ab0CMLYh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 06:24:37 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:62126 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932900Ab0CMLYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 06:23:01 -0500
+	Sat, 13 Mar 2010 06:24:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=RrFttUOrKQDtr4YbkKEc/gTKVjxf9u7RUCzll5ArF+x30qZ2d+MlCT/KySI+ocnlNb
-         S1LRXmgS1jTsNiPW3hVwkQFyfO2NfRHTkRoLHCRftkQv09wLqtfIy7KghFEmqhv4HEkm
-         EdW7NBpRPntzuf+afQwKT+Ta6Jg8V5uEBC3Ts=
-Message-ID: <4B9B7591.9080706@gmail.com>
-Date: Sat, 13 Mar 2010 06:22:57 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Eric Dumazet <eric.dumazet@gmail.com>, Dan Carpenter <error27@gmail.com>,
-       David Miller <davem@davemloft.net>, Simon Horman <horms@verge.net.au>
-Subject: Code paths setting gso_size
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=C/CTOwPz6GQKp4SUnrxcjWqQbTsZM2PsiQ1nFtdzQiiP1clME7Bk1HVV0y0YZT07VM
+         qcIraT2omuEaMR+2VX5mQCJjVTZzuhtX5F+xh5RG4FAzsK3ef48DCI/bqB2W0WpxuVMG
+         7waWy9C2BJ6l3fgba7yoMABIEzIdqfEPLyo3s=
+Subject: Re: [PATCH v4 2/7] net: remove old tcp_optlen function
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+Cc: Dan Carpenter <error27@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Michael Chan <mchan@broadcom.com>,
+       Simon Horman <horms@verge.net.au>
+In-Reply-To: <4B9B7312.80301@gmail.com>
+References: <4B98D592.6040301@gmail.com> <4B98D9A2.8060603@gmail.com>
+	 <4B9A40BC.4030301@gmail.com> <20100312174656.GA12175@bicker>
+	 <4B9AC8C5.2010300@gmail.com> <1268471488.2947.26.camel@edumazet-laptop>
+	 <4B9B7312.80301@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 13 Mar 2010 12:24:30 +0100
+Message-ID: <1268479470.2947.33.camel@edumazet-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a new thread dedicated to a specific topic, spawned by an
-earlier discussion.  I've CC'd only those that participated recently.
+Le samedi 13 mars 2010 à 06:12 -0500, William Allen Simpson a écrit :
 
-I've written:
-# In this particular instance, I suggest that you take a look at all the
-# places that gso_size is set, and cross index with all the code paths that
-# place these TCP headers onto the txq without a check of doff -- as I did!
-#
-# I'll specifically mention the tun and virtio_net devices, but I'm also
-# particularly concerned with af_packet.c and skbuff.c -- and the general
-# problem with inet_lro.c, too.
-#
-# Amazingly enough, folks sometimes use Linux for routers....
-#
+> Since you agree with David, perhaps you could kindly point out exactly
+> how your statement is true?  Proof by assertion is generally not good
+> argumentation.
+> 
 
-Eric (and David) have written:
-# Only *locally* generated trafic by linux kernel can enter this path.
-#
 
-So, let us begin with the tun device, and work our way through the others.
+You have to bring proof of your claims, not the reverse.
+
+You started the whole game, adding whole universe into this minor netdev
+discussion for an obscure and yet to be aknowledged bug, not me.
+
+Therefore, I wont continue this trolling. You apparently want some
+public exposure I have no idea why.
+
+Have a good week end.
+
 
