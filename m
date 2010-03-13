@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935172Ab0CMBQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:16:08 -0500
-Received: from kroah.org ([198.145.64.141]:32786 "EHLO coco.kroah.org"
+	id S935005Ab0CMAUt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:20:49 -0500
+Received: from kroah.org ([198.145.64.141]:60703 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934896Ab0CMAUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:50 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
-Message-Id: <20100313001513.101106817@kvm.kroah.org>
+	id S934896Ab0CMAUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:01 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:08 2010
+Message-Id: <20100313001508.681890784@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:09 -0800
+Date: Fri, 12 Mar 2010 16:12:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yinghai@kernel.org>, Brandon Phililps <bphilips@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 091/123] x86: Avoid race condition in pci_enable_msix()
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 040/123] perf: Reimplement frequency driven sampling
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,215 +26,226 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Brandon Phiilps <bphilips@suse.de>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-commit ced5b697a76d325e7a7ac7d382dbbb632c765093 upstream.
+commit abd50713944c8ea9e0af5b7bffa0aacae21cc91a upstream.
 
-Keep chip_data in create_irq_nr and destroy_irq.
+There was a bug in the old period code that caused intel_pmu_enable_all()
+or native_write_msr_safe() to show up quite high in the profiles.
 
-When two drivers are setting up MSI-X at the same time via
-pci_enable_msix() there is a race.  See this dmesg excerpt:
+In staring at that code it made my head hurt, so I rewrote it in a
+hopefully simpler fashion. Its now fully symetric between tick and
+overflow driven adjustments and uses less data to boot.
 
-[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
-[   85.170611]   alloc irq_desc for 99 on node -1
-[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
-[   85.170614]   alloc kstat_irqs on node -1
-[   85.170616] alloc irq_2_iommu on node -1
-[   85.170617]   alloc irq_desc for 100 on node -1
-[   85.170619]   alloc kstat_irqs on node -1
-[   85.170621] alloc irq_2_iommu on node -1
-[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
-[   85.170626]   alloc irq_desc for 101 on node -1
-[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
-[   85.170630]   alloc kstat_irqs on node -1
-[   85.170631] alloc irq_2_iommu on node -1
-[   85.170635]   alloc irq_desc for 102 on node -1
-[   85.170636]   alloc kstat_irqs on node -1
-[   85.170639] alloc irq_2_iommu on node -1
-[   85.170646] BUG: unable to handle kernel NULL pointer dereference
-at 0000000000000088
+The only complication is that it basically wants to do a u128 division.
+The code approximates that in a rather simple truncate until it fits
+fashion, taking care to balance the terms while truncating.
 
-As you can see igb and ixgbe are both alternating on create_irq_nr()
-via pci_enable_msix() in their probe function.
+This version does not generate that sampling artefact.
 
-ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
-choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
-calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
-NULL via dynamic_irq_init().
-
-igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
-via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
-
-	cfg_new = irq_desc_ptrs[102]->chip_data;
-	if (cfg_new->vector != 0)
-		continue;
-
-This hits the NULL deref.
-
-Another possible race exists via pci_disable_msix() in a driver or in
-the number of error paths that call free_msi_irqs():
-
-destroy_irq()
-dynamic_irq_cleanup() which sets desc->chip_data = NULL
-...race window...
-desc->chip_data = cfg;
-
-Remove the save and restore code for cfg in create_irq_nr() and
-destroy_irq() and take the desc->lock when checking the irq_cfg.
-
-Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <1265793639-15071-3-git-send-email-yinghai@kernel.org>
-Signed-off-by: Brandon Phililps <bphilips@suse.de>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/apic/io_apic.c |   18 +++-----------
- include/linux/irq.h            |    2 +
- kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
- 3 files changed, 50 insertions(+), 22 deletions(-)
+ include/linux/perf_event.h |    5 -
+ kernel/perf_event.c        |  132 +++++++++++++++++++++++++++++++--------------
+ 2 files changed, 94 insertions(+), 43 deletions(-)
 
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3228,12 +3228,9 @@ unsigned int create_irq_nr(unsigned int
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -496,9 +496,8 @@ struct hw_perf_event {
+ 	atomic64_t			period_left;
+ 	u64				interrupts;
+ 
+-	u64				freq_count;
+-	u64				freq_interrupts;
+-	u64				freq_stamp;
++	u64				freq_time_stamp;
++	u64				freq_count_stamp;
+ #endif
+ };
+ 
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1350,14 +1350,83 @@ static void perf_event_cpu_sched_in(stru
+ 
+ static void perf_log_throttle(struct perf_event *event, int enable);
+ 
+-static void perf_adjust_period(struct perf_event *event, u64 events)
++static u64 perf_calculate_period(struct perf_event *event, u64 nsec, u64 count)
++{
++	u64 frequency = event->attr.sample_freq;
++	u64 sec = NSEC_PER_SEC;
++	u64 divisor, dividend;
++
++	int count_fls, nsec_fls, frequency_fls, sec_fls;
++
++	count_fls = fls64(count);
++	nsec_fls = fls64(nsec);
++	frequency_fls = fls64(frequency);
++	sec_fls = 30;
++
++	/*
++	 * We got @count in @nsec, with a target of sample_freq HZ
++	 * the target period becomes:
++	 *
++	 *             @count * 10^9
++	 * period = -------------------
++	 *          @nsec * sample_freq
++	 *
++	 */
++
++	/*
++	 * Reduce accuracy by one bit such that @a and @b converge
++	 * to a similar magnitude.
++	 */
++#define REDUCE_FLS(a, b) 		\
++do {					\
++	if (a##_fls > b##_fls) {	\
++		a >>= 1;		\
++		a##_fls--;		\
++	} else {			\
++		b >>= 1;		\
++		b##_fls--;		\
++	}				\
++} while (0)
++
++	/*
++	 * Reduce accuracy until either term fits in a u64, then proceed with
++	 * the other, so that finally we can do a u64/u64 division.
++	 */
++	while (count_fls + sec_fls > 64 && nsec_fls + frequency_fls > 64) {
++		REDUCE_FLS(nsec, frequency);
++		REDUCE_FLS(sec, count);
++	}
++
++	if (count_fls + sec_fls > 64) {
++		divisor = nsec * frequency;
++
++		while (count_fls + sec_fls > 64) {
++			REDUCE_FLS(count, sec);
++			divisor >>= 1;
++		}
++
++		dividend = count * sec;
++	} else {
++		dividend = count * sec;
++
++		while (nsec_fls + frequency_fls > 64) {
++			REDUCE_FLS(nsec, frequency);
++			dividend >>= 1;
++		}
++
++		divisor = nsec * frequency;
++	}
++
++	return div64_u64(dividend, divisor);
++}
++
++static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+ 	u64 period, sample_period;
+ 	s64 delta;
+ 
+-	events *= hwc->sample_period;
+-	period = div64_u64(events, event->attr.sample_freq);
++	period = perf_calculate_period(event, nsec, count);
+ 
+ 	delta = (s64)(period - hwc->sample_period);
+ 	delta = (delta + 7) / 8; /* low pass filter */
+@@ -1368,13 +1437,22 @@ static void perf_adjust_period(struct pe
+ 		sample_period = 1;
+ 
+ 	hwc->sample_period = sample_period;
++
++	if (atomic64_read(&hwc->period_left) > 8*sample_period) {
++		perf_disable();
++		event->pmu->disable(event);
++		atomic64_set(&hwc->period_left, 0);
++		event->pmu->enable(event);
++		perf_enable();
++	}
+ }
+ 
+ static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
+ {
+ 	struct perf_event *event;
+ 	struct hw_perf_event *hwc;
+-	u64 interrupts, freq;
++	u64 interrupts, now;
++	s64 delta;
+ 
+ 	raw_spin_lock(&ctx->lock);
+ 	list_for_each_entry_rcu(event, &ctx->event_list, event_entry) {
+@@ -1395,44 +1473,18 @@ static void perf_ctx_adjust_freq(struct
+ 		if (interrupts == MAX_INTERRUPTS) {
+ 			perf_log_throttle(event, 1);
+ 			event->pmu->unthrottle(event);
+-			interrupts = 2*sysctl_perf_event_sample_rate/HZ;
+ 		}
+ 
+ 		if (!event->attr.freq || !event->attr.sample_freq)
+ 			continue;
+ 
+-		/*
+-		 * if the specified freq < HZ then we need to skip ticks
+-		 */
+-		if (event->attr.sample_freq < HZ) {
+-			freq = event->attr.sample_freq;
+-
+-			hwc->freq_count += freq;
+-			hwc->freq_interrupts += interrupts;
+-
+-			if (hwc->freq_count < HZ)
+-				continue;
+-
+-			interrupts = hwc->freq_interrupts;
+-			hwc->freq_interrupts = 0;
+-			hwc->freq_count -= HZ;
+-		} else
+-			freq = HZ;
++		event->pmu->read(event);
++		now = atomic64_read(&event->count);
++		delta = now - hwc->freq_count_stamp;
++		hwc->freq_count_stamp = now;
+ 
+-		perf_adjust_period(event, freq * interrupts);
+-
+-		/*
+-		 * In order to avoid being stalled by an (accidental) huge
+-		 * sample period, force reset the sample period if we didn't
+-		 * get any events in this freq period.
+-		 */
+-		if (!interrupts) {
+-			perf_disable();
+-			event->pmu->disable(event);
+-			atomic64_set(&hwc->period_left, 0);
+-			event->pmu->enable(event);
+-			perf_enable();
+-		}
++		if (delta > 0)
++			perf_adjust_period(event, TICK_NSEC, delta);
  	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
- 
--	if (irq > 0) {
--		dynamic_irq_init(irq);
--		/* restore it, in case dynamic_irq_init clear it */
--		if (desc_new)
--			desc_new->chip_data = cfg_new;
--	}
-+	if (irq > 0)
-+		dynamic_irq_init_keep_chip_data(irq);
-+
- 	return irq;
+ 	raw_spin_unlock(&ctx->lock);
  }
+@@ -3688,12 +3740,12 @@ static int __perf_event_overflow(struct
  
-@@ -3256,17 +3253,12 @@ void destroy_irq(unsigned int irq)
- {
- 	unsigned long flags;
- 	struct irq_cfg *cfg;
--	struct irq_desc *desc;
+ 	if (event->attr.freq) {
+ 		u64 now = perf_clock();
+-		s64 delta = now - hwc->freq_stamp;
++		s64 delta = now - hwc->freq_time_stamp;
  
--	/* store it, in case dynamic_irq_cleanup clear it */
--	desc = irq_to_desc(irq);
--	cfg = desc->chip_data;
--	dynamic_irq_cleanup(irq);
--	/* connect back irq_cfg */
--	desc->chip_data = cfg;
-+	dynamic_irq_cleanup_keep_chip_data(irq);
+-		hwc->freq_stamp = now;
++		hwc->freq_time_stamp = now;
  
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
-+	cfg = irq_to_desc(irq)->chip_data;
- 	__clear_irq_vector(irq, cfg);
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
- 
- /* Dynamic irq helper functions */
- extern void dynamic_irq_init(unsigned int irq);
-+void dynamic_irq_init_keep_chip_data(unsigned int irq);
- extern void dynamic_irq_cleanup(unsigned int irq);
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
- 
- /* Set/get chip/data for an IRQ: */
- extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -18,11 +18,7 @@
- 
- #include "internals.h"
- 
--/**
-- *	dynamic_irq_init - initialize a dynamically allocated irq
-- *	@irq:	irq number to initialize
-- */
--void dynamic_irq_init(unsigned int irq)
-+static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->depth = 1;
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
-@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
- }
- 
- /**
-- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
-  */
--void dynamic_irq_cleanup(unsigned int irq)
-+void dynamic_irq_init(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ *	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_init_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, true);
-+}
-+
-+static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	unsigned long flags;
-@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
+-		if (delta > 0 && delta < TICK_NSEC)
+-			perf_adjust_period(event, NSEC_PER_SEC / (int)delta);
++		if (delta > 0 && delta < 2*TICK_NSEC)
++			perf_adjust_period(event, delta, hwc->last_period);
  	}
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- }
  
-+/**
-+ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ */
-+void dynamic_irq_cleanup(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ *	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, true);
-+}
-+
- 
- /**
-  *	set_irq_chip - set the irq chip for an irq
+ 	/*
 
 
