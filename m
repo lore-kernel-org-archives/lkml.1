@@ -1,166 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935178Ab0CMAXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:23:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46918 "EHLO hera.kernel.org"
+	id S935076Ab0CMAYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:24:49 -0500
+Received: from kroah.org ([198.145.64.141]:32895 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935123Ab0CMAVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:49 -0500
-Date: Sat, 13 Mar 2010 00:20:57 GMT
-From: tip-bot for John Stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, johnstul@us.ibm.com, vapier@gentoo.org,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, akpm@linux-foundation.org, vapier@gentoo.org,
-       tglx@linutronix.de
-In-Reply-To: <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
-References: <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/cleanup] blackfin: Convert blackfin to use read/update_persistent_clock
-Message-ID: <tip-cb0e996378900fa05d5c779d6bfa52d55ebc3407@git.kernel.org>
-Git-Commit-ID: cb0e996378900fa05d5c779d6bfa52d55ebc3407
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:20:58 +0000 (UTC)
+	id S935071Ab0CMAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:13 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.642272234@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:13:38 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 120/123] sched: Fix sched_mv_power_savings for !SMT
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cb0e996378900fa05d5c779d6bfa52d55ebc3407
-Gitweb:     http://git.kernel.org/tip/cb0e996378900fa05d5c779d6bfa52d55ebc3407
-Author:     John Stultz <johnstul@us.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 19:57:24 -0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 13 Mar 2010 01:14:12 +0100
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-blackfin: Convert blackfin to use read/update_persistent_clock
+-----------------
 
-This patch converts the blackfin architecture to use the generic
-read_persistent_clock and update_persistent_clock interfaces, reducing
-the amount of arch specific code we have to maintain, and allowing for
-further cleanups in the future.
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-I have not built or tested this patch, so help from arch maintainers
-would be appreciated.
+commit 28f5318167adf23b16c844b9c2253f355cb21796 upstream.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Cc: Mike Frysinger <vapier@gentoo.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
+Fix for sched_mc_powersavigs for pre-Nehalem platforms.
+Child sched domain should clear SD_PREFER_SIBLING if parent will have
+SD_POWERSAVINGS_BALANCE because they are contradicting.
+
+Sets the flags correctly based on sched_mc_power_savings.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20100208100555.GD2931@dirshya.in.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/blackfin/kernel/time-ts.c |   13 +++++++------
- arch/blackfin/kernel/time.c    |   39 ++++++---------------------------------
- 2 files changed, 13 insertions(+), 39 deletions(-)
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-diff --git a/arch/blackfin/kernel/time-ts.c b/arch/blackfin/kernel/time-ts.c
-index 17c38c5..08dd3e8 100644
---- a/arch/blackfin/kernel/time-ts.c
-+++ b/arch/blackfin/kernel/time-ts.c
-@@ -348,9 +348,15 @@ static int __init bfin_clockevent_init(void)
- 	return 0;
- }
+---
+ include/linux/sched.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -878,7 +878,10 @@ static inline int sd_balance_for_mc_powe
+ 	if (sched_smt_power_savings)
+ 		return SD_POWERSAVINGS_BALANCE;
  
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
- {
- 	time_t secs_since_1970 = (365 * 37 + 9) * 24 * 60 * 60;	/* 1 Jan 2007 */
-+	ts->tv_sec = secs_since_1970;
-+	ts->tv_nsec = 0;
-+}
+-	return SD_PREFER_SIBLING;
++	if (!sched_mc_power_savings)
++		return SD_PREFER_SIBLING;
 +
-+void __init time_init(void)
-+{
- 
- #ifdef CONFIG_RTC_DRV_BFIN
- 	/* [#2663] hack to filter junk RTC values that would cause
-@@ -363,11 +369,6 @@ void __init time_init(void)
- 	}
- #endif
- 
--	/* Initialize xtime. From now on, xtime is updated with timer interrupts */
--	xtime.tv_sec = secs_since_1970;
--	xtime.tv_nsec = 0;
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
--
- 	bfin_cs_cycles_init();
- 	bfin_cs_gptimer0_init();
- 	bfin_clockevent_init();
-diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
-index 13c1ee3..c911361 100644
---- a/arch/blackfin/kernel/time.c
-+++ b/arch/blackfin/kernel/time.c
-@@ -112,11 +112,6 @@ u32 arch_gettimeoffset(void)
- }
- #endif
- 
--static inline int set_rtc_mmss(unsigned long nowtime)
--{
--	return 0;
--}
--
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick
-@@ -126,29 +121,8 @@ __attribute__((l1_text))
- #endif
- irqreturn_t timer_interrupt(int irq, void *dummy)
- {
--	/* last time the cmos clock got updated */
--	static long last_rtc_update;
--
- 	write_seqlock(&xtime_lock);
- 	do_timer(1);
--
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 */
--	if (ntp_synced() &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / NSEC_PER_USEC) >=
--	    500000 - ((unsigned)TICK_SIZE) / 2
--	    && (xtime.tv_nsec / NSEC_PER_USEC) <=
--	    500000 + ((unsigned)TICK_SIZE) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			/* Do it again in 60s. */
--			last_rtc_update = xtime.tv_sec - 600;
--	}
- 	write_sequnlock(&xtime_lock);
- 
- #ifdef CONFIG_IPIPE
-@@ -161,10 +135,15 @@ irqreturn_t timer_interrupt(int irq, void *dummy)
- 	return IRQ_HANDLED;
++	return 0;
  }
  
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
- {
- 	time_t secs_since_1970 = (365 * 37 + 9) * 24 * 60 * 60;	/* 1 Jan 2007 */
-+	ts->tv_sec = secs_since_1970;
-+	ts->tv_nsec = 0;
-+}
- 
-+void __init time_init(void)
-+{
- #ifdef CONFIG_RTC_DRV_BFIN
- 	/* [#2663] hack to filter junk RTC values that would cause
- 	 * userspace to have to deal with time values greater than
-@@ -176,11 +155,5 @@ void __init time_init(void)
- 	}
- #endif
- 
--	/* Initialize xtime. From now on, xtime is updated with timer interrupts */
--	xtime.tv_sec = secs_since_1970;
--	xtime.tv_nsec = 0;
--
--	wall_to_monotonic.tv_sec = -xtime.tv_sec;
--
- 	time_sched_init(timer_interrupt);
- }
+ static inline int sd_balance_for_package_power(void)
+
+
