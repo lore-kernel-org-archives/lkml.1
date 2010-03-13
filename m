@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935638Ab0CMAeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:34:16 -0500
-Received: from kroah.org ([198.145.64.141]:47006 "EHLO coco.kroah.org"
+	id S934857Ab0CMAgO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:36:14 -0500
+Received: from kroah.org ([198.145.64.141]:47157 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935466Ab0CMAbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:51 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
-Message-Id: <20100313002712.124505884@kvm.kroah.org>
+	id S935459Ab0CMAcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:19 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:15 2010
+Message-Id: <20100313002715.366613099@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:52 -0800
+Date: Fri, 12 Mar 2010 16:27:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel T Chen <crimsun@ubuntu.com>, Takashi Iwai <tiwai@suse.de>
-Subject: [079/145] ALSA: hda: Use LPIB for a Biostar Microtech board
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [116/145] x86: Fix SCI on IOAPIC != 0
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,33 +24,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Daniel T Chen <crimsun@ubuntu.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit 0321b69569eadbc13242922925a4316754c5f744 upstream.
+commit 18dce6ba5c8c6bd0f3ab4efa4cbdd698dab5c40a upstream.
 
-BugLink: https://launchpad.net/bugs/523953
+Thomas Renninger <trenn@suse.de> reported on IBM x3330
 
-The OR has verified that position_fix=1 is necessary to work around
-errors on his machine.
+booting a latest kernel on this machine results in:
 
-Reported-by: MMarking
-Signed-off-by: Daniel T Chen <crimsun@ubuntu.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
+PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
+ACPI: SCI (IRQ30) allocation failed
+ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
+ACPI: Unable to start the ACPI Interpreter
+
+Later all kind of devices fail...
+
+and bisect it down to this commit:
+commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+
+    x86/pci: update pirq_enable_irq() to setup io apic routing
+
+it turns out we need to set irq routing for the sci on ioapic1 early.
+
+-v2: make it work without sparseirq too.
+-v3: fix checkpatch.pl warning, and cc to stable
+
+Reported-by: Thomas Renninger <trenn@suse.de>
+Bisected-by: Thomas Renninger <trenn@suse.de>
+Tested-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/include/asm/io_apic.h |    1 
+ arch/x86/kernel/acpi/boot.c    |    9 ++++++-
+ arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 1 deletion(-)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -2226,6 +2226,7 @@ static struct snd_pci_quirk position_fix
- 	SND_PCI_QUIRK(0x1028, 0x01de, "Dell Precision 390", POS_FIX_LPIB),
- 	SND_PCI_QUIRK(0x1043, 0x813d, "ASUS P5AD2", POS_FIX_LPIB),
- 	SND_PCI_QUIRK(0x1028, 0x01f6, "Dell Latitude 131L", POS_FIX_LPIB),
-+	SND_PCI_QUIRK(0x1565, 0x820f, "Biostar Microtech", POS_FIX_LPIB),
- 	{}
- };
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int
+ struct io_apic_irq_attr;
+ extern int io_apic_set_pci_routing(struct device *dev, int irq,
+ 		 struct io_apic_irq_attr *irq_attr);
++void setup_IO_APIC_irq_extra(u32 gsi);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
+ extern void ioapic_insert_resources(void);
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(uns
+ int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
+ {
+ 	*irq = gsi;
++
++#ifdef CONFIG_X86_IO_APIC
++	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
++		setup_IO_APIC_irq_extra(gsi);
++#endif
++
+ 	return 0;
+ }
  
+@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev
+ 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
+ 	}
+ #endif
+-	acpi_gsi_to_irq(plat_gsi, &irq);
++	irq = plat_gsi;
++
+ 	return irq;
+ }
+ 
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1550,6 +1550,56 @@ static void __init setup_IO_APIC_irqs(vo
+ }
+ 
+ /*
++ * for the gsit that is not in first ioapic
++ * but could not use acpi_register_gsi()
++ * like some special sci in IBM x3330
++ */
++void setup_IO_APIC_irq_extra(u32 gsi)
++{
++	int apic_id = 0, pin, idx, irq;
++	int node = cpu_to_node(boot_cpu_id);
++	struct irq_desc *desc;
++	struct irq_cfg *cfg;
++
++	/*
++	 * Convert 'gsi' to 'ioapic.pin'.
++	 */
++	apic_id = mp_find_ioapic(gsi);
++	if (apic_id < 0)
++		return;
++
++	pin = mp_find_ioapic_pin(apic_id, gsi);
++	idx = find_irq_entry(apic_id, pin, mp_INT);
++	if (idx == -1)
++		return;
++
++	irq = pin_2_irq(idx, apic_id, pin);
++#ifdef CONFIG_SPARSE_IRQ
++	desc = irq_to_desc(irq);
++	if (desc)
++		return;
++#endif
++	desc = irq_to_desc_alloc_node(irq, node);
++	if (!desc) {
++		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
++		return;
++	}
++
++	cfg = desc->chip_data;
++	add_pin_to_irq_node(cfg, node, apic_id, pin);
++
++	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[apic_id].apicid, pin);
++		return;
++	}
++	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
++
++	setup_IO_APIC_irq(apic_id, pin, irq, desc,
++			irq_trigger(idx), irq_polarity(idx));
++}
++
++/*
+  * Set up the timer pin, possibly with the 8259A-master behind.
+  */
+ static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
 
 
