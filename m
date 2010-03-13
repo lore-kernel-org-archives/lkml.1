@@ -1,85 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935252Ab0CMA1G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:27:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60444 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935052Ab0CMA0r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:26:47 -0500
-Date: Fri, 12 Mar 2010 16:25:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] vsprintf.c: Use noinline_for_stack
-Message-Id: <20100312162559.a8e51777.akpm@linux-foundation.org>
-In-Reply-To: <1267929215.1937.18.camel@Joe-Laptop.home>
-References: <cover.1267682641.git.joe@perches.com>
-	<20100304143837.af39845d.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.1003041504080.3751@localhost.localdomain>
-	<1267911399.849.39.camel@Joe-Laptop.home>
-	<alpine.LFD.2.00.1003061356420.31447@localhost.localdomain>
-	<1267914654.849.81.camel@Joe-Laptop.home>
-	<alpine.LFD.2.00.1003061445490.31447@localhost.localdomain>
-	<alpine.LFD.2.00.1003061455590.31447@localhost.localdomain>
-	<1267918554.849.89.camel@Joe-Laptop.home>
-	<alpine.LFD.2.00.1003061540470.23804@localhost.localdomain>
-	<alpine.LFD.2.00.1003061547490.23804@localhost.localdomain>
-	<alpine.LFD.2.00.1003061556420.23804@localhost.localdomain>
-	<1267924214.1937.12.camel@Joe-Laptop.home>
-	<alpine.LFD.2.00.1003061755400.23804@localhost.localdomain>
-	<1267929215.1937.18.camel@Joe-Laptop.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S935304Ab0CMA2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:28:24 -0500
+Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935045Ab0CMAVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:05 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
+Message-Id: <20100313001514.412919417@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:13:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Tom Tucker <tom@opengridcomputing.com>, NeilBrown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 106/123] sunrpc: remove unnecessary svc_xprt_put
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Mar 2010 18:33:35 -0800
-Joe Perches <joe@perches.com> wrote:
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-> On Sat, 2010-03-06 at 18:03 -0800, Linus Torvalds wrote:
-> > A few noinlines might be appropriate.
-> 
-> Mark static functions with noinline_for_stack
-> 
+-----------------
 
--ENOTESTINGRESULTS.
+From: Neil Brown <neilb@suse.de>
+
+commit ab1b18f70a007ea6caeb007d269abb75b131a410 upstream.
+
+The 'struct svc_deferred_req's on the xpt_deferred queue do not
+own a reference to the owning xprt.  This is seen in svc_revisit
+which is where things are added to this queue.  dr->xprt is set to
+NULL and the reference to the xprt it put.
+
+So when this list is cleaned up in svc_delete_xprt, we mustn't
+put the reference.
+
+Also, replace the 'for' with a 'while' which is arguably
+simpler and more likely to compile efficiently.
+
+Cc: Tom Tucker <tom@opengridcomputing.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ net/sunrpc/svc_xprt.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/net/sunrpc/svc_xprt.c
++++ b/net/sunrpc/svc_xprt.c
+@@ -889,11 +889,8 @@ void svc_delete_xprt(struct svc_xprt *xp
+ 	if (test_bit(XPT_TEMP, &xprt->xpt_flags))
+ 		serv->sv_tmpcnt--;
+ 
+-	for (dr = svc_deferred_dequeue(xprt); dr;
+-	     dr = svc_deferred_dequeue(xprt)) {
+-		svc_xprt_put(xprt);
++	while ((dr = svc_deferred_dequeue(xprt)) != NULL)
+ 		kfree(dr);
+-	}
+ 
+ 	svc_xprt_put(xprt);
+ 	spin_unlock_bh(&serv->sv_lock);
 
 
-
-Before:
-
-akpm:/usr/src/25> objdump -d lib/vsprintf.o | perl scripts/checkstack.pl
-0x00000e82 pointer [vsprintf.o]:                        344
-0x0000198c pointer [vsprintf.o]:                        344
-0x000025d6 scnprintf [vsprintf.o]:                      216
-0x00002648 scnprintf [vsprintf.o]:                      216
-0x00002565 snprintf [vsprintf.o]:                       208
-0x0000267c sprintf [vsprintf.o]:                        208
-0x000030a3 bprintf [vsprintf.o]:                        208
-0x00003b1e sscanf [vsprintf.o]:                         208
-0x00000608 number [vsprintf.o]:                         136
-0x00000937 number [vsprintf.o]:                         136
-
-After:
-
-akpm:/usr/src/25> objdump -d lib/vsprintf.o | perl scripts/checkstack.pl  
-0x00000a7c symbol_string [vsprintf.o]:                  248
-0x00000ae8 symbol_string [vsprintf.o]:                  248
-0x00002310 scnprintf [vsprintf.o]:                      216
-0x00002382 scnprintf [vsprintf.o]:                      216
-0x0000229f snprintf [vsprintf.o]:                       208
-0x000023b6 sprintf [vsprintf.o]:                        208
-0x00002ddd bprintf [vsprintf.o]:                        208
-0x00003858 sscanf [vsprintf.o]:                         208
-0x00000625 number [vsprintf.o]:                         136
-0x00000954 number [vsprintf.o]:                         136
-
-nice.
