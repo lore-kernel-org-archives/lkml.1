@@ -1,23 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935147Ab0CMAWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:22:03 -0500
+	id S935166Ab0CMA3W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:29:22 -0500
 Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935039Ab0CMAVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:01 -0500
+	id S935033Ab0CMAU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:59 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
-Message-Id: <20100313001514.241125623@kvm.kroah.org>
+Message-Id: <20100313001514.049227368@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:22 -0800
+Date: Fri, 12 Mar 2010 16:13:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Maarten Maathuis <madman2003@gmail.com>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Dave Airlie <airlied@redhat.com>
-Subject: [patch 104/123] drm/ttm: handle OOM in ttm_tt_swapout
+       Jan Dumon <j.dumon@option.com>, Phil Dibowitz <phil@ipom.com>
+Subject: [patch 102/123] USB: unusual_devs: Add support for multiple Option 3G sticks
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,91 +26,126 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Maarten Maathuis <madman2003@gmail.com>
+From: Jan Dumon <j.dumon@option.com>
 
-commit 290e55056ec3d25c72088628245d8cae037b30db upstream.
+commit 46216e4fbe8c62059b5440dec0b236f386248a41 upstream.
 
-- Without this change I get a general protection fault.
-- Also use PTR_ERR where applicable.
+Enable the SD-Card interface on multiple Option 3G sticks.
+The unusual_devs.h entry is necessary because the device descriptor is
+vendor-specific. That prevents usb-storage from binding to it as an interface
+driver.
 
-Signed-off-by: Maarten Maathuis <madman2003@gmail.com>
-Reviewed-by: Dave Airlie <airlied@redhat.com>
-Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Jan Dumon <j.dumon@option.com>
+Signed-off-by: Phil Dibowitz <phil@ipom.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/ttm/ttm_tt.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+ drivers/usb/storage/unusual_devs.h |   88 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 86 insertions(+), 2 deletions(-)
 
---- a/drivers/gpu/drm/ttm/ttm_tt.c
-+++ b/drivers/gpu/drm/ttm/ttm_tt.c
-@@ -480,7 +480,7 @@ static int ttm_tt_swapin(struct ttm_tt *
- 	void *from_virtual;
- 	void *to_virtual;
- 	int i;
--	int ret;
-+	int ret = -ENOMEM;
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1147,8 +1147,8 @@ UNUSUAL_DEV( 0x0af0, 0x7401, 0x0000, 0x0
+ 		0 ),
  
- 	if (ttm->page_flags & TTM_PAGE_FLAG_USER) {
- 		ret = ttm_tt_set_user(ttm, ttm->tsk, ttm->start,
-@@ -499,8 +499,10 @@ static int ttm_tt_swapin(struct ttm_tt *
+ /* Reported by Jan Dumon <j.dumon@option.com>
+- * This device (wrongly) has a vendor-specific device descriptor.
+- * The entry is needed so usb-storage can bind to it's mass-storage
++ * These devices (wrongly) have a vendor-specific device descriptor.
++ * These entries are needed so usb-storage can bind to their mass-storage
+  * interface as an interface driver */
+ UNUSUAL_DEV( 0x0af0, 0x7501, 0x0000, 0x0000,
+ 		"Option",
+@@ -1156,6 +1156,90 @@ UNUSUAL_DEV( 0x0af0, 0x7501, 0x0000, 0x0
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		0 ),
  
- 	for (i = 0; i < ttm->num_pages; ++i) {
- 		from_page = read_mapping_page(swap_space, i, NULL);
--		if (IS_ERR(from_page))
-+		if (IS_ERR(from_page)) {
-+			ret = PTR_ERR(from_page);
- 			goto out_err;
-+		}
- 		to_page = __ttm_tt_get_page(ttm, i);
- 		if (unlikely(to_page == NULL))
- 			goto out_err;
-@@ -523,7 +525,7 @@ static int ttm_tt_swapin(struct ttm_tt *
- 	return 0;
- out_err:
- 	ttm_tt_free_alloced_pages(ttm);
--	return -ENOMEM;
-+	return ret;
- }
- 
- int ttm_tt_swapout(struct ttm_tt *ttm, struct file *persistant_swap_storage)
-@@ -535,6 +537,7 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
- 	void *from_virtual;
- 	void *to_virtual;
- 	int i;
-+	int ret = -ENOMEM;
- 
- 	BUG_ON(ttm->state != tt_unbound && ttm->state != tt_unpopulated);
- 	BUG_ON(ttm->caching_state != tt_cached);
-@@ -557,7 +560,7 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
- 						0);
- 		if (unlikely(IS_ERR(swap_storage))) {
- 			printk(KERN_ERR "Failed allocating swap storage.\n");
--			return -ENOMEM;
-+			return PTR_ERR(swap_storage);
- 		}
- 	} else
- 		swap_storage = persistant_swap_storage;
-@@ -569,9 +572,10 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
- 		if (unlikely(from_page == NULL))
- 			continue;
- 		to_page = read_mapping_page(swap_space, i, NULL);
--		if (unlikely(to_page == NULL))
-+		if (unlikely(IS_ERR(to_page))) {
-+			ret = PTR_ERR(to_page);
- 			goto out_err;
--
-+		}
- 		preempt_disable();
- 		from_virtual = kmap_atomic(from_page, KM_USER0);
- 		to_virtual = kmap_atomic(to_page, KM_USER1);
-@@ -595,5 +599,5 @@ out_err:
- 	if (!persistant_swap_storage)
- 		fput(swap_storage);
- 
--	return -ENOMEM;
-+	return ret;
- }
++UNUSUAL_DEV( 0x0af0, 0x7701, 0x0000, 0x0000,
++		"Option",
++		"GI 0451 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x7706, 0x0000, 0x0000,
++		"Option",
++		"GI 0451 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x7901, 0x0000, 0x0000,
++		"Option",
++		"GI 0452 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x7A01, 0x0000, 0x0000,
++		"Option",
++		"GI 0461 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x7A05, 0x0000, 0x0000,
++		"Option",
++		"GI 0461 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x8300, 0x0000, 0x0000,
++		"Option",
++		"GI 033x SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x8302, 0x0000, 0x0000,
++		"Option",
++		"GI 033x SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0x8304, 0x0000, 0x0000,
++		"Option",
++		"GI 033x SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xc100, 0x0000, 0x0000,
++		"Option",
++		"GI 070x SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xd057, 0x0000, 0x0000,
++		"Option",
++		"GI 1505 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xd058, 0x0000, 0x0000,
++		"Option",
++		"GI 1509 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xd157, 0x0000, 0x0000,
++		"Option",
++		"GI 1515 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xd257, 0x0000, 0x0000,
++		"Option",
++		"GI 1215 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
++UNUSUAL_DEV( 0x0af0, 0xd357, 0x0000, 0x0000,
++		"Option",
++		"GI 1505 SD-Card",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		0 ),
++
+ /* Reported by Ben Efros <ben@pc-doctor.com> */
+ UNUSUAL_DEV( 0x0bc2, 0x3010, 0x0000, 0x0000,
+ 		"Seagate",
 
 
