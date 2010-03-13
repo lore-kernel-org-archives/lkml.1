@@ -1,24 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935582Ab0CMArn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:47:43 -0500
-Received: from kroah.org ([198.145.64.141]:47144 "EHLO coco.kroah.org"
+	id S935771Ab0CMAsQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:48:16 -0500
+Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935517Ab0CMAcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:17 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:15 2010
-Message-Id: <20100313002715.174356688@kvm.kroah.org>
+	id S935509Ab0CMAcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:14 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
+Message-Id: <20100313002714.734756416@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:27 -0800
+Date: Fri, 12 Mar 2010 16:27:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?q?Pasi=20K=C3=A4rkk=C3=A4inen?= <pasik@iki.fi>,
-       <xen-devel@lists.xensource.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [114/145] x86, xen: Disable highmem PTE allocation even when CONFIG_HIGHPTE=y
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [109/145] thinkpad-acpi: make driver events work in NVRAM poll mode
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,76 +24,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit 817a824b75b1475f1b067c8cee318c7b4d66fcde upstream.
+commit 7f0cf712a74fcc3ad21f0bde95bd32c2f2cc3888 upstream.
 
-There's a path in the pagefault code where the kernel deliberately
-breaks its own locking rules by kmapping a high pte page without
-holding the pagetable lock (in at least page_check_address). This
-breaks Xen's ability to track the pinned/unpinned state of the
-page. There does not appear to be a viable workaround for this
-behaviour so simply disable HIGHPTE for all Xen guests.
+Thadeu Lima de Souza Cascardo reports this:
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-LKML-Reference: <1267204562-11844-1-git-send-email-ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Pasi Kärkkäinen <pasik@iki.fi>
-Cc: <xen-devel@lists.xensource.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Brightness notification does not work until the user writes to
+hotkey_mask attribute.  That's because the polling thread will only run
+if hotkey_user_mask is set and someone is reading the input device or
+if hotkey_driver_mask is set.  In this second case, this condition is
+not tested after the mask is changed, because the brightness and
+volume drivers are started after the hotkey drivers.
+
+Fix tpacpi_hotkey_driver_mask_set() to call hotkey_poll_setup(), so
+that the poller kthread will be started when needed.
+
+Reported-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Tested-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/xen/enlighten.c |    7 +++++++
- arch/x86/xen/mmu.c       |   11 ++++++-----
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ drivers/platform/x86/thinkpad_acpi.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -48,6 +48,7 @@
- #include <asm/traps.h>
- #include <asm/setup.h>
- #include <asm/desc.h>
-+#include <asm/pgalloc.h>
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/reboot.h>
-@@ -1092,6 +1093,12 @@ asmlinkage void __init xen_start_kernel(
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -2073,6 +2073,7 @@ static struct attribute_set *hotkey_dev_
  
- 	__supported_pte_mask |= _PAGE_IOMAP;
+ static void tpacpi_driver_event(const unsigned int hkey_event);
+ static void hotkey_driver_event(const unsigned int scancode);
++static void hotkey_poll_setup(const bool may_warn);
  
-+	/*
-+	 * Prevent page tables from being allocated in highmem, even
-+	 * if CONFIG_HIGHPTE is enabled.
-+	 */
-+	__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
+ /* HKEY.MHKG() return bits */
+ #define TP_HOTKEY_TABLET_MASK (1 << 3)
+@@ -2254,6 +2255,8 @@ static int tpacpi_hotkey_driver_mask_set
+ 
+ 	rc = hotkey_mask_set((hotkey_acpi_mask | hotkey_driver_mask) &
+ 							~hotkey_source_mask);
++	hotkey_poll_setup(true);
 +
- #ifdef CONFIG_X86_64
- 	/* Work out if we support NX */
- 	check_efer();
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1432,14 +1432,15 @@ static void *xen_kmap_atomic_pte(struct
- {
- 	pgprot_t prot = PAGE_KERNEL;
+ 	mutex_unlock(&hotkey_mutex);
  
-+	/*
-+	 * We disable highmem allocations for page tables so we should never
-+	 * see any calls to kmap_atomic_pte on a highmem page.
-+	 */
-+	BUG_ON(PageHighMem(page));
-+
- 	if (PagePinned(page))
- 		prot = PAGE_KERNEL_RO;
- 
--	if (0 && PageHighMem(page))
--		printk("mapping highpte %lx type %d prot %s\n",
--		       page_to_pfn(page), type,
--		       (unsigned long)pgprot_val(prot) & _PAGE_RW ? "WRITE" : "READ");
--
- 	return kmap_atomic_prot(page, type, prot);
+ 	return rc;
+@@ -2538,7 +2541,7 @@ static void hotkey_poll_stop_sync(void)
  }
- #endif
+ 
+ /* call with hotkey_mutex held */
+-static void hotkey_poll_setup(bool may_warn)
++static void hotkey_poll_setup(const bool may_warn)
+ {
+ 	const u32 poll_driver_mask = hotkey_driver_mask & hotkey_source_mask;
+ 	const u32 poll_user_mask = hotkey_user_mask & hotkey_source_mask;
+@@ -2569,7 +2572,7 @@ static void hotkey_poll_setup(bool may_w
+ 	}
+ }
+ 
+-static void hotkey_poll_setup_safe(bool may_warn)
++static void hotkey_poll_setup_safe(const bool may_warn)
+ {
+ 	mutex_lock(&hotkey_mutex);
+ 	hotkey_poll_setup(may_warn);
+@@ -2587,7 +2590,11 @@ static void hotkey_poll_set_freq(unsigne
+ 
+ #else /* CONFIG_THINKPAD_ACPI_HOTKEY_POLL */
+ 
+-static void hotkey_poll_setup_safe(bool __unused)
++static void hotkey_poll_setup(const bool __unused)
++{
++}
++
++static void hotkey_poll_setup_safe(const bool __unused)
+ {
+ }
+ 
 
 
