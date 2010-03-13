@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935304Ab0CMA2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:28:24 -0500
-Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	id S935224Ab0CMA2U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:28:20 -0500
+Received: from kroah.org ([198.145.64.141]:32810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935045Ab0CMAVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935042Ab0CMAVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Mar 2010 19:21:05 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
-Message-Id: <20100313001514.412919417@kvm.kroah.org>
+Message-Id: <20100313001514.324083524@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:24 -0800
+Date: Fri, 12 Mar 2010 16:13:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tom Tucker <tom@opengridcomputing.com>, NeilBrown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 106/123] sunrpc: remove unnecessary svc_xprt_put
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+Subject: [patch 105/123] drm/radeon/kms/atom: fix shr/shl ops
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,44 +26,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Neil Brown <neilb@suse.de>
+From: Alex Deucher <alexdeucher@gmail.com>
 
-commit ab1b18f70a007ea6caeb007d269abb75b131a410 upstream.
+commit 6a8a2d702b33c6ed5c789f21b4e89fdf221f01ca upstream.
 
-The 'struct svc_deferred_req's on the xpt_deferred queue do not
-own a reference to the owning xprt.  This is seen in svc_revisit
-which is where things are added to this queue.  dr->xprt is set to
-NULL and the reference to the xprt it put.
+The whole attribute table is valid for
+shr/shl ops.
 
-So when this list is cleaned up in svc_delete_xprt, we mustn't
-put the reference.
+Fixes fdo bug 26668
 
-Also, replace the 'for' with a 'while' which is arguably
-simpler and more likely to compile efficiently.
-
-Cc: Tom Tucker <tom@opengridcomputing.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sunrpc/svc_xprt.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/gpu/drm/radeon/atom.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/net/sunrpc/svc_xprt.c
-+++ b/net/sunrpc/svc_xprt.c
-@@ -889,11 +889,8 @@ void svc_delete_xprt(struct svc_xprt *xp
- 	if (test_bit(XPT_TEMP, &xprt->xpt_flags))
- 		serv->sv_tmpcnt--;
- 
--	for (dr = svc_deferred_dequeue(xprt); dr;
--	     dr = svc_deferred_dequeue(xprt)) {
--		svc_xprt_put(xprt);
-+	while ((dr = svc_deferred_dequeue(xprt)) != NULL)
- 		kfree(dr);
--	}
- 
- 	svc_xprt_put(xprt);
- 	spin_unlock_bh(&serv->sv_lock);
+--- a/drivers/gpu/drm/radeon/atom.c
++++ b/drivers/gpu/drm/radeon/atom.c
+@@ -881,8 +881,6 @@ static void atom_op_shl(atom_exec_contex
+ 	uint8_t attr = U8((*ptr)++), shift;
+ 	uint32_t saved, dst;
+ 	int dptr = *ptr;
+-	attr &= 0x38;
+-	attr |= atom_def_dst[attr >> 3] << 6;
+ 	SDEBUG("   dst: ");
+ 	dst = atom_get_dst(ctx, arg, attr, ptr, &saved, 1);
+ 	shift = atom_get_src(ctx, attr, ptr);
+@@ -897,8 +895,6 @@ static void atom_op_shr(atom_exec_contex
+ 	uint8_t attr = U8((*ptr)++), shift;
+ 	uint32_t saved, dst;
+ 	int dptr = *ptr;
+-	attr &= 0x38;
+-	attr |= atom_def_dst[attr >> 3] << 6;
+ 	SDEBUG("   dst: ");
+ 	dst = atom_get_dst(ctx, arg, attr, ptr, &saved, 1);
+ 	shift = atom_get_src(ctx, attr, ptr);
 
 
