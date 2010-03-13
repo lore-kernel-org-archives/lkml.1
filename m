@@ -1,38 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314Ab0CMCPH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 21:15:07 -0500
-Received: from lo.gmane.org ([80.91.229.12]:54621 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756118Ab0CMCPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 21:15:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
+	id S1757855Ab0CMC3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 21:29:12 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32833 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757304Ab0CMC3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 21:29:10 -0500
+Date: Sat, 13 Mar 2010 03:28:55 +0100
 From: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] firmware loader: use statically initialized data attribute
-Date: Sat, 13 Mar 2010 02:08:49 +0000 (UTC)
-Message-ID: <loom.20100313T030500-863@post.gmane.org>
-References: <20100311083111.GA11183@core.coreip.homeip.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@dough.gmane.org
-X-Gmane-NNTP-Posting-Host: sea.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 58.89.190.212 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.14) Gecko/2009091010 Iceweasel/3.0.6 (Debian-3.0.6-1))
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] arch/mips/txx9/generic: init dynamic bin_attribute
+	structures
+Message-ID: <20100313022855.GD4034@pengutronix.de>
+References: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de> <1268377431-11671-2-git-send-email-w.sang@pengutronix.de> <20100312183450.GC8736@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DiL7RhKs8rK9YGuF"
+Content-Disposition: inline
+In-Reply-To: <20100312183450.GC8736@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov <dmitry.torokhov <at> gmail.com> writes:
 
-> There is no reason why we are using a template for binary attribute
-> and copying it into per-firmware data before registering. Using the
-> original works as well and gets rid of the following lockdep
-> compaint:
-[...]
-> Signed-off-by: Dmitry Torokhov <dtor <at> mail.ru>
+--DiL7RhKs8rK9YGuF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+On Fri, Mar 12, 2010 at 10:34:51AM -0800, Dmitry Torokhov wrote:
+> On Fri, Mar 12, 2010 at 08:03:49AM +0100, Wolfram Sang wrote:
+> > Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this require=
+ment.
+> > Found with coccinelle, but fixed manually. Compile tested on X86 where
+> > possible.
+> >=20
+>=20
+> Regarding all 3 - it looks like these dynamically alocated attributes
+> could be converted to statically allocated ones. I'd recommend doing
+> that instead (in fact, I posted patch for the firmware_class couple days
+> ago).
 
+I agree for the firmware-patch. Regarding the MIPS one, 'size' might differ=
+ and
+'private' will differ per instance. Regarding the RTC driver, 'size' might =
+also
+differ. I don't know if somebody really wants two RTCs or the SRAM for MIPS=
+ can
+be instantiated more than once. Unless somebody with actual hardware jumps =
+in,
+I'd say better safe than sorry.
 
+Thanks for the comment!
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--DiL7RhKs8rK9YGuF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkua+GcACgkQD27XaX1/VRsmUgCgxpG37bpkUetDGyW/fT8vhGaU
+9XoAoIbuIfLRmEolrdu01v0d4cjAMYZJ
+=pKV6
+-----END PGP SIGNATURE-----
+
+--DiL7RhKs8rK9YGuF--
