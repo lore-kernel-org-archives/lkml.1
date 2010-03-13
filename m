@@ -1,25 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965250Ab0CMBeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:34:19 -0500
-Received: from kroah.org ([198.145.64.141]:60545 "EHLO coco.kroah.org"
+	id S936481Ab0CMBeO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:34:14 -0500
+Received: from kroah.org ([198.145.64.141]:60589 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934821Ab0CMATk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:40 -0500
+	id S934827Ab0CMATm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:42 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:06 2010
-Message-Id: <20100313001506.321117957@kvm.kroah.org>
+Message-Id: <20100313001506.581568287@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:11:51 -0800
+Date: Fri, 12 Mar 2010 16:11:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Haicheng Li <haicheng.li@linux.intel.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [patch 013/123] slab: initialize unused alien cache entry as NULL at alloc_alien_cache().
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 016/123] x86, uv: uv_global_gru_mmr_address() macro fix
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,42 +26,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Haicheng Li <haicheng.li@linux.intel.com>
+From: Jack Steiner <steiner@sgi.com>
 
-commit f3186a9c51eabe75b2780153ed7f07778d78b16e upstream.
+commit e1e0138d7d10fd447c71cc70f367eac514bd3ce4 upstream.
 
-Comparing with existing code, it's a simpler way to use kzalloc_node()
-to ensure that each unused alien cache entry is NULL.
+Fix bug in uv_global_gru_mmr_address macro.  Macro failed
+to cast an int value to a long prior to a left shift > 32.
 
-CC: Eric Dumazet <eric.dumazet@gmail.com>
-Acked-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
-Acked-by: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20100107161240.GA2610@sgi.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/slab.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/uv/uv_hub.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -983,13 +983,11 @@ static struct array_cache **alloc_alien_
+--- a/arch/x86/include/asm/uv/uv_hub.h
++++ b/arch/x86/include/asm/uv/uv_hub.h
+@@ -329,7 +329,8 @@ static inline unsigned long uv_read_glob
+  */
+ static inline unsigned long uv_global_gru_mmr_address(int pnode, unsigned long offset)
+ {
+-	return UV_GLOBAL_GRU_MMR_BASE | offset | (pnode << uv_hub_info->m_val);
++	return UV_GLOBAL_GRU_MMR_BASE | offset |
++		((unsigned long)pnode << uv_hub_info->m_val);
+ }
  
- 	if (limit > 1)
- 		limit = 12;
--	ac_ptr = kmalloc_node(memsize, gfp, node);
-+	ac_ptr = kzalloc_node(memsize, gfp, node);
- 	if (ac_ptr) {
- 		for_each_node(i) {
--			if (i == node || !node_online(i)) {
--				ac_ptr[i] = NULL;
-+			if (i == node || !node_online(i))
- 				continue;
--			}
- 			ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d, gfp);
- 			if (!ac_ptr[i]) {
- 				for (i--; i >= 0; i--)
+ static inline void uv_write_global_mmr8(int pnode, unsigned long offset, unsigned char val)
 
 
