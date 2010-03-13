@@ -1,262 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935200Ab0CMAW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:22:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47727 "EHLO hera.kernel.org"
+	id S935228Ab0CMA0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:26:41 -0500
+Received: from kroah.org ([198.145.64.141]:32810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935189Ab0CMAWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:22:51 -0500
-Date: Sat, 13 Mar 2010 00:21:53 GMT
-From: tip-bot for John Stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jesper.nilsson@axis.com, johnstul@us.ibm.com, akpm@linux-foundation.org,
-       starvik@axis.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jesper.nilsson@axis.com, akpm@linux-foundation.org, johnstul@us.ibm.com,
-       starvik@axis.com, tglx@linutronix.de
-In-Reply-To: <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
-References: <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/cleanup] cris: Convert cris to use read/update_persistent_clock
-Message-ID: <tip-8eff8a5c1d3a1de7a2d173e0effc6cc9bcbb5177@git.kernel.org>
-Git-Commit-ID: 8eff8a5c1d3a1de7a2d173e0effc6cc9bcbb5177
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:21:54 +0000 (UTC)
+	id S935053Ab0CMAVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:08 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.017009296@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:13:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 113/123] dm: free dm_io before bio_endio not after
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8eff8a5c1d3a1de7a2d173e0effc6cc9bcbb5177
-Gitweb:     http://git.kernel.org/tip/8eff8a5c1d3a1de7a2d173e0effc6cc9bcbb5177
-Author:     John Stultz <johnstul@us.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 19:57:28 -0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 13 Mar 2010 01:14:13 +0100
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-cris: Convert cris to use read/update_persistent_clock
+-----------------
 
-This patch converts the cris architecture to use the generic
-read_persistent_clock and update_persistent_clock interfaces, reducing
-the amount of arch specific code we have to maintain, and allowing for
-further cleanups in the future.
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-I have not built or tested this patch, so help from arch maintainers
-would be appreciated.
+commit a97f925a32aad2a37971d7bfb657006acf04e42d upstream.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Free the dm_io structure before calling bio_endio() instead of after it,
+to ensure that the io_pool containing it is not referenced after it is
+freed.
+
+This partially fixes a problem described here
+  https://www.redhat.com/archives/dm-devel/2010-February/msg00109.html
+
+thread 1:
+bio_endio(bio, io_error);
+/* scheduling happens */
+					thread 2:
+					close the device
+					remove the device
+thread 1:
+free_io(md, io);
+
+Thread 2, when removing the device, sees non-empty md->io_pool (because the
+io hasn't been freed by thread 1 yet) and may crash with BUG in mempool_free.
+Thread 1 may also crash, when freeing into a nonexisting mempool.
+
+To fix this we must make sure that bio_endio() is the last call and
+the md structure is not accessed afterwards.
+
+There is another bio_endio in process_barrier, but it is called from the thread
+and the thread is destroyed prior to freeing the mempools, so this call is
+not affected by the bug.
+
+A similar bug exists with module unloads - the module may be unloaded
+immediately after bio_endio - but that is more difficult to fix.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- arch/cris/Kconfig                |    3 ++
- arch/cris/arch-v10/kernel/time.c |   37 +---------------------------------
- arch/cris/arch-v32/kernel/time.c |   40 +------------------------------------
- arch/cris/kernel/time.c          |   20 ++++++++++--------
- 4 files changed, 18 insertions(+), 82 deletions(-)
+ drivers/md/dm.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 059eac6..e25bf44 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -23,6 +23,9 @@ config RWSEM_XCHGADD_ALGORITHM
- config GENERIC_TIME
- 	def_bool y
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -635,8 +635,10 @@ static void dec_pending(struct dm_io *io
+ 			if (!md->barrier_error && io_error != -EOPNOTSUPP)
+ 				md->barrier_error = io_error;
+ 			end_io_acct(io);
++			free_io(md, io);
+ 		} else {
+ 			end_io_acct(io);
++			free_io(md, io);
  
-+config GENERIC_CMOS_UPDATE
-+	def_bool y
-+
- config ARCH_USES_GETTIMEOFFSET
- 	def_bool y
- 
-diff --git a/arch/cris/arch-v10/kernel/time.c b/arch/cris/arch-v10/kernel/time.c
-index 31ca141..30adae5 100644
---- a/arch/cris/arch-v10/kernel/time.c
-+++ b/arch/cris/arch-v10/kernel/time.c
-@@ -26,7 +26,6 @@
- /* it will make jiffies at 96 hz instead of 100 hz though */
- #undef USE_CASCADE_TIMERS
- 
--extern void update_xtime_from_cmos(void);
- extern int set_rtc_mmss(unsigned long nowtime);
- extern int have_rtc;
- 
-@@ -188,8 +187,6 @@ stop_watchdog(void)
- #endif	
- }
- 
--/* last time the cmos clock got updated */
--static long last_rtc_update = 0;
- 
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-@@ -232,24 +229,6 @@ timer_interrupt(int irq, void *dev_id)
- 	do_timer(1);
- 	
-         cris_do_profile(regs); /* Save profiling information */
+ 			if (io_error != DM_ENDIO_REQUEUE) {
+ 				trace_block_bio_complete(md->queue, bio);
+@@ -644,8 +646,6 @@ static void dec_pending(struct dm_io *io
+ 				bio_endio(bio, io_error);
+ 			}
+ 		}
 -
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 *
--	 * The division here is not time critical since it will run once in 
--	 * 11 minutes
--	 */
--	if (ntp_synced() &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / 1000) >= 500000 - (tick_nsec / 1000) / 2 &&
--	    (xtime.tv_nsec / 1000) <= 500000 + (tick_nsec / 1000) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			last_rtc_update = xtime.tv_sec - 600; /* do it again in 60 s */
--	}
-         return IRQ_HANDLED;
+-		free_io(md, io);
+ 	}
  }
  
-@@ -274,22 +253,10 @@ time_init(void)
- 	 */
- 	loops_per_usec = 50;
- 
--	if(RTC_INIT() < 0) {
--		/* no RTC, start at 1980 */
--		xtime.tv_sec = 0;
--		xtime.tv_nsec = 0;
-+	if(RTC_INIT() < 0)
- 		have_rtc = 0;
--	} else {		
--		/* get the current time */
-+	else
- 		have_rtc = 1;
--		update_xtime_from_cmos();
--	}
--
--	/*
--	 * Initialize wall_to_monotonic such that adding it to xtime will yield zero, the
--	 * tv_nsec field must be normalized (i.e., 0 <= nsec < NSEC_PER_SEC).
--	 */
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	/* Setup the etrax timers
- 	 * Base frequency is 25000 hz, divider 250 -> 100 HZ
-diff --git a/arch/cris/arch-v32/kernel/time.c b/arch/cris/arch-v32/kernel/time.c
-index b1920d8..1ee0e10 100644
---- a/arch/cris/arch-v32/kernel/time.c
-+++ b/arch/cris/arch-v32/kernel/time.c
-@@ -44,7 +44,6 @@ unsigned long timer_regs[NR_CPUS] =
- #endif
- };
- 
--extern void update_xtime_from_cmos(void);
- extern int set_rtc_mmss(unsigned long nowtime);
- extern int have_rtc;
- 
-@@ -198,9 +197,6 @@ handle_watchdog_bite(struct pt_regs* regs)
- #endif
- }
- 
--/* Last time the cmos clock got updated. */
--static long last_rtc_update = 0;
--
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick.
-@@ -238,25 +234,6 @@ timer_interrupt(int irq, void *dev_id)
- 
- 	/* Call the real timer interrupt handler */
- 	do_timer(1);
--
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 *
--	 * The division here is not time critical since it will run once in
--	 * 11 minutes
--	 */
--	if ((time_status & STA_UNSYNC) == 0 &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / 1000) >= 500000 - (tick_nsec / 1000) / 2 &&
--	    (xtime.tv_nsec / 1000) <= 500000 + (tick_nsec / 1000) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			/* Do it again in 60 s */
--			last_rtc_update = xtime.tv_sec - 600;
--	}
-         return IRQ_HANDLED;
- }
- 
-@@ -309,23 +286,10 @@ time_init(void)
- 	 */
- 	loops_per_usec = 50;
- 
--	if(RTC_INIT() < 0) {
--		/* No RTC, start at 1980 */
--		xtime.tv_sec = 0;
--		xtime.tv_nsec = 0;
-+	if(RTC_INIT() < 0)
- 		have_rtc = 0;
--	} else {
--		/* Get the current time */
-+	else
- 		have_rtc = 1;
--		update_xtime_from_cmos();
--	}
--
--	/*
--	 * Initialize wall_to_monotonic such that adding it to
--	 * xtime will yield zero, the tv_nsec field must be normalized
--	 * (i.e., 0 <= nsec < NSEC_PER_SEC).
--	 */
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	/* Start CPU local timer. */
- 	cris_timer_init();
-diff --git a/arch/cris/kernel/time.c b/arch/cris/kernel/time.c
-index a05dd31..c72730d 100644
---- a/arch/cris/kernel/time.c
-+++ b/arch/cris/kernel/time.c
-@@ -98,6 +98,8 @@ unsigned long
- get_cmos_time(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
-+	if(!have_rtc)
-+		return 0;
- 
- 	sec = CMOS_READ(RTC_SECONDS);
- 	min = CMOS_READ(RTC_MINUTES);
-@@ -119,19 +121,19 @@ get_cmos_time(void)
- 	return mktime(year, mon, day, hour, min, sec);
- }
- 
--/* update xtime from the CMOS settings. used when /dev/rtc gets a SET_TIME.
-- * TODO: this doesn't reset the fancy NTP phase stuff as do_settimeofday does.
-- */
- 
--void
--update_xtime_from_cmos(void)
-+int update_persistent_clock(struct timespec now)
- {
--	if(have_rtc) {
--		xtime.tv_sec = get_cmos_time();
--		xtime.tv_nsec = 0;
--	}
-+	return set_rtc_mmss(now.tv_sec);
- }
- 
-+void read_persistent_clock(struct timespec *ts)
-+{
-+	ts->tv_sec = get_cmos_time();
-+	ts->tv_nsec = 0;
-+}
-+
-+
- extern void cris_profile_sample(struct pt_regs* regs);
- 
- void
+
+
