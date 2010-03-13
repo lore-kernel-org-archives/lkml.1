@@ -1,90 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935182Ab0CMAWk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:22:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47411 "EHLO hera.kernel.org"
+	id S935773Ab0CMAsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:48:32 -0500
+Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935116Ab0CMAWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:22:32 -0500
-Date: Sat, 13 Mar 2010 00:21:34 GMT
-From: tip-bot for John Stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       geert@linux-m68k.org, akpm@linux-foundation.org, johnstul@us.ibm.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       geert@linux-m68k.org, johnstul@us.ibm.com, akpm@linux-foundation.org,
-       tglx@linutronix.de
-In-Reply-To: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
-References: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/cleanup] m68k: Convert m68k to use read/update_persistent_clock
-Message-ID: <tip-ffbcad49e79cd82428010b44a87401446ea7f370@git.kernel.org>
-Git-Commit-ID: ffbcad49e79cd82428010b44a87401446ea7f370
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:21:36 +0000 (UTC)
+	id S935505Ab0CMAcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:11 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
+Message-Id: <20100313002714.468707189@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:27:19 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [106/145] thinkpad-acpi: fix poll thread auto-start
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ffbcad49e79cd82428010b44a87401446ea7f370
-Gitweb:     http://git.kernel.org/tip/ffbcad49e79cd82428010b44a87401446ea7f370
-Author:     John Stultz <johnstul@us.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 19:57:26 -0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 13 Mar 2010 01:14:13 +0100
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
-m68k: Convert m68k to use read/update_persistent_clock
+----------------
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-This patch converts the m68k architecture to use the generic
-read_persistent_clock and update_persistent_clock interfaces, reducing
-the amount of arch specific code we have to maintain, and allowing for
-further cleanups in the future.
+commit b589ea4c44170d3f7a845684e2d1b3b9571663af upstream.
 
-I have not built or tested this patch, so help from arch maintainers
-would be appreciated.
+The driver was not starting the NVRAM polling thread if the input
+device was bound immediately after registration.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+This fixes:
+http://bugzilla.kernel.org/show_bug.cgi?id=15118
+
+Reported-by: Florian Zumbiehl <florz@florz.de>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- arch/m68k/kernel/time.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/platform/x86/thinkpad_acpi.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/arch/m68k/kernel/time.c b/arch/m68k/kernel/time.c
-index 17dc2a3..4926b38 100644
---- a/arch/m68k/kernel/time.c
-+++ b/arch/m68k/kernel/time.c
-@@ -73,21 +73,24 @@ static irqreturn_t timer_interrupt(int irq, void *dummy)
- 	return IRQ_HANDLED;
- }
- 
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -2597,16 +2597,11 @@ static int hotkey_inputdev_open(struct i
  {
- 	struct rtc_time time;
-+	ts->tv_sec = 0;
-+	ts->tv_nsec = 0;
- 
- 	if (mach_hwclk) {
- 		mach_hwclk(0, &time);
- 
- 		if ((time.tm_year += 1900) < 1970)
- 			time.tm_year += 100;
--		xtime.tv_sec = mktime(time.tm_year, time.tm_mon, time.tm_mday,
-+		ts->tv_sec = mktime(time.tm_year, time.tm_mon, time.tm_mday,
- 				      time.tm_hour, time.tm_min, time.tm_sec);
--		xtime.tv_nsec = 0;
+ 	switch (tpacpi_lifecycle) {
+ 	case TPACPI_LIFE_INIT:
+-		/*
+-		 * hotkey_init will call hotkey_poll_setup_safe
+-		 * at the appropriate moment
+-		 */
+-		return 0;
+-	case TPACPI_LIFE_EXITING:
+-		return -EBUSY;
+ 	case TPACPI_LIFE_RUNNING:
+ 		hotkey_poll_setup_safe(false);
+ 		return 0;
++	case TPACPI_LIFE_EXITING:
++		return -EBUSY;
  	}
--	wall_to_monotonic.tv_sec = -xtime.tv_sec;
-+}
  
-+void __init time_init(void)
-+{
- 	mach_sched_init(timer_interrupt);
+ 	/* Should only happen if tpacpi_lifecycle is corrupt */
+@@ -2617,7 +2612,7 @@ static int hotkey_inputdev_open(struct i
+ static void hotkey_inputdev_close(struct input_dev *dev)
+ {
+ 	/* disable hotkey polling when possible */
+-	if (tpacpi_lifecycle == TPACPI_LIFE_RUNNING &&
++	if (tpacpi_lifecycle != TPACPI_LIFE_EXITING &&
+ 	    !(hotkey_source_mask & hotkey_driver_mask))
+ 		hotkey_poll_setup_safe(false);
+ }
+@@ -8362,6 +8357,9 @@ static int __init thinkpad_acpi_module_i
+ 			return ret;
+ 		}
+ 	}
++
++	tpacpi_lifecycle = TPACPI_LIFE_RUNNING;
++
+ 	ret = input_register_device(tpacpi_inputdev);
+ 	if (ret < 0) {
+ 		printk(TPACPI_ERR "unable to register input device\n");
+@@ -8371,7 +8369,6 @@ static int __init thinkpad_acpi_module_i
+ 		tp_features.input_device_registered = 1;
+ 	}
+ 
+-	tpacpi_lifecycle = TPACPI_LIFE_RUNNING;
+ 	return 0;
  }
  
+
+
