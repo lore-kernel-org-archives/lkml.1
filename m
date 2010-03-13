@@ -1,23 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934973Ab0CMAUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:20:38 -0500
-Received: from kroah.org ([198.145.64.141]:60645 "EHLO coco.kroah.org"
+	id S934894Ab0CMAUB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:20:01 -0500
+Received: from kroah.org ([198.145.64.141]:60553 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934870Ab0CMATw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:52 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:07 2010
-Message-Id: <20100313001507.712135092@kvm.kroah.org>
+	id S934824Ab0CMATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:41 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:06 2010
+Message-Id: <20100313001506.404142629@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:07 -0800
+Date: Fri, 12 Mar 2010 16:11:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Baruch Siach <baruch@tkos.co.il>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Theodore Kilgore <kilgota@auburn.edu>,
+       Hans de Goede <hdegoede@redhat.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 029/123] V4L/DVB: v4l: soc_camera: fix bound checking of mbus_fmt[] index
+Subject: [patch 014/123] V4L/DVB (13991): gspca_mr973010a: Fix cif type 1 cameras not streaming on UHCI controllers
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,33 +28,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Baruch Siach <baruch@tkos.co.il>
+From: Theodore Kilgore <kilgota@auburn.edu>
 
-commit 84f3751d6a6f766780dee509433bf7b3dfcdf465 upstream.
+commit 70136081fc67ea77d849f86fa323e5773c8e40ea upstream.
 
-When code <= V4L2_MBUS_FMT_FIXED soc_mbus_get_fmtdesc returns a pointer to
-mbus_fmt[x], where x < 0. Fix this.
+If you read the mail to Oliver Neukum on the linux-usb list, then you know
+that I found a cure for the mysterious problem that the MR97310a CIF "type
+1" cameras have been freezing up and refusing to stream if hooked up to a
+machine with a UHCI controller.
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Namely, the cure is that if the camera is an mr97310a CIF type 1 camera, you
+have to send it 0xa0, 0x00. Somehow, this is a timing reset command, or
+such. It un-blocks whatever was previously stopping the CIF type 1 cameras
+from working on the UHCI-based machines.
+
+Signed-off-by: Theodore Kilgore <kilgota@auburn.edu>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/soc_mediabus.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/video/gspca/mr97310a.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/media/video/soc_mediabus.c
-+++ b/drivers/media/video/soc_mediabus.c
-@@ -134,7 +134,8 @@ EXPORT_SYMBOL(soc_mbus_bytes_per_line);
- const struct soc_mbus_pixelfmt *soc_mbus_get_fmtdesc(
- 	enum v4l2_mbus_pixelcode code)
- {
--	if ((unsigned int)(code - V4L2_MBUS_FMT_FIXED) > ARRAY_SIZE(mbus_fmt))
-+	if (code - V4L2_MBUS_FMT_FIXED > ARRAY_SIZE(mbus_fmt) ||
-+	    code <= V4L2_MBUS_FMT_FIXED)
- 		return NULL;
- 	return mbus_fmt + code - V4L2_MBUS_FMT_FIXED - 1;
- }
+--- a/drivers/media/video/gspca/mr97310a.c
++++ b/drivers/media/video/gspca/mr97310a.c
+@@ -697,6 +697,12 @@ static int start_cif_cam(struct gspca_de
+ 			{0x13, 0x00, {0x01}, 1},
+ 			{0, 0, {0}, 0}
+ 		};
++		/* Without this command the cam won't work with USB-UHCI */
++		gspca_dev->usb_buf[0] = 0x0a;
++		gspca_dev->usb_buf[1] = 0x00;
++		err_code = mr_write(gspca_dev, 2);
++		if (err_code < 0)
++			return err_code;
+ 		err_code = sensor_write_regs(gspca_dev, cif_sensor1_init_data,
+ 					 ARRAY_SIZE(cif_sensor1_init_data));
+ 	}
 
 
