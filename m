@@ -1,49 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757421Ab0CMHw5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 02:52:57 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:50983 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754445Ab0CMHwz (ORCPT
+	id S1758893Ab0CMILZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 03:11:25 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:46816 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758879Ab0CMILY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 02:52:55 -0500
-Date: Sat, 13 Mar 2010 08:52:48 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] fix for msm_sdcc MMC driver for 2.6.34-rc1
-Message-ID: <20100313075248.GK12554@elf.ucw.cz>
-References: <1268081936.14857.60.camel@c-dwalke-linux.qualcomm.com>
+	Sat, 13 Mar 2010 03:11:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=qW5Tfo1hnAYIciiCOwWySJziQlYuA4kDBM7xKImi970vKuWUv6yMaoHOmw5k0eBM7b
+         lZT7+OfW0BvWTMoYQyHP8QNPcCIApSovqsRPSpykxrmp3hdwjih8Qm+WBMTEDWqsA6/0
+         OcZNpJ8oiGYwiBF2Vbo3d1DqKnaHhQD9hatj0=
+Date: Sat, 13 Mar 2010 11:11:16 +0300
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86,perf: Unmask LVTPC only if we have APIC supported
+Message-ID: <20100313081116.GA5179@lenovo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1268081936.14857.60.camel@c-dwalke-linux.qualcomm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2010-03-08 12:58:56, Daniel Walker wrote:
-> Just one small trivial fix.
-> 
-> The following changes since commit 6b7b284958d47b77d06745b36bc7f36dab769d9b:
->   Linus Torvalds (1):
->         Linux 2.6.33-rc2
-> 
-> are available in the git repository at:
-> 
->   git://codeaurora.org/quic/kernel/dwalker/linux-msm.git msm-mmc_sdcc
-> 
-> Roel Kluin (1):
->       msm_sdcc.c: missing brackets in msmsdcc_resume()
+Ingo reported
+|
+| There's a build failure on -tip with the P4 driver, on UP 32-bit, if
+| PERF_EVENTS is enabled but UP_APIC is disabled:
+|
+| arch/x86/built-in.o: In function `p4_pmu_handle_irq':
+| perf_event.c:(.text+0xa756): undefined reference to `apic'
+| perf_event.c:(.text+0xa76e): undefined reference to `apic'
+|
 
-Cool, 2.6.34-rc1 boots on HTC Dream, as did 2.6.33. Does this mean I
-should try to set up MMC, too? MMC worked in your -working-mmc tree in
-2.6.33...
+So we have to unmask LVTPC only if we're configured to have one.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Reported-by: Ingo Molnar <mingo@elte.hu>
+CC: Lin Ming <ming.m.lin@intel.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/cpu/perf_event_p4.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event_p4.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event_p4.c
++++ linux-2.6.git/arch/x86/kernel/cpu/perf_event_p4.c
+@@ -365,8 +365,10 @@ static int p4_pmu_handle_irq(struct pt_r
+ 	}
+ 
+ 	if (handled) {
++#ifdef CONFIG_X86_LOCAL_APIC
+ 		/* p4 quirk: unmask it again */
+ 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
++#endif
+ 		inc_irq_stat(apic_perf_irqs);
+ 	}
+ 
