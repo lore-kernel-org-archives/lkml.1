@@ -1,79 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935086Ab0CMAVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:21:20 -0500
-Received: from kroah.org ([198.145.64.141]:60897 "EHLO coco.kroah.org"
+	id S935798Ab0CMAfp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:35:45 -0500
+Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934841Ab0CMAU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:27 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:11 2010
-Message-Id: <20100313001511.371477157@kvm.kroah.org>
+	id S935508Ab0CMAcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:13 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
+Message-Id: <20100313002714.651144506@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:49 -0800
+Date: Fri, 12 Mar 2010 16:27:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Felix Fietkau <nbd@openwrt.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 071/123] ath9k: fix beacon timer restart after a card reset
-In-Reply-To: <20100313001618.GA9811@kroah.com>
-In-Reply-To: <20100313001618.GA9811@kroah.com>
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [108/145] thinkpad-acpi: document HKEY event 3006
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.33-stable review patch.  If anyone has any objections, please let me know.
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
------------------
+----------------
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-From: Felix Fietkau <nbd@openwrt.org>
+commit bf8b29c8f7f8269e99eca8b19048ed5b34b51810 upstream.
 
-commit d8728ee919282c7b01b65cd479ec1e2a9c5d3ba8 upstream.
+Event 0x3006 is used to help power management of the ODD in the
+UltraBay.  The EC generates this event when the ODD eject button is
+pressed (even if the bay is powered down).
 
-In AP mode, ath_beacon_config_ap only restarts the timer if a TSF
-restart is requested. Apparently this was added, because this function
-unconditionally sets the flag for TSF reset.
+Normally, Linux doesn't need this as we keep the SATA link powered
+up (which wastes power).  The EC powers up the bay by itself when the
+ODD eject button is pressed, and the SATA PHY reports the hotplug.
 
-The problem with this is, that ath9k_hw_reset() clobbers the timer
-registers (specified in the initvals), thus effectively disabling the
-SWBA interrupt whenever a card reset without TSF reset is issued
-(happens in a few places in the code).
+However, we could also power that SATA link down (and for that matter,
+also power down the Ultrabay) if the ODD is left idle for a while with
+no disk inside, and use event 0x3006 to know when we need that SATA link
+powered back up.
 
-This patch fixes ath_beacon_config_ap to only issue the TSF reset flag
-when necessary, but reinitialize the timer unconditionally. Tests show,
-that this is enough to keep the SWBA interrupt going after a call to
-ath_reset()
+For now, just stop asking for more information when event 0x3006 is
+seen, there is no point in pestering users about it anymore.
 
-Signed-off-by: Felix Fietkau <nbd@openwrt.org>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath/ath9k/beacon.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/platform/x86/thinkpad_acpi.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/ath/ath9k/beacon.c
-+++ b/drivers/net/wireless/ath/ath9k/beacon.c
-@@ -525,16 +525,13 @@ static void ath_beacon_config_ap(struct
- {
- 	u32 nexttbtt, intval;
- 
--	/* Configure the timers only when the TSF has to be reset */
--
--	if (!(sc->sc_flags & SC_OP_TSF_RESET))
--		return;
--
- 	/* NB: the beacon interval is kept internally in TU's */
- 	intval = conf->beacon_interval & ATH9K_BEACON_PERIOD;
- 	intval /= ATH_BCBUF;    /* for staggered beacons */
- 	nexttbtt = intval;
--	intval |= ATH9K_BEACON_RESET_TSF;
-+
-+	if (sc->sc_flags & SC_OP_TSF_RESET)
-+		intval |= ATH9K_BEACON_RESET_TSF;
- 
- 	/*
- 	 * In AP mode we enable the beacon timers and SWBA interrupts to
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -3630,13 +3630,19 @@ static void hotkey_notify(struct ibm_str
+ 			break;
+ 		case 3:
+ 			/* 0x3000-0x3FFF: bay-related wakeups */
+-			if (hkey == TP_HKEY_EV_BAYEJ_ACK) {
++			switch (hkey) {
++			case TP_HKEY_EV_BAYEJ_ACK:
+ 				hotkey_autosleep_ack = 1;
+ 				printk(TPACPI_INFO
+ 				       "bay ejected\n");
+ 				hotkey_wakeup_hotunplug_complete_notify_change();
+ 				known_ev = true;
+-			} else {
++				break;
++			case TP_HKEY_EV_OPTDRV_EJ:
++				/* FIXME: kick libata if SATA link offline */
++				known_ev = true;
++				break;
++			default:
+ 				known_ev = false;
+ 			}
+ 			break;
 
 
