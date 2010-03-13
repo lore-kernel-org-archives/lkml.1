@@ -1,28 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934855Ab0CMBem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:34:42 -0500
-Received: from kroah.org ([198.145.64.141]:60538 "EHLO coco.kroah.org"
+	id S936532Ab0CMBer (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:34:47 -0500
+Received: from kroah.org ([198.145.64.141]:60535 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934818Ab0CMATj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:39 -0500
+	id S934814Ab0CMATi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:38 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:06 2010
-Message-Id: <20100313001506.236798117@kvm.kroah.org>
+Message-Id: <20100313001506.148732734@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:11:50 -0800
+Date: Fri, 12 Mar 2010 16:11:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Wu Fengguang <fengguang.wu@intel.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Chuck Lever <chuck.lever@oracle.com>, <qbarnes+nfs@yahoo-inc.com>
-Subject: [patch 012/123] readahead: introduce FMODE_RANDOM for POSIX_FADV_RANDOM
+       Kashyap Desai <kashyap.desai@lsi.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Subject: [patch 011/123] [SCSI] mpt2sas: Delete volume before HBA detach.
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,105 +27,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+From: Kashyap, Desai <kashyap.desai@lsi.com>
 
-commit 0141450f66c3c12a3aaa869748caa64241885cdf upstream.
+commit d7384b28afb2bf2b7be835ddc8c852bdc5e0ce1c upstream.
 
-This fixes inefficient page-by-page reads on POSIX_FADV_RANDOM.
+The driver hangs when doing `rmmod mpt2sas` if there are any
+IR volumes present.The hang is due the scsi midlayer trying to access the
+IR volumes after the driver releases controller resources.  Perhaps when
+scsi_remove_host is called,the scsi mid layer is sending some request.
+This doesn't occur for bare drives becuase the driver is already reporting
+those drives deleted prior to calling mpt2sas_base_detach.
+To solve this issue, we need to delete the volumes as well.
 
-POSIX_FADV_RANDOM used to set ra_pages=0, which leads to poor performance:
-a 16K read will be carried out in 4 _sync_ 1-page reads.
-
-In other places, ra_pages==0 means
-- it's ramfs/tmpfs/hugetlbfs/sysfs/configfs
-- some IO error happened
-where multi-page read IO won't help or should be avoided.
-
-POSIX_FADV_RANDOM actually want a different semantics: to disable the
-*heuristic* readahead algorithm, and to use a dumb one which faithfully
-submit read IO for whatever application requests.
-
-So introduce a flag FMODE_RANDOM for POSIX_FADV_RANDOM.
-
-Note that the random hint is not likely to help random reads performance
-noticeably.  And it may be too permissive on huge request size (its IO
-size is not limited by read_ahead_kb).
-
-In Quentin's report (http://lkml.org/lkml/2009/12/24/145), the overall
-(NFS read) performance of the application increased by 313%!
-
-Tested-by: Quentin Barnes <qbarnes+nfs@yahoo-inc.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Chuck Lever <chuck.lever@oracle.com>
-Cc: <qbarnes+nfs@yahoo-inc.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
+Reviewed-by: Eric Moore <eric.moore@lsi.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/fs.h |    3 +++
- mm/fadvise.c       |   10 +++++++++-
- mm/readahead.c     |    6 ++++++
- 3 files changed, 18 insertions(+), 1 deletion(-)
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -87,6 +87,9 @@ struct inodes_stat_t {
-  */
- #define FMODE_NOCMTIME		((__force fmode_t)2048)
+--- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+@@ -5998,6 +5998,8 @@ _scsih_remove(struct pci_dev *pdev)
+ 	struct _sas_port *mpt2sas_port;
+ 	struct _sas_device *sas_device;
+ 	struct _sas_node *expander_sibling;
++	struct _raid_device *raid_device, *next;
++	struct MPT2SAS_TARGET *sas_target_priv_data;
+ 	struct workqueue_struct	*wq;
+ 	unsigned long flags;
  
-+/* Expect random access pattern */
-+#define FMODE_RANDOM		((__force fmode_t)4096)
-+
- /*
-  * The below are the various read and write types that we support. Some of
-  * them include behavioral modifiers that send information down to the
---- a/mm/fadvise.c
-+++ b/mm/fadvise.c
-@@ -77,12 +77,20 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
- 	switch (advice) {
- 	case POSIX_FADV_NORMAL:
- 		file->f_ra.ra_pages = bdi->ra_pages;
-+		spin_lock(&file->f_lock);
-+		file->f_mode &= ~FMODE_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_RANDOM:
--		file->f_ra.ra_pages = 0;
-+		spin_lock(&file->f_lock);
-+		file->f_mode |= FMODE_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_SEQUENTIAL:
- 		file->f_ra.ra_pages = bdi->ra_pages * 2;
-+		spin_lock(&file->f_lock);
-+		file->f_mode &= ~FMODE_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_WILLNEED:
- 		if (!mapping->a_ops->readpage) {
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
- 	if (!ra->ra_pages)
- 		return;
+@@ -6011,6 +6013,21 @@ _scsih_remove(struct pci_dev *pdev)
+ 	if (wq)
+ 		destroy_workqueue(wq);
  
-+	/* be dumb */
-+	if (filp->f_mode & FMODE_RANDOM) {
-+		force_page_cache_readahead(mapping, filp, offset, req_size);
-+		return;
++	/* release all the volumes */
++	list_for_each_entry_safe(raid_device, next, &ioc->raid_device_list,
++	    list) {
++		if (raid_device->starget) {
++			sas_target_priv_data =
++			    raid_device->starget->hostdata;
++			sas_target_priv_data->deleted = 1;
++			scsi_remove_target(&raid_device->starget->dev);
++		}
++		printk(MPT2SAS_INFO_FMT "removing handle(0x%04x), wwid"
++		    "(0x%016llx)\n", ioc->name,  raid_device->handle,
++		    (unsigned long long) raid_device->wwid);
++		_scsih_raid_device_remove(ioc, raid_device);
 +	}
 +
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, false, offset, req_size);
- }
+ 	/* free ports attached to the sas_host */
+  retry_again:
+ 	list_for_each_entry(mpt2sas_port,
 
 
