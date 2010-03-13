@@ -1,86 +1,309 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200Ab0CMNQQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 08:16:16 -0500
-Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:54635 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759179Ab0CMNQO (ORCPT
+	id S1759208Ab0CMNTR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 08:19:17 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:35967 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759186Ab0CMNTQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 08:16:14 -0500
-Date: Sun, 14 Mar 2010 00:16:09 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Hans-Peter Jansen <hpj@urpla.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: howto combat highly pathologic latencies on a server?
-Message-ID: <20100313131609.GH4732@dastard>
-References: <201003101817.42812.hpj@urpla.net>
- <20100310232940.GB16344@discord.disaster>
- <201003111758.50224.hpj@urpla.net>
+	Sat, 13 Mar 2010 08:19:16 -0500
+Date: Sat, 13 Mar 2010 08:18:59 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [PATCH 1/2] exec: Rediff wrecked bits of usermodehelper overhaul
+Message-ID: <20100313131859.GA22901@hmsreliant.think-freely.org>
+References: <20100312204535.GA6723@hmsreliant.think-freely.org>
+ <20100312205051.GB6723@hmsreliant.think-freely.org>
+ <20100313113348.GA8718@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201003111758.50224.hpj@urpla.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100313113348.GA8718@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Spam-Score: -4.2 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 11, 2010 at 05:58:49PM +0100, Hans-Peter Jansen wrote:
-> On Thursday 11 March 2010, 00:29:40 Dave Chinner wrote:
-> > On Wed, Mar 10, 2010 at 06:17:42PM +0100, Hans-Peter Jansen wrote:
-> > >
-> > > The xfs filesystems are mounted with rw,noatime,attr2,nobarrier,noquota
-> > > (yes, I do have a BBU on the areca, and disk write cache is effectively
-> > > turned off).
+On Sat, Mar 13, 2010 at 12:33:48PM +0100, Oleg Nesterov wrote:
+> Neil, you confused the ordering ;)
+> 
+> This is "2/2", the second patch. And the next email is "1/2".
+> 
+Gahh!  You're right!  Dang it!  Sorry.  Andrew, want me to repost?  I can fix
+the patch names while I'm at it :)
+Neil
+
+> 
+> On 03/12, Neil Horman wrote:
 > >
-> > Make sure the filesystem has the "lazy-count=1" attribute set (use
-> > xfs_info to check, xfs_admin to change). That will remove the
-> > superblock from most transactions and significant reduce latency of
-> > transactions as they serialise while locking it...
+> > Rediff of the usermodehelper changes after all the wreckage.  This patch
+> > encompasses the patches that were formally in -mm as:
+> > 
+> > kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
+> > kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limitcleanup.patch
+> > 
+> > kmod: replace call_usermodehelper_pipe() with use of umh init function and resolve limit
+> > 
+> > The first patch in this series introduced an init function to the
+> > call_usermodehelper api so that processes could be customized by caller.
+> > This patch takes advantage of that fact, by customizing the helper in
+> > do_coredump to create the pipe and set its core limit to one (for our
+> > recusrsion check).  This lets us clean up the previous uglyness in the
+> > usermodehelper internals and factor call_usermodehelper out entirely.
+> > While I'm at it, we can also modify the helper setup to look for a core
+> > limit value of 1 rather than zero for our recursion check
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > CC: Oleg Nesterov <oleg@redhat.com>
+> > CC: Andi Kleen <andi@firstfloor.org>
+> > 
+> > 
+> >  fs/exec.c            |   63 ++++++++++++++++++++++++++++++++++-----
+> >  include/linux/kmod.h |    7 ----
+> >  kernel/kmod.c        |   82 ---------------------------------------------------
+> >  3 files changed, 56 insertions(+), 96 deletions(-)
+> > 
+> > diff --git a/fs/exec.c b/fs/exec.c
+> > index f351cdb..64a50b4 100644
+> > --- a/fs/exec.c
+> > +++ b/fs/exec.c
+> > @@ -1784,6 +1784,50 @@ static void wait_for_dump_helpers(struct file *file)
+> >  }
+> >  
+> >  
+> > +/*
+> > + * uhm_pipe_setup
+> > + * helper function to customize the process used
+> > + * to collect the core in userspace.  Specifically
+> > + * it sets up a pipe and installs it as fd 0 (stdin)
+> > + * for the process.  Returns 0 on success, or
+> > + * PTR_ERR on failure.
+> > + * Note that it also sets the core limit to 1.  This
+> > + * is a special value that we use to trap recursive
+> > + * core dumps
+> > + */
+> > +static int umh_pipe_setup(struct subprocess_info *info)
+> > +{
+> > +	struct file *rp, *wp;
+> > +	struct fdtable *fdt;
+> > +	struct coredump_params *cp = (struct coredump_params *)info->data;
+> > +	struct files_struct *cf = current->files;
+> > +
+> > +	wp = create_write_pipe(0);
+> > +	if (IS_ERR(wp))
+> > +		return PTR_ERR(wp);
+> > +
+> > +	rp = create_read_pipe(wp, 0);
+> > +	if (IS_ERR(rp)) {
+> > +		free_write_pipe(wp);
+> > +		return PTR_ERR(rp);
+> > +	}
+> > +
+> > +	cp->file = wp;
+> > +
+> > +	sys_close(0);
+> > +	fd_install(0, rp);
+> > +	spin_lock(&cf->file_lock);
+> > +	fdt = files_fdtable(cf);
+> > +	FD_SET(0, fdt->open_fds);
+> > +	FD_CLR(0, fdt->close_on_exec);
+> > +	spin_unlock(&cf->file_lock);
+> > +
+> > +	/* and disallow core files too */
+> > +	current->signal->rlim[RLIMIT_CORE] = (struct rlimit){1, 1};
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> >  {
+> >  	struct core_state core_state;
+> > @@ -1871,15 +1915,15 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> >  		goto fail_unlock;
+> >  
+> >   	if (ispipe) {
+> > -		if (cprm.limit == 0) {
+> > +		if (cprm.limit == 1) {
+> >  			/*
+> >  			 * Normally core limits are irrelevant to pipes, since
+> >  			 * we're not writing to the file system, but we use
+> > -			 * cprm.limit of 0 here as a speacial value. Any
+> > -			 * non-zero limit gets set to RLIM_INFINITY below, but
+> > +			 * cprm.limit of 1 here as a speacial value. Any
+> > +			 * non-1 limit gets set to RLIM_INFINITY below, but
+> >  			 * a limit of 0 skips the dump.  This is a consistent
+> >  			 * way to catch recursive crashes.  We can still crash
+> > -			 * if the core_pattern binary sets RLIM_CORE =  !0
+> > +			 * if the core_pattern binary sets RLIM_CORE =  !1
+> >  			 * but it runs as root, and can do lots of stupid things
+> >  			 * Note that we use task_tgid_vnr here to grab the pid
+> >  			 * of the process group leader.  That way we get the
+> > @@ -1887,7 +1931,7 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> >  			 * core_pattern process dies.
+> >  			 */
+> >  			printk(KERN_WARNING
+> > -				"Process %d(%s) has RLIMIT_CORE set to 0\n",
+> > +				"Process %d(%s) has RLIMIT_CORE set to 1\n",
+> >  				task_tgid_vnr(current), current->comm);
+> >  			printk(KERN_WARNING "Aborting core\n");
+> >  			goto fail_unlock;
+> > @@ -1911,8 +1955,13 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> >  		cprm.limit = RLIM_INFINITY;
+> >  
+> >  		/* SIGPIPE can happen, but it's just never processed */
+> > -		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+> > -				&cprm.file)) {
+> > +		cprm.file = NULL;
+> > +		if (call_usermodehelper_fns(helper_argv[0], helper_argv, NULL,
+> > +					    UMH_WAIT_EXEC, umh_pipe_setup,
+> > +					    NULL, &cprm)) {
+> > +			if (cprm.file)
+> > +				filp_close(cprm.file, NULL);
+> > +
+> >   			printk(KERN_INFO "Core dump to %s pipe failed\n",
+> >  			       corename);
+> >  			goto fail_dropcount;
+> > diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+> > index f9edf63..5c05877 100644
+> > --- a/include/linux/kmod.h
+> > +++ b/include/linux/kmod.h
+> > @@ -62,7 +62,6 @@ struct subprocess_info {
+> >  	char **envp;
+> >  	enum umh_wait wait;
+> >  	int retval;
+> > -	struct file *stdin;
+> >  	int (*init)(struct subprocess_info *info);
+> >  	void (*cleanup)(struct subprocess_info *info);
+> >  	void *data;
+> > @@ -75,8 +74,6 @@ struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
+> >  /* Set various pieces of state into the subprocess_info structure */
+> >  void call_usermodehelper_setkeys(struct subprocess_info *info,
+> >  				 struct key *session_keyring);
+> > -int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+> > -				  struct file **filp);
+> >  void call_usermodehelper_setfns(struct subprocess_info *info,
+> >  		    int (*init)(struct subprocess_info *info),
+> >  		    void (*cleanup)(struct subprocess_info *info),
+> > @@ -132,10 +129,6 @@ call_usermodehelper_keys(char *path, char **argv, char **envp,
+> >  
+> >  extern void usermodehelper_init(void);
+> >  
+> > -struct file;
+> > -extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
+> > -				    struct file **filp);
+> > -
+> >  extern int usermodehelper_disable(void);
+> >  extern void usermodehelper_enable(void);
+> >  
+> > diff --git a/kernel/kmod.c b/kernel/kmod.c
+> > index 531ef62..d154454 100644
+> > --- a/kernel/kmod.c
+> > +++ b/kernel/kmod.c
+> > @@ -147,23 +147,6 @@ static int ____call_usermodehelper(void *data)
+> >  	commit_creds(sub_info->cred);
+> >  	sub_info->cred = NULL;
+> >  
+> > -	/* Install input pipe when needed */
+> > -	if (sub_info->stdin) {
+> > -		struct files_struct *f = current->files;
+> > -		struct fdtable *fdt;
+> > -		/* no races because files should be private here */
+> > -		sys_close(0);
+> > -		fd_install(0, sub_info->stdin);
+> > -		spin_lock(&f->file_lock);
+> > -		fdt = files_fdtable(f);
+> > -		FD_SET(0, fdt->open_fds);
+> > -		FD_CLR(0, fdt->close_on_exec);
+> > -		spin_unlock(&f->file_lock);
+> > -
+> > -		/* and disallow core files too */
+> > -		current->signal->rlim[RLIMIT_CORE] = (struct rlimit){0, 0};
+> > -	}
+> > -
+> >  	/* We can run anywhere, unlike our parent keventd(). */
+> >  	set_cpus_allowed_ptr(current, cpu_all_mask);
+> >  
+> > @@ -429,35 +412,6 @@ void call_usermodehelper_setfns(struct subprocess_info *info,
+> >  EXPORT_SYMBOL(call_usermodehelper_setfns);
+> >  
+> >  /**
+> > - * call_usermodehelper_stdinpipe - set up a pipe to be used for stdin
+> > - * @sub_info: a subprocess_info returned by call_usermodehelper_setup
+> > - * @filp: set to the write-end of a pipe
+> > - *
+> > - * This constructs a pipe, and sets the read end to be the stdin of the
+> > - * subprocess, and returns the write-end in *@filp.
+> > - */
+> > -int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+> > -				  struct file **filp)
+> > -{
+> > -	struct file *f;
+> > -
+> > -	f = create_write_pipe(0);
+> > -	if (IS_ERR(f))
+> > -		return PTR_ERR(f);
+> > -	*filp = f;
+> > -
+> > -	f = create_read_pipe(f, 0);
+> > -	if (IS_ERR(f)) {
+> > -		free_write_pipe(*filp);
+> > -		return PTR_ERR(f);
+> > -	}
+> > -	sub_info->stdin = f;
+> > -
+> > -	return 0;
+> > -}
+> > -EXPORT_SYMBOL(call_usermodehelper_stdinpipe);
+> > -
+> > -/**
+> >   * call_usermodehelper_exec - start a usermode application
+> >   * @sub_info: information about the subprocessa
+> >   * @wait: wait for the application to finish and return status.
+> > @@ -504,42 +458,6 @@ unlock:
+> >  }
+> >  EXPORT_SYMBOL(call_usermodehelper_exec);
+> >  
+> > -/**
+> > - * call_usermodehelper_pipe - call a usermode helper process with a pipe stdin
+> > - * @path: path to usermode executable
+> > - * @argv: arg vector for process
+> > - * @envp: environment for process
+> > - * @filp: set to the write-end of a pipe
+> > - *
+> > - * This is a simple wrapper which executes a usermode-helper function
+> > - * with a pipe as stdin.  It is implemented entirely in terms of
+> > - * lower-level call_usermodehelper_* functions.
+> > - */
+> > -int call_usermodehelper_pipe(char *path, char **argv, char **envp,
+> > -			     struct file **filp)
+> > -{
+> > -	struct subprocess_info *sub_info;
+> > -	int ret;
+> > -
+> > -	sub_info = call_usermodehelper_setup(path, argv, envp,
+> > -					     GFP_KERNEL);
+> > -	if (sub_info == NULL)
+> > -		return -ENOMEM;
+> > -
+> > -	ret = call_usermodehelper_stdinpipe(sub_info, filp);
+> > -	if (ret < 0) {
+> > -		call_usermodehelper_freeinfo(sub_info);
+> > -		return ret;
+> > -	}
+> > -
+> > -	ret = call_usermodehelper_exec(sub_info, UMH_WAIT_EXEC);
+> > -	if (ret < 0)	/* Failed to execute helper, close pipe */
+> > -		filp_close(*filp, NULL);
+> > -
+> > -	return ret;
+> > -}
+> > -EXPORT_SYMBOL(call_usermodehelper_pipe);
+> > -
+> >  void __init usermodehelper_init(void)
+> >  {
+> >  	khelper_wq = create_singlethread_workqueue("khelper");
 > 
-> Done that now on my local test system, but on one of its filesystems, 
-> xfs_admin -c1 didn't succeed, it simply stopped (waiting for a futex):
 > 
-> Famous last syscall:
-> 6750  futex(0x868330c8, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
-> 
-> Consequently, xfs_repair behaved similar, hanging in phase 6, traversing 
-> filesystem... I have a huge strace from this run, if someone is interested.
-> 
-> It's an 3 TB Raid 5 array (4 * 1 TB hd) with one FS also driven by areca:
-> 
-> meta-data=/dev/sdb1              isize=256    agcount=4, agsize=183105406 
-> blks
->          =                       sectsz=512   attr=2
-> data     =                       bsize=4096   blocks=732421623, imaxpct=5
->          =                       sunit=0      swidth=0 blks
-> naming   =version 2              bsize=4096   ascii-ci=0
-> log      =internal               bsize=4096   blocks=32768, version=2
->          =                       sectsz=512   sunit=0 blks, lazy-count=1
-> realtime =none                   extsz=4096   blocks=0, rtextents=0
-> 
-> Luckily, xfs_repair -P finally did succeed. Phuah.. 
-> 
-> This is with: xfs_repair version 2.10.1.
-> 
-> After calling xfs_admin -c1, all filesystems showed differences in 
-> superblock features (from a xfs_repair -n run). Is xfs_repair mandatory, or 
-> does the initial mount fix this automatically? 
-
-Mandatory - there are extra fields in the AGF headers that track
-free space btree block usage (the tree itself) that need to be
-calculated correctly. This allows the block usage in the filesystem
-to be tracked from the AGFs rather than the superblock, hence
-removing the single poにnt of contention in the allocation path...
-
-xfs_repair does this calculation for us - putting that code into the
-kernel to avoid running repair is a lot of work for a relatively
-rare operation....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
