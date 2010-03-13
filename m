@@ -1,24 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935946Ab0CMA5m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:57:42 -0500
-Received: from kroah.org ([198.145.64.141]:46822 "EHLO coco.kroah.org"
+	id S935850Ab0CMAuB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:50:01 -0500
+Received: from kroah.org ([198.145.64.141]:47049 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935307Ab0CMAbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:16 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:08 2010
-Message-Id: <20100313002708.825421266@kvm.kroah.org>
+	id S935484Ab0CMAb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:58 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
+Message-Id: <20100313002712.906489368@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:14 -0800
+Date: Fri, 12 Mar 2010 16:27:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick McHardy <kaber@trash.net>,
-       Ajit Khaparde <ajitk@serverengines.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [041/145] net: bug fix for vlan + gro issue
+       Elina Pasheva <epasheva@sierrawireless.com>
+Subject: [088/145] USB: serial: sierra driver indat_callback fix
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,42 +24,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Ajit Khaparde <ajitk@serverengines.com>
+From: Elina Pasheva <epasheva@sierrawireless.com>
 
-[ Upstream commit e76b69cc0133952c98aa1ad6330cacacd269fd64 ]
+commit b87c6e86dac1bb5222279cc8ff7e09529e1c4ed9 upstream.
 
-Traffic (tcp) doesnot start on a vlan interface when gro is enabled.
-Even the tcp handshake was not taking place.
-This is because, the eth_type_trans call before the netif_receive_skb
-in napi_gro_finish() resets the skb->dev to napi->dev from the previously
-set vlan netdev interface. This causes the ip_route_input to drop the
-incoming packet considering it as a packet coming from a martian source.
+A crash has been reported with sierra driver on disconnect with
+Ubuntu/Lucid distribution based on kernel-2.6.32.
+The cause of the crash was determined as "NULL tty pointer was being
+referenced" and the NULL pointer was passed by sierra_indat_callback().
 
-I could repro this on 2.6.32.7 (stable) and 2.6.33-rc7.
-With this fix, the traffic starts and the test runs fine on both vlan
-and non-vlan interfaces.
+This patch modifies sierra_indat_callback() function to check for NULL
+tty structure pointer. This modification prevents a crash from happening
+when the device is disconnected.
 
-CC: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Patrick McHardy <kaber@trash.net>
-Signed-off-by: Ajit Khaparde <ajitk@serverengines.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This patch fixes the bug reported in Launchpad:
+  https://bugs.launchpad.net/ubuntu/+source/linux/+bug/511157
+
+Signed-off-by: Elina Pasheva <epasheva@sierrawireless.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/dev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/serial/sierra.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2630,7 +2630,7 @@ int napi_frags_finish(struct napi_struct
- 	switch (ret) {
- 	case GRO_NORMAL:
- 	case GRO_HELD:
--		skb->protocol = eth_type_trans(skb, napi->dev);
-+		skb->protocol = eth_type_trans(skb, skb->dev);
+--- a/drivers/usb/serial/sierra.c
++++ b/drivers/usb/serial/sierra.c
+@@ -567,14 +567,17 @@ static void sierra_indat_callback(struct
+ 	} else {
+ 		if (urb->actual_length) {
+ 			tty = tty_port_tty_get(&port->port);
++			if (tty) {
++				tty_buffer_request_room(tty,
++					urb->actual_length);
++				tty_insert_flip_string(tty, data,
++					urb->actual_length);
++				tty_flip_buffer_push(tty);
  
- 		if (ret == GRO_NORMAL)
- 			return netif_receive_skb(skb);
+-			tty_buffer_request_room(tty, urb->actual_length);
+-			tty_insert_flip_string(tty, data, urb->actual_length);
+-			tty_flip_buffer_push(tty);
+-
+-			tty_kref_put(tty);
+-			usb_serial_debug_data(debug, &port->dev, __func__,
+-				urb->actual_length, data);
++				tty_kref_put(tty);
++				usb_serial_debug_data(debug, &port->dev,
++					__func__, urb->actual_length, data);
++			}
+ 		} else {
+ 			dev_dbg(&port->dev, "%s: empty read urb"
+ 				" received\n", __func__);
 
 
