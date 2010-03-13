@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933547Ab0CMQdW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 11:33:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54162 "EHLO mx3.mail.elte.hu"
+	id S933849Ab0CMQgs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 11:36:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55309 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932284Ab0CMQdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 11:33:20 -0500
-Date: Sat, 13 Mar 2010 17:33:02 +0100
+	id S932862Ab0CMQgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 11:36:46 -0500
+Date: Sat, 13 Mar 2010 17:35:56 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+Cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] tracing fixes
-Message-ID: <20100313163302.GA12447@elte.hu>
+Subject: [GIT PULL] core kernel fixes
+Message-ID: <20100313163556.GA14263@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,360 +31,595 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+Please pull the latest core-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Arnaldo Carvalho de Melo (1):
-      tracing: Update the comm field in the right variable in update_max_tr
+FUJITA Tomonori (1):
+      x86/gart: Unexport gart_iommu_aperture
 
-Frederic Weisbecker (1):
-      tracing: Include irqflags headers from trace clock
+Luca Barbieri (1):
+      locking: Make sparse work with inline spinlocks and rwlocks
 
-Lai Jiangshan (2):
-      tracing: Fix warning in s_next of trace file ops
-      ring-buffer: Move disabled check into preempt disable section
+Paul E. McKenney (13):
+      rcu: Fix holdoff for accelerated GPs for last non-dynticked CPU
+      rcu: Make task_subsys_state() RCU-lockdep checks handle boot-time use
+      sched, rcu: Fix rcu_dereference() for RCU-lockdep
+      rcu: Use wrapper function instead of exporting tasklist_lock
+      rcu, cgroup: Relax the check in task_subsys_state() as early boot is now handled by lockdep-RCU
+      rcu: Add control variables to lockdep_rcu_dereference() diagnostics
+      rcu: Make rcu_read_lock_sched_held() handle !PREEMPT
+      rcu: Suppress __mpol_dup() false positive from RCU lockdep
+      rcu, ftrace: Fix RCU lockdep splat in ftrace_perf_buf_prepare()
+      rcu: Suppress RCU lockdep warnings during early boot
+      ftrace: Replace read_barrier_depends() with rcu_dereference_raw()
+      rcu: Increase RCU CPU stall timeouts if PROVE_RCU
+      x86/mce: Fix RCU lockdep splats
 
-Steven Rostedt (6):
-      function-graph: Fix unused reference to ftrace_set_func()
-      function-graph: Use comment notation for func names of dangling '}'
-      function-graph: Init curr_ret_stack with ret_stack
-      tracing: Use same local variable when resetting the ring buffer
-      tracing: Disable buffer switching when starting or stopping trace
-      tracing: Do not record user stack trace from NMI context
-
-Tim Bird (1):
-      function-graph: Add tracing_thresh support to function_graph tracer
+Thomas Gleixner (1):
+      futex: Protect pid lookup in compat code with RCU
 
 
- kernel/trace/ftrace.c                |    8 ++---
- kernel/trace/ring_buffer.c           |   12 ++++----
- kernel/trace/trace.c                 |   49 ++++++++++++++++++++++++++++-----
- kernel/trace/trace.h                 |    3 +-
- kernel/trace/trace_clock.c           |    1 +
- kernel/trace/trace_functions_graph.c |   27 ++++++++++++++++--
- 6 files changed, 77 insertions(+), 23 deletions(-)
+ arch/x86/kernel/aperture_64.c      |    1 -
+ arch/x86/kernel/cpu/mcheck/mce.c   |   11 ++++++--
+ include/linux/cred.h               |    2 +-
+ include/linux/rcupdate.h           |   45 ++++++++++++++++++++++++++++-------
+ include/linux/rwlock.h             |   20 ++++++++--------
+ include/linux/sched.h              |    4 +++
+ include/linux/spinlock.h           |   13 ++++++----
+ include/trace/ftrace.h             |    4 +-
+ kernel/exit.c                      |    2 +-
+ kernel/fork.c                      |    9 ++++++-
+ kernel/futex_compat.c              |    6 ++--
+ kernel/lockdep.c                   |    1 +
+ kernel/pid.c                       |    4 ++-
+ kernel/rcutree.h                   |   21 ++++++++++++----
+ kernel/rcutree_plugin.h            |    8 ++++--
+ kernel/sched_fair.c                |    2 +-
+ kernel/trace/ftrace.c              |   22 ++++++++++-------
+ kernel/trace/trace_event_profile.c |    4 +-
+ mm/mempolicy.c                     |    2 +
+ 19 files changed, 123 insertions(+), 58 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 8378357..bb53edb 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -84,10 +84,6 @@ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
- ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
- ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index f147a95..3704997 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -31,7 +31,6 @@
+ #include <asm/x86_init.h>
  
--#ifdef CONFIG_FUNCTION_GRAPH_TRACER
--static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
--#endif
--
- static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
- {
- 	struct ftrace_ops *op = ftrace_list;
-@@ -2276,6 +2272,8 @@ __setup("ftrace_filter=", set_ftrace_filter);
+ int gart_iommu_aperture;
+-EXPORT_SYMBOL_GPL(gart_iommu_aperture);
+ int gart_iommu_aperture_disabled __initdata;
+ int gart_iommu_aperture_allowed __initdata;
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
-+static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index a8aacd4..4442e9e 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -46,6 +46,11 @@
+ 
+ #include "mce-internal.h"
+ 
++#define rcu_dereference_check_mce(p) \
++	rcu_dereference_check((p), \
++			      rcu_read_lock_sched_held() || \
++			      lockdep_is_held(&mce_read_mutex))
 +
- static int __init set_graph_function(char *str)
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/mce.h>
+ 
+@@ -158,7 +163,7 @@ void mce_log(struct mce *mce)
+ 	mce->finished = 0;
+ 	wmb();
+ 	for (;;) {
+-		entry = rcu_dereference(mcelog.next);
++		entry = rcu_dereference_check_mce(mcelog.next);
+ 		for (;;) {
+ 			/*
+ 			 * When the buffer fills up discard new entries.
+@@ -1500,7 +1505,7 @@ static ssize_t mce_read(struct file *filp, char __user *ubuf, size_t usize,
+ 		return -ENOMEM;
+ 
+ 	mutex_lock(&mce_read_mutex);
+-	next = rcu_dereference(mcelog.next);
++	next = rcu_dereference_check_mce(mcelog.next);
+ 
+ 	/* Only supports full reads right now */
+ 	if (*off != 0 || usize < MCE_LOG_LEN*sizeof(struct mce)) {
+@@ -1565,7 +1570,7 @@ timeout:
+ static unsigned int mce_poll(struct file *file, poll_table *wait)
  {
- 	strlcpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
-@@ -3351,6 +3349,7 @@ void ftrace_graph_init_task(struct task_struct *t)
- {
- 	/* Make sure we do not use the parent ret_stack */
- 	t->ret_stack = NULL;
-+	t->curr_ret_stack = -1;
- 
- 	if (ftrace_graph_active) {
- 		struct ftrace_ret_stack *ret_stack;
-@@ -3360,7 +3359,6 @@ void ftrace_graph_init_task(struct task_struct *t)
- 				GFP_KERNEL);
- 		if (!ret_stack)
- 			return;
--		t->curr_ret_stack = -1;
- 		atomic_set(&t->tracing_graph_pause, 0);
- 		atomic_set(&t->trace_overrun, 0);
- 		t->ftrace_timestamp = 0;
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 8c1b2d2..54191d6 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2232,12 +2232,12 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
- 	if (ring_buffer_flags != RB_BUFFERS_ON)
- 		return NULL;
- 
--	if (atomic_read(&buffer->record_disabled))
--		return NULL;
--
- 	/* If we are tracing schedule, we don't want to recurse */
- 	resched = ftrace_preempt_disable();
- 
-+	if (atomic_read(&buffer->record_disabled))
-+		goto out_nocheck;
-+
- 	if (trace_recursive_lock())
- 		goto out_nocheck;
- 
-@@ -2469,11 +2469,11 @@ int ring_buffer_write(struct ring_buffer *buffer,
- 	if (ring_buffer_flags != RB_BUFFERS_ON)
- 		return -EBUSY;
- 
--	if (atomic_read(&buffer->record_disabled))
--		return -EBUSY;
--
- 	resched = ftrace_preempt_disable();
- 
-+	if (atomic_read(&buffer->record_disabled))
-+		goto out;
-+
- 	cpu = raw_smp_processor_id();
- 
- 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 032c57c..e52683f 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -374,6 +374,21 @@ static int __init set_buf_size(char *str)
+ 	poll_wait(file, &mce_wait, wait);
+-	if (rcu_dereference(mcelog.next))
++	if (rcu_dereference_check_mce(mcelog.next))
+ 		return POLLIN | POLLRDNORM;
+ 	return 0;
  }
- __setup("trace_buf_size=", set_buf_size);
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 4db09f8..52507c3 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -280,7 +280,7 @@ static inline void put_cred(const struct cred *_cred)
+  * task or by holding tasklist_lock to prevent it from being unlinked.
+  */
+ #define __task_cred(task) \
+-	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock))))
++	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_tasklist_lock_is_held())))
  
-+static int __init set_tracing_thresh(char *str)
+ /**
+  * get_task_cred - Get another task's objective credentials
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index c843736..75921b8 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -97,6 +97,11 @@ extern struct lockdep_map rcu_sched_lock_map;
+ # define rcu_read_release_sched() \
+ 		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
+ 
++static inline int debug_lockdep_rcu_enabled(void)
 +{
-+	unsigned long threshhold;
-+	int ret;
-+
-+	if (!str)
-+		return 0;
-+	ret = strict_strtoul(str, 0, &threshhold);
-+	if (ret < 0)
-+		return 0;
-+	tracing_thresh = threshhold * 1000;
-+	return 1;
++	return likely(rcu_scheduler_active && debug_locks);
 +}
-+__setup("tracing_thresh=", set_tracing_thresh);
 +
- unsigned long nsecs_to_usecs(unsigned long nsecs)
+ /**
+  * rcu_read_lock_held - might we be in RCU read-side critical section?
+  *
+@@ -104,12 +109,14 @@ extern struct lockdep_map rcu_sched_lock_map;
+  * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
+  * this assumes we are in an RCU read-side critical section unless it can
+  * prove otherwise.
++ *
++ * Check rcu_scheduler_active to prevent false positives during boot.
+  */
+ static inline int rcu_read_lock_held(void)
  {
- 	return nsecs / 1000;
-@@ -579,9 +594,10 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
- static arch_spinlock_t ftrace_max_lock =
- 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
+-	if (debug_locks)
+-		return lock_is_held(&rcu_lock_map);
+-	return 1;
++	if (!debug_lockdep_rcu_enabled())
++		return 1;
++	return lock_is_held(&rcu_lock_map);
+ }
  
-+unsigned long __read_mostly	tracing_thresh;
+ /**
+@@ -119,12 +126,14 @@ static inline int rcu_read_lock_held(void)
+  * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
+  * this assumes we are in an RCU-bh read-side critical section unless it can
+  * prove otherwise.
++ *
++ * Check rcu_scheduler_active to prevent false positives during boot.
+  */
+ static inline int rcu_read_lock_bh_held(void)
+ {
+-	if (debug_locks)
+-		return lock_is_held(&rcu_bh_lock_map);
+-	return 1;
++	if (!debug_lockdep_rcu_enabled())
++		return 1;
++	return lock_is_held(&rcu_bh_lock_map);
+ }
+ 
+ /**
+@@ -135,15 +144,26 @@ static inline int rcu_read_lock_bh_held(void)
+  * this assumes we are in an RCU-sched read-side critical section unless it
+  * can prove otherwise.  Note that disabling of preemption (including
+  * disabling irqs) counts as an RCU-sched read-side critical section.
++ *
++ * Check rcu_scheduler_active to prevent false positives during boot.
+  */
++#ifdef CONFIG_PREEMPT
+ static inline int rcu_read_lock_sched_held(void)
+ {
+ 	int lockdep_opinion = 0;
+ 
++	if (!debug_lockdep_rcu_enabled())
++		return 1;
+ 	if (debug_locks)
+ 		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
+-	return lockdep_opinion || preempt_count() != 0 || !rcu_scheduler_active;
++	return lockdep_opinion || preempt_count() != 0;
++}
++#else /* #ifdef CONFIG_PREEMPT */
++static inline int rcu_read_lock_sched_held(void)
++{
++	return 1;
+ }
++#endif /* #else #ifdef CONFIG_PREEMPT */
+ 
+ #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+@@ -164,10 +184,17 @@ static inline int rcu_read_lock_bh_held(void)
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_PREEMPT
+ static inline int rcu_read_lock_sched_held(void)
+ {
+-	return preempt_count() != 0 || !rcu_scheduler_active;
++	return !rcu_scheduler_active || preempt_count() != 0;
++}
++#else /* #ifdef CONFIG_PREEMPT */
++static inline int rcu_read_lock_sched_held(void)
++{
++	return 1;
+ }
++#endif /* #else #ifdef CONFIG_PREEMPT */
+ 
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+@@ -184,7 +211,7 @@ static inline int rcu_read_lock_sched_held(void)
+  */
+ #define rcu_dereference_check(p, c) \
+ 	({ \
+-		if (debug_locks && !(c)) \
++		if (debug_lockdep_rcu_enabled() && !(c)) \
+ 			lockdep_rcu_dereference(__FILE__, __LINE__); \
+ 		rcu_dereference_raw(p); \
+ 	})
+diff --git a/include/linux/rwlock.h b/include/linux/rwlock.h
+index 71e0b00..bc2994e 100644
+--- a/include/linux/rwlock.h
++++ b/include/linux/rwlock.h
+@@ -29,25 +29,25 @@ do {								\
+ #endif
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK
+- extern void do_raw_read_lock(rwlock_t *lock);
++ extern void do_raw_read_lock(rwlock_t *lock) __acquires(lock);
+ #define do_raw_read_lock_flags(lock, flags) do_raw_read_lock(lock)
+  extern int do_raw_read_trylock(rwlock_t *lock);
+- extern void do_raw_read_unlock(rwlock_t *lock);
+- extern void do_raw_write_lock(rwlock_t *lock);
++ extern void do_raw_read_unlock(rwlock_t *lock) __releases(lock);
++ extern void do_raw_write_lock(rwlock_t *lock) __acquires(lock);
+ #define do_raw_write_lock_flags(lock, flags) do_raw_write_lock(lock)
+  extern int do_raw_write_trylock(rwlock_t *lock);
+- extern void do_raw_write_unlock(rwlock_t *lock);
++ extern void do_raw_write_unlock(rwlock_t *lock) __releases(lock);
+ #else
+-# define do_raw_read_lock(rwlock)	arch_read_lock(&(rwlock)->raw_lock)
++# define do_raw_read_lock(rwlock)	do {__acquire(lock); arch_read_lock(&(rwlock)->raw_lock); } while (0)
+ # define do_raw_read_lock_flags(lock, flags) \
+-		arch_read_lock_flags(&(lock)->raw_lock, *(flags))
++		do {__acquire(lock); arch_read_lock_flags(&(lock)->raw_lock, *(flags)); } while (0)
+ # define do_raw_read_trylock(rwlock)	arch_read_trylock(&(rwlock)->raw_lock)
+-# define do_raw_read_unlock(rwlock)	arch_read_unlock(&(rwlock)->raw_lock)
+-# define do_raw_write_lock(rwlock)	arch_write_lock(&(rwlock)->raw_lock)
++# define do_raw_read_unlock(rwlock)	do {arch_read_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
++# define do_raw_write_lock(rwlock)	do {__acquire(lock); arch_write_lock(&(rwlock)->raw_lock); } while (0)
+ # define do_raw_write_lock_flags(lock, flags) \
+-		arch_write_lock_flags(&(lock)->raw_lock, *(flags))
++		do {__acquire(lock); arch_write_lock_flags(&(lock)->raw_lock, *(flags)); } while (0)
+ # define do_raw_write_trylock(rwlock)	arch_write_trylock(&(rwlock)->raw_lock)
+-# define do_raw_write_unlock(rwlock)	arch_write_unlock(&(rwlock)->raw_lock)
++# define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
+ #endif
+ 
+ #define read_can_lock(rwlock)		arch_read_can_lock(&(rwlock)->raw_lock)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0eef87b..a47af20 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -258,6 +258,10 @@ extern spinlock_t mmlist_lock;
+ 
+ struct task_struct;
+ 
++#ifdef CONFIG_PROVE_RCU
++extern int lockdep_tasklist_lock_is_held(void);
++#endif /* #ifdef CONFIG_PROVE_RCU */
 +
- #ifdef CONFIG_TRACER_MAX_TRACE
- unsigned long __read_mostly	tracing_max_latency;
--unsigned long __read_mostly	tracing_thresh;
+ extern void sched_init(void);
+ extern void sched_init_smp(void);
+ extern asmlinkage void schedule_tail(struct task_struct *prev);
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index 8608821..89fac6a 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -128,19 +128,21 @@ static inline void smp_mb__after_lock(void) { smp_mb(); }
+ #define raw_spin_unlock_wait(lock)	arch_spin_unlock_wait(&(lock)->raw_lock)
  
- /*
-  * Copy the new maximum trace into the separate maximum-trace
-@@ -592,7 +608,7 @@ static void
- __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
+ #ifdef CONFIG_DEBUG_SPINLOCK
+- extern void do_raw_spin_lock(raw_spinlock_t *lock);
++ extern void do_raw_spin_lock(raw_spinlock_t *lock) __acquires(lock);
+ #define do_raw_spin_lock_flags(lock, flags) do_raw_spin_lock(lock)
+  extern int do_raw_spin_trylock(raw_spinlock_t *lock);
+- extern void do_raw_spin_unlock(raw_spinlock_t *lock);
++ extern void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock);
+ #else
+-static inline void do_raw_spin_lock(raw_spinlock_t *lock)
++static inline void do_raw_spin_lock(raw_spinlock_t *lock) __acquires(lock)
  {
- 	struct trace_array_cpu *data = tr->data[cpu];
--	struct trace_array_cpu *max_data = tr->data[cpu];
-+	struct trace_array_cpu *max_data;
- 
- 	max_tr.cpu = cpu;
- 	max_tr.time_start = data->preempt_timestamp;
-@@ -602,7 +618,7 @@ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
- 	max_data->critical_start = data->critical_start;
- 	max_data->critical_end = data->critical_end;
- 
--	memcpy(data->comm, tsk->comm, TASK_COMM_LEN);
-+	memcpy(max_data->comm, tsk->comm, TASK_COMM_LEN);
- 	max_data->pid = tsk->pid;
- 	max_data->uid = task_uid(tsk);
- 	max_data->nice = tsk->static_prio - 20 - MAX_RT_PRIO;
-@@ -824,10 +840,10 @@ out:
- 	mutex_unlock(&trace_types_lock);
++	__acquire(lock);
+ 	arch_spin_lock(&lock->raw_lock);
  }
  
--static void __tracing_reset(struct trace_array *tr, int cpu)
-+static void __tracing_reset(struct ring_buffer *buffer, int cpu)
+ static inline void
+-do_raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long *flags)
++do_raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long *flags) __acquires(lock)
  {
- 	ftrace_disable_cpu();
--	ring_buffer_reset_cpu(tr->buffer, cpu);
-+	ring_buffer_reset_cpu(buffer, cpu);
- 	ftrace_enable_cpu();
++	__acquire(lock);
+ 	arch_spin_lock_flags(&lock->raw_lock, *flags);
  }
  
-@@ -839,7 +855,7 @@ void tracing_reset(struct trace_array *tr, int cpu)
- 
- 	/* Make sure all commits have finished */
- 	synchronize_sched();
--	__tracing_reset(tr, cpu);
-+	__tracing_reset(buffer, cpu);
- 
- 	ring_buffer_record_enable(buffer);
+@@ -149,9 +151,10 @@ static inline int do_raw_spin_trylock(raw_spinlock_t *lock)
+ 	return arch_spin_trylock(&(lock)->raw_lock);
  }
-@@ -857,7 +873,7 @@ void tracing_reset_online_cpus(struct trace_array *tr)
- 	tr->time_start = ftrace_now(tr->cpu);
  
- 	for_each_online_cpu(cpu)
--		__tracing_reset(tr, cpu);
-+		__tracing_reset(buffer, cpu);
- 
- 	ring_buffer_record_enable(buffer);
+-static inline void do_raw_spin_unlock(raw_spinlock_t *lock)
++static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
+ {
+ 	arch_spin_unlock(&lock->raw_lock);
++	__release(lock);
  }
-@@ -934,6 +950,8 @@ void tracing_start(void)
- 		goto out;
+ #endif
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 0804cd5..601ad77 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -699,9 +699,9 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+  *	__cpu = smp_processor_id();
+  *
+  *	if (in_nmi())
+- *		trace_buf = rcu_dereference(perf_trace_buf_nmi);
++ *		trace_buf = rcu_dereference_sched(perf_trace_buf_nmi);
+  *	else
+- *		trace_buf = rcu_dereference(perf_trace_buf);
++ *		trace_buf = rcu_dereference_sched(perf_trace_buf);
+  *
+  *	if (!trace_buf)
+  *		goto end;
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 45ed043..fed3a4d 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -87,7 +87,7 @@ static void __exit_signal(struct task_struct *tsk)
+ 
+ 	sighand = rcu_dereference_check(tsk->sighand,
+ 					rcu_read_lock_held() ||
+-					lockdep_is_held(&tasklist_lock));
++					lockdep_tasklist_lock_is_held());
+ 	spin_lock(&sighand->siglock);
+ 
+ 	posix_cpu_timers_exit(tsk);
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 17bbf09..8691c54 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -86,7 +86,14 @@ int max_threads;		/* tunable limit on nr_threads */
+ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
+ 
+ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
+-EXPORT_SYMBOL_GPL(tasklist_lock);
++
++#ifdef CONFIG_PROVE_RCU
++int lockdep_tasklist_lock_is_held(void)
++{
++	return lockdep_is_held(&tasklist_lock);
++}
++EXPORT_SYMBOL_GPL(lockdep_tasklist_lock_is_held);
++#endif /* #ifdef CONFIG_PROVE_RCU */
+ 
+ int nr_processes(void)
+ {
+diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
+index 2357165..d49afb2 100644
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -146,7 +146,7 @@ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
+ 		struct task_struct *p;
+ 
+ 		ret = -ESRCH;
+-		read_lock(&tasklist_lock);
++		rcu_read_lock();
+ 		p = find_task_by_vpid(pid);
+ 		if (!p)
+ 			goto err_unlock;
+@@ -157,7 +157,7 @@ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
+ 		    !capable(CAP_SYS_PTRACE))
+ 			goto err_unlock;
+ 		head = p->compat_robust_list;
+-		read_unlock(&tasklist_lock);
++		rcu_read_unlock();
  	}
  
-+	/* Prevent the buffers from switching */
-+	arch_spin_lock(&ftrace_max_lock);
+ 	if (put_user(sizeof(*head), len_ptr))
+@@ -165,7 +165,7 @@ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
+ 	return put_user(ptr_to_compat(head), head_ptr);
  
- 	buffer = global_trace.buffer;
- 	if (buffer)
-@@ -943,6 +961,8 @@ void tracing_start(void)
- 	if (buffer)
- 		ring_buffer_record_enable(buffer);
+ err_unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
  
-+	arch_spin_unlock(&ftrace_max_lock);
-+
- 	ftrace_start();
-  out:
- 	spin_unlock_irqrestore(&tracing_start_lock, flags);
-@@ -964,6 +984,9 @@ void tracing_stop(void)
- 	if (trace_stop_count++)
- 		goto out;
- 
-+	/* Prevent the buffers from switching */
-+	arch_spin_lock(&ftrace_max_lock);
-+
- 	buffer = global_trace.buffer;
- 	if (buffer)
- 		ring_buffer_record_disable(buffer);
-@@ -972,6 +995,8 @@ void tracing_stop(void)
- 	if (buffer)
- 		ring_buffer_record_disable(buffer);
- 
-+	arch_spin_unlock(&ftrace_max_lock);
-+
-  out:
- 	spin_unlock_irqrestore(&tracing_start_lock, flags);
- }
-@@ -1259,6 +1284,13 @@ ftrace_trace_userstack(struct ring_buffer *buffer, unsigned long flags, int pc)
- 	if (!(trace_flags & TRACE_ITER_USERSTACKTRACE))
- 		return;
- 
-+	/*
-+	 * NMIs can not handle page faults, even with fix ups.
-+	 * The save user stack can (and often does) fault.
-+	 */
-+	if (unlikely(in_nmi()))
-+		return;
-+
- 	event = trace_buffer_lock_reserve(buffer, TRACE_USER_STACK,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
-@@ -1703,6 +1735,7 @@ static void *s_start(struct seq_file *m, loff_t *pos)
- 
- 		ftrace_enable_cpu();
- 
-+		iter->leftover = 0;
- 		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
- 			;
- 
-@@ -4248,10 +4281,10 @@ static __init int tracer_init_debugfs(void)
- #ifdef CONFIG_TRACER_MAX_TRACE
- 	trace_create_file("tracing_max_latency", 0644, d_tracer,
- 			&tracing_max_latency, &tracing_max_lat_fops);
-+#endif
- 
- 	trace_create_file("tracing_thresh", 0644, d_tracer,
- 			&tracing_thresh, &tracing_max_lat_fops);
--#endif
- 
- 	trace_create_file("README", 0444, d_tracer,
- 			NULL, &tracing_readme_fops);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index fd05bca..1bc8cd1 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -396,9 +396,10 @@ extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
- 
- extern unsigned long nsecs_to_usecs(unsigned long nsecs);
- 
-+extern unsigned long tracing_thresh;
-+
- #ifdef CONFIG_TRACER_MAX_TRACE
- extern unsigned long tracing_max_latency;
--extern unsigned long tracing_thresh;
- 
- void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
- void update_max_tr_single(struct trace_array *tr,
-diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
-index 84a3a7b..6fbfb8f 100644
---- a/kernel/trace/trace_clock.c
-+++ b/kernel/trace/trace_clock.c
-@@ -13,6 +13,7 @@
-  * Tracer plugins will chose a default from these clocks.
-  */
- #include <linux/spinlock.h>
-+#include <linux/irqflags.h>
- #include <linux/hardirq.h>
- #include <linux/module.h>
- #include <linux/percpu.h>
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index e998a82..e9df04b 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -237,6 +237,14 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
  	return ret;
  }
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 0c30d04..681bc2e 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -3822,6 +3822,7 @@ void lockdep_rcu_dereference(const char *file, const int line)
+ 	printk("%s:%d invoked rcu_dereference_check() without protection!\n",
+ 			file, line);
+ 	printk("\nother info that might help us debug this:\n\n");
++	printk("\nrcu_scheduler_active = %d, debug_locks = %d\n", rcu_scheduler_active, debug_locks);
+ 	lockdep_print_held_locks(curr);
+ 	printk("\nstack backtrace:\n");
+ 	dump_stack();
+diff --git a/kernel/pid.c b/kernel/pid.c
+index b08e697..b606440 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -367,7 +367,9 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+ 	struct task_struct *result = NULL;
+ 	if (pid) {
+ 		struct hlist_node *first;
+-		first = rcu_dereference_check(pid->tasks[type].first, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock));
++		first = rcu_dereference_check(pid->tasks[type].first,
++					      rcu_read_lock_held() ||
++					      lockdep_tasklist_lock_is_held());
+ 		if (first)
+ 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
+ 	}
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 1439eb5..4a525a3 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -246,12 +246,21 @@ struct rcu_data {
  
-+int trace_graph_thresh_entry(struct ftrace_graph_ent *trace)
-+{
-+	if (tracing_thresh)
-+		return 1;
-+	else
-+		return trace_graph_entry(trace);
-+}
+ #define RCU_JIFFIES_TILL_FORCE_QS	 3	/* for rsp->jiffies_force_qs */
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+-#define RCU_SECONDS_TILL_STALL_CHECK   (10 * HZ)  /* for rsp->jiffies_stall */
+-#define RCU_SECONDS_TILL_STALL_RECHECK (30 * HZ)  /* for rsp->jiffies_stall */
+-#define RCU_STALL_RAT_DELAY		2	  /* Allow other CPUs time */
+-						  /*  to take at least one */
+-						  /*  scheduling clock irq */
+-						  /*  before ratting on them. */
 +
- static void __trace_graph_return(struct trace_array *tr,
- 				struct ftrace_graph_ret *trace,
- 				unsigned long flags,
-@@ -290,13 +298,26 @@ void set_graph_array(struct trace_array *tr)
- 	smp_mb();
++#ifdef CONFIG_PROVE_RCU
++#define RCU_STALL_DELAY_DELTA	       (5 * HZ)
++#else
++#define RCU_STALL_DELAY_DELTA	       0
++#endif
++
++#define RCU_SECONDS_TILL_STALL_CHECK   (10 * HZ + RCU_STALL_DELAY_DELTA)
++						/* for rsp->jiffies_stall */
++#define RCU_SECONDS_TILL_STALL_RECHECK (30 * HZ + RCU_STALL_DELAY_DELTA)
++						/* for rsp->jiffies_stall */
++#define RCU_STALL_RAT_DELAY		2	/* Allow other CPUs time */
++						/*  to take at least one */
++						/*  scheduling clock irq */
++						/*  before ratting on them. */
+ 
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+ 
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index 464ad2c..79b53bd 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -1010,6 +1010,10 @@ int rcu_needs_cpu(int cpu)
+ 	int c = 0;
+ 	int thatcpu;
+ 
++	/* Check for being in the holdoff period. */
++	if (per_cpu(rcu_dyntick_holdoff, cpu) == jiffies)
++		return rcu_needs_cpu_quick_check(cpu);
++
+ 	/* Don't bother unless we are the last non-dyntick-idle CPU. */
+ 	for_each_cpu_not(thatcpu, nohz_cpu_mask)
+ 		if (thatcpu != cpu) {
+@@ -1041,10 +1045,8 @@ int rcu_needs_cpu(int cpu)
+ 	}
+ 
+ 	/* If RCU callbacks are still pending, RCU still needs this CPU. */
+-	if (c) {
++	if (c)
+ 		raise_softirq(RCU_SOFTIRQ);
+-		per_cpu(rcu_dyntick_holdoff, cpu) = jiffies;
+-	}
+ 	return c;
  }
  
-+void trace_graph_thresh_return(struct ftrace_graph_ret *trace)
-+{
-+	if (tracing_thresh &&
-+	    (trace->rettime - trace->calltime < tracing_thresh))
-+		return;
-+	else
-+		trace_graph_return(trace);
-+}
-+
- static int graph_trace_init(struct trace_array *tr)
- {
- 	int ret;
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 3e1fd96..5a5ea2c 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -3476,7 +3476,7 @@ static void run_rebalance_domains(struct softirq_action *h)
  
- 	set_graph_array(tr);
--	ret = register_ftrace_graph(&trace_graph_return,
--				    &trace_graph_entry);
-+	if (tracing_thresh)
-+		ret = register_ftrace_graph(&trace_graph_thresh_return,
-+					    &trace_graph_thresh_entry);
-+	else
-+		ret = register_ftrace_graph(&trace_graph_return,
-+					    &trace_graph_entry);
- 	if (ret)
- 		return ret;
- 	tracing_start_cmdline_record();
-@@ -920,7 +941,7 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	} else {
--		ret = trace_seq_printf(s, "} (%ps)\n", (void *)trace->func);
-+		ret = trace_seq_printf(s, "} /* %ps */\n", (void *)trace->func);
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
+ static inline int on_null_domain(int cpu)
+ {
+-	return !rcu_dereference(cpu_rq(cpu)->sd);
++	return !rcu_dereference_sched(cpu_rq(cpu)->sd);
+ }
+ 
+ /*
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 8378357..8c5adc0 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -27,6 +27,7 @@
+ #include <linux/ctype.h>
+ #include <linux/list.h>
+ #include <linux/hash.h>
++#include <linux/rcupdate.h>
+ 
+ #include <trace/events/sched.h>
+ 
+@@ -88,18 +89,22 @@ ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+ static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
+ #endif
+ 
++/*
++ * Traverse the ftrace_list, invoking all entries.  The reason that we
++ * can use rcu_dereference_raw() is that elements removed from this list
++ * are simply leaked, so there is no need to interact with a grace-period
++ * mechanism.  The rcu_dereference_raw() calls are needed to handle
++ * concurrent insertions into the ftrace_list.
++ *
++ * Silly Alpha and silly pointer-speculation compiler optimizations!
++ */
+ static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ {
+-	struct ftrace_ops *op = ftrace_list;
+-
+-	/* in case someone actually ports this to alpha! */
+-	read_barrier_depends();
++	struct ftrace_ops *op = rcu_dereference_raw(ftrace_list); /*see above*/
+ 
+ 	while (op != &ftrace_list_end) {
+-		/* silly alpha */
+-		read_barrier_depends();
+ 		op->func(ip, parent_ip);
+-		op = op->next;
++		op = rcu_dereference_raw(op->next); /*see above*/
+ 	};
+ }
+ 
+@@ -154,8 +159,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
+ 	 * the ops->next pointer is valid before another CPU sees
+ 	 * the ops pointer included into the ftrace_list.
+ 	 */
+-	smp_wmb();
+-	ftrace_list = ops;
++	rcu_assign_pointer(ftrace_list, ops);
+ 
+ 	if (ftrace_enabled) {
+ 		ftrace_func_t func;
+diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+index f0d6930..c1cc3ab 100644
+--- a/kernel/trace/trace_event_profile.c
++++ b/kernel/trace/trace_event_profile.c
+@@ -138,9 +138,9 @@ __kprobes void *ftrace_perf_buf_prepare(int size, unsigned short type,
+ 	cpu = smp_processor_id();
+ 
+ 	if (in_nmi())
+-		trace_buf = rcu_dereference(perf_trace_buf_nmi);
++		trace_buf = rcu_dereference_sched(perf_trace_buf_nmi);
+ 	else
+-		trace_buf = rcu_dereference(perf_trace_buf);
++		trace_buf = rcu_dereference_sched(perf_trace_buf);
+ 
+ 	if (!trace_buf)
+ 		goto err;
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 290fb5b..3cec080 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -1730,10 +1730,12 @@ struct mempolicy *__mpol_dup(struct mempolicy *old)
+ 
+ 	if (!new)
+ 		return ERR_PTR(-ENOMEM);
++	rcu_read_lock();
+ 	if (current_cpuset_is_being_rebound()) {
+ 		nodemask_t mems = cpuset_mems_allowed(current);
+ 		mpol_rebind_policy(old, &mems);
  	}
++	rcu_read_unlock();
+ 	*new = *old;
+ 	atomic_set(&new->refcnt, 1);
+ 	return new;
