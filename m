@@ -1,2401 +1,935 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934859Ab0CMKKw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 05:10:52 -0500
-Received: from smtprelay-h11.telenor.se ([62.127.194.4]:38324 "EHLO
-	smtprelay-h11.telenor.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933489Ab0CMKKt (ORCPT
+	id S934944Ab0CMKM5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 05:12:57 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:37205 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934799Ab0CMKM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 05:10:49 -0500
-X-SMTPAUTH-B2: 
-X-SENDER-IP: 83.226.250.47
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhU0APvzmktT4vovPGdsb2JhbACBPYQtgXeTGQEBAQE3qySNL4R7BA
-X-IronPort-AV: E=Sophos;i="4.49,631,1262559600"; 
-   d="scan'208";a="49579863"
-Message-ID: <4B9B64A5.7050500@coyote.org>
-Date: Sat, 13 Mar 2010 11:10:45 +0100
-From: Lars Lindley <lindley@coyote.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100308 Thunderbird/3.0.3
+	Sat, 13 Mar 2010 05:12:56 -0500
+Date: Sat, 13 Mar 2010 11:12:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Lars Lindley <lindley@coyote.org>
+Cc: gregkh@suse.de, penberg@cs.helsinki.fi, diegoliz@gmail.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: winbond: Formatting, whitespace etc in mds.c
+ I fixed most of the problems found by checkpatch.pl. Some long lines are
+ left and some KERN_.. Signed-off-by: Lars Lindley <lindley@coyote.org>
+Message-ID: <20100313101244.GA32507@elf.ucw.cz>
+References: <1268430337-18192-1-git-send-email-lindley@coyote.org>
+ <20100313063109.GB12554@elf.ucw.cz>
+ <4B9B6409.3070502@coyote.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] staging: winbond: Cleaned up whitespace, brackets and
- indentation in mac_structures.h I fixed all problems found by checkpatch.pl
- except typedefs and also replaced lots of spaces with tabs. Signed-off-by:
- Lars Lindley <lindley@coyote.org>
-References: <1268399463-9103-1-git-send-email-lindley@coyote.org> <20100313065026.GE12554@elf.ucw.cz>
-In-Reply-To: <20100313065026.GE12554@elf.ucw.cz>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B9B6409.3070502@coyote.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, here it comes..
-/Lars
+Hi!
 
+> >From e1c9a984dfef78df001ac926d258083119c4755e Mon Sep 17 00:00:00 2001
+> From: Lars Lindley <lindley@coyote.org>
+> Date: Fri, 12 Mar 2010 22:27:04 +0100
+> Subject: [PATCH] staging: winbond: Formatting, whitespace etc in mds.c
+>  I fixed most of the problems found by checkpatch.pl. Some long lines are left and some KERN_..
+>  Signed-off-by: Lars Lindley <lindley@coyote.org>
 
+Yes, and you can add my ack, and probably should wrap at 80
+columns... and get rid of extra set of mail headers.
 
->From 06b2929842170803329a0e73821a9aa0a7a10216 Mon Sep 17 00:00:00 2001
-From: Lars Lindley <lindley@coyote.org>
-Date: Fri, 12 Mar 2010 13:35:32 +0100
-Subject: [PATCH] staging: winbond: Cleaned up whitespace, brackets and indentation in
- mac_structures.h
- I fixed all problems found by checkpatch.pl except typedefs and also
- replaced lots of spaces with tabs.
- Signed-off-by: Lars Lindley <lindley@coyote.org>
+Thanks!
 
----
- drivers/staging/winbond/mac_structures.h | 1047 ++++++++++++++---------------
- 1 files changed, 505 insertions(+), 542 deletions(-)
+> ---
+>  drivers/staging/winbond/mds.c |  586 +++++++++++++++++++++--------------------
+>  1 files changed, 300 insertions(+), 286 deletions(-)
+> 
+> diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+> index 37e0c18..46d7921 100644
+> --- a/drivers/staging/winbond/mds.c
+> +++ b/drivers/staging/winbond/mds.c
+> @@ -5,8 +5,7 @@
+>  #include "wbhal_f.h"
+>  #include "wblinux_f.h"
+>  
+> -unsigned char
+> -Mds_initial(struct wbsoft_priv * adapter)
+> +unsigned char Mds_initial(struct wbsoft_priv *adapter)
+>  {
+>  	struct wb35_mds *pMds = &adapter->Mds;
+>  
+> @@ -14,24 +13,24 @@ Mds_initial(struct wbsoft_priv * adapter)
+>  	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
+>  	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+>  
+> -	return hal_get_tx_buffer( &adapter->sHwData, &pMds->pTxBuffer );
+> +	return hal_get_tx_buffer(&adapter->sHwData, &pMds->pTxBuffer);
+>  }
+>  
+> -void
+> -Mds_Destroy(struct wbsoft_priv * adapter)
+> +void Mds_Destroy(struct wbsoft_priv *adapter)
+>  {
+>  }
+>  
+> -static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor *pDes,  u8 *buffer)
+> +static void Mds_DurationSet(struct wbsoft_priv *adapter,
+> +		struct wb35_descriptor *pDes, u8 *buffer)
+>  {
+>  	PT00_DESCRIPTOR	pT00;
+>  	PT01_DESCRIPTOR	pT01;
+> -	u16	Duration, NextBodyLen, OffsetSize;
+> -	u8	Rate, i;
+> +	u16		Duration, NextBodyLen, OffsetSize;
+> +	u8		Rate, i;
+>  	unsigned char	CTS_on = false, RTS_on = false;
+>  	PT00_DESCRIPTOR pNextT00;
+> -	u16 BodyLen = 0;
+> -	unsigned char boGroupAddr = false;
+> +	u16		BodyLen = 0;
+> +	unsigned char	boGroupAddr = false;
+>  
+>  	OffsetSize = pDes->FragmentThreshold + 32 + 3;
+>  	OffsetSize &= ~0x03;
+> @@ -43,194 +42,181 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
+>  	pT01 = (PT01_DESCRIPTOR)(buffer+4);
+>  	pNextT00 = (PT00_DESCRIPTOR)(buffer+OffsetSize);
+>  
+> -	if( buffer[ DOT_11_DA_OFFSET+8 ] & 0x1 ) // +8 for USB hdr
+> +	if (buffer[DOT_11_DA_OFFSET+8] & 0x1) /* +8 for USB hdr */
+>  		boGroupAddr = true;
+>  
+> -	//========================================
+> -	// Set RTS/CTS mechanism
+> -	//========================================
+> -	if (!boGroupAddr)
+> -	{
+> -		//NOTE : If the protection mode is enabled and the MSDU will be fragmented,
+> -		//		 the tx rates of MPDUs will all be DSSS rates. So it will not use
+> -		//		 CTS-to-self in this case. CTS-To-self will only be used when without
+> -		//		 fragmentation. -- 20050112
+> -		BodyLen = (u16)pT00->T00_frame_length;	//include 802.11 header
+> -		BodyLen += 4;	//CRC
+> -
+> -		if( BodyLen >= CURRENT_RTS_THRESHOLD )
+> -			RTS_on = true; // Using RTS
+> -		else
+> -		{
+> -			if( pT01->T01_modulation_type ) // Is using OFDM
+> -			{
+> -				if( CURRENT_PROTECT_MECHANISM ) // Is using protect
+> -					CTS_on = true; // Using CTS
+> +	/*========================================
+> +	 * Set RTS/CTS mechanism
+> +	 *========================================*/
+> +	if (!boGroupAddr) {
+> +		/*NOTE : If the protection mode is enabled and the MSDU will be
+> +		 *	 fragmented, the tx rates of MPDUs will all be DSSS
+> +		 *	 rates. So it will not use CTS-to-self in this case.
+> +		 *	 CTS-To-self will only be used when without
+> +		 *	 fragmentation. -- 20050112 */
+> +		BodyLen = (u16)pT00->T00_frame_length; /*include 802.11 header*/
+> +		BodyLen += 4;	/*CRC*/
+> +
+> +		if (BodyLen >= CURRENT_RTS_THRESHOLD)
+> +			RTS_on = true; /* Using RTS */
+> +		else {
+> +			if (pT01->T01_modulation_type) { /* Is using OFDM */
+> +				if (CURRENT_PROTECT_MECHANISM) /* Is using
+> +								protect */
+> +					CTS_on = true; /* Using CTS */
+>  			}
+>  		}
+>  	}
+>  
+> -	if( RTS_on || CTS_on )
+> -	{
+> -		if( pT01->T01_modulation_type) // Is using OFDM
+> -		{
+> -			//CTS duration
+> -			// 2 SIFS + DATA transmit time + 1 ACK
+> -			// ACK Rate : 24 Mega bps
+> -			// ACK frame length = 14 bytes
+> +	if (RTS_on || CTS_on) {
+> +		if (pT01->T01_modulation_type) { /* Is using OFDM */
+> +			/*CTS duration
+> +			 * 2 SIFS + DATA transmit time + 1 ACK
+> +			 * ACK Rate : 24 Mega bps
+> +			 * ACK frame length = 14 bytes*/
+>  			Duration = 2*DEFAULT_SIFSTIME +
+> -					   2*PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+> -					   ((BodyLen*8 + 22 + Rate*4 - 1)/(Rate*4))*Tsym +
+> -					   ((112 + 22 + 95)/96)*Tsym;
+> -		}
+> -		else	//DSSS
+> -		{
+> -			//CTS duration
+> -			// 2 SIFS + DATA transmit time + 1 ACK
+> -			// Rate : ?? Mega bps
+> -			// ACK frame length = 14 bytes
+> -			if( pT01->T01_plcp_header_length ) //long preamble
+> -				Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+> +				2*PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+> +				((BodyLen*8 + 22 + Rate*4 - 1)/(Rate*4))*Tsym +
+> +				((112 + 22 + 95)/96)*Tsym;
+> +		} else { /*DSSS*/
+> +			/*CTS duration
+> +			 *2 SIFS + DATA transmit time + 1 ACK
+> +			 * Rate : ?? Mega bps
+> +			 *ACK frame length = 14 bytes*/
+> +			if (pT01->T01_plcp_header_length) /*long preamble*/
+> +			    Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+>  			else
+> -				Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+> +			    Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME*2;
+>  
+> -			Duration += ( ((BodyLen + 14)*8 + Rate-1) / Rate +
+> -						DEFAULT_SIFSTIME*2 );
+> +			Duration += (((BodyLen + 14)*8 + Rate-1) / Rate +
+> +						DEFAULT_SIFSTIME*2);
+>  		}
+>  
+> -		if( RTS_on )
+> -		{
+> -			if( pT01->T01_modulation_type ) // Is using OFDM
+> -			{
+> -				//CTS + 1 SIFS + CTS duration
+> -				//CTS Rate : 24 Mega bps
+> -				//CTS frame length = 14 bytes
+> +		if (RTS_on) {
+> +			if (pT01->T01_modulation_type) { /* Is using OFDM */
+> +				/*CTS + 1 SIFS + CTS duration
+> +				 *CTS Rate : 24 Mega bps
+> +				 *CTS frame length = 14 bytes*/
+>  				Duration += (DEFAULT_SIFSTIME +
+> -								PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+> -								((112 + 22 + 95)/96)*Tsym);
+> -			}
+> -			else
+> -			{
+> -				//CTS + 1 SIFS + CTS duration
+> -				//CTS Rate : ?? Mega bps
+> -				//CTS frame length = 14 bytes
+> -				if( pT01->T01_plcp_header_length ) //long preamble
+> -					Duration += LONG_PREAMBLE_PLUS_PLCPHEADER_TIME;
+> -				else
+> -					Duration += SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME;
+> -
+> -				Duration += ( ((112 + Rate-1) / Rate) + DEFAULT_SIFSTIME );
+> +				PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION +
+> +				((112 + 22 + 95)/96)*Tsym);
+> +			} else {
+> +				/*CTS + 1 SIFS + CTS duration
+> +				 *CTS Rate : ?? Mega bps
+> +				 *CTS frame length = 14 bytes*/
+> +			    if (pT01->T01_plcp_header_length) /*long preamble*/
+> +				Duration += LONG_PREAMBLE_PLUS_PLCPHEADER_TIME;
+> +			    else
+> +				Duration += SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME;
+> +
+> +				Duration += (((112 + Rate-1) / Rate)
+> +						+ DEFAULT_SIFSTIME);
+>  			}
+>  		}
+>  
+> -		// Set the value into USB descriptor
+> +		/* Set the value into USB descriptor */
+>  		pT01->T01_add_rts = RTS_on ? 1 : 0;
+>  		pT01->T01_add_cts = CTS_on ? 1 : 0;
+>  		pT01->T01_rts_cts_duration = Duration;
+>  	}
+>  
+> -	//=====================================
+> -	// Fill the more fragment descriptor
+> -	//=====================================
+> -	if( boGroupAddr )
+> +	/*=====================================
+> +	 * Fill the more fragment descriptor
+> +	 *=====================================*/
+> +	if (boGroupAddr)
+>  		Duration = 0;
+> -	else
+> -	{
+> -		for( i=pDes->FragmentCount-1; i>0; i-- )
+> -		{
+> +	else {
+> +		for (i = pDes->FragmentCount-1; i > 0; i--) {
+>  			NextBodyLen = (u16)pNextT00->T00_frame_length;
+> -			NextBodyLen += 4;	//CRC
+> -
+> -			if( pT01->T01_modulation_type )
+> -			{
+> -				//OFDM
+> -				// data transmit time + 3 SIFS + 2 ACK
+> -				// Rate : ??Mega bps
+> -				// ACK frame length = 14 bytes, tx rate = 24M
+> +			NextBodyLen += 4;	/*CRC*/
+> +
+> +			if (pT01->T01_modulation_type) {
+> +				/*OFDM
+> +				 * data transmit time + 3 SIFS + 2 ACK
+> +				 * Rate : ??Mega bps
+> +				 * ACK frame length = 14 bytes, tx rate = 24M*/
+>  				Duration = PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION * 3;
+>  				Duration += (((NextBodyLen*8 + 22 + Rate*4 - 1)/(Rate*4)) * Tsym +
+>  							(((2*14)*8 + 22 + 95)/96)*Tsym +
+>  							DEFAULT_SIFSTIME*3);
+> -			}
+> -			else
+> -			{
+> -				//DSSS
+> -				// data transmit time + 2 ACK + 3 SIFS
+> -				// Rate : ??Mega bps
+> -				// ACK frame length = 14 bytes
+> -				//TODO :
+> -				if( pT01->T01_plcp_header_length ) //long preamble
+> +			} else {
+> +				/*DSSS
+> +				 *data transmit time + 2 ACK + 3 SIFS
+> +				 * Rate : ??Mega bps
+> +				 * ACK frame length = 14 bytes
+> +				 * TODO : */
+> +				if (pT01->T01_plcp_header_length) /*long preamble*/
+>  					Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME*3;
+>  				else
+>  					Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME*3;
+>  
+> -				Duration += ( ((NextBodyLen + (2*14))*8 + Rate-1) / Rate +
+> -							DEFAULT_SIFSTIME*3 );
+> +				Duration += (((NextBodyLen + (2*14))*8 + Rate-1) / Rate +
+> +							DEFAULT_SIFSTIME*3);
+>  			}
+>  
+> -			((u16 *)buffer)[5] = cpu_to_le16(Duration);// 4 USHOR for skip 8B USB, 2USHORT=FC + Duration
+> +			((u16 *)buffer)[5] = cpu_to_le16(Duration);/*4 USHOR for skip 8B USB, 2USHORT=FC + Duration*/
+>  
+> -			//----20061009 add by anson's endian
+> +			/*----20061009 add by anson's endian*/
+>  			pNextT00->value = cpu_to_le32(pNextT00->value);
+> -			pT01->value = cpu_to_le32( pT01->value );
+> -			//----end 20061009 add by anson's endian
+> +			pT01->value = cpu_to_le32(pT01->value);
+> +			/*----end 20061009 add by anson's endian*/
+>  
+>  			buffer += OffsetSize;
+>  			pT01 = (PT01_DESCRIPTOR)(buffer+4);
+> -			if (i != 1)	//The last fragment will not have the next fragment
+> +			if (i != 1)	/* The last fragment will not have the
+> +						next fragment */
+>  				pNextT00 = (PT00_DESCRIPTOR)(buffer+OffsetSize);
+>  		}
+>  
+> -		//=====================================
+> -		// Fill the last fragment descriptor
+> -		//=====================================
+> -		if( pT01->T01_modulation_type )
+> -		{
+> -			//OFDM
+> -			// 1 SIFS + 1 ACK
+> -			// Rate : 24 Mega bps
+> -			// ACK frame length = 14 bytes
+> +		/*=====================================
+> +		 * Fill the last fragment descriptor
+> +		 *=====================================*/
+> +		if (pT01->T01_modulation_type) {
+> +			/*OFDM
+> +			 * 1 SIFS + 1 ACK
+> +			 * Rate : 24 Mega bps
+> +			 * ACK frame length = 14 bytes*/
+>  			Duration = PREAMBLE_PLUS_SIGNAL_PLUS_SIGNALEXTENSION;
+> -			//The Tx rate of ACK use 24M
+> -			Duration += (((112 + 22 + 95)/96)*Tsym + DEFAULT_SIFSTIME );
+> -		}
+> -		else
+> -		{
+> -			// DSSS
+> -			// 1 ACK + 1 SIFS
+> -			// Rate : ?? Mega bps
+> -			// ACK frame length = 14 bytes(112 bits)
+> -			if( pT01->T01_plcp_header_length ) //long preamble
+> +			/*The Tx rate of ACK use 24M*/
+> +			Duration += (((112 + 22 + 95)/96)*Tsym + DEFAULT_SIFSTIME);
+> +		} else {
+> +			/* DSSS
+> +			 * 1 ACK + 1 SIFS
+> +			 * Rate : ?? Mega bps
+> +			 * ACK frame length = 14 bytes(112 bits)*/
+> +			if (pT01->T01_plcp_header_length) /*long preamble*/
+>  				Duration = LONG_PREAMBLE_PLUS_PLCPHEADER_TIME;
+>  			else
+>  				Duration = SHORT_PREAMBLE_PLUS_PLCPHEADER_TIME;
+>  
+> -			Duration += ( (112 + Rate-1)/Rate +	DEFAULT_SIFSTIME );
+> +			Duration += ((112 + Rate-1)/Rate + DEFAULT_SIFSTIME);
+>  		}
+>  	}
+>  
+> -	((u16 *)buffer)[5] = cpu_to_le16(Duration);// 4 USHOR for skip 8B USB, 2USHORT=FC + Duration
+> +	((u16 *)buffer)[5] = cpu_to_le16(Duration);/* 4 USHOR for skip 8B USB,
+> +							2USHORT=FC + Duration*/
+>  	pT00->value = cpu_to_le32(pT00->value);
+>  	pT01->value = cpu_to_le32(pT01->value);
+> -	//--end 20061009 add
+> +	/*--end 20061009 add*/
+>  
+>  }
+>  
+> -// The function return the 4n size of usb pk
+> -static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDes, u8 *TargetBuffer)
+> +/* The function return the 4n size of usb pk*/
+> +static u16 Mds_BodyCopy(struct wbsoft_priv *adapter,
+> +			struct wb35_descriptor *pDes, u8 *TargetBuffer)
+>  {
+>  	PT00_DESCRIPTOR	pT00;
+>  	struct wb35_mds *pMds = &adapter->Mds;
+> -	u8	*buffer;
+> -	u8	*src_buffer;
+> -	u8	*pctmp;
+> -	u16	Size = 0;
+> -	u16	SizeLeft, CopySize, CopyLeft, stmp;
+> -	u8	buf_index, FragmentCount = 0;
+> +	u8		*buffer;
+> +	u8		*src_buffer;
+> +	u8		*pctmp;
+> +	u16		Size = 0;
+> +	u16		SizeLeft, CopySize, CopyLeft, stmp;
+> +	u8		buf_index, FragmentCount = 0;
+>  
+>  
+> -	// Copy fragment body
+> -	buffer = TargetBuffer; // shift 8B usb + 24B 802.11
+> +	/* Copy fragment body */
+> +	buffer = TargetBuffer; /* shift 8B usb + 24B 802.11 */
+>  	SizeLeft = pDes->buffer_total_size;
+>  	buf_index = pDes->buffer_start_index;
+>  
+> @@ -240,39 +226,39 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+>  		CopySize = SizeLeft;
+>  		if (SizeLeft > pDes->FragmentThreshold) {
+>  			CopySize = pDes->FragmentThreshold;
+> -			pT00->T00_frame_length = 24 + CopySize;//Set USB length
+> +			pT00->T00_frame_length = 24 + CopySize;/*Set USBlength*/
+>  		} else
+> -			pT00->T00_frame_length = 24 + SizeLeft;//Set USB length
+> +			pT00->T00_frame_length = 24 + SizeLeft;/*Set USBlength*/
+>  
+>  		SizeLeft -= CopySize;
+>  
+> -		// 1 Byte operation
+> -		pctmp = (u8 *)( buffer + 8 + DOT_11_SEQUENCE_OFFSET );
+> +		/* 1 Byte operation */
+> +		pctmp = (u8 *)(buffer + 8 + DOT_11_SEQUENCE_OFFSET);
+>  		*pctmp &= 0xf0;
+> -		*pctmp |= FragmentCount;//931130.5.m
+> -		if( !FragmentCount )
+> +		*pctmp |= FragmentCount;/*931130.5.m*/
+> +		if (!FragmentCount)
+>  			pT00->T00_first_mpdu = 1;
+>  
+> -		buffer += 32; // 8B usb + 24B 802.11 header
+> +		buffer += 32; /* 8B usb + 24B 802.11 header */
+>  		Size += 32;
+>  
+> -		// Copy into buffer
+> +		/* Copy into buffer */
+>  		stmp = CopySize + 3;
+> -		stmp &= ~0x03;//4n Alignment
+> -		Size += stmp;// Current 4n offset of mpdu
+> +		stmp &= ~0x03;	/* 4n Alignment */
+> +		Size += stmp;	/* Current 4n offset of mpdu */
+>  
+>  		while (CopySize) {
+> -			// Copy body
+> +			/* Copy body */
+>  			src_buffer = pDes->buffer_address[buf_index];
+>  			CopyLeft = CopySize;
+>  			if (CopySize >= pDes->buffer_size[buf_index]) {
+>  				CopyLeft = pDes->buffer_size[buf_index];
+>  
+> -				// Get the next buffer of descriptor
+> +				/* Get the next buffer of descriptor */
+>  				buf_index++;
+>  				buf_index %= MAX_DESCRIPTOR_BUFFER_INDEX;
+>  			} else {
+> -				u8	*pctmp = pDes->buffer_address[buf_index];
+> +				u8    *pctmp = pDes->buffer_address[buf_index];
+>  				pctmp += CopySize;
+>  				pDes->buffer_address[buf_index] = pctmp;
+>  				pDes->buffer_size[buf_index] -= CopySize;
+> @@ -283,26 +269,30 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+>  			CopySize -= CopyLeft;
+>  		}
+>  
+> -		// 931130.5.n
+> +		/* 931130.5.n */
+>  		if (pMds->MicAdd) {
+>  			if (!SizeLeft) {
+> -				pMds->MicWriteAddress[ pMds->MicWriteIndex ] = buffer - pMds->MicAdd;
+> -				pMds->MicWriteSize[ pMds->MicWriteIndex ] = pMds->MicAdd;
+> +				pMds->MicWriteAddress[pMds->MicWriteIndex] =
+> +							buffer - pMds->MicAdd;
+> +				pMds->MicWriteSize[pMds->MicWriteIndex] =
+> +							pMds->MicAdd;
+>  				pMds->MicAdd = 0;
+> -			}
+> -			else if( SizeLeft < 8 ) //931130.5.p
+> -			{
+> +			} else if (SizeLeft < 8) { /*931130.5.p*/
+>  				pMds->MicAdd = SizeLeft;
+> -				pMds->MicWriteAddress[ pMds->MicWriteIndex ] = buffer - ( 8 - SizeLeft );
+> -				pMds->MicWriteSize[ pMds->MicWriteIndex ] = 8 - SizeLeft;
+> +				pMds->MicWriteAddress[pMds->MicWriteIndex] =
+> +							buffer - (8 - SizeLeft);
+> +				pMds->MicWriteSize[pMds->MicWriteIndex] =
+> +							8 - SizeLeft;
+>  				pMds->MicWriteIndex++;
+>  			}
+>  		}
+>  
+> -		// Does it need to generate the new header for next mpdu?
+> +		/* Does it need to generate the new header for next mpdu? */
+>  		if (SizeLeft) {
+> -			buffer = TargetBuffer + Size; // Get the next 4n start address
+> -			memcpy( buffer, TargetBuffer, 32 );//Copy 8B USB +24B 802.11
+> +			buffer = TargetBuffer + Size; /* Get the next 4n
+> +							start address */
+> +			memcpy(buffer, TargetBuffer, 32);/*Copy 8B USB
+> +							+24B 802.11*/
+>  			pT00 = (PT00_DESCRIPTOR)buffer;
+>  			pT00->T00_first_mpdu = 0;
+>  		}
+> @@ -312,62 +302,64 @@ static u16 Mds_BodyCopy(struct wbsoft_priv *adapter, struct wb35_descriptor *pDe
+>  
+>  	pT00->T00_last_mpdu = 1;
+>  	pT00->T00_IsLastMpdu = 1;
+> -	buffer = (u8 *)pT00 + 8; // +8 for USB hdr
+> -	buffer[1] &= ~0x04; // Clear more frag bit of 802.11 frame control
+> -	pDes->FragmentCount = FragmentCount; // Update the correct fragment number
+> +	buffer = (u8 *)pT00 + 8; /* +8 for USB hdr */
+> +	buffer[1] &= ~0x04; /* Clear more frag bit of 802.11 frame control*/
+> +	pDes->FragmentCount = FragmentCount; /* Update the correct
+> +						fragment number */
+>  	return Size;
+>  }
+>  
+> -static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor *pDes, u8 *TargetBuffer)
+> +static void Mds_HeaderCopy(struct wbsoft_priv *adapter,
+> +				struct wb35_descriptor *pDes, u8 *TargetBuffer)
+>  {
+>  	struct wb35_mds *pMds = &adapter->Mds;
+> -	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
+> +	u8		*src_buffer = pDes->buffer_address[0];/*931130.5.g*/
+>  	PT00_DESCRIPTOR	pT00;
+>  	PT01_DESCRIPTOR	pT01;
+> -	u16	stmp;
+> -	u8	i, ctmp1, ctmp2, ctmpf;
+> -	u16	FragmentThreshold = CURRENT_FRAGMENT_THRESHOLD;
+> +	u16		stmp;
+> +	u8		i, ctmp1, ctmp2, ctmpf;
+> +	u16		FragmentThreshold = CURRENT_FRAGMENT_THRESHOLD;
+>  
+>  
+>  	stmp = pDes->buffer_total_size;
+> -	//
+> -	// Set USB header 8 byte
+> -	//
+> +	/*
+> +	 *Set USB header 8 byte
+> +	 */
+>  	pT00 = (PT00_DESCRIPTOR)TargetBuffer;
+>  	TargetBuffer += 4;
+>  	pT01 = (PT01_DESCRIPTOR)TargetBuffer;
+>  	TargetBuffer += 4;
+>  
+> -	pT00->value = 0;// Clear
+> -	pT01->value = 0;// Clear
+> +	pT00->value = 0;/* Clear */
+> +	pT01->value = 0;/* Clear */
+>  
+> -	pT00->T00_tx_packet_id = pDes->Descriptor_ID;// Set packet ID
+> -	pT00->T00_header_length = 24;// Set header length
+> -	pT01->T01_retry_abort_ebable = 1;//921013 931130.5.h
+> +	pT00->T00_tx_packet_id = pDes->Descriptor_ID;/* Set packet ID */
+> +	pT00->T00_header_length = 24;/* Set header length */
+> +	pT01->T01_retry_abort_ebable = 1;/*921013 931130.5.h*/
+>  
+> -	// Key ID setup
+> +	/* Key ID setup */
+>  	pT01->T01_wep_id = 0;
+>  
+> -	FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;	//Do not fragment
+> -	// Copy full data, the 1'st buffer contain all the data 931130.5.j
+> -	memcpy( TargetBuffer, src_buffer, DOT_11_MAC_HEADER_SIZE );// Copy header
+> +	FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;	/*Do not fragment*/
+> +	/* Copy full data, the 1'st buffer contain all the data 931130.5.j*/
+> +	memcpy(TargetBuffer, src_buffer, DOT_11_MAC_HEADER_SIZE);/*Copy header*/
+>  	pDes->buffer_address[0] = src_buffer + DOT_11_MAC_HEADER_SIZE;
+>  	pDes->buffer_total_size -= DOT_11_MAC_HEADER_SIZE;
+>  	pDes->buffer_size[0] = pDes->buffer_total_size;
+>  
+> -	// Set fragment threshold
+> +	/* Set fragment threshold */
+>  	FragmentThreshold -= (DOT_11_MAC_HEADER_SIZE + 4);
+>  	pDes->FragmentThreshold = FragmentThreshold;
+>  
+> -	// Set more frag bit
+> -	TargetBuffer[1] |= 0x04;// Set more frag bit
+> +	/* Set more frag bit */
+> +	TargetBuffer[1] |= 0x04;/* Set more frag bit*/
+>  
+> -	//
+> -	// Set tx rate
+> -	//
+> -	stmp = *(u16 *)(TargetBuffer+30); // 2n alignment address
+> +	/*
+> +	 * Set tx rate
+> +	 */
+> +	stmp = *(u16 *)(TargetBuffer+30); /* 2n alignment address */
+>  
+> -	//Use basic rate
+> +	/* Use basic rate */
+>  	ctmp1 = ctmpf = CURRENT_TX_RATE_FOR_MNG;
+>  
+>  	pDes->TxRate = ctmp1;
+> @@ -377,53 +369,65 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
+>  
+>  	pT01->T01_modulation_type = (ctmp1%3) ? 0 : 1;
+>  
+> -	for( i=0; i<2; i++ ) {
+> -		if( i == 1 )
+> +	for (i = 0; i < 2; i++) {
+> +		if (i == 1)
+>  			ctmp1 = ctmpf;
+>  
+> -		pMds->TxRate[pDes->Descriptor_ID][i] = ctmp1; // backup the ta rate and fall back rate
+> -
+> -		if( ctmp1 == 108) ctmp2 = 7;
+> -		else if( ctmp1 == 96 ) ctmp2 = 6; // Rate convert for USB
+> -		else if( ctmp1 == 72 ) ctmp2 = 5;
+> -		else if( ctmp1 == 48 ) ctmp2 = 4;
+> -		else if( ctmp1 == 36 ) ctmp2 = 3;
+> -		else if( ctmp1 == 24 ) ctmp2 = 2;
+> -		else if( ctmp1 == 18 ) ctmp2 = 1;
+> -		else if( ctmp1 == 12 ) ctmp2 = 0;
+> -		else if( ctmp1 == 22 ) ctmp2 = 3;
+> -		else if( ctmp1 == 11 ) ctmp2 = 2;
+> -		else if( ctmp1 == 4  ) ctmp2 = 1;
+> -		else ctmp2 = 0; // if( ctmp1 == 2  ) or default
+> -
+> -		if( i == 0 )
+> +		pMds->TxRate[pDes->Descriptor_ID][i] = ctmp1; /* backup the ta
+> +						rate and fall back rate */
+> +
+> +		if (ctmp1 == 108)
+> +			ctmp2 = 7;
+> +		else if (ctmp1 == 96)
+> +			ctmp2 = 6;	/* Rate convert for USB */
+> +		else if (ctmp1 == 72)
+> +			ctmp2 = 5;
+> +		else if (ctmp1 == 48)
+> +			ctmp2 = 4;
+> +		else if (ctmp1 == 36)
+> +			ctmp2 = 3;
+> +		else if (ctmp1 == 24)
+> +			ctmp2 = 2;
+> +		else if (ctmp1 == 18)
+> +			ctmp2 = 1;
+> +		else if (ctmp1 == 12)
+> +			ctmp2 = 0;
+> +		else if (ctmp1 == 22)
+> +			ctmp2 = 3;
+> +		else if (ctmp1 == 11)
+> +			ctmp2 = 2;
+> +		else if (ctmp1 == 4)
+> +			ctmp2 = 1;
+> +		else
+> +			ctmp2 = 0;	/*if (ctmp1 == 2) or default*/
+> +
+> +		if (i == 0)
+>  			pT01->T01_transmit_rate = ctmp2;
+>  		else
+>  			pT01->T01_fall_back_rate = ctmp2;
+>  	}
+>  
+> -	//
+> -	// Set preamble type
+> -	//
+> -	if ((pT01->T01_modulation_type == 0) && (pT01->T01_transmit_rate == 0))	// RATE_1M
+> -		pDes->PreambleMode =  WLAN_PREAMBLE_TYPE_LONG;
+> +	/*
+> +	 * Set preamble type
+> +	 */
+> +	if ((pT01->T01_modulation_type == 0) && (pT01->T01_transmit_rate == 0))
+> +		/* RATE_1M */
+> +		pDes->PreambleMode = WLAN_PREAMBLE_TYPE_LONG;
+>  	else
+> -		pDes->PreambleMode =  CURRENT_PREAMBLE_MODE;
+> -	pT01->T01_plcp_header_length = pDes->PreambleMode;	// Set preamble
+> -
+> +		pDes->PreambleMode = CURRENT_PREAMBLE_MODE;
+> +	pT01->T01_plcp_header_length = pDes->PreambleMode;/* Set preamble */
+>  }
+>  
+> -void
+> -Mds_Tx(struct wbsoft_priv * adapter)
+> +void Mds_Tx(struct wbsoft_priv *adapter)
+>  {
+> -	struct hw_data *	pHwData = &adapter->sHwData;
+> -	struct wb35_mds *pMds = &adapter->Mds;
+> +	struct hw_data		*pHwData = &adapter->sHwData;
+> +	struct wb35_mds		*pMds = &adapter->Mds;
+>  	struct wb35_descriptor	TxDes;
+> -	struct wb35_descriptor *pTxDes = &TxDes;
+> -	u8		*XmitBufAddress;
+> -	u16		XmitBufSize, PacketSize, stmp, CurrentSize, FragmentThreshold;
+> -	u8		FillIndex, TxDesIndex, FragmentCount, FillCount;
+> -	unsigned char	BufferFilled = false;
+> +	struct wb35_descriptor	*pTxDes = &TxDes;
+> +	u8	*XmitBufAddress;
+> +	u16	XmitBufSize, PacketSize, stmp, CurrentSize, FragmentThreshold;
+> +	u8	FillIndex, TxDesIndex, FragmentCount, FillCount;
+> +	unsigned char		BufferFilled = false;
+>  
+>  
+>  	if (pMds->TxPause)
+> @@ -431,21 +435,23 @@ Mds_Tx(struct wbsoft_priv * adapter)
+>  	if (!hal_driver_init_OK(pHwData))
+>  		return;
+>  
+> -	//Only one thread can be run here
+> +	/*Only one thread can be run here*/
+>  	if (atomic_inc_return(&pMds->TxThreadCount) != 1)
+>  		goto cleanup;
+>  
+> -	// Start to fill the data
+> +	/*Start to fill the data*/
+>  	do {
+>  		FillIndex = pMds->TxFillIndex;
+> -		if (pMds->TxOwner[FillIndex]) { // Is owned by software 0:Yes 1:No
+> -#ifdef _PE_TX_DUMP_
+> +		if (pMds->TxOwner[FillIndex]) { /* Is owned by
+> +						software 0:Yes 1:No*/
+> +		#ifdef _PE_TX_DUMP_
+>  			printk("[Mds_Tx] Tx Owner is H/W.\n");
+> -#endif
+> +		#endif
+>  			break;
+>  		}
+>  
+> -		XmitBufAddress = pMds->pTxBuffer + (MAX_USB_TX_BUFFER * FillIndex); //Get buffer
+> +		XmitBufAddress = pMds->pTxBuffer +
+> +				(MAX_USB_TX_BUFFER * FillIndex); /*Get buffer*/
+>  		XmitBufSize = 0;
+>  		FillCount = 0;
+>  		do {
+> @@ -453,79 +459,89 @@ Mds_Tx(struct wbsoft_priv * adapter)
+>  			if (!PacketSize)
+>  				break;
+>  
+> -			//For Check the buffer resource
+> +			/*For Check the buffer resource*/
+>  			FragmentThreshold = CURRENT_FRAGMENT_THRESHOLD;
+> -			//931130.5.b
+> -			FragmentCount = PacketSize/FragmentThreshold + 1;
+> -			stmp = PacketSize + FragmentCount*32 + 8;//931130.5.c 8:MIC
+> +			/*931130.5.b*/
+> +			FragmentCount = PacketSize / FragmentThreshold + 1;
+> +			stmp = PacketSize +
+> +				FragmentCount * 32 + 8;/*931130.5.c 8:MIC*/
+>  			if ((XmitBufSize + stmp) >= MAX_USB_TX_BUFFER) {
+>  				printk("[Mds_Tx] Excess max tx buffer.\n");
+> -				break; // buffer is not enough
+> +				break; /* buffer is not enough */
+>  			}
+>  
+> -
+> -			//
+> -			// Start transmitting
+> -			//
+> +			/*
+> +			 * Start transmitting
+> +			 */
+>  			BufferFilled = true;
+>  
+>  			/* Leaves first u8 intact */
+> -			memset((u8 *)pTxDes + 1, 0, sizeof(struct wb35_descriptor) - 1);
+> +			memset((u8 *)pTxDes + 1, 0,
+> +					sizeof(struct wb35_descriptor) - 1);
+>  
+> -			TxDesIndex = pMds->TxDesIndex;//Get the current ID
+> +			TxDesIndex = pMds->TxDesIndex; /*Get the current ID*/
+>  			pTxDes->Descriptor_ID = TxDesIndex;
+> -			pMds->TxDesFrom[ TxDesIndex ] = 2;//Storing the information of source comming from
+> +			pMds->TxDesFrom[TxDesIndex] = 2; /*Storing the
+> +					information of source comming from*/
+>  			pMds->TxDesIndex++;
+>  			pMds->TxDesIndex %= MAX_USB_TX_DESCRIPTOR;
+>  
+> -			MLME_GetNextPacket( adapter, pTxDes );
+> +			MLME_GetNextPacket(adapter, pTxDes);
+>  
+> -			// Copy header. 8byte USB + 24byte 802.11Hdr. Set TxRate, Preamble type
+> -			Mds_HeaderCopy( adapter, pTxDes, XmitBufAddress );
+> +			/* Copy header. 8byte USB + 24byte 802.11Hdr.
+> +			 * Set TxRate, Preamble type */
+> +			Mds_HeaderCopy(adapter, pTxDes, XmitBufAddress);
+>  
+> -			// For speed up Key setting
+> +			/* For speed up Key setting */
+>  			if (pTxDes->EapFix) {
+>  #ifdef _PE_TX_DUMP_
+> -				printk("35: EPA 4th frame detected. Size = %d\n", PacketSize);
+> +				printk("35: EPA 4th frame detected. "
+> +						"Size = %d\n", PacketSize);
+>  #endif
+>  				pHwData->IsKeyPreSet = 1;
+>  			}
+>  
+> -			// Copy (fragment) frame body, and set USB, 802.11 hdr flag
+> -			CurrentSize = Mds_BodyCopy(adapter, pTxDes, XmitBufAddress);
+> +			/* Copy (fragment) frame body,
+> +			 * and set USB, 802.11 hdr flag*/
+> +			CurrentSize = Mds_BodyCopy(adapter,
+> +							pTxDes, XmitBufAddress);
+>  
+> -			// Set RTS/CTS and Normal duration field into buffer
+> +			/* Set RTS/CTS and Normal duration field into buffer*/
+>  			Mds_DurationSet(adapter, pTxDes, XmitBufAddress);
+>  
+> -			//Shift to the next address
+> +			/* Shift to the next address */
+>  			XmitBufSize += CurrentSize;
+>  			XmitBufAddress += CurrentSize;
+>  
+>  #ifdef _IBSS_BEACON_SEQ_STICK_
+> -			if ((XmitBufAddress[ DOT_11_DA_OFFSET+8 ] & 0xfc) != MAC_SUBTYPE_MNGMNT_PROBE_REQUEST) // +8 for USB hdr
+> +	if ((XmitBufAddress[DOT_11_DA_OFFSET+8] & 0xfc) !=
+> +			MAC_SUBTYPE_MNGMNT_PROBE_REQUEST) /* +8 for USB hdr*/
+>  #endif
+>  				pMds->TxToggle = true;
+>  
+> -			// Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data
+> +			/* Get packet to transmit completed,
+> +			 * 1:TESTSTA 2:MLME 3: Ndis data */
+>  			MLME_SendComplete(adapter, 0, true);
+>  
+> -			// Software TSC count 20060214
+> +			/* Software TSC count 20060214 */
+>  			pMds->TxTsc++;
+>  			if (pMds->TxTsc == 0)
+>  				pMds->TxTsc_2++;
+>  
+> -			FillCount++; // 20060928
+> -		} while (HAL_USB_MODE_BURST(pHwData)); // End of multiple MSDU copy loop. false = single true = multiple sending
+> +			FillCount++; /* 20060928 */
+> +		/* End of multiple MSDU copy loop. false = single sending
+> +		 *				   true = multiple sending*/
+> +		} while (HAL_USB_MODE_BURST(pHwData));
+>  
+> -		// Move to the next one, if necessary
+> +		/* Move to the next one, if necessary */
+>  		if (BufferFilled) {
+> -			// size setting
+> -			pMds->TxBufferSize[ FillIndex ] = XmitBufSize;
+> +			/* size setting */
+> +			pMds->TxBufferSize[FillIndex] = XmitBufSize;
+>  
+> -			// 20060928 set Tx count
+> +			/* 20060928 set Tx count */
+>  			pMds->TxCountInBuffer[FillIndex] = FillCount;
+>  
+> -			// Set owner flag
+> +			/* Set owner flag */
+>  			pMds->TxOwner[FillIndex] = 1;
+>  
+>  			pMds->TxFillIndex++;
+> @@ -534,14 +550,14 @@ Mds_Tx(struct wbsoft_priv * adapter)
+>  		} else
+>  			break;
+>  
+> -		if (!PacketSize) // No more pk for transmitting
+> +		if (!PacketSize) /* No more pk for transmitting */
+>  			break;
+>  
+> -	} while(true);
+> +	} while (true);
+>  
+> -	//
+> -	// Start to send by lower module
+> -	//
+> +	/*
+> +	 * Start to send by lower module
+> +	 */
+>  	if (!pHwData->IsKeyPreSet)
+>  		Wb35Tx_start(adapter);
+>  
+> @@ -549,30 +565,28 @@ Mds_Tx(struct wbsoft_priv * adapter)
+>  	atomic_dec(&pMds->TxThreadCount);
+>  }
+>  
+> -void
+> -Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+> +void Mds_SendComplete(struct wbsoft_priv *adapter, PT02_DESCRIPTOR pT02)
+>  {
+> -	struct wb35_mds *pMds = &adapter->Mds;
+> -	struct hw_data *	pHwData = &adapter->sHwData;
+> -	u8	PacketId = (u8)pT02->T02_Tx_PktID;
+> +	struct wb35_mds	*pMds = &adapter->Mds;
+> +	struct hw_data	*pHwData = &adapter->sHwData;
+> +	u8		PacketId = (u8)pT02->T02_Tx_PktID;
+>  	unsigned char	SendOK = true;
+> -	u8	RetryCount, TxRate;
+> +	u8		RetryCount, TxRate;
+>  
+> -	if (pT02->T02_IgnoreResult) // Don't care the result
+> +	if (pT02->T02_IgnoreResult) /* Don't care the result */
+>  		return;
+>  	if (pT02->T02_IsLastMpdu) {
+> -		//TODO: DTO -- get the retry count and fragment count
+> -		// Tx rate
+> -		TxRate = pMds->TxRate[ PacketId ][ 0 ];
+> +		/*TODO: DTO -- get the retry count and fragment count Tx rate*/
+> +		TxRate = pMds->TxRate[PacketId][0];
+>  		RetryCount = (u8)pT02->T02_MPDU_Cnt;
+>  		if (pT02->value & FLAG_ERROR_TX_MASK) {
+>  			SendOK = false;
+>  
+>  			if (pT02->T02_transmit_abort || pT02->T02_out_of_MaxTxMSDULiftTime) {
+> -				//retry error
+> +				/* retry error */
+>  				pHwData->dto_tx_retry_count += (RetryCount+1);
+> -				//[for tx debug]
+> -				if (RetryCount<7)
+> +				/* [for tx debug] */
+> +				if (RetryCount < 7)
+>  					pHwData->tx_retry_count[RetryCount] += RetryCount;
+>  				else
+>  					pHwData->tx_retry_count[7] += RetryCount;
+> @@ -583,7 +597,7 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+>  			}
+>  			pHwData->dto_tx_frag_count += (RetryCount+1);
+>  
+> -			//[for tx debug]
+> +			/* [for tx debug] */
+>  			if (pT02->T02_transmit_abort_due_to_TBTT)
+>  				pHwData->tx_TBTT_start_count++;
+>  			if (pT02->T02_transmit_without_encryption_due_to_wep_on_false)
+> @@ -596,8 +610,8 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
+>  			MTO_SetTxCount(adapter, TxRate, RetryCount);
+>  		}
+>  
+> -		// Clear send result buffer
+> -		pMds->TxResult[ PacketId ] = 0;
+> +		/* Clear send result buffer */
+> +		pMds->TxResult[PacketId] = 0;
+>  	} else
+> -		pMds->TxResult[ PacketId ] |= ((u16)(pT02->value & 0x0ffff));
+> +		pMds->TxResult[PacketId] |= ((u16)(pT02->value & 0x0ffff));
+>  }
 
-diff --git a/drivers/staging/winbond/mac_structures.h b/drivers/staging/winbond/mac_structures.h
-index 0d16196..5c1637d 100644
---- a/drivers/staging/winbond/mac_structures.h
-+++ b/drivers/staging/winbond/mac_structures.h
-@@ -1,202 +1,195 @@
--//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--// MAC_Structures.h
--//
--// This file contains the definitions and data structures used by SW-MAC.
--//
--// Revision Histoy
--//=================
--// 0.1      2002        UN00
--// 0.2      20021004    PD43 CCLiu6
--//          20021018    PD43 CCLiu6
--//                      Add enum_TxRate type
--//                      Modify enum_STAState type
--// 0.3      20021023    PE23 CYLiu update MAC session struct
--//          20021108
--//          20021122    PD43 Austin
--//                      Deleted some unused.
--//          20021129    PD43 Austin
--//			20030617	increase the 802.11g definition
--//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+ * MAC_Structures.h
-+ *
-+ * This file contains the definitions and data structures used by SW-MAC.
-+ *
-+ * Revision Histoy
-+ * =================
-+ * 0.1      2002        UN00
-+ * 0.2      20021004    PD43 CCLiu6
-+ *          20021018    PD43 CCLiu6
-+ *                      Add enum_TxRate type
-+ *                      Modify enum_STAState type
-+ * 0.3      20021023    PE23 CYLiu update MAC session struct
-+ *          20021108
-+ *          20021122    PD43 Austin
-+ *                      Deleted some unused.
-+ *          20021129    PD43 Austin
-+ *			20030617	increase the 802.11g definition
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
- 
- #ifndef _MAC_Structures_H_
- #define _MAC_Structures_H_
- 
- #include <linux/skbuff.h>
- 
--//=========================================================
--// Some miscellaneous definitions
--//-----
--#define MAX_CHANNELS                        30
--#define MAC_ADDR_LENGTH                     6
--#define MAX_WEP_KEY_SIZE                    16  // 128 bits
--#define	MAX_802_11_FRAGMENT_NUMBER		10 // By spec
--
--//========================================================
--// 802.11 Frame define
--//-----
--#define MASK_PROTOCOL_VERSION_TYPE	0x0F
--#define MASK_FRAGMENT_NUMBER		0x000F
--#define SEQUENCE_NUMBER_SHIFT		4
-+/*----- Some miscellaneous definitions */
-+#define MAX_CHANNELS				30
-+#define MAC_ADDR_LENGTH				6
-+#define MAX_WEP_KEY_SIZE			16  /* 128 bits */
-+#define	MAX_802_11_FRAGMENT_NUMBER		10  /* By spec */
-+
-+/*----- 802.11 Frame define */
-+#define MASK_PROTOCOL_VERSION_TYPE		0x0F
-+#define MASK_FRAGMENT_NUMBER			0x000F
-+#define SEQUENCE_NUMBER_SHIFT			4
- #define DIFFER_11_TO_3				18
--#define DOT_11_MAC_HEADER_SIZE		24
-+#define DOT_11_MAC_HEADER_SIZE			24
- #define DOT_11_SNAP_SIZE			6
--#define DOT_11_DURATION_OFFSET		2
--#define DOT_11_SEQUENCE_OFFSET		22 //Sequence control offset
--#define DOT_11_TYPE_OFFSET			30 //The start offset of 802.11 Frame//
--#define DOT_11_DATA_OFFSET          24
-+#define DOT_11_DURATION_OFFSET			2
-+#define DOT_11_SEQUENCE_OFFSET			22 /* Sequence control offset*/
-+#define DOT_11_TYPE_OFFSET			30 /* The start offset
-+						    of 802.11 Frame */
-+#define DOT_11_DATA_OFFSET			24
- #define DOT_11_DA_OFFSET			4
- #define DOT_3_TYPE_ARP				0x80F3
- #define DOT_3_TYPE_IPX				0x8137
- #define DOT_3_TYPE_OFFSET			12
- 
--
- #define ETHERNET_HEADER_SIZE			14
- #define MAX_ETHERNET_PACKET_SIZE		1514
- 
- 
--//-----  management : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
--#define MAC_SUBTYPE_MNGMNT_ASSOC_REQUEST    0x00
--#define MAC_SUBTYPE_MNGMNT_ASSOC_RESPONSE   0x10
--#define MAC_SUBTYPE_MNGMNT_REASSOC_REQUEST  0x20
--#define MAC_SUBTYPE_MNGMNT_REASSOC_RESPONSE 0x30
--#define MAC_SUBTYPE_MNGMNT_PROBE_REQUEST    0x40
--#define MAC_SUBTYPE_MNGMNT_PROBE_RESPONSE   0x50
--#define MAC_SUBTYPE_MNGMNT_BEACON           0x80
--#define MAC_SUBTYPE_MNGMNT_ATIM             0x90
--#define MAC_SUBTYPE_MNGMNT_DISASSOCIATION   0xA0
--#define MAC_SUBTYPE_MNGMNT_AUTHENTICATION   0xB0
--#define MAC_SUBTYPE_MNGMNT_DEAUTHENTICATION 0xC0
--
--//-----  control : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
--#define MAC_SUBTYPE_CONTROL_PSPOLL          0xA4
--#define MAC_SUBTYPE_CONTROL_RTS             0xB4
--#define MAC_SUBTYPE_CONTROL_CTS             0xC4
--#define MAC_SUBTYPE_CONTROL_ACK             0xD4
--#define MAC_SUBTYPE_CONTROL_CFEND           0xE4
--#define MAC_SUBTYPE_CONTROL_CFEND_CFACK     0xF4
--
--//-----  data : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
--#define MAC_SUBTYPE_DATA                    0x08
--#define MAC_SUBTYPE_DATA_CFACK              0x18
--#define MAC_SUBTYPE_DATA_CFPOLL             0x28
--#define MAC_SUBTYPE_DATA_CFACK_CFPOLL       0x38
--#define MAC_SUBTYPE_DATA_NULL               0x48
--#define MAC_SUBTYPE_DATA_CFACK_NULL         0x58
--#define MAC_SUBTYPE_DATA_CFPOLL_NULL        0x68
--#define MAC_SUBTYPE_DATA_CFACK_CFPOLL_NULL  0x78
--
--//-----  Frame Type of Bits (2, 3)
--#define MAC_TYPE_MANAGEMENT                 0x00
--#define MAC_TYPE_CONTROL                    0x04
--#define MAC_TYPE_DATA                       0x08
--
--//----- definitions for Management Frame Element ID (1 BYTE)
--#define ELEMENT_ID_SSID                     0
--#define ELEMENT_ID_SUPPORTED_RATES          1
--#define ELEMENT_ID_FH_PARAMETER_SET         2
--#define ELEMENT_ID_DS_PARAMETER_SET         3
--#define ELEMENT_ID_CF_PARAMETER_SET         4
--#define ELEMENT_ID_TIM                      5
--#define ELEMENT_ID_IBSS_PARAMETER_SET       6
--// 7~15 reserverd
--#define ELEMENT_ID_CHALLENGE_TEXT           16
--// 17~31 reserved for challenge text extension
--// 32~255 reserved
--//--  11G  --
--#define ELEMENT_ID_ERP_INFORMATION			42
--#define ELEMENT_ID_EXTENDED_SUPPORTED_RATES 50
--
--//--  WPA  --
--
--#define ELEMENT_ID_RSN_WPA					221
-+/*----- management : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
-+#define MAC_SUBTYPE_MNGMNT_ASSOC_REQUEST	0x00
-+#define MAC_SUBTYPE_MNGMNT_ASSOC_RESPONSE	0x10
-+#define MAC_SUBTYPE_MNGMNT_REASSOC_REQUEST	0x20
-+#define MAC_SUBTYPE_MNGMNT_REASSOC_RESPONSE	0x30
-+#define MAC_SUBTYPE_MNGMNT_PROBE_REQUEST	0x40
-+#define MAC_SUBTYPE_MNGMNT_PROBE_RESPONSE	0x50
-+#define MAC_SUBTYPE_MNGMNT_BEACON		0x80
-+#define MAC_SUBTYPE_MNGMNT_ATIM			0x90
-+#define MAC_SUBTYPE_MNGMNT_DISASSOCIATION	0xA0
-+#define MAC_SUBTYPE_MNGMNT_AUTHENTICATION	0xB0
-+#define MAC_SUBTYPE_MNGMNT_DEAUTHENTICATION	0xC0
-+
-+/*----- control : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
-+#define MAC_SUBTYPE_CONTROL_PSPOLL		0xA4
-+#define MAC_SUBTYPE_CONTROL_RTS			0xB4
-+#define MAC_SUBTYPE_CONTROL_CTS			0xC4
-+#define MAC_SUBTYPE_CONTROL_ACK			0xD4
-+#define MAC_SUBTYPE_CONTROL_CFEND		0xE4
-+#define MAC_SUBTYPE_CONTROL_CFEND_CFACK		0xF4
-+
-+/*----- data : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
-+#define MAC_SUBTYPE_DATA			0x08
-+#define MAC_SUBTYPE_DATA_CFACK			0x18
-+#define MAC_SUBTYPE_DATA_CFPOLL			0x28
-+#define MAC_SUBTYPE_DATA_CFACK_CFPOLL		0x38
-+#define MAC_SUBTYPE_DATA_NULL			0x48
-+#define MAC_SUBTYPE_DATA_CFACK_NULL		0x58
-+#define MAC_SUBTYPE_DATA_CFPOLL_NULL		0x68
-+#define MAC_SUBTYPE_DATA_CFACK_CFPOLL_NULL	0x78
-+
-+/*----- Frame Type of Bits (2, 3) */
-+#define MAC_TYPE_MANAGEMENT			0x00
-+#define MAC_TYPE_CONTROL			0x04
-+#define MAC_TYPE_DATA				0x08
-+
-+/*----- definitions for Management Frame Element ID (1 BYTE) */
-+#define ELEMENT_ID_SSID				0
-+#define ELEMENT_ID_SUPPORTED_RATES		1
-+#define ELEMENT_ID_FH_PARAMETER_SET		2
-+#define ELEMENT_ID_DS_PARAMETER_SET		3
-+#define ELEMENT_ID_CF_PARAMETER_SET		4
-+#define ELEMENT_ID_TIM				5
-+#define ELEMENT_ID_IBSS_PARAMETER_SET		6
-+/* 7~15 reserverd */
-+#define ELEMENT_ID_CHALLENGE_TEXT		16
-+/* 17~31 reserved for challenge text extension */
-+/* 32~255 reserved */
-+/*--  11G  -- */
-+#define ELEMENT_ID_ERP_INFORMATION		42
-+#define ELEMENT_ID_EXTENDED_SUPPORTED_RATES	50
-+
-+/* --  WPA  -- */
-+#define ELEMENT_ID_RSN_WPA			221
- #ifdef _WPA2_
--#define ELEMENT_ID_RSN_WPA2				    48
--#endif //endif WPA2
-+#define ELEMENT_ID_RSN_WPA2			48
-+#endif /* endif WPA2 */
- 
- #define WLAN_MAX_PAIRWISE_CIPHER_SUITE_COUNT    ((u16) 6)
- #define WLAN_MAX_AUTH_KEY_MGT_SUITE_LIST_COUNT  ((u16) 2)
- 
--//========================================================
--typedef enum enum_PowerManagementMode
--{
-+/*======================================================== */
-+typedef enum enum_PowerManagementMode {
-     ACTIVE = 0,
-     POWER_SAVE
- } WB_PM_Mode, *PWB_PM_MODE;
- 
--//===================================================================
--//  Reason Code (Table 18): indicate the reason of DisAssoc, DeAuthen
--//  length of ReasonCode is 2 Octs.
--//===================================================================
--#define REASON_REASERED             0
--#define REASON_UNSPECIDIED          1
--#define REASON_PREAUTH_INVALID      2
--#define DEAUTH_REASON_LEFT_BSS      3
--#define DISASS_REASON_AP_INACTIVE   4
--#define DISASS_REASON_AP_BUSY       5
--#define REASON_CLASS2_FRAME_FROM_NONAUTH_STA    6
--#define REASON_CLASS3_FRAME_FROM_NONASSO_STA    7
--#define DISASS_REASON_LEFT_BSS      8
--#define REASON_NOT_AUTH_YET         9
--//802.11i define
--#define REASON_INVALID_IE						13
--#define REASON_MIC_ERROR						14
--#define REASON_4WAY_HANDSHAKE_TIMEOUT			15
--#define REASON_GROUPKEY_UPDATE_TIMEOUT			16
--#define REASON_IE_DIFF_4WAY_ASSOC				17
--#define REASON_INVALID_MULTICAST_CIPHER			18
--#define REASON_INVALID_UNICAST_CIPHER			19
--#define REASON_INVALID_AKMP						20
--#define REASON_UNSUPPORTED_RSNIE_VERSION		21
--#define REASON_INVALID_RSNIE_CAPABILITY			22
--#define REASON_802_1X_AUTH_FAIL					23
--#define	REASON_CIPHER_REJECT_PER_SEC_POLICY		14
-+/*===================================================================
-+ *  Reason Code (Table 18): indicate the reason of DisAssoc, DeAuthen
-+ *  length of ReasonCode is 2 Octs.
-+ *=================================================================== */
-+#define REASON_REASERED				0
-+#define REASON_UNSPECIDIED			1
-+#define REASON_PREAUTH_INVALID			2
-+#define DEAUTH_REASON_LEFT_BSS			3
-+#define DISASS_REASON_AP_INACTIVE		4
-+#define DISASS_REASON_AP_BUSY			5
-+#define REASON_CLASS2_FRAME_FROM_NONAUTH_STA	6
-+#define REASON_CLASS3_FRAME_FROM_NONASSO_STA	7
-+#define DISASS_REASON_LEFT_BSS			8
-+#define REASON_NOT_AUTH_YET			9
-+/* 802.11i define */
-+#define REASON_INVALID_IE			13
-+#define REASON_MIC_ERROR			14
-+#define REASON_4WAY_HANDSHAKE_TIMEOUT		15
-+#define REASON_GROUPKEY_UPDATE_TIMEOUT		16
-+#define REASON_IE_DIFF_4WAY_ASSOC		17
-+#define REASON_INVALID_MULTICAST_CIPHER		18
-+#define REASON_INVALID_UNICAST_CIPHER		19
-+#define REASON_INVALID_AKMP			20
-+#define REASON_UNSUPPORTED_RSNIE_VERSION	21
-+#define REASON_INVALID_RSNIE_CAPABILITY		22
-+#define REASON_802_1X_AUTH_FAIL			23
-+#define	REASON_CIPHER_REJECT_PER_SEC_POLICY	14
- 
- /*
--//===========================================================
--// enum_MMPDUResultCode --
--//   Status code (2 Octs) in the MMPDU's frame body. Table.19
--//
--//===========================================================
-+// *===========================================================
-+// * enum_MMPDUResultCode --
-+// *   Status code (2 Octs) in the MMPDU's frame body. Table.19
-+// *
-+// *===========================================================
- enum enum_MMPDUResultCode
- {
--//    SUCCESS   = 0,      // Redefined
--    UNSPECIFIED_FAILURE                         = 1,
--
--    // 2 - 9 Reserved
--
--    NOT_SUPPROT_CAPABILITIES                    = 10,
--
--    //REASSOCIATION_DENIED
--    //
--    REASSOC_DENIED_UNABLE_CFM_ASSOC_EXIST       = 11,
--
--    //ASSOCIATION_DENIED_NOT_IN_STANDARD
--    //
--    ASSOC_DENIED_REASON_NOT_IN_STANDARD         = 12,
--    PEER_NOT_SUPPORT_AUTH_ALGORITHM             = 13,
--    AUTH_SEQNUM_OUT_OF_EXPECT                   = 14,
--    AUTH_REJECT_REASON_CHALLENGE_FAIL           = 15,
--    AUTH_REJECT_REASON_WAIT_TIMEOUT             = 16,
--    ASSOC_DENIED_REASON_AP_BUSY                 = 17,
--    ASSOC_DENIED_REASON_NOT_SUPPORT_BASIC_RATE  = 18
-+	// SUCCESS   = 0,      **** Redefined
-+	UNSPECIFIED_FAILURE				= 1,
-+
-+	// 2 - 9 Reserved
-+
-+	NOT_SUPPROT_CAPABILITIES			= 10,
-+
-+	// REASSOCIATION_DENIED
-+
-+	REASSOC_DENIED_UNABLE_CFM_ASSOC_EXIST		= 11,
-+
-+	// ASSOCIATION_DENIED_NOT_IN_STANDARD
-+
-+	ASSOC_DENIED_REASON_NOT_IN_STANDARD		= 12,
-+	PEER_NOT_SUPPORT_AUTH_ALGORITHM			= 13,
-+	AUTH_SEQNUM_OUT_OF_EXPECT			= 14,
-+	AUTH_REJECT_REASON_CHALLENGE_FAIL		= 15,
-+	AUTH_REJECT_REASON_WAIT_TIMEOUT			= 16,
-+	ASSOC_DENIED_REASON_AP_BUSY			= 17,
-+	ASSOC_DENIED_REASON_NOT_SUPPORT_BASIC_RATE	= 18
- } WB_MMPDURESULTCODE, *PWB_MMPDURESULTCODE;
- */
- 
--//===========================================================
--// enum_TxRate --
--//   Define the transmission constants based on W89C32 MAC
--//   target specification.
--//===========================================================
--typedef enum enum_TxRate
--{
--    TXRATE_1M               = 0,
--    TXRATE_2MLONG           = 2,
--    TXRATE_2MSHORT          = 3,
--    TXRATE_55MLONG          = 4,
--    TXRATE_55MSHORT         = 5,
--    TXRATE_11MLONG          = 6,
--    TXRATE_11MSHORT         = 7,
--    TXRATE_AUTO             = 255           // PD43 20021108
-+/*===========================================================
-+ * enum_TxRate --
-+ *   Define the transmission constants based on W89C32 MAC
-+ *   target specification.
-+ *=========================================================== */
-+typedef enum enum_TxRate {
-+	TXRATE_1M		= 0,
-+	TXRATE_2MLONG		= 2,
-+	TXRATE_2MSHORT		= 3,
-+	TXRATE_55MLONG		= 4,
-+	TXRATE_55MSHORT		= 5,
-+	TXRATE_11MLONG		= 6,
-+	TXRATE_11MSHORT		= 7,
-+	TXRATE_AUTO		= 255           /* PD43 20021108 */
- } WB_TXRATE, *PWB_TXRATE;
- 
- 
-@@ -215,453 +208,423 @@ typedef enum enum_TxRate
- #define RATE_BITMAP_48M				25
- #define RATE_BITMAP_54M				28
- 
--#define RATE_AUTO					0
--#define RATE_1M						2
--#define RATE_2M						4
--#define RATE_5dot5M					11
--#define RATE_6M						12
--#define RATE_9M						18
--#define RATE_11M					22
--#define RATE_12M					24
--#define RATE_18M					36
--#define RATE_22M					44
--#define RATE_24M					48
--#define RATE_33M					66
--#define RATE_36M					72
--#define RATE_48M					96
--#define RATE_54M					108
--#define RATE_MAX					255
--
--//CAPABILITY
--#define CAPABILITY_ESS_BIT				0x0001
--#define CAPABILITY_IBSS_BIT				0x0002
-+#define RATE_AUTO				0
-+#define RATE_1M					2
-+#define RATE_2M					4
-+#define RATE_5dot5M				11
-+#define RATE_6M					12
-+#define RATE_9M					18
-+#define RATE_11M				22
-+#define RATE_12M				24
-+#define RATE_18M				36
-+#define RATE_22M				44
-+#define RATE_24M				48
-+#define RATE_33M				66
-+#define RATE_36M				72
-+#define RATE_48M				96
-+#define RATE_54M				108
-+#define RATE_MAX				255
-+
-+/* CAPABILITY */
-+#define CAPABILITY_ESS_BIT			0x0001
-+#define CAPABILITY_IBSS_BIT			0x0002
- #define CAPABILITY_CF_POLL_BIT			0x0004
- #define CAPABILITY_CF_POLL_REQ_BIT		0x0008
- #define CAPABILITY_PRIVACY_BIT			0x0010
--#define CAPABILITY_SHORT_PREAMBLE_BIT	0x0020
--#define CAPABILITY_PBCC_BIT				0x0040
-+#define CAPABILITY_SHORT_PREAMBLE_BIT		0x0020
-+#define CAPABILITY_PBCC_BIT			0x0040
- #define CAPABILITY_CHAN_AGILITY_BIT		0x0080
--#define CAPABILITY_SHORT_SLOT_TIME_BIT	0x0400
-+#define CAPABILITY_SHORT_SLOT_TIME_BIT		0x0400
- #define CAPABILITY_DSSS_OFDM_BIT		0x2000
- 
- 
--struct Capability_Information_Element
--{
--  union
--  {
--  	u16 __attribute__ ((packed)) wValue;
--    #ifdef _BIG_ENDIAN_  //20060926 add by anson's endian
--    struct _Capability
--    {
--        //--  11G  --
--	u8	Reserved3 : 2;
--	u8	DSSS_OFDM : 1;
--	u8	Reserved2 : 2;
--	u8	Short_Slot_Time : 1;
--	u8    Reserved1 : 2;
--	u8    Channel_Agility : 1;
--	u8    PBCC : 1;
--	u8    ShortPreamble : 1;
--	u8    CF_Privacy : 1;
--	u8    CF_Poll_Request : 1;
--	u8    CF_Pollable : 1;
--	u8    IBSS : 1;
--	u8    ESS : 1;
--    } __attribute__ ((packed)) Capability;
--    #else
--    struct _Capability
--    {
--        u8    ESS : 1;
--        u8    IBSS : 1;
--        u8    CF_Pollable : 1;
--        u8    CF_Poll_Request : 1;
--        u8    CF_Privacy : 1;
--        u8    ShortPreamble : 1;
--        u8    PBCC : 1;
--        u8    Channel_Agility : 1;
--        u8    Reserved1 : 2;
--		//--  11G  --
--		u8	Short_Slot_Time : 1;
--		u8	Reserved2 : 2;
--		u8	DSSS_OFDM : 1;
--		u8	Reserved3 : 2;
--    } __attribute__ ((packed)) Capability;
--    #endif
--  }__attribute__ ((packed)) ;
--}__attribute__ ((packed));
--
--struct FH_Parameter_Set_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    Dwell_Time[2];
--    u8    Hop_Set;
--    u8    Hop_Pattern;
--    u8    Hop_Index;
-+struct Capability_Information_Element {
-+  union {
-+	u16 __attribute__ ((packed)) wValue;
-+	#ifdef _BIG_ENDIAN_  /*20060926 add by anson's endian*/
-+	struct _Capability {
-+		/*--  11G  --*/
-+		u8	Reserved3:2;
-+		u8	DSSS_OFDM:1;
-+		u8	Reserved2:2;
-+		u8	Short_Slot_Time:1;
-+		u8	Reserved1:2;
-+		u8	Channel_Agility:1;
-+		u8	PBCC:1;
-+		u8	ShortPreamble:1;
-+		u8	CF_Privacy:1;
-+		u8	CF_Poll_Request:1;
-+		u8	CF_Pollable:1;
-+		u8	IBSS:1;
-+		u8	ESS:1;
-+	} __attribute__ ((packed)) Capability;
-+	#else
-+	struct _Capability {
-+		u8    ESS:1;
-+		u8    IBSS:1;
-+		u8    CF_Pollable:1;
-+		u8    CF_Poll_Request:1;
-+		u8    CF_Privacy:1;
-+		u8    ShortPreamble:1;
-+		u8    PBCC:1;
-+		u8    Channel_Agility:1;
-+		u8    Reserved1:2;
-+		/*--  11G  --*/
-+		u8    Short_Slot_Time:1;
-+		u8    Reserved2:2;
-+		u8    DSSS_OFDM:1;
-+		u8    Reserved3:2;
-+	} __attribute__ ((packed)) Capability;
-+	#endif
-+  } __attribute__ ((packed));
-+} __attribute__ ((packed));
-+
-+struct FH_Parameter_Set_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	Dwell_Time[2];
-+	u8	Hop_Set;
-+	u8	Hop_Pattern;
-+	u8	Hop_Index;
- };
- 
--struct DS_Parameter_Set_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    Current_Channel;
-+struct DS_Parameter_Set_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	Current_Channel;
- };
- 
--struct Supported_Rates_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    SupportedRates[8];
--}__attribute__ ((packed));
-+struct Supported_Rates_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	SupportedRates[8];
-+} __attribute__ ((packed));
- 
--struct SSID_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    SSID[32];
--}__attribute__ ((packed)) ;
-+struct SSID_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	SSID[32];
-+} __attribute__ ((packed));
- 
--struct CF_Parameter_Set_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    CFP_Count;
--    u8    CFP_Period;
--    u8    CFP_MaxDuration[2];     // in Time Units
--    u8    CFP_DurRemaining[2];    // in time units
-+struct CF_Parameter_Set_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	CFP_Count;
-+	u8	CFP_Period;
-+	u8	CFP_MaxDuration[2];     /* in Time Units */
-+	u8	CFP_DurRemaining[2];    /* in time units */
- };
- 
--struct TIM_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    DTIM_Count;
--    u8    DTIM_Period;
--    u8    Bitmap_Control;
--    u8    Partial_Virtual_Bitmap[251];
-+struct TIM_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	DTIM_Count;
-+	u8	DTIM_Period;
-+	u8	Bitmap_Control;
-+	u8	Partial_Virtual_Bitmap[251];
- };
- 
--struct IBSS_Parameter_Set_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    ATIM_Window[2];
-+struct IBSS_Parameter_Set_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	ATIM_Window[2];
- };
- 
--struct Challenge_Text_Element
--{
--    u8    Element_ID;
--    u8    Length;
--    u8    Challenge_Text[253];
-+struct Challenge_Text_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	Challenge_Text[253];
- };
- 
--struct PHY_Parameter_Set_Element
--{
--//  int     aSlotTime;
--//  int     aSifsTime;
--    s32     aCCATime;
--    s32     aRxTxTurnaroundTime;
--    s32     aTxPLCPDelay;
--    s32     RxPLCPDelay;
--    s32     aRxTxSwitchTime;
--    s32     aTxRampOntime;
--    s32     aTxRampOffTime;
--    s32     aTxRFDelay;
--    s32     aRxRFDelay;
--    s32     aAirPropagationTime;
--    s32     aMACProcessingDelay;
--    s32     aPreambleLength;
--    s32     aPLCPHeaderLength;
--    s32     aMPDUDurationFactor;
--    s32     aMPDUMaxLength;
--//  int     aCWmin;
--//  int     aCWmax;
-+struct PHY_Parameter_Set_Element {
-+/*	int	aSlotTime;*/
-+/*	int	aSifsTime;*/
-+	s32	aCCATime;
-+	s32	aRxTxTurnaroundTime;
-+	s32	aTxPLCPDelay;
-+	s32	RxPLCPDelay;
-+	s32	aRxTxSwitchTime;
-+	s32	aTxRampOntime;
-+	s32	aTxRampOffTime;
-+	s32	aTxRFDelay;
-+	s32	aRxRFDelay;
-+	s32	aAirPropagationTime;
-+	s32	aMACProcessingDelay;
-+	s32	aPreambleLength;
-+	s32	aPLCPHeaderLength;
-+	s32	aMPDUDurationFactor;
-+	s32	aMPDUMaxLength;
-+/*	int	aCWmin;*/
-+/*	int	aCWmax;*/
- };
- 
--//--  11G  --
--struct ERP_Information_Element
--{
--    u8	Element_ID;
--    u8	Length;
--    #ifdef _BIG_ENDIAN_ //20060926 add by anson's endian
--    	u8	Reserved:5;   //20060926 add by anson
--       u8	Barker_Preamble_Mode:1;
--	u8	Use_Protection:1;
--       u8	NonERP_Present:1;
--    #else
--	u8	NonERP_Present:1;
--	u8	Use_Protection:1;
--	u8	Barker_Preamble_Mode:1;
--	u8	Reserved:5;
--    #endif
-+/*--  11G  --*/
-+struct ERP_Information_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	#ifdef _BIG_ENDIAN_ /*20060926 add by anson's endian*/
-+		u8	Reserved:5;   /*20060926 add by anson*/
-+		u8	Barker_Preamble_Mode:1;
-+		u8	Use_Protection:1;
-+		u8	NonERP_Present:1;
-+	#else
-+		u8	NonERP_Present:1;
-+		u8	Use_Protection:1;
-+		u8	Barker_Preamble_Mode:1;
-+		u8	Reserved:5;
-+	#endif
- };
- 
--struct Extended_Supported_Rates_Element
--{
--    u8	Element_ID;
--    u8	Length;
--    u8	ExtendedSupportedRates[255];
--}__attribute__ ((packed));
-+struct Extended_Supported_Rates_Element {
-+	u8	Element_ID;
-+	u8	Length;
-+	u8	ExtendedSupportedRates[255];
-+} __attribute__ ((packed));
- 
--//WPA(802.11i draft 3.0)
--#define VERSION_WPA				1
-+/*WPA(802.11i draft 3.0)*/
-+#define VERSION_WPA			1
- #ifdef _WPA2_
--#define VERSION_WPA2            1
--#endif //end def  _WPA2_
--#define OUI_WPA					0x00F25000	//WPA2.0 OUI=00:50:F2, the MSB is reserved for suite type
-+#define VERSION_WPA2			1
-+#endif /*end def  _WPA2_*/
-+#define OUI_WPA				0x00F25000	/*WPA2.0 OUI=00:50:F2,
-+							the MSB is reserved
-+							for suite type*/
- #ifdef _WPA2_
--#define OUI_WPA2				0x00AC0F00	// for wpa2 change to 0x00ACOF04 by Ws 26/04/04
--#endif //end def _WPA2_
-+#define OUI_WPA2			0x00AC0F00	/* for wpa2 change to
-+							0x00ACOF04 by Ws
-+							26/04/04*/
-+#endif /*end def _WPA2_*/
- 
- #define OUI_WPA_ADDITIONAL		0x01
--#define WLAN_MIN_RSN_WPA_LENGTH                 6 //added by ws 09/10/04
-+#define WLAN_MIN_RSN_WPA_LENGTH		6 /*added by ws 09/10/04*/
- #ifdef _WPA2_
--#define WLAN_MIN_RSN_WPA2_LENGTH                2 // Fix to 2 09/14/05
--#endif //end def _WPA2_
-+#define WLAN_MIN_RSN_WPA2_LENGTH	2 /*Fix to 2 09/14/05*/
-+#endif /*end def _WPA2_*/
- 
--#define oui_wpa                  (u32)(OUI_WPA|OUI_WPA_ADDITIONAL)
-+#define oui_wpa			(u32)(OUI_WPA|OUI_WPA_ADDITIONAL)
- 
--#define WPA_OUI_BIG    ((u32) 0x01F25000)//added by ws 09/23/04
--#define WPA_OUI_LITTLE  ((u32) 0x01F25001)//added by ws 09/23/04
-+#define WPA_OUI_BIG		((u32) 0x01F25000)/*added by ws 09/23/04*/
-+#define WPA_OUI_LITTLE		((u32) 0x01F25001)/*added by ws 09/23/04*/
- 
--#define WPA_WPS_OUI				cpu_to_le32(0x04F25000) // 20061108 For WPS. It's little endian. Big endian is 0x0050F204
-+#define WPA_WPS_OUI		cpu_to_le32(0x04F25000) /* 20061108 For WPS.
-+						It's little endian.
-+						Big endian is 0x0050F204*/
- 
--//-----WPA2-----
-+/*-----WPA2-----*/
- #ifdef _WPA2_
--#define WPA2_OUI_BIG    ((u32)0x01AC0F00)
--#define WPA2_OUI_LITTLE ((u32)0x01AC0F01)
--#endif //end def _WPA2_
--
--//Authentication suite
--#define OUI_AUTH_WPA_NONE           0x00 //for WPA_NONE
--#define OUI_AUTH_8021X				0x01
--#define OUI_AUTH_PSK				0x02
--//Cipher suite
--#define OUI_CIPHER_GROUP_KEY        0x00  //added by ws 05/21/04
--#define OUI_CIPHER_WEP_40			0x01
--#define OUI_CIPHER_TKIP				0x02
--#define OUI_CIPHER_CCMP				0x04
--#define OUI_CIPHER_WEP_104			0x05
--
--typedef struct _SUITE_SELECTOR_
--{
--	union
--	{
-+#define WPA2_OUI_BIG		((u32)0x01AC0F00)
-+#define WPA2_OUI_LITTLE		((u32)0x01AC0F01)
-+#endif /*end def _WPA2_*/
-+
-+/*Authentication suite*/
-+#define OUI_AUTH_WPA_NONE	0x00 /*for WPA_NONE*/
-+#define OUI_AUTH_8021X		0x01
-+#define OUI_AUTH_PSK		0x02
-+/*Cipher suite*/
-+#define OUI_CIPHER_GROUP_KEY	0x00 /*added by ws 05/21/04*/
-+#define OUI_CIPHER_WEP_40	0x01
-+#define OUI_CIPHER_TKIP		0x02
-+#define OUI_CIPHER_CCMP		0x04
-+#define OUI_CIPHER_WEP_104	0x05
-+
-+typedef struct _SUITE_SELECTOR_ {
-+	union {
- 		u8	Value[4];
--		struct _SUIT_
--		{
-+		struct _SUIT_ {
- 			u8	OUI[3];
- 			u8	Type;
--		}SuitSelector;
-+		} SuitSelector;
- 	};
--}SUITE_SELECTOR;
-+} SUITE_SELECTOR;
-+
-+/*--  WPA  --*/
-+struct	RSN_Information_Element {
-+	u8		Element_ID;
-+	u8		Length;
-+	SUITE_SELECTOR	OuiWPAAdditional;/*WPA version 2.0 additional field,
-+						and should be 00:50:F2:01*/
-+	u16		Version;
-+	SUITE_SELECTOR	GroupKeySuite;
-+	u16		PairwiseKeySuiteCount;
-+	SUITE_SELECTOR	PairwiseKeySuite[1];
-+} __attribute__ ((packed));
- 
--//--  WPA  --
--struct	RSN_Information_Element
--{
--	u8					Element_ID;
--	u8					Length;
--	SUITE_SELECTOR	OuiWPAAdditional;//WPA version 2.0 additional field, and should be 00:50:F2:01
--	u16					Version;
--	SUITE_SELECTOR		GroupKeySuite;
--	u16					PairwiseKeySuiteCount;
--	SUITE_SELECTOR		PairwiseKeySuite[1];
--}__attribute__ ((packed));
--struct RSN_Auth_Sub_Information_Element
--{
--	u16				AuthKeyMngtSuiteCount;
-+struct RSN_Auth_Sub_Information_Element {
-+	u16		AuthKeyMngtSuiteCount;
- 	SUITE_SELECTOR	AuthKeyMngtSuite[1];
--}__attribute__ ((packed));
-+} __attribute__ ((packed));
- 
--//--  WPA2  --
--struct RSN_Capability_Element
--{
--  union
--  {
-+/*--  WPA2  --*/
-+struct RSN_Capability_Element {
-+  union {
- 	u16	__attribute__ ((packed))	wValue;
--    #ifdef _BIG_ENDIAN_	 //20060927 add by anson's endian
--    struct _RSN_Capability
--    {
--    	u16   __attribute__ ((packed))  Reserved2 : 8; // 20051201
--	u16   __attribute__ ((packed))  Reserved1 : 2;
--	u16   __attribute__ ((packed))  GTK_Replay_Counter : 2;
--	u16   __attribute__ ((packed))  PTK_Replay_Counter : 2;
--	u16   __attribute__ ((packed))  No_Pairwise : 1;
--        u16   __attribute__ ((packed))  Pre_Auth : 1;
--    }__attribute__ ((packed))  RSN_Capability;
--    #else
--    struct _RSN_Capability
--    {
--        u16   __attribute__ ((packed))  Pre_Auth : 1;
--        u16   __attribute__ ((packed))  No_Pairwise : 1;
--        u16   __attribute__ ((packed))  PTK_Replay_Counter : 2;
--	    u16   __attribute__ ((packed))  GTK_Replay_Counter : 2;
--	    u16   __attribute__ ((packed))  Reserved1 : 2;
--	    u16   __attribute__ ((packed))  Reserved2 : 8; // 20051201
--    }__attribute__ ((packed))  RSN_Capability;
--    #endif
--
--  }__attribute__ ((packed)) ;
--}__attribute__ ((packed)) ;
-+	#ifdef _BIG_ENDIAN_	 /*20060927 add by anson's endian*/
-+	struct _RSN_Capability {
-+		u16   __attribute__ ((packed))  Reserved2:8; /*20051201*/
-+		u16   __attribute__ ((packed))  Reserved1:2;
-+		u16   __attribute__ ((packed))  GTK_Replay_Counter:2;
-+		u16   __attribute__ ((packed))  PTK_Replay_Counter:2;
-+		u16   __attribute__ ((packed))  No_Pairwise:1;
-+		u16   __attribute__ ((packed))  Pre_Auth:1;
-+	} __attribute__ ((packed))  RSN_Capability;
-+	#else
-+	struct _RSN_Capability {
-+		u16   __attribute__ ((packed))  Pre_Auth:1;
-+		u16   __attribute__ ((packed))  No_Pairwise:1;
-+		u16   __attribute__ ((packed))  PTK_Replay_Counter:2;
-+		u16   __attribute__ ((packed))  GTK_Replay_Counter:2;
-+		u16   __attribute__ ((packed))  Reserved1:2;
-+		u16   __attribute__ ((packed))  Reserved2:8; /*20051201*/
-+	} __attribute__ ((packed))  RSN_Capability;
-+	#endif
-+  } __attribute__ ((packed));
-+} __attribute__ ((packed));
- 
- #ifdef _WPA2_
--typedef struct _PMKID
--{
--  u8 pValue[16];
--}PMKID;
--
--struct	WPA2_RSN_Information_Element
--{
--	u8					Element_ID;
--	u8					Length;
--	u16					Version;
-+typedef struct _PMKID {
-+	u8	pValue[16];
-+} PMKID;
-+
-+struct	WPA2_RSN_Information_Element {
-+	u8			Element_ID;
-+	u8			Length;
-+	u16			Version;
- 	SUITE_SELECTOR		GroupKeySuite;
--	u16					PairwiseKeySuiteCount;
-+	u16			PairwiseKeySuiteCount;
- 	SUITE_SELECTOR		PairwiseKeySuite[1];
-+} __attribute__ ((packed));
- 
--}__attribute__ ((packed));
--
--struct WPA2_RSN_Auth_Sub_Information_Element
--{
--	u16				AuthKeyMngtSuiteCount;
--	SUITE_SELECTOR	AuthKeyMngtSuite[1];
--}__attribute__ ((packed));
-+struct WPA2_RSN_Auth_Sub_Information_Element {
-+	u16			AuthKeyMngtSuiteCount;
-+	SUITE_SELECTOR		AuthKeyMngtSuite[1];
-+} __attribute__ ((packed));
- 
-+struct PMKID_Information_Element {
-+	u16			PMKID_Count;
-+	PMKID			pmkid[16];
-+} __attribute__ ((packed));
- 
--struct PMKID_Information_Element
--{
--	u16				PMKID_Count;
--	PMKID pmkid [16] ;
--}__attribute__ ((packed));
--
--#endif //enddef _WPA2_
--//============================================================
--// MAC Frame structure (different type) and subfield structure
--//============================================================
--struct MAC_frame_control
--{
--    u8    mac_frame_info; // a combination of the [Protocol Version, Control Type, Control Subtype]
--    #ifdef _BIG_ENDIAN_ //20060927 add by anson's endian
--    u8    order:1;
--    u8    WEP:1;
--    u8    more_data:1;
--    u8    pwr_mgt:1;
--    u8    retry:1;
--    u8    more_frag:1;
--    u8    from_ds:1;
--    u8    to_ds:1;
--    #else
--    u8    to_ds:1;
--    u8    from_ds:1;
--    u8    more_frag:1;
--    u8    retry:1;
--    u8    pwr_mgt:1;
--    u8    more_data:1;
--    u8    WEP:1;
--    u8    order:1;
--    #endif
-+#endif /*enddef _WPA2_*/
-+/*============================================================
-+ * MAC Frame structure (different type) and subfield structure
-+ *============================================================*/
-+struct MAC_frame_control {
-+	u8	mac_frame_info; /* a combination of the [Protocol Version,
-+					Control Type, Control Subtype]*/
-+	#ifdef _BIG_ENDIAN_	/*20060927 add by anson's endian*/
-+	u8	order:1;
-+	u8	WEP:1;
-+	u8	more_data:1;
-+	u8	pwr_mgt:1;
-+	u8	retry:1;
-+	u8	more_frag:1;
-+	u8	from_ds:1;
-+	u8	to_ds:1;
-+	#else
-+	u8	to_ds:1;
-+	u8	from_ds:1;
-+	u8	more_frag:1;
-+	u8	retry:1;
-+	u8	pwr_mgt:1;
-+	u8	more_data:1;
-+	u8	WEP:1;
-+	u8	order:1;
-+	#endif
- } __attribute__ ((packed));
- 
- struct Management_Frame {
--    struct MAC_frame_control frame_control; // 2B, ToDS,FromDS,MoreFrag,MoreData,Order=0
--    u16		duration;
--    u8		DA[MAC_ADDR_LENGTH];			// Addr1
--    u8		SA[MAC_ADDR_LENGTH];			// Addr2
--    u8		BSSID[MAC_ADDR_LENGTH];			// Addr3
--    u16		Sequence_Control;
--    // Management Frame Body <= 325 bytes
--    // FCS 4 bytes
--}__attribute__ ((packed));
--
--// SW-MAC don't Tx/Rx Control-Frame, HW-MAC do it.
-+	struct MAC_frame_control frame_control; /* 2B, ToDS,FromDS,MoreFrag,
-+							MoreData,Order=0 */
-+	u16	duration;
-+	u8	DA[MAC_ADDR_LENGTH];			/* Addr1 */
-+	u8	SA[MAC_ADDR_LENGTH];			/* Addr2 */
-+	u8	BSSID[MAC_ADDR_LENGTH];			/* Addr3 */
-+	u16	Sequence_Control;
-+	/* Management Frame Body <= 325 bytes */
-+	/* FCS 4 bytes */
-+} __attribute__ ((packed));
-+
-+/* SW-MAC don't Tx/Rx Control-Frame, HW-MAC do it. */
- struct Control_Frame {
--    struct MAC_frame_control frame_control; // ToDS,FromDS,MoreFrag,Retry,MoreData,WEP,Order=0
--    u16		duration;
--    u8		RA[MAC_ADDR_LENGTH];
--    u8		TA[MAC_ADDR_LENGTH];
--    u16		FCS;
--}__attribute__ ((packed));
-+	struct MAC_frame_control frame_control; /* ToDS,FromDS,MoreFrag,Retry,
-+							MoreData,WEP,Order=0 */
-+	u16	duration;
-+	u8	RA[MAC_ADDR_LENGTH];
-+	u8	TA[MAC_ADDR_LENGTH];
-+	u16	FCS;
-+} __attribute__ ((packed));
- 
- struct Data_Frame {
--    struct MAC_frame_control frame_control;
--    u16		duration;
--    u8		Addr1[MAC_ADDR_LENGTH];
--    u8		Addr2[MAC_ADDR_LENGTH];
--    u8		Addr3[MAC_ADDR_LENGTH];
--    u16		Sequence_Control;
--    u8		Addr4[MAC_ADDR_LENGTH]; // only exist when ToDS=FromDS=1
--    // Data Frame Body <= 2312
--    // FCS
--}__attribute__ ((packed));
--
--struct Disassociation_Frame_Body
--{
--    u16    reasonCode;
--}__attribute__ ((packed));
-+	struct MAC_frame_control frame_control;
-+	u16	duration;
-+	u8	Addr1[MAC_ADDR_LENGTH];
-+	u8	Addr2[MAC_ADDR_LENGTH];
-+	u8	Addr3[MAC_ADDR_LENGTH];
-+	u16	Sequence_Control;
-+	u8	Addr4[MAC_ADDR_LENGTH]; /* only exist when ToDS=FromDS=1*/
-+	/* Data Frame Body <= 2312 */
-+	/* FCS */
-+} __attribute__ ((packed));
- 
--struct Association_Request_Frame_Body
--{
--    u16    capability_information;
--    u16    listenInterval;
--    u8     Current_AP_Address[MAC_ADDR_LENGTH];//for reassociation only
--    // SSID (2+32 bytes)
--    // Supported_Rates (2+8 bytes)
--}__attribute__ ((packed));
-+struct Disassociation_Frame_Body {
-+	u16	reasonCode;
-+} __attribute__ ((packed));
- 
--struct Association_Response_Frame_Body
--{
--    u16    capability_information;
--    u16    statusCode;
--    u16    Association_ID;
--    struct Supported_Rates_Element supportedRates;
--}__attribute__ ((packed));
-+struct Association_Request_Frame_Body {
-+	u16	capability_information;
-+	u16	listenInterval;
-+	u8	Current_AP_Address[MAC_ADDR_LENGTH];/*for reassociation only*/
-+	/* SSID (2+32 bytes)*/
-+	/* Supported_Rates (2+8 bytes)*/
-+} __attribute__ ((packed));
- 
--/*struct Reassociation_Request_Frame_Body
--{
-+struct Association_Response_Frame_Body {
-+	u16	capability_information;
-+	u16	statusCode;
-+	u16	Association_ID;
-+	struct Supported_Rates_Element supportedRates;
-+} __attribute__ ((packed));
-+
-+/*struct Reassociation_Request_Frame_Body {
-     u16    capability_information;
-     u16    listenInterval;
-     u8     Current_AP_Address[MAC_ADDR_LENGTH];
-     // SSID (2+32 bytes)
-     // Supported_Rates (2+8 bytes)
- };*/
--// eliminated by WS 07/22/04 comboined with associateion request frame.
-+/*eliminated by WS 07/22/04 comboined with associateion request frame.*/
- 
--struct Reassociation_Response_Frame_Body
--{
--    u16    capability_information;
--    u16    statusCode;
--    u16    Association_ID;
--    struct Supported_Rates_Element supportedRates;
--}__attribute__ ((packed));
-+struct Reassociation_Response_Frame_Body {
-+	u16	capability_information;
-+	u16	statusCode;
-+	u16	Association_ID;
-+	struct Supported_Rates_Element supportedRates;
-+} __attribute__ ((packed));
- 
--struct Deauthentication_Frame_Body
--{
--    u16    reasonCode;
--}__attribute__ ((packed));
-+struct Deauthentication_Frame_Body {
-+	u16	reasonCode;
-+} __attribute__ ((packed));
- 
-+struct Probe_Response_Frame_Body {
-+	u16	Timestamp;
-+	u16	Beacon_Interval;
-+	u16	Capability_Information;
-+	/* SSID */
-+	/* Supported_Rates */
-+	/* PHY parameter Set (DS Parameters) */
-+	/* CF parameter Set */
-+	/* IBSS parameter Set */
-+} __attribute__ ((packed));
- 
--struct Probe_Response_Frame_Body
--{
--    u16    Timestamp;
--    u16    Beacon_Interval;
--    u16    Capability_Information;
--    // SSID
--    // Supported_Rates
--    // PHY parameter Set (DS Parameters)
--    // CF parameter Set
--    // IBSS parameter Set
--}__attribute__ ((packed));
--
--struct Authentication_Frame_Body
--{
--    u16    algorithmNumber;
--    u16    sequenceNumber;
--    u16    statusCode;
--    // NB: don't include ChallengeText in this structure
--	// struct Challenge_Text_Element sChallengeTextElement; // wkchen added
--}__attribute__ ((packed));
-+struct Authentication_Frame_Body {
-+	u16	algorithmNumber;
-+	u16	sequenceNumber;
-+	u16	statusCode;
-+	/* NB: don't include ChallengeText in this structure */
-+	/* struct Challenge_Text_Element sChallengeTextElement; / wkchen added*/
-+} __attribute__ ((packed));
- 
- 
--#endif // _MAC_Structure_H_
-+#endif /* _MAC_Structure_H_ */
- 
- 
 -- 
-1.7.0.2
-
-
-
-
-
-
-On 2010-03-13 07:50, Pavel Machek wrote:
-> Needs changelog/signed-off. Otherwise ACK.
-> 
-> 							Pavel
-> 
-> On Fri 2010-03-12 14:11:03, Lars Lindley wrote:
->>
->> diff --git a/drivers/staging/winbond/mac_structures.h b/drivers/staging/winbond/mac_structures.h
->> index 0d16196..5c1637d 100644
->> --- a/drivers/staging/winbond/mac_structures.h
->> +++ b/drivers/staging/winbond/mac_structures.h
->> @@ -1,202 +1,195 @@
->> -//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->> -// MAC_Structures.h
->> -//
->> -// This file contains the definitions and data structures used by SW-MAC.
->> -//
->> -// Revision Histoy
->> -//=================
->> -// 0.1      2002        UN00
->> -// 0.2      20021004    PD43 CCLiu6
->> -//          20021018    PD43 CCLiu6
->> -//                      Add enum_TxRate type
->> -//                      Modify enum_STAState type
->> -// 0.3      20021023    PE23 CYLiu update MAC session struct
->> -//          20021108
->> -//          20021122    PD43 Austin
->> -//                      Deleted some unused.
->> -//          20021129    PD43 Austin
->> -//			20030617	increase the 802.11g definition
->> -//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->> +/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->> + * MAC_Structures.h
->> + *
->> + * This file contains the definitions and data structures used by SW-MAC.
->> + *
->> + * Revision Histoy
->> + * =================
->> + * 0.1      2002        UN00
->> + * 0.2      20021004    PD43 CCLiu6
->> + *          20021018    PD43 CCLiu6
->> + *                      Add enum_TxRate type
->> + *                      Modify enum_STAState type
->> + * 0.3      20021023    PE23 CYLiu update MAC session struct
->> + *          20021108
->> + *          20021122    PD43 Austin
->> + *                      Deleted some unused.
->> + *          20021129    PD43 Austin
->> + *			20030617	increase the 802.11g definition
->> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
->>  
->>  #ifndef _MAC_Structures_H_
->>  #define _MAC_Structures_H_
->>  
->>  #include <linux/skbuff.h>
->>  
->> -//=========================================================
->> -// Some miscellaneous definitions
->> -//-----
->> -#define MAX_CHANNELS                        30
->> -#define MAC_ADDR_LENGTH                     6
->> -#define MAX_WEP_KEY_SIZE                    16  // 128 bits
->> -#define	MAX_802_11_FRAGMENT_NUMBER		10 // By spec
->> -
->> -//========================================================
->> -// 802.11 Frame define
->> -//-----
->> -#define MASK_PROTOCOL_VERSION_TYPE	0x0F
->> -#define MASK_FRAGMENT_NUMBER		0x000F
->> -#define SEQUENCE_NUMBER_SHIFT		4
->> +/*----- Some miscellaneous definitions */
->> +#define MAX_CHANNELS				30
->> +#define MAC_ADDR_LENGTH				6
->> +#define MAX_WEP_KEY_SIZE			16  /* 128 bits */
->> +#define	MAX_802_11_FRAGMENT_NUMBER		10  /* By spec */
->> +
->> +/*----- 802.11 Frame define */
->> +#define MASK_PROTOCOL_VERSION_TYPE		0x0F
->> +#define MASK_FRAGMENT_NUMBER			0x000F
->> +#define SEQUENCE_NUMBER_SHIFT			4
->>  #define DIFFER_11_TO_3				18
->> -#define DOT_11_MAC_HEADER_SIZE		24
->> +#define DOT_11_MAC_HEADER_SIZE			24
->>  #define DOT_11_SNAP_SIZE			6
->> -#define DOT_11_DURATION_OFFSET		2
->> -#define DOT_11_SEQUENCE_OFFSET		22 //Sequence control offset
->> -#define DOT_11_TYPE_OFFSET			30 //The start offset of 802.11 Frame//
->> -#define DOT_11_DATA_OFFSET          24
->> +#define DOT_11_DURATION_OFFSET			2
->> +#define DOT_11_SEQUENCE_OFFSET			22 /* Sequence control offset*/
->> +#define DOT_11_TYPE_OFFSET			30 /* The start offset
->> +						    of 802.11 Frame */
->> +#define DOT_11_DATA_OFFSET			24
->>  #define DOT_11_DA_OFFSET			4
->>  #define DOT_3_TYPE_ARP				0x80F3
->>  #define DOT_3_TYPE_IPX				0x8137
->>  #define DOT_3_TYPE_OFFSET			12
->>  
->> -
->>  #define ETHERNET_HEADER_SIZE			14
->>  #define MAX_ETHERNET_PACKET_SIZE		1514
->>  
->>  
->> -//-----  management : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
->> -#define MAC_SUBTYPE_MNGMNT_ASSOC_REQUEST    0x00
->> -#define MAC_SUBTYPE_MNGMNT_ASSOC_RESPONSE   0x10
->> -#define MAC_SUBTYPE_MNGMNT_REASSOC_REQUEST  0x20
->> -#define MAC_SUBTYPE_MNGMNT_REASSOC_RESPONSE 0x30
->> -#define MAC_SUBTYPE_MNGMNT_PROBE_REQUEST    0x40
->> -#define MAC_SUBTYPE_MNGMNT_PROBE_RESPONSE   0x50
->> -#define MAC_SUBTYPE_MNGMNT_BEACON           0x80
->> -#define MAC_SUBTYPE_MNGMNT_ATIM             0x90
->> -#define MAC_SUBTYPE_MNGMNT_DISASSOCIATION   0xA0
->> -#define MAC_SUBTYPE_MNGMNT_AUTHENTICATION   0xB0
->> -#define MAC_SUBTYPE_MNGMNT_DEAUTHENTICATION 0xC0
->> -
->> -//-----  control : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
->> -#define MAC_SUBTYPE_CONTROL_PSPOLL          0xA4
->> -#define MAC_SUBTYPE_CONTROL_RTS             0xB4
->> -#define MAC_SUBTYPE_CONTROL_CTS             0xC4
->> -#define MAC_SUBTYPE_CONTROL_ACK             0xD4
->> -#define MAC_SUBTYPE_CONTROL_CFEND           0xE4
->> -#define MAC_SUBTYPE_CONTROL_CFEND_CFACK     0xF4
->> -
->> -//-----  data : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7)
->> -#define MAC_SUBTYPE_DATA                    0x08
->> -#define MAC_SUBTYPE_DATA_CFACK              0x18
->> -#define MAC_SUBTYPE_DATA_CFPOLL             0x28
->> -#define MAC_SUBTYPE_DATA_CFACK_CFPOLL       0x38
->> -#define MAC_SUBTYPE_DATA_NULL               0x48
->> -#define MAC_SUBTYPE_DATA_CFACK_NULL         0x58
->> -#define MAC_SUBTYPE_DATA_CFPOLL_NULL        0x68
->> -#define MAC_SUBTYPE_DATA_CFACK_CFPOLL_NULL  0x78
->> -
->> -//-----  Frame Type of Bits (2, 3)
->> -#define MAC_TYPE_MANAGEMENT                 0x00
->> -#define MAC_TYPE_CONTROL                    0x04
->> -#define MAC_TYPE_DATA                       0x08
->> -
->> -//----- definitions for Management Frame Element ID (1 BYTE)
->> -#define ELEMENT_ID_SSID                     0
->> -#define ELEMENT_ID_SUPPORTED_RATES          1
->> -#define ELEMENT_ID_FH_PARAMETER_SET         2
->> -#define ELEMENT_ID_DS_PARAMETER_SET         3
->> -#define ELEMENT_ID_CF_PARAMETER_SET         4
->> -#define ELEMENT_ID_TIM                      5
->> -#define ELEMENT_ID_IBSS_PARAMETER_SET       6
->> -// 7~15 reserverd
->> -#define ELEMENT_ID_CHALLENGE_TEXT           16
->> -// 17~31 reserved for challenge text extension
->> -// 32~255 reserved
->> -//--  11G  --
->> -#define ELEMENT_ID_ERP_INFORMATION			42
->> -#define ELEMENT_ID_EXTENDED_SUPPORTED_RATES 50
->> -
->> -//--  WPA  --
->> -
->> -#define ELEMENT_ID_RSN_WPA					221
->> +/*----- management : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
->> +#define MAC_SUBTYPE_MNGMNT_ASSOC_REQUEST	0x00
->> +#define MAC_SUBTYPE_MNGMNT_ASSOC_RESPONSE	0x10
->> +#define MAC_SUBTYPE_MNGMNT_REASSOC_REQUEST	0x20
->> +#define MAC_SUBTYPE_MNGMNT_REASSOC_RESPONSE	0x30
->> +#define MAC_SUBTYPE_MNGMNT_PROBE_REQUEST	0x40
->> +#define MAC_SUBTYPE_MNGMNT_PROBE_RESPONSE	0x50
->> +#define MAC_SUBTYPE_MNGMNT_BEACON		0x80
->> +#define MAC_SUBTYPE_MNGMNT_ATIM			0x90
->> +#define MAC_SUBTYPE_MNGMNT_DISASSOCIATION	0xA0
->> +#define MAC_SUBTYPE_MNGMNT_AUTHENTICATION	0xB0
->> +#define MAC_SUBTYPE_MNGMNT_DEAUTHENTICATION	0xC0
->> +
->> +/*----- control : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
->> +#define MAC_SUBTYPE_CONTROL_PSPOLL		0xA4
->> +#define MAC_SUBTYPE_CONTROL_RTS			0xB4
->> +#define MAC_SUBTYPE_CONTROL_CTS			0xC4
->> +#define MAC_SUBTYPE_CONTROL_ACK			0xD4
->> +#define MAC_SUBTYPE_CONTROL_CFEND		0xE4
->> +#define MAC_SUBTYPE_CONTROL_CFEND_CFACK		0xF4
->> +
->> +/*----- data : Type of Bits (2, 3) and Subtype of Bits (4, 5, 6, 7) */
->> +#define MAC_SUBTYPE_DATA			0x08
->> +#define MAC_SUBTYPE_DATA_CFACK			0x18
->> +#define MAC_SUBTYPE_DATA_CFPOLL			0x28
->> +#define MAC_SUBTYPE_DATA_CFACK_CFPOLL		0x38
->> +#define MAC_SUBTYPE_DATA_NULL			0x48
->> +#define MAC_SUBTYPE_DATA_CFACK_NULL		0x58
->> +#define MAC_SUBTYPE_DATA_CFPOLL_NULL		0x68
->> +#define MAC_SUBTYPE_DATA_CFACK_CFPOLL_NULL	0x78
->> +
->> +/*----- Frame Type of Bits (2, 3) */
->> +#define MAC_TYPE_MANAGEMENT			0x00
->> +#define MAC_TYPE_CONTROL			0x04
->> +#define MAC_TYPE_DATA				0x08
->> +
->> +/*----- definitions for Management Frame Element ID (1 BYTE) */
->> +#define ELEMENT_ID_SSID				0
->> +#define ELEMENT_ID_SUPPORTED_RATES		1
->> +#define ELEMENT_ID_FH_PARAMETER_SET		2
->> +#define ELEMENT_ID_DS_PARAMETER_SET		3
->> +#define ELEMENT_ID_CF_PARAMETER_SET		4
->> +#define ELEMENT_ID_TIM				5
->> +#define ELEMENT_ID_IBSS_PARAMETER_SET		6
->> +/* 7~15 reserverd */
->> +#define ELEMENT_ID_CHALLENGE_TEXT		16
->> +/* 17~31 reserved for challenge text extension */
->> +/* 32~255 reserved */
->> +/*--  11G  -- */
->> +#define ELEMENT_ID_ERP_INFORMATION		42
->> +#define ELEMENT_ID_EXTENDED_SUPPORTED_RATES	50
->> +
->> +/* --  WPA  -- */
->> +#define ELEMENT_ID_RSN_WPA			221
->>  #ifdef _WPA2_
->> -#define ELEMENT_ID_RSN_WPA2				    48
->> -#endif //endif WPA2
->> +#define ELEMENT_ID_RSN_WPA2			48
->> +#endif /* endif WPA2 */
->>  
->>  #define WLAN_MAX_PAIRWISE_CIPHER_SUITE_COUNT    ((u16) 6)
->>  #define WLAN_MAX_AUTH_KEY_MGT_SUITE_LIST_COUNT  ((u16) 2)
->>  
->> -//========================================================
->> -typedef enum enum_PowerManagementMode
->> -{
->> +/*======================================================== */
->> +typedef enum enum_PowerManagementMode {
->>      ACTIVE = 0,
->>      POWER_SAVE
->>  } WB_PM_Mode, *PWB_PM_MODE;
->>  
->> -//===================================================================
->> -//  Reason Code (Table 18): indicate the reason of DisAssoc, DeAuthen
->> -//  length of ReasonCode is 2 Octs.
->> -//===================================================================
->> -#define REASON_REASERED             0
->> -#define REASON_UNSPECIDIED          1
->> -#define REASON_PREAUTH_INVALID      2
->> -#define DEAUTH_REASON_LEFT_BSS      3
->> -#define DISASS_REASON_AP_INACTIVE   4
->> -#define DISASS_REASON_AP_BUSY       5
->> -#define REASON_CLASS2_FRAME_FROM_NONAUTH_STA    6
->> -#define REASON_CLASS3_FRAME_FROM_NONASSO_STA    7
->> -#define DISASS_REASON_LEFT_BSS      8
->> -#define REASON_NOT_AUTH_YET         9
->> -//802.11i define
->> -#define REASON_INVALID_IE						13
->> -#define REASON_MIC_ERROR						14
->> -#define REASON_4WAY_HANDSHAKE_TIMEOUT			15
->> -#define REASON_GROUPKEY_UPDATE_TIMEOUT			16
->> -#define REASON_IE_DIFF_4WAY_ASSOC				17
->> -#define REASON_INVALID_MULTICAST_CIPHER			18
->> -#define REASON_INVALID_UNICAST_CIPHER			19
->> -#define REASON_INVALID_AKMP						20
->> -#define REASON_UNSUPPORTED_RSNIE_VERSION		21
->> -#define REASON_INVALID_RSNIE_CAPABILITY			22
->> -#define REASON_802_1X_AUTH_FAIL					23
->> -#define	REASON_CIPHER_REJECT_PER_SEC_POLICY		14
->> +/*===================================================================
->> + *  Reason Code (Table 18): indicate the reason of DisAssoc, DeAuthen
->> + *  length of ReasonCode is 2 Octs.
->> + *=================================================================== */
->> +#define REASON_REASERED				0
->> +#define REASON_UNSPECIDIED			1
->> +#define REASON_PREAUTH_INVALID			2
->> +#define DEAUTH_REASON_LEFT_BSS			3
->> +#define DISASS_REASON_AP_INACTIVE		4
->> +#define DISASS_REASON_AP_BUSY			5
->> +#define REASON_CLASS2_FRAME_FROM_NONAUTH_STA	6
->> +#define REASON_CLASS3_FRAME_FROM_NONASSO_STA	7
->> +#define DISASS_REASON_LEFT_BSS			8
->> +#define REASON_NOT_AUTH_YET			9
->> +/* 802.11i define */
->> +#define REASON_INVALID_IE			13
->> +#define REASON_MIC_ERROR			14
->> +#define REASON_4WAY_HANDSHAKE_TIMEOUT		15
->> +#define REASON_GROUPKEY_UPDATE_TIMEOUT		16
->> +#define REASON_IE_DIFF_4WAY_ASSOC		17
->> +#define REASON_INVALID_MULTICAST_CIPHER		18
->> +#define REASON_INVALID_UNICAST_CIPHER		19
->> +#define REASON_INVALID_AKMP			20
->> +#define REASON_UNSUPPORTED_RSNIE_VERSION	21
->> +#define REASON_INVALID_RSNIE_CAPABILITY		22
->> +#define REASON_802_1X_AUTH_FAIL			23
->> +#define	REASON_CIPHER_REJECT_PER_SEC_POLICY	14
->>  
->>  /*
->> -//===========================================================
->> -// enum_MMPDUResultCode --
->> -//   Status code (2 Octs) in the MMPDU's frame body. Table.19
->> -//
->> -//===========================================================
->> +// *===========================================================
->> +// * enum_MMPDUResultCode --
->> +// *   Status code (2 Octs) in the MMPDU's frame body. Table.19
->> +// *
->> +// *===========================================================
->>  enum enum_MMPDUResultCode
->>  {
->> -//    SUCCESS   = 0,      // Redefined
->> -    UNSPECIFIED_FAILURE                         = 1,
->> -
->> -    // 2 - 9 Reserved
->> -
->> -    NOT_SUPPROT_CAPABILITIES                    = 10,
->> -
->> -    //REASSOCIATION_DENIED
->> -    //
->> -    REASSOC_DENIED_UNABLE_CFM_ASSOC_EXIST       = 11,
->> -
->> -    //ASSOCIATION_DENIED_NOT_IN_STANDARD
->> -    //
->> -    ASSOC_DENIED_REASON_NOT_IN_STANDARD         = 12,
->> -    PEER_NOT_SUPPORT_AUTH_ALGORITHM             = 13,
->> -    AUTH_SEQNUM_OUT_OF_EXPECT                   = 14,
->> -    AUTH_REJECT_REASON_CHALLENGE_FAIL           = 15,
->> -    AUTH_REJECT_REASON_WAIT_TIMEOUT             = 16,
->> -    ASSOC_DENIED_REASON_AP_BUSY                 = 17,
->> -    ASSOC_DENIED_REASON_NOT_SUPPORT_BASIC_RATE  = 18
->> +	// SUCCESS   = 0,      **** Redefined
->> +	UNSPECIFIED_FAILURE				= 1,
->> +
->> +	// 2 - 9 Reserved
->> +
->> +	NOT_SUPPROT_CAPABILITIES			= 10,
->> +
->> +	// REASSOCIATION_DENIED
->> +
->> +	REASSOC_DENIED_UNABLE_CFM_ASSOC_EXIST		= 11,
->> +
->> +	// ASSOCIATION_DENIED_NOT_IN_STANDARD
->> +
->> +	ASSOC_DENIED_REASON_NOT_IN_STANDARD		= 12,
->> +	PEER_NOT_SUPPORT_AUTH_ALGORITHM			= 13,
->> +	AUTH_SEQNUM_OUT_OF_EXPECT			= 14,
->> +	AUTH_REJECT_REASON_CHALLENGE_FAIL		= 15,
->> +	AUTH_REJECT_REASON_WAIT_TIMEOUT			= 16,
->> +	ASSOC_DENIED_REASON_AP_BUSY			= 17,
->> +	ASSOC_DENIED_REASON_NOT_SUPPORT_BASIC_RATE	= 18
->>  } WB_MMPDURESULTCODE, *PWB_MMPDURESULTCODE;
->>  */
->>  
->> -//===========================================================
->> -// enum_TxRate --
->> -//   Define the transmission constants based on W89C32 MAC
->> -//   target specification.
->> -//===========================================================
->> -typedef enum enum_TxRate
->> -{
->> -    TXRATE_1M               = 0,
->> -    TXRATE_2MLONG           = 2,
->> -    TXRATE_2MSHORT          = 3,
->> -    TXRATE_55MLONG          = 4,
->> -    TXRATE_55MSHORT         = 5,
->> -    TXRATE_11MLONG          = 6,
->> -    TXRATE_11MSHORT         = 7,
->> -    TXRATE_AUTO             = 255           // PD43 20021108
->> +/*===========================================================
->> + * enum_TxRate --
->> + *   Define the transmission constants based on W89C32 MAC
->> + *   target specification.
->> + *=========================================================== */
->> +typedef enum enum_TxRate {
->> +	TXRATE_1M		= 0,
->> +	TXRATE_2MLONG		= 2,
->> +	TXRATE_2MSHORT		= 3,
->> +	TXRATE_55MLONG		= 4,
->> +	TXRATE_55MSHORT		= 5,
->> +	TXRATE_11MLONG		= 6,
->> +	TXRATE_11MSHORT		= 7,
->> +	TXRATE_AUTO		= 255           /* PD43 20021108 */
->>  } WB_TXRATE, *PWB_TXRATE;
->>  
->>  
->> @@ -215,453 +208,423 @@ typedef enum enum_TxRate
->>  #define RATE_BITMAP_48M				25
->>  #define RATE_BITMAP_54M				28
->>  
->> -#define RATE_AUTO					0
->> -#define RATE_1M						2
->> -#define RATE_2M						4
->> -#define RATE_5dot5M					11
->> -#define RATE_6M						12
->> -#define RATE_9M						18
->> -#define RATE_11M					22
->> -#define RATE_12M					24
->> -#define RATE_18M					36
->> -#define RATE_22M					44
->> -#define RATE_24M					48
->> -#define RATE_33M					66
->> -#define RATE_36M					72
->> -#define RATE_48M					96
->> -#define RATE_54M					108
->> -#define RATE_MAX					255
->> -
->> -//CAPABILITY
->> -#define CAPABILITY_ESS_BIT				0x0001
->> -#define CAPABILITY_IBSS_BIT				0x0002
->> +#define RATE_AUTO				0
->> +#define RATE_1M					2
->> +#define RATE_2M					4
->> +#define RATE_5dot5M				11
->> +#define RATE_6M					12
->> +#define RATE_9M					18
->> +#define RATE_11M				22
->> +#define RATE_12M				24
->> +#define RATE_18M				36
->> +#define RATE_22M				44
->> +#define RATE_24M				48
->> +#define RATE_33M				66
->> +#define RATE_36M				72
->> +#define RATE_48M				96
->> +#define RATE_54M				108
->> +#define RATE_MAX				255
->> +
->> +/* CAPABILITY */
->> +#define CAPABILITY_ESS_BIT			0x0001
->> +#define CAPABILITY_IBSS_BIT			0x0002
->>  #define CAPABILITY_CF_POLL_BIT			0x0004
->>  #define CAPABILITY_CF_POLL_REQ_BIT		0x0008
->>  #define CAPABILITY_PRIVACY_BIT			0x0010
->> -#define CAPABILITY_SHORT_PREAMBLE_BIT	0x0020
->> -#define CAPABILITY_PBCC_BIT				0x0040
->> +#define CAPABILITY_SHORT_PREAMBLE_BIT		0x0020
->> +#define CAPABILITY_PBCC_BIT			0x0040
->>  #define CAPABILITY_CHAN_AGILITY_BIT		0x0080
->> -#define CAPABILITY_SHORT_SLOT_TIME_BIT	0x0400
->> +#define CAPABILITY_SHORT_SLOT_TIME_BIT		0x0400
->>  #define CAPABILITY_DSSS_OFDM_BIT		0x2000
->>  
->>  
->> -struct Capability_Information_Element
->> -{
->> -  union
->> -  {
->> -  	u16 __attribute__ ((packed)) wValue;
->> -    #ifdef _BIG_ENDIAN_  //20060926 add by anson's endian
->> -    struct _Capability
->> -    {
->> -        //--  11G  --
->> -	u8	Reserved3 : 2;
->> -	u8	DSSS_OFDM : 1;
->> -	u8	Reserved2 : 2;
->> -	u8	Short_Slot_Time : 1;
->> -	u8    Reserved1 : 2;
->> -	u8    Channel_Agility : 1;
->> -	u8    PBCC : 1;
->> -	u8    ShortPreamble : 1;
->> -	u8    CF_Privacy : 1;
->> -	u8    CF_Poll_Request : 1;
->> -	u8    CF_Pollable : 1;
->> -	u8    IBSS : 1;
->> -	u8    ESS : 1;
->> -    } __attribute__ ((packed)) Capability;
->> -    #else
->> -    struct _Capability
->> -    {
->> -        u8    ESS : 1;
->> -        u8    IBSS : 1;
->> -        u8    CF_Pollable : 1;
->> -        u8    CF_Poll_Request : 1;
->> -        u8    CF_Privacy : 1;
->> -        u8    ShortPreamble : 1;
->> -        u8    PBCC : 1;
->> -        u8    Channel_Agility : 1;
->> -        u8    Reserved1 : 2;
->> -		//--  11G  --
->> -		u8	Short_Slot_Time : 1;
->> -		u8	Reserved2 : 2;
->> -		u8	DSSS_OFDM : 1;
->> -		u8	Reserved3 : 2;
->> -    } __attribute__ ((packed)) Capability;
->> -    #endif
->> -  }__attribute__ ((packed)) ;
->> -}__attribute__ ((packed));
->> -
->> -struct FH_Parameter_Set_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    Dwell_Time[2];
->> -    u8    Hop_Set;
->> -    u8    Hop_Pattern;
->> -    u8    Hop_Index;
->> +struct Capability_Information_Element {
->> +  union {
->> +	u16 __attribute__ ((packed)) wValue;
->> +	#ifdef _BIG_ENDIAN_  /*20060926 add by anson's endian*/
->> +	struct _Capability {
->> +		/*--  11G  --*/
->> +		u8	Reserved3:2;
->> +		u8	DSSS_OFDM:1;
->> +		u8	Reserved2:2;
->> +		u8	Short_Slot_Time:1;
->> +		u8	Reserved1:2;
->> +		u8	Channel_Agility:1;
->> +		u8	PBCC:1;
->> +		u8	ShortPreamble:1;
->> +		u8	CF_Privacy:1;
->> +		u8	CF_Poll_Request:1;
->> +		u8	CF_Pollable:1;
->> +		u8	IBSS:1;
->> +		u8	ESS:1;
->> +	} __attribute__ ((packed)) Capability;
->> +	#else
->> +	struct _Capability {
->> +		u8    ESS:1;
->> +		u8    IBSS:1;
->> +		u8    CF_Pollable:1;
->> +		u8    CF_Poll_Request:1;
->> +		u8    CF_Privacy:1;
->> +		u8    ShortPreamble:1;
->> +		u8    PBCC:1;
->> +		u8    Channel_Agility:1;
->> +		u8    Reserved1:2;
->> +		/*--  11G  --*/
->> +		u8    Short_Slot_Time:1;
->> +		u8    Reserved2:2;
->> +		u8    DSSS_OFDM:1;
->> +		u8    Reserved3:2;
->> +	} __attribute__ ((packed)) Capability;
->> +	#endif
->> +  } __attribute__ ((packed));
->> +} __attribute__ ((packed));
->> +
->> +struct FH_Parameter_Set_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	Dwell_Time[2];
->> +	u8	Hop_Set;
->> +	u8	Hop_Pattern;
->> +	u8	Hop_Index;
->>  };
->>  
->> -struct DS_Parameter_Set_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    Current_Channel;
->> +struct DS_Parameter_Set_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	Current_Channel;
->>  };
->>  
->> -struct Supported_Rates_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    SupportedRates[8];
->> -}__attribute__ ((packed));
->> +struct Supported_Rates_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	SupportedRates[8];
->> +} __attribute__ ((packed));
->>  
->> -struct SSID_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    SSID[32];
->> -}__attribute__ ((packed)) ;
->> +struct SSID_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	SSID[32];
->> +} __attribute__ ((packed));
->>  
->> -struct CF_Parameter_Set_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    CFP_Count;
->> -    u8    CFP_Period;
->> -    u8    CFP_MaxDuration[2];     // in Time Units
->> -    u8    CFP_DurRemaining[2];    // in time units
->> +struct CF_Parameter_Set_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	CFP_Count;
->> +	u8	CFP_Period;
->> +	u8	CFP_MaxDuration[2];     /* in Time Units */
->> +	u8	CFP_DurRemaining[2];    /* in time units */
->>  };
->>  
->> -struct TIM_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    DTIM_Count;
->> -    u8    DTIM_Period;
->> -    u8    Bitmap_Control;
->> -    u8    Partial_Virtual_Bitmap[251];
->> +struct TIM_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	DTIM_Count;
->> +	u8	DTIM_Period;
->> +	u8	Bitmap_Control;
->> +	u8	Partial_Virtual_Bitmap[251];
->>  };
->>  
->> -struct IBSS_Parameter_Set_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    ATIM_Window[2];
->> +struct IBSS_Parameter_Set_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	ATIM_Window[2];
->>  };
->>  
->> -struct Challenge_Text_Element
->> -{
->> -    u8    Element_ID;
->> -    u8    Length;
->> -    u8    Challenge_Text[253];
->> +struct Challenge_Text_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	Challenge_Text[253];
->>  };
->>  
->> -struct PHY_Parameter_Set_Element
->> -{
->> -//  int     aSlotTime;
->> -//  int     aSifsTime;
->> -    s32     aCCATime;
->> -    s32     aRxTxTurnaroundTime;
->> -    s32     aTxPLCPDelay;
->> -    s32     RxPLCPDelay;
->> -    s32     aRxTxSwitchTime;
->> -    s32     aTxRampOntime;
->> -    s32     aTxRampOffTime;
->> -    s32     aTxRFDelay;
->> -    s32     aRxRFDelay;
->> -    s32     aAirPropagationTime;
->> -    s32     aMACProcessingDelay;
->> -    s32     aPreambleLength;
->> -    s32     aPLCPHeaderLength;
->> -    s32     aMPDUDurationFactor;
->> -    s32     aMPDUMaxLength;
->> -//  int     aCWmin;
->> -//  int     aCWmax;
->> +struct PHY_Parameter_Set_Element {
->> +/*	int	aSlotTime;*/
->> +/*	int	aSifsTime;*/
->> +	s32	aCCATime;
->> +	s32	aRxTxTurnaroundTime;
->> +	s32	aTxPLCPDelay;
->> +	s32	RxPLCPDelay;
->> +	s32	aRxTxSwitchTime;
->> +	s32	aTxRampOntime;
->> +	s32	aTxRampOffTime;
->> +	s32	aTxRFDelay;
->> +	s32	aRxRFDelay;
->> +	s32	aAirPropagationTime;
->> +	s32	aMACProcessingDelay;
->> +	s32	aPreambleLength;
->> +	s32	aPLCPHeaderLength;
->> +	s32	aMPDUDurationFactor;
->> +	s32	aMPDUMaxLength;
->> +/*	int	aCWmin;*/
->> +/*	int	aCWmax;*/
->>  };
->>  
->> -//--  11G  --
->> -struct ERP_Information_Element
->> -{
->> -    u8	Element_ID;
->> -    u8	Length;
->> -    #ifdef _BIG_ENDIAN_ //20060926 add by anson's endian
->> -    	u8	Reserved:5;   //20060926 add by anson
->> -       u8	Barker_Preamble_Mode:1;
->> -	u8	Use_Protection:1;
->> -       u8	NonERP_Present:1;
->> -    #else
->> -	u8	NonERP_Present:1;
->> -	u8	Use_Protection:1;
->> -	u8	Barker_Preamble_Mode:1;
->> -	u8	Reserved:5;
->> -    #endif
->> +/*--  11G  --*/
->> +struct ERP_Information_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	#ifdef _BIG_ENDIAN_ /*20060926 add by anson's endian*/
->> +		u8	Reserved:5;   /*20060926 add by anson*/
->> +		u8	Barker_Preamble_Mode:1;
->> +		u8	Use_Protection:1;
->> +		u8	NonERP_Present:1;
->> +	#else
->> +		u8	NonERP_Present:1;
->> +		u8	Use_Protection:1;
->> +		u8	Barker_Preamble_Mode:1;
->> +		u8	Reserved:5;
->> +	#endif
->>  };
->>  
->> -struct Extended_Supported_Rates_Element
->> -{
->> -    u8	Element_ID;
->> -    u8	Length;
->> -    u8	ExtendedSupportedRates[255];
->> -}__attribute__ ((packed));
->> +struct Extended_Supported_Rates_Element {
->> +	u8	Element_ID;
->> +	u8	Length;
->> +	u8	ExtendedSupportedRates[255];
->> +} __attribute__ ((packed));
->>  
->> -//WPA(802.11i draft 3.0)
->> -#define VERSION_WPA				1
->> +/*WPA(802.11i draft 3.0)*/
->> +#define VERSION_WPA			1
->>  #ifdef _WPA2_
->> -#define VERSION_WPA2            1
->> -#endif //end def  _WPA2_
->> -#define OUI_WPA					0x00F25000	//WPA2.0 OUI=00:50:F2, the MSB is reserved for suite type
->> +#define VERSION_WPA2			1
->> +#endif /*end def  _WPA2_*/
->> +#define OUI_WPA				0x00F25000	/*WPA2.0 OUI=00:50:F2,
->> +							the MSB is reserved
->> +							for suite type*/
->>  #ifdef _WPA2_
->> -#define OUI_WPA2				0x00AC0F00	// for wpa2 change to 0x00ACOF04 by Ws 26/04/04
->> -#endif //end def _WPA2_
->> +#define OUI_WPA2			0x00AC0F00	/* for wpa2 change to
->> +							0x00ACOF04 by Ws
->> +							26/04/04*/
->> +#endif /*end def _WPA2_*/
->>  
->>  #define OUI_WPA_ADDITIONAL		0x01
->> -#define WLAN_MIN_RSN_WPA_LENGTH                 6 //added by ws 09/10/04
->> +#define WLAN_MIN_RSN_WPA_LENGTH		6 /*added by ws 09/10/04*/
->>  #ifdef _WPA2_
->> -#define WLAN_MIN_RSN_WPA2_LENGTH                2 // Fix to 2 09/14/05
->> -#endif //end def _WPA2_
->> +#define WLAN_MIN_RSN_WPA2_LENGTH	2 /*Fix to 2 09/14/05*/
->> +#endif /*end def _WPA2_*/
->>  
->> -#define oui_wpa                  (u32)(OUI_WPA|OUI_WPA_ADDITIONAL)
->> +#define oui_wpa			(u32)(OUI_WPA|OUI_WPA_ADDITIONAL)
->>  
->> -#define WPA_OUI_BIG    ((u32) 0x01F25000)//added by ws 09/23/04
->> -#define WPA_OUI_LITTLE  ((u32) 0x01F25001)//added by ws 09/23/04
->> +#define WPA_OUI_BIG		((u32) 0x01F25000)/*added by ws 09/23/04*/
->> +#define WPA_OUI_LITTLE		((u32) 0x01F25001)/*added by ws 09/23/04*/
->>  
->> -#define WPA_WPS_OUI				cpu_to_le32(0x04F25000) // 20061108 For WPS. It's little endian. Big endian is 0x0050F204
->> +#define WPA_WPS_OUI		cpu_to_le32(0x04F25000) /* 20061108 For WPS.
->> +						It's little endian.
->> +						Big endian is 0x0050F204*/
->>  
->> -//-----WPA2-----
->> +/*-----WPA2-----*/
->>  #ifdef _WPA2_
->> -#define WPA2_OUI_BIG    ((u32)0x01AC0F00)
->> -#define WPA2_OUI_LITTLE ((u32)0x01AC0F01)
->> -#endif //end def _WPA2_
->> -
->> -//Authentication suite
->> -#define OUI_AUTH_WPA_NONE           0x00 //for WPA_NONE
->> -#define OUI_AUTH_8021X				0x01
->> -#define OUI_AUTH_PSK				0x02
->> -//Cipher suite
->> -#define OUI_CIPHER_GROUP_KEY        0x00  //added by ws 05/21/04
->> -#define OUI_CIPHER_WEP_40			0x01
->> -#define OUI_CIPHER_TKIP				0x02
->> -#define OUI_CIPHER_CCMP				0x04
->> -#define OUI_CIPHER_WEP_104			0x05
->> -
->> -typedef struct _SUITE_SELECTOR_
->> -{
->> -	union
->> -	{
->> +#define WPA2_OUI_BIG		((u32)0x01AC0F00)
->> +#define WPA2_OUI_LITTLE		((u32)0x01AC0F01)
->> +#endif /*end def _WPA2_*/
->> +
->> +/*Authentication suite*/
->> +#define OUI_AUTH_WPA_NONE	0x00 /*for WPA_NONE*/
->> +#define OUI_AUTH_8021X		0x01
->> +#define OUI_AUTH_PSK		0x02
->> +/*Cipher suite*/
->> +#define OUI_CIPHER_GROUP_KEY	0x00 /*added by ws 05/21/04*/
->> +#define OUI_CIPHER_WEP_40	0x01
->> +#define OUI_CIPHER_TKIP		0x02
->> +#define OUI_CIPHER_CCMP		0x04
->> +#define OUI_CIPHER_WEP_104	0x05
->> +
->> +typedef struct _SUITE_SELECTOR_ {
->> +	union {
->>  		u8	Value[4];
->> -		struct _SUIT_
->> -		{
->> +		struct _SUIT_ {
->>  			u8	OUI[3];
->>  			u8	Type;
->> -		}SuitSelector;
->> +		} SuitSelector;
->>  	};
->> -}SUITE_SELECTOR;
->> +} SUITE_SELECTOR;
->> +
->> +/*--  WPA  --*/
->> +struct	RSN_Information_Element {
->> +	u8		Element_ID;
->> +	u8		Length;
->> +	SUITE_SELECTOR	OuiWPAAdditional;/*WPA version 2.0 additional field,
->> +						and should be 00:50:F2:01*/
->> +	u16		Version;
->> +	SUITE_SELECTOR	GroupKeySuite;
->> +	u16		PairwiseKeySuiteCount;
->> +	SUITE_SELECTOR	PairwiseKeySuite[1];
->> +} __attribute__ ((packed));
->>  
->> -//--  WPA  --
->> -struct	RSN_Information_Element
->> -{
->> -	u8					Element_ID;
->> -	u8					Length;
->> -	SUITE_SELECTOR	OuiWPAAdditional;//WPA version 2.0 additional field, and should be 00:50:F2:01
->> -	u16					Version;
->> -	SUITE_SELECTOR		GroupKeySuite;
->> -	u16					PairwiseKeySuiteCount;
->> -	SUITE_SELECTOR		PairwiseKeySuite[1];
->> -}__attribute__ ((packed));
->> -struct RSN_Auth_Sub_Information_Element
->> -{
->> -	u16				AuthKeyMngtSuiteCount;
->> +struct RSN_Auth_Sub_Information_Element {
->> +	u16		AuthKeyMngtSuiteCount;
->>  	SUITE_SELECTOR	AuthKeyMngtSuite[1];
->> -}__attribute__ ((packed));
->> +} __attribute__ ((packed));
->>  
->> -//--  WPA2  --
->> -struct RSN_Capability_Element
->> -{
->> -  union
->> -  {
->> +/*--  WPA2  --*/
->> +struct RSN_Capability_Element {
->> +  union {
->>  	u16	__attribute__ ((packed))	wValue;
->> -    #ifdef _BIG_ENDIAN_	 //20060927 add by anson's endian
->> -    struct _RSN_Capability
->> -    {
->> -    	u16   __attribute__ ((packed))  Reserved2 : 8; // 20051201
->> -	u16   __attribute__ ((packed))  Reserved1 : 2;
->> -	u16   __attribute__ ((packed))  GTK_Replay_Counter : 2;
->> -	u16   __attribute__ ((packed))  PTK_Replay_Counter : 2;
->> -	u16   __attribute__ ((packed))  No_Pairwise : 1;
->> -        u16   __attribute__ ((packed))  Pre_Auth : 1;
->> -    }__attribute__ ((packed))  RSN_Capability;
->> -    #else
->> -    struct _RSN_Capability
->> -    {
->> -        u16   __attribute__ ((packed))  Pre_Auth : 1;
->> -        u16   __attribute__ ((packed))  No_Pairwise : 1;
->> -        u16   __attribute__ ((packed))  PTK_Replay_Counter : 2;
->> -	    u16   __attribute__ ((packed))  GTK_Replay_Counter : 2;
->> -	    u16   __attribute__ ((packed))  Reserved1 : 2;
->> -	    u16   __attribute__ ((packed))  Reserved2 : 8; // 20051201
->> -    }__attribute__ ((packed))  RSN_Capability;
->> -    #endif
->> -
->> -  }__attribute__ ((packed)) ;
->> -}__attribute__ ((packed)) ;
->> +	#ifdef _BIG_ENDIAN_	 /*20060927 add by anson's endian*/
->> +	struct _RSN_Capability {
->> +		u16   __attribute__ ((packed))  Reserved2:8; /*20051201*/
->> +		u16   __attribute__ ((packed))  Reserved1:2;
->> +		u16   __attribute__ ((packed))  GTK_Replay_Counter:2;
->> +		u16   __attribute__ ((packed))  PTK_Replay_Counter:2;
->> +		u16   __attribute__ ((packed))  No_Pairwise:1;
->> +		u16   __attribute__ ((packed))  Pre_Auth:1;
->> +	} __attribute__ ((packed))  RSN_Capability;
->> +	#else
->> +	struct _RSN_Capability {
->> +		u16   __attribute__ ((packed))  Pre_Auth:1;
->> +		u16   __attribute__ ((packed))  No_Pairwise:1;
->> +		u16   __attribute__ ((packed))  PTK_Replay_Counter:2;
->> +		u16   __attribute__ ((packed))  GTK_Replay_Counter:2;
->> +		u16   __attribute__ ((packed))  Reserved1:2;
->> +		u16   __attribute__ ((packed))  Reserved2:8; /*20051201*/
->> +	} __attribute__ ((packed))  RSN_Capability;
->> +	#endif
->> +  } __attribute__ ((packed));
->> +} __attribute__ ((packed));
->>  
->>  #ifdef _WPA2_
->> -typedef struct _PMKID
->> -{
->> -  u8 pValue[16];
->> -}PMKID;
->> -
->> -struct	WPA2_RSN_Information_Element
->> -{
->> -	u8					Element_ID;
->> -	u8					Length;
->> -	u16					Version;
->> +typedef struct _PMKID {
->> +	u8	pValue[16];
->> +} PMKID;
->> +
->> +struct	WPA2_RSN_Information_Element {
->> +	u8			Element_ID;
->> +	u8			Length;
->> +	u16			Version;
->>  	SUITE_SELECTOR		GroupKeySuite;
->> -	u16					PairwiseKeySuiteCount;
->> +	u16			PairwiseKeySuiteCount;
->>  	SUITE_SELECTOR		PairwiseKeySuite[1];
->> +} __attribute__ ((packed));
->>  
->> -}__attribute__ ((packed));
->> -
->> -struct WPA2_RSN_Auth_Sub_Information_Element
->> -{
->> -	u16				AuthKeyMngtSuiteCount;
->> -	SUITE_SELECTOR	AuthKeyMngtSuite[1];
->> -}__attribute__ ((packed));
->> +struct WPA2_RSN_Auth_Sub_Information_Element {
->> +	u16			AuthKeyMngtSuiteCount;
->> +	SUITE_SELECTOR		AuthKeyMngtSuite[1];
->> +} __attribute__ ((packed));
->>  
->> +struct PMKID_Information_Element {
->> +	u16			PMKID_Count;
->> +	PMKID			pmkid[16];
->> +} __attribute__ ((packed));
->>  
->> -struct PMKID_Information_Element
->> -{
->> -	u16				PMKID_Count;
->> -	PMKID pmkid [16] ;
->> -}__attribute__ ((packed));
->> -
->> -#endif //enddef _WPA2_
->> -//============================================================
->> -// MAC Frame structure (different type) and subfield structure
->> -//============================================================
->> -struct MAC_frame_control
->> -{
->> -    u8    mac_frame_info; // a combination of the [Protocol Version, Control Type, Control Subtype]
->> -    #ifdef _BIG_ENDIAN_ //20060927 add by anson's endian
->> -    u8    order:1;
->> -    u8    WEP:1;
->> -    u8    more_data:1;
->> -    u8    pwr_mgt:1;
->> -    u8    retry:1;
->> -    u8    more_frag:1;
->> -    u8    from_ds:1;
->> -    u8    to_ds:1;
->> -    #else
->> -    u8    to_ds:1;
->> -    u8    from_ds:1;
->> -    u8    more_frag:1;
->> -    u8    retry:1;
->> -    u8    pwr_mgt:1;
->> -    u8    more_data:1;
->> -    u8    WEP:1;
->> -    u8    order:1;
->> -    #endif
->> +#endif /*enddef _WPA2_*/
->> +/*============================================================
->> + * MAC Frame structure (different type) and subfield structure
->> + *============================================================*/
->> +struct MAC_frame_control {
->> +	u8	mac_frame_info; /* a combination of the [Protocol Version,
->> +					Control Type, Control Subtype]*/
->> +	#ifdef _BIG_ENDIAN_	/*20060927 add by anson's endian*/
->> +	u8	order:1;
->> +	u8	WEP:1;
->> +	u8	more_data:1;
->> +	u8	pwr_mgt:1;
->> +	u8	retry:1;
->> +	u8	more_frag:1;
->> +	u8	from_ds:1;
->> +	u8	to_ds:1;
->> +	#else
->> +	u8	to_ds:1;
->> +	u8	from_ds:1;
->> +	u8	more_frag:1;
->> +	u8	retry:1;
->> +	u8	pwr_mgt:1;
->> +	u8	more_data:1;
->> +	u8	WEP:1;
->> +	u8	order:1;
->> +	#endif
->>  } __attribute__ ((packed));
->>  
->>  struct Management_Frame {
->> -    struct MAC_frame_control frame_control; // 2B, ToDS,FromDS,MoreFrag,MoreData,Order=0
->> -    u16		duration;
->> -    u8		DA[MAC_ADDR_LENGTH];			// Addr1
->> -    u8		SA[MAC_ADDR_LENGTH];			// Addr2
->> -    u8		BSSID[MAC_ADDR_LENGTH];			// Addr3
->> -    u16		Sequence_Control;
->> -    // Management Frame Body <= 325 bytes
->> -    // FCS 4 bytes
->> -}__attribute__ ((packed));
->> -
->> -// SW-MAC don't Tx/Rx Control-Frame, HW-MAC do it.
->> +	struct MAC_frame_control frame_control; /* 2B, ToDS,FromDS,MoreFrag,
->> +							MoreData,Order=0 */
->> +	u16	duration;
->> +	u8	DA[MAC_ADDR_LENGTH];			/* Addr1 */
->> +	u8	SA[MAC_ADDR_LENGTH];			/* Addr2 */
->> +	u8	BSSID[MAC_ADDR_LENGTH];			/* Addr3 */
->> +	u16	Sequence_Control;
->> +	/* Management Frame Body <= 325 bytes */
->> +	/* FCS 4 bytes */
->> +} __attribute__ ((packed));
->> +
->> +/* SW-MAC don't Tx/Rx Control-Frame, HW-MAC do it. */
->>  struct Control_Frame {
->> -    struct MAC_frame_control frame_control; // ToDS,FromDS,MoreFrag,Retry,MoreData,WEP,Order=0
->> -    u16		duration;
->> -    u8		RA[MAC_ADDR_LENGTH];
->> -    u8		TA[MAC_ADDR_LENGTH];
->> -    u16		FCS;
->> -}__attribute__ ((packed));
->> +	struct MAC_frame_control frame_control; /* ToDS,FromDS,MoreFrag,Retry,
->> +							MoreData,WEP,Order=0 */
->> +	u16	duration;
->> +	u8	RA[MAC_ADDR_LENGTH];
->> +	u8	TA[MAC_ADDR_LENGTH];
->> +	u16	FCS;
->> +} __attribute__ ((packed));
->>  
->>  struct Data_Frame {
->> -    struct MAC_frame_control frame_control;
->> -    u16		duration;
->> -    u8		Addr1[MAC_ADDR_LENGTH];
->> -    u8		Addr2[MAC_ADDR_LENGTH];
->> -    u8		Addr3[MAC_ADDR_LENGTH];
->> -    u16		Sequence_Control;
->> -    u8		Addr4[MAC_ADDR_LENGTH]; // only exist when ToDS=FromDS=1
->> -    // Data Frame Body <= 2312
->> -    // FCS
->> -}__attribute__ ((packed));
->> -
->> -struct Disassociation_Frame_Body
->> -{
->> -    u16    reasonCode;
->> -}__attribute__ ((packed));
->> +	struct MAC_frame_control frame_control;
->> +	u16	duration;
->> +	u8	Addr1[MAC_ADDR_LENGTH];
->> +	u8	Addr2[MAC_ADDR_LENGTH];
->> +	u8	Addr3[MAC_ADDR_LENGTH];
->> +	u16	Sequence_Control;
->> +	u8	Addr4[MAC_ADDR_LENGTH]; /* only exist when ToDS=FromDS=1*/
->> +	/* Data Frame Body <= 2312 */
->> +	/* FCS */
->> +} __attribute__ ((packed));
->>  
->> -struct Association_Request_Frame_Body
->> -{
->> -    u16    capability_information;
->> -    u16    listenInterval;
->> -    u8     Current_AP_Address[MAC_ADDR_LENGTH];//for reassociation only
->> -    // SSID (2+32 bytes)
->> -    // Supported_Rates (2+8 bytes)
->> -}__attribute__ ((packed));
->> +struct Disassociation_Frame_Body {
->> +	u16	reasonCode;
->> +} __attribute__ ((packed));
->>  
->> -struct Association_Response_Frame_Body
->> -{
->> -    u16    capability_information;
->> -    u16    statusCode;
->> -    u16    Association_ID;
->> -    struct Supported_Rates_Element supportedRates;
->> -}__attribute__ ((packed));
->> +struct Association_Request_Frame_Body {
->> +	u16	capability_information;
->> +	u16	listenInterval;
->> +	u8	Current_AP_Address[MAC_ADDR_LENGTH];/*for reassociation only*/
->> +	/* SSID (2+32 bytes)*/
->> +	/* Supported_Rates (2+8 bytes)*/
->> +} __attribute__ ((packed));
->>  
->> -/*struct Reassociation_Request_Frame_Body
->> -{
->> +struct Association_Response_Frame_Body {
->> +	u16	capability_information;
->> +	u16	statusCode;
->> +	u16	Association_ID;
->> +	struct Supported_Rates_Element supportedRates;
->> +} __attribute__ ((packed));
->> +
->> +/*struct Reassociation_Request_Frame_Body {
->>      u16    capability_information;
->>      u16    listenInterval;
->>      u8     Current_AP_Address[MAC_ADDR_LENGTH];
->>      // SSID (2+32 bytes)
->>      // Supported_Rates (2+8 bytes)
->>  };*/
->> -// eliminated by WS 07/22/04 comboined with associateion request frame.
->> +/*eliminated by WS 07/22/04 comboined with associateion request frame.*/
->>  
->> -struct Reassociation_Response_Frame_Body
->> -{
->> -    u16    capability_information;
->> -    u16    statusCode;
->> -    u16    Association_ID;
->> -    struct Supported_Rates_Element supportedRates;
->> -}__attribute__ ((packed));
->> +struct Reassociation_Response_Frame_Body {
->> +	u16	capability_information;
->> +	u16	statusCode;
->> +	u16	Association_ID;
->> +	struct Supported_Rates_Element supportedRates;
->> +} __attribute__ ((packed));
->>  
->> -struct Deauthentication_Frame_Body
->> -{
->> -    u16    reasonCode;
->> -}__attribute__ ((packed));
->> +struct Deauthentication_Frame_Body {
->> +	u16	reasonCode;
->> +} __attribute__ ((packed));
->>  
->> +struct Probe_Response_Frame_Body {
->> +	u16	Timestamp;
->> +	u16	Beacon_Interval;
->> +	u16	Capability_Information;
->> +	/* SSID */
->> +	/* Supported_Rates */
->> +	/* PHY parameter Set (DS Parameters) */
->> +	/* CF parameter Set */
->> +	/* IBSS parameter Set */
->> +} __attribute__ ((packed));
->>  
->> -struct Probe_Response_Frame_Body
->> -{
->> -    u16    Timestamp;
->> -    u16    Beacon_Interval;
->> -    u16    Capability_Information;
->> -    // SSID
->> -    // Supported_Rates
->> -    // PHY parameter Set (DS Parameters)
->> -    // CF parameter Set
->> -    // IBSS parameter Set
->> -}__attribute__ ((packed));
->> -
->> -struct Authentication_Frame_Body
->> -{
->> -    u16    algorithmNumber;
->> -    u16    sequenceNumber;
->> -    u16    statusCode;
->> -    // NB: don't include ChallengeText in this structure
->> -	// struct Challenge_Text_Element sChallengeTextElement; // wkchen added
->> -}__attribute__ ((packed));
->> +struct Authentication_Frame_Body {
->> +	u16	algorithmNumber;
->> +	u16	sequenceNumber;
->> +	u16	statusCode;
->> +	/* NB: don't include ChallengeText in this structure */
->> +	/* struct Challenge_Text_Element sChallengeTextElement; / wkchen added*/
->> +} __attribute__ ((packed));
->>  
->>  
->> -#endif // _MAC_Structure_H_
->> +#endif /* _MAC_Structure_H_ */
->>  
->>  
-> 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
