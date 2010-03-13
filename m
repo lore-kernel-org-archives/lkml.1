@@ -1,68 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820Ab0CMCLK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 21:11:10 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:60101 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754633Ab0CMCLG (ORCPT
+	id S1757256Ab0CMCML (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 21:12:11 -0500
+Received: from mail-pz0-f200.google.com ([209.85.222.200]:49147 "EHLO
+	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754633Ab0CMCMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 21:11:06 -0500
-Date: Sat, 13 Mar 2010 03:11:01 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: kernel-janitors@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] drivers/base: init dynamic bin_attribute structures
-Message-ID: <20100313021101.GB4034@pengutronix.de>
-References: <1268377431-11671-1-git-send-email-w.sang@pengutronix.de> <1268377431-11671-3-git-send-email-w.sang@pengutronix.de>
+	Fri, 12 Mar 2010 21:12:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=rDjoTtPOrocwtdT8iYLPvEWz72qhjIQecw46V9KixHkClTvVUgJek/buymBsRZrn7i
+         05pswdHcRq36v7v1T/L+ikVu0idhled+OS8jdvIDTNhx1nN9LWoq5bCilV+xcTxIZZhP
+         IJcEsY1MfaEeo/2Yq7AVLhpquH9nj15TrnI0U=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="s/l3CgOIzMHHjg/5"
-Content-Disposition: inline
-In-Reply-To: <1268377431-11671-3-git-send-email-w.sang@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <1268436844.4471.783.camel@gandalf.stny.rr.com>
+References: <40ec3ea41003120732w5f44a2ebq728047e742f32bba@mail.gmail.com>
+	 <1268436844.4471.783.camel@gandalf.stny.rr.com>
+Date: Fri, 12 Mar 2010 21:12:06 -0500
+X-Google-Sender-Auth: 7872aa2d635ce978
+Message-ID: <40ec3ea41003121812j7cb349e4g1c455ae096da35cd@mail.gmail.com>
+Subject: Re: Using tracing_off() in __schedule_bug()
+From: Chase Douglas <chase.douglas@canonical.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, kernel-team <kernel-team@lists.ubuntu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 12, 2010 at 6:34 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Fri, 2010-03-12 at 10:32 -0500, Chase Douglas wrote:
+>> We're considering using tracing_off() in __schedule_bug() in the
+>> Ubuntu kernel to help us solve "scheduling while atomic" bugs without
+>> needing to compile and install a special kernel to do so. Using the
+>> tracing_off() call enables us to generate smaller function traces when
+>> debugging, and find the bug easier since it should be at the end of
+>> any traces. The patch we are thinking of using can be found at [1].
+>> You can find an overview of how bugs are solved using this approach
+>> there as well.
+>>
+>> Are there any thoughts as to the appropriateness of this patch in
+>> Ubuntu kernels? My guess is that this isn't done in the upstream
+>> vanilla kernels because it would be annoying to have a stock kernel
+>> littered with tracing_off() calls if you hit one when you weren't
+>> meaning to. However, we're interested in hearing if there's some
+>> negative consequence we haven't thought of.
+>
+> Actually, it has been on my TODO list to litter tracing_off() all over
+> the kernel ;-)
+>
+> No, by all means, I would definitely take a patch that turn off tracing
+> at critical areas. One of which I would like to do is with the BUG()
+> call.
 
---s/l3CgOIzMHHjg/5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sounds good to me. The only place I currently see tracing_off called
+is in oops_enter.
 
-On Fri, Mar 12, 2010 at 08:03:50AM +0100, Wolfram Sang wrote:
-> Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requireme=
-nt.
-> Found with coccinelle, but fixed manually. Compile tested on X86 where
-> possible.
->=20
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Hmm, thinking about it more, I would rather have a separate function,
+> that would call tracing_off() if some variable is set. By default it
+> would be set, but in case you want to keep tracing after a bug is hit,
+> you can have a way to disable it.
+>
+> I need to write up a patch soon. Thanks for bring this up.
 
-Please drop in favor of http://lkml.org/lkml/2010/3/11/57
+I'd be happy to help out in this endeavor if you'd like. I'm wondering
+if there shouldn't be multiple levels of tracing_off support specified
+at boot time (disabled on WARNING, BUG, __schedule_bug, OOPS) in an
+ordered priority way. I.e. tracing_off_bug would leave tracing on for
+WARNING's, but turn it off for BUG's, schedule bugs, and oopses. The
+default would be tracing_off_warn, which would call tracing_off on all
+of the above.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Your thoughts?
 
---s/l3CgOIzMHHjg/5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkua9DUACgkQD27XaX1/VRt4EgCcDkrFBx0gQcvMGHD4mpq3zf1K
-P8EAn35diMH9RZLuOB6U+QE0/1uoGEQF
-=eSd+
------END PGP SIGNATURE-----
-
---s/l3CgOIzMHHjg/5--
+-- Chase
