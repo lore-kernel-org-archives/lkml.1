@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935482Ab0CMAm2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:42:28 -0500
-Received: from kroah.org ([198.145.64.141]:47281 "EHLO coco.kroah.org"
+	id S935749Ab0CMAqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:46:10 -0500
+Received: from kroah.org ([198.145.64.141]:47192 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935539Ab0CMAcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:42 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
-Message-Id: <20100313002717.851119319@kvm.kroah.org>
+	id S935537Ab0CMAc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:26 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
+Message-Id: <20100313002716.060769225@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:58 -0800
+Date: Fri, 12 Mar 2010 16:27:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ian Campbell <ian.campbell@citrix.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [145/145] x86, mm: Allow highmem user page tables to be disabled at boot time
+       Radek Liboska <liboska@uochb.cas.cz>
+Subject: [124/145] USB: ftdi_sio: new device id for papouch AD4USB
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,158 +24,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Radek Liboska <liboska@uochb.cas.cz>
 
-commit 14315592009c17035cac81f4954d5a1f4d71e489 upstream.
+commit a7787e508acb4378d62f4584bae3dd1cd0ba3eac upstream.
 
-Distros generally (I looked at Debian, RHEL5 and SLES11) seem to
-enable CONFIG_HIGHPTE for any x86 configuration which has highmem
-enabled. This means that the overhead applies even to machines which
-have a fairly modest amount of high memory and which therefore do not
-really benefit from allocating PTEs in high memory but still pay the
-price of the additional mapping operations.
+added new device pid (PAPOUCH_AD4USB_PID) to ftdi_sio.h and ftdi_sio.c
 
-Running kernbench on a 4G box I found that with CONFIG_HIGHPTE=y but
-no actual highptes being allocated there was a reduction in system
-time used from 59.737s to 55.9s.
+AD4USB measuring converter is a 4-input A/D converter which enables the
+user to measure to four current inputs ranging from 0(4) to 20 mA or
+voltage between 0 and 10 V. The measured values are then transferred to
+a superior system in digital form. The AD4USB communicates via USB.
+Powered is also via USB.  datasheet in english is here:
+http://www.papouch.com/shop/scripts/pdf/ad4usb_en.pdf
 
-With CONFIG_HIGHPTE=y and highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 175.396 (0.238914)
-  User Time 515.983 (5.85019)
-  System Time 59.737 (1.26727)
-  Percent CPU 263.8 (71.6796)
-  Context Switches 39989.7 (4672.64)
-  Sleeps 42617.7 (246.307)
 
-With CONFIG_HIGHPTE=y but with no highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 174.278 (0.831968)
-  User Time 515.659 (6.07012)
-  System Time 55.9 (1.07799)
-  Percent CPU 263.8 (71.266)
-  Context Switches 39929.6 (4485.13)
-  Sleeps 42583.7 (373.039)
-
-This patch allows the user to control the allocation of PTEs in
-highmem from the command line ("userpte=nohigh") but retains the
-status-quo as the default.
-
-It is possible that some simple heuristic could be developed which
-allows auto-tuning of this option however I don't have a sufficiently
-large machine available to me to perform any particularly meaningful
-experiments. We could probably handwave up an argument for a threshold
-at 16G of total RAM.
-
-Assuming 768M of lowmem we have 196608 potential lowmem PTE
-pages. Each page can map 2M of RAM in a PAE-enabled configuration,
-meaning a maximum of 384G of RAM could potentially be mapped using
-lowmem PTEs.
-
-Even allowing generous factor of 10 to account for other required
-lowmem allocations, generous slop to account for page sharing (which
-reduces the total amount of RAM mappable by a given number of PT
-pages) and other innacuracies in the estimations it would seem that
-even a 32G machine would not have a particularly pressing need for
-highmem PTEs. I think 32G could be considered to be at the upper bound
-of what might be sensible on a 32 bit machine (although I think in
-practice 64G is still supported).
-
-It's seems questionable if HIGHPTE is even a win for any amount of RAM
-you would sensibly run a 32 bit kernel on rather than going 64 bit.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-LKML-Reference: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Radek Liboska <liboska@uochb.cas.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/kernel-parameters.txt |    7 +++++++
- arch/x86/include/asm/pgalloc.h      |    5 +++++
- arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++++-----
- 3 files changed, 38 insertions(+), 5 deletions(-)
+ drivers/usb/serial/ftdi_sio.c     |    1 +
+ drivers/usb/serial/ftdi_sio_ids.h |    1 +
+ 2 files changed, 2 insertions(+)
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2668,6 +2668,13 @@ and is between 256 and 4096 characters.
- 					medium is write-protected).
- 			Example: quirks=0419:aaf5:rl,0421:0433:rc
- 
-+	userpte=
-+			[X86] Flags controlling user PTE allocations.
-+
-+				nohigh = do not allocate PTE pages in
-+					HIGHMEM regardless of setting
-+					of CONFIG_HIGHPTE.
-+
- 	vdso=		[X86,SH]
- 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso=1: enable VDSO (default)
---- a/arch/x86/include/asm/pgalloc.h
-+++ b/arch/x86/include/asm/pgalloc.h
-@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(
- #endif
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -697,6 +697,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_REU_TINY_PID) },
+ 	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
++	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_AD4USB_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
+ 	{ USB_DEVICE(ALTI2_VID, ALTI2_N3_PID) },
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -968,6 +968,7 @@
+ #define PAPOUCH_VID			0x5050	/* Vendor ID */
+ #define PAPOUCH_TMU_PID			0x0400	/* TMU USB Thermometer */
+ #define PAPOUCH_QUIDO4x4_PID		0x0900	/* Quido 4/4 Module */
++#define PAPOUCH_AD4USB_PID		0x8003	/* AD4USB Measurement Module */
  
  /*
-+ * Flags to use when allocating a user page table page.
-+ */
-+extern gfp_t __userpte_alloc_gfp;
-+
-+/*
-  * Allocate and free page tables.
-  */
- extern pgd_t *pgd_alloc(struct mm_struct *);
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -6,6 +6,14 @@
- 
- #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
- 
-+#ifdef CONFIG_HIGHPTE
-+#define PGALLOC_USER_GFP __GFP_HIGHMEM
-+#else
-+#define PGALLOC_USER_GFP 0
-+#endif
-+
-+gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
-+
- pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
- 	return (pte_t *)__get_free_page(PGALLOC_GFP);
-@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct
- {
- 	struct page *pte;
- 
--#ifdef CONFIG_HIGHPTE
--	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
--#else
--	pte = alloc_pages(PGALLOC_GFP, 0);
--#endif
-+	pte = alloc_pages(__userpte_alloc_gfp, 0);
- 	if (pte)
- 		pgtable_page_ctor(pte);
- 	return pte;
- }
- 
-+static int __init setup_userpte(char *arg)
-+{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	/*
-+	 * "userpte=nohigh" disables allocation of user pagetables in
-+	 * high memory.
-+	 */
-+	if (strcmp(arg, "nohigh") == 0)
-+		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
-+	else
-+		return -EINVAL;
-+	return 0;
-+}
-+early_param("userpte", setup_userpte);
-+
- void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
- {
- 	pgtable_page_dtor(pte);
+  * Marvell SheevaPlug
 
 
