@@ -1,137 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935186Ab0CMAWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:22:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47135 "EHLO hera.kernel.org"
+	id S935747Ab0CMAe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:34:58 -0500
+Received: from kroah.org ([198.145.64.141]:47093 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935162Ab0CMAWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:22:12 -0500
-Date: Sat, 13 Mar 2010 00:21:15 GMT
-From: tip-bot for John Stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, johnstul@us.ibm.com, takata@linux-m32r.org,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       takata@linux-m32r.org
-In-Reply-To: <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
-References: <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/cleanup] m32r: Convert m32r to use read/update_peristent_clock
-Message-ID: <tip-944694716d6ea3c274a73c830bf33e194bad4bcd@git.kernel.org>
-Git-Commit-ID: 944694716d6ea3c274a73c830bf33e194bad4bcd
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 13 Mar 2010 00:21:17 +0000 (UTC)
+	id S935378Ab0CMAcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:06 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
+Message-Id: <20100313002713.872145274@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:27:12 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Felix Fietkau <nbd@openwrt.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [099/145] ath9k: fix rate control fallback rate selection
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  944694716d6ea3c274a73c830bf33e194bad4bcd
-Gitweb:     http://git.kernel.org/tip/944694716d6ea3c274a73c830bf33e194bad4bcd
-Author:     John Stultz <johnstul@us.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 19:57:25 -0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 13 Mar 2010 01:14:12 +0100
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
-m32r: Convert m32r to use read/update_peristent_clock
+----------------
+From: Felix Fietkau <nbd@openwrt.org>
 
-This patch converts the m32r architecture to use the generic
-read_persistent_clock and update_persistent_clock interfaces, reducing
-the amount of arch specific code we have to maintain, and allowing for
-further cleanups in the future.
+commit 5c0ba62fd4b2dce08055a89600f1d834f9f0fe9e upstream.
 
-I have not built or tested this patch, so help from arch maintainers
-would be appreciated.
+When selecting the tx fallback rate, rc.c used a separate variable
+'nrix' for storing the next rate index, however it did not use that as
+reference for further rate index lowering. Because of that, it ended up
+reusing the same rate for multiple multi-rate retry stages, thus
+decreasing delivery probability under changing link conditions.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+This patch removes the separate (unnecessary) variable and fixes
+fallback the way it was intended to work.
+This should result in increased throughput and better link stability.
+
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- arch/m32r/kernel/time.c |   47 +++++++----------------------------------------
- 1 files changed, 7 insertions(+), 40 deletions(-)
+ drivers/net/wireless/ath/ath9k/rc.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/arch/m32r/kernel/time.c b/arch/m32r/kernel/time.c
-index 9cedcef..bda8682 100644
---- a/arch/m32r/kernel/time.c
-+++ b/arch/m32r/kernel/time.c
-@@ -106,24 +106,6 @@ u32 arch_gettimeoffset(void)
- }
+--- a/drivers/net/wireless/ath/ath9k/rc.c
++++ b/drivers/net/wireless/ath/ath9k/rc.c
+@@ -757,7 +757,7 @@ static void ath_get_rate(void *priv, str
+ 	struct ieee80211_tx_rate *rates = tx_info->control.rates;
+ 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
+ 	__le16 fc = hdr->frame_control;
+-	u8 try_per_rate, i = 0, rix, nrix;
++	u8 try_per_rate, i = 0, rix;
+ 	int is_probe = 0;
  
- /*
-- * In order to set the CMOS clock precisely, set_rtc_mmss has to be
-- * called 500 ms after the second nowtime has started, because when
-- * nowtime is written into the registers of the CMOS clock, it will
-- * jump to the next second precisely 500 ms later. Check the Motorola
-- * MC146818A or Dallas DS12887 data sheet for details.
-- *
-- * BUG: This routine does not handle hour overflow properly; it just
-- *      sets the minutes. Usually you won't notice until after reboot!
-- */
--static inline int set_rtc_mmss(unsigned long nowtime)
--{
--	return 0;
--}
--
--/* last time the cmos clock got updated */
--static long last_rtc_update = 0;
--
--/*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick
-  */
-@@ -138,23 +120,6 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
- #ifndef CONFIG_SMP
- 	update_process_times(user_mode(get_irq_regs()));
- #endif
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 */
--	write_seqlock(&xtime_lock);
--	if (ntp_synced()
--		&& xtime.tv_sec > last_rtc_update + 660
--		&& (xtime.tv_nsec / 1000) >= 500000 - ((unsigned)TICK_SIZE) / 2
--		&& (xtime.tv_nsec / 1000) <= 500000 + ((unsigned)TICK_SIZE) / 2)
--	{
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else	/* do it again in 60 s */
--			last_rtc_update = xtime.tv_sec - 600;
--	}
--	write_sequnlock(&xtime_lock);
- 	/* As we return to user mode fire off the other CPU schedulers..
- 	   this is basically because we don't yet share IRQ's around.
- 	   This message is rigged to be safe on the 386 - basically it's
-@@ -174,7 +139,7 @@ static struct irqaction irq0 = {
- 	.name = "MFT2",
- };
+ 	if (rate_control_send_low(sta, priv_sta, txrc))
+@@ -777,26 +777,25 @@ static void ath_get_rate(void *priv, str
  
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
- {
- 	unsigned int epoch, year, mon, day, hour, min, sec;
+ 	rate_table = sc->cur_rate_table;
+ 	rix = ath_rc_get_highest_rix(sc, ath_rc_priv, rate_table, &is_probe);
+-	nrix = rix;
  
-@@ -194,11 +159,13 @@ void __init time_init(void)
- 		epoch = 1952;
- 	year += epoch;
+ 	if (is_probe) {
+ 		/* set one try for probe rates. For the
+ 		 * probes don't enable rts */
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       1, nrix, 0);
++				       1, rix, 0);
  
--	xtime.tv_sec = mktime(year, mon, day, hour, min, sec);
--	xtime.tv_nsec = (INITIAL_JIFFIES % HZ) * (NSEC_PER_SEC / HZ);
--	set_normalized_timespec(&wall_to_monotonic,
--		-xtime.tv_sec, -xtime.tv_nsec);
-+	ts->tv_sec = mktime(year, mon, day, hour, min, sec);
-+	ts->tv_nsec = (INITIAL_JIFFIES % HZ) * (NSEC_PER_SEC / HZ);
-+}
+ 		/* Get the next tried/allowed rate. No RTS for the next series
+ 		 * after the probe rate
+ 		 */
+-		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &nrix);
++		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &rix);
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       try_per_rate, nrix, 0);
++				       try_per_rate, rix, 0);
  
-+
-+void __init time_init(void)
-+{
- #if defined(CONFIG_CHIP_M32102) || defined(CONFIG_CHIP_XNUX2) \
- 	|| defined(CONFIG_CHIP_VDEC2) || defined(CONFIG_CHIP_M32700) \
- 	|| defined(CONFIG_CHIP_OPSP) || defined(CONFIG_CHIP_M32104)
+ 		tx_info->flags |= IEEE80211_TX_CTL_RATE_CTRL_PROBE;
+ 	} else {
+ 		/* Set the choosen rate. No RTS for first series entry. */
+ 		ath_rc_rate_set_series(rate_table, &rates[i++], txrc,
+-				       try_per_rate, nrix, 0);
++				       try_per_rate, rix, 0);
+ 	}
+ 
+ 	/* Fill in the other rates for multirate retry */
+@@ -805,10 +804,10 @@ static void ath_get_rate(void *priv, str
+ 		if (i + 1 == 4)
+ 			try_per_rate = 4;
+ 
+-		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &nrix);
++		ath_rc_get_lower_rix(rate_table, ath_rc_priv, rix, &rix);
+ 		/* All other rates in the series have RTS enabled */
+ 		ath_rc_rate_set_series(rate_table, &rates[i], txrc,
+-				       try_per_rate, nrix, 1);
++				       try_per_rate, rix, 1);
+ 	}
+ 
+ 	/*
+
+
