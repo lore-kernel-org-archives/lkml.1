@@ -1,124 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255Ab0CMPBB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 10:01:01 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:37710 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759228Ab0CMPBA (ORCPT
+	id S1759265Ab0CMPDN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 10:03:13 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:17246 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759228Ab0CMPDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 10:01:00 -0500
+	Sat, 13 Mar 2010 10:03:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=R7n2dQ0pLj7sLESu8mKUwlg6siZ6hRcQscyep3U7hTNv3XS2gqnBtjPl0qr8dKNq4y
-         HawzUdK67gXi37f6Inbw8jW8CQDFsYsoEjMbmr2v++7PAc1zoUjYiFREKquIqi2u5i8x
-         RBDuYIqkoncIpr3LLW/hPnX5HYjHq0nwJcevk=
-From: Jason Wong <tsanghan@gmail.com>
-To: gregkh@suse.de
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Jason Wong <tsanghan@gmail.com>
-Subject: [PATCH 6/9] Staging: comedi: adv_pci_dio: fixed multiple brace coding style issue
-Date: Sat, 13 Mar 2010 22:53:31 +0800
-Message-Id: <1268492014-6355-7-git-send-email-tsanghan@gmail.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <Jason Wong <tsanghan@gmail.com>
-References: <Jason Wong <tsanghan@gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UYsJFsxRicpuQQM8JSyegkGY9c3dSzt77Wb9/ZaaVMox9AKaDNOHtO9PtRt4T6vb6b
+         57sNGUPgRCSW62cpvKkgu/Gcm5Pb7cBqO+56vtc040+Blr7zWdz7E2rlHpxqhEdTS3zI
+         ypBNp1IX9r1K+VmRY8JSbbLn3WZUefF5AwYzQ=
+Date: Sat, 13 Mar 2010 18:03:05 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86,perf: Unmask LVTPC only if we have APIC supported
+Message-ID: <20100313150305.GE18623@lenovo>
+References: <20100313081116.GA5179@lenovo> <20100313122432.GA10810@elte.hu> <20100313123256.GC5179@lenovo> <20100313124036.GA17769@elte.hu> <20100313134256.GB18623@lenovo> <20100313135022.GA4267@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100313135022.GA4267@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed multiple coding style issue.
+On Sat, Mar 13, 2010 at 02:50:22PM +0100, Ingo Molnar wrote:
+...
+> > All-in-once: unresolved external symbol here, which could be fixed either by 
+> > introducing dummy symbol, or conditional compilation. I think the second is 
+> > preferred if the issue is just one line code.
+> > 
+> > Or you mean something different and I took a wrong mind-path?
+> 
+> Well it's not just one line of code as (like you mentioned) perf_event.c is 
+> affected as well.
+> 
+> Introducing a dummy (NOP) placeholder method is what we are doing in all the 
+> other cases (such as spin_lock()), we dont pollute the kernel with #ifdefs.
+> 
+> 	Ingo
+> 
 
-Signed-off-by: Jason Wong <tsanghan@gmail.com>
----
- drivers/staging/comedi/drivers/adv_pci_dio.c |   34 +++++++++++++-------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ok, Ingo, this will consume some time. Could you pick up the original patch
+just for now (so that testing builds will not fail), I'll back to this task
+tomorrow or at Monday. OK?
 
-diff --git a/drivers/staging/comedi/drivers/adv_pci_dio.c b/drivers/staging/comedi/drivers/adv_pci_dio.c
-index 61d35fe..dbfeef8 100644
---- a/drivers/staging/comedi/drivers/adv_pci_dio.c
-+++ b/drivers/staging/comedi/drivers/adv_pci_dio.c
-@@ -367,9 +367,9 @@ static int pci_dio_insn_bits_di_b(struct comedi_device *dev,
- 	int i;
- 
- 	data[1] = 0;
--	for (i = 0; i < d->regs; i++) {
-+	for (i = 0; i < d->regs; i++)
- 		data[1] |= inb(dev->iobase + d->addr + i) << (8 * i);
--	}
-+
- 
- 	return 2;
- }
-@@ -882,9 +882,9 @@ static int CheckAndAllocCard(struct comedi_device *dev,
- 	struct pci_dio_private *pr, *prev;
- 
- 	for (pr = pci_priv, prev = NULL; pr != NULL; prev = pr, pr = pr->next) {
--		if (pr->pcidev == pcidev) {
-+		if (pr->pcidev == pcidev)
- 			return 0;	/*  this card is used, look for another */
--		}
-+
- 	}
- 
- 	if (prev) {
-@@ -1040,22 +1040,22 @@ static int pci_dio_detach(struct comedi_device *dev)
- 	int subdev;
- 
- 	if (dev->private) {
--		if (devpriv->valid) {
-+		if (devpriv->valid)
- 			pci_dio_reset(dev);
--		}
-+
- 
- 		/* This shows the silliness of using this kind of
- 		 * scheme for numbering subdevices.  Don't do it.  --ds */
- 		subdev = 0;
- 		for (i = 0; i < MAX_DI_SUBDEVS; i++) {
--			if (this_board->sdi[i].chans) {
-+			if (this_board->sdi[i].chans)
- 				subdev++;
--			}
-+
- 		}
- 		for (i = 0; i < MAX_DO_SUBDEVS; i++) {
--			if (this_board->sdo[i].chans) {
-+			if (this_board->sdo[i].chans)
- 				subdev++;
--			}
-+
- 		}
- 		for (i = 0; i < MAX_DIO_SUBDEVG; i++) {
- 			for (j = 0; j < this_board->sdio[i].regs; j++) {
-@@ -1071,20 +1071,20 @@ static int pci_dio_detach(struct comedi_device *dev)
- 		}
- 
- 		if (devpriv->pcidev) {
--			if (dev->iobase) {
-+			if (dev->iobase)
- 				comedi_pci_disable(devpriv->pcidev);
--			}
-+
- 			pci_dev_put(devpriv->pcidev);
- 		}
- 
--		if (devpriv->prev) {
-+		if (devpriv->prev)
- 			devpriv->prev->next = devpriv->next;
--		} else {
-+		else
- 			pci_priv = devpriv->next;
--		}
--		if (devpriv->next) {
-+
-+		if (devpriv->next)
- 			devpriv->next->prev = devpriv->prev;
--		}
-+
- 	}
- 
- 	return 0;
--- 
-1.7.0
-
+	-- Cyrill
