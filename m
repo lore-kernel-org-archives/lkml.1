@@ -1,122 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806Ab0CMDiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 22:38:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40668 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757806Ab0CMDiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 22:38:05 -0500
-Message-ID: <4B9B0868.7080807@kernel.org>
-Date: Fri, 12 Mar 2010 19:37:12 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-1.1.1 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alexander Beregalov <a.beregalov@gmail.com>, Greg KH <gregkh@suse.de>,
-       linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.34-rc1: ACPI: BUG: key f71f0168 not in .data!
-References: <a4423d671003081547v5c955d58t248db945c06d2a7f@mail.gmail.com>	<86802c441003081612r2f44efd6n9664b4b7c98a636a@mail.gmail.com>	<m1d3zel4b4.fsf@fess.ebiederm.org> <4B95F37E.6060309@kernel.org> <m14okqnczd.fsf@fess.ebiederm.org> <4B99A6F0.4080203@kernel.org>
-In-Reply-To: <4B99A6F0.4080203@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1757806Ab0CMDsu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 22:48:50 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:50812 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757337Ab0CMDss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 22:48:48 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
+In-Reply-To: <20100313002705.836357664@kvm.kroah.org>
+References: <20100313002705.836357664@kvm.kroah.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-xrXv5oDlTtut9kZq/lor"
+Date: Sat, 13 Mar 2010 03:48:42 +0000
+Message-ID: <1268452122.7439.29.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: [007/145] V4L/DVB: cxusb: Select all required frontend and
+ tuner modules
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/base/attribute_container.c |    1 +
- drivers/scsi/lpfc/lpfc_attr.c      |    3 +++
- drivers/scsi/scsi_sysfs.c          |   15 ++++++++++++---
- 3 files changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/scsi/lpfc/lpfc_attr.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/lpfc/lpfc_attr.c
-+++ linux-2.6/drivers/scsi/lpfc/lpfc_attr.c
-@@ -3780,6 +3780,7 @@ lpfc_alloc_sysfs_attr(struct lpfc_vport
- 	struct Scsi_Host *shost = lpfc_shost_from_vport(vport);
- 	int error;
- 
-+	sysfs_bin_attr_init(&sysfs_drvr_stat_data_attr);
- 	error = sysfs_create_bin_file(&shost->shost_dev.kobj,
- 				      &sysfs_drvr_stat_data_attr);
- 
-@@ -3787,11 +3788,13 @@ lpfc_alloc_sysfs_attr(struct lpfc_vport
- 	if (error || vport->port_type == LPFC_NPIV_PORT)
- 		goto out;
- 
-+	sysfs_bin_attr_init(&sysfs_ctlreg_attr);
- 	error = sysfs_create_bin_file(&shost->shost_dev.kobj,
- 				      &sysfs_ctlreg_attr);
- 	if (error)
- 		goto out_remove_stat_attr;
- 
-+	sysfs_bin_attr_init(&sysfs_mbox_attr);
- 	error = sysfs_create_bin_file(&shost->shost_dev.kobj,
- 				      &sysfs_mbox_attr);
- 	if (error)
-Index: linux-2.6/drivers/scsi/scsi_sysfs.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/scsi_sysfs.c
-+++ linux-2.6/drivers/scsi/scsi_sysfs.c
-@@ -907,20 +907,27 @@ int scsi_sysfs_add_sdev(struct scsi_devi
- 
- 	/* create queue files, which may be writable, depending on the host */
- 	if (sdev->host->hostt->change_queue_depth) {
-+		sysfs_bin_attr_init(&sdev_attr_queue_depth_rw);
- 		error = device_create_file(&sdev->sdev_gendev,
- 					   &sdev_attr_queue_depth_rw);
-+		sysfs_bin_attr_init(&sdev_attr_queue_ramp_up_period);
- 		error = device_create_file(&sdev->sdev_gendev,
- 					   &sdev_attr_queue_ramp_up_period);
- 	}
--	else
-+	else {
-+		sysfs_bin_attr_init(&dev_attr_queue_depth);
- 		error = device_create_file(&sdev->sdev_gendev, &dev_attr_queue_depth);
-+	}
- 	if (error)
- 		return error;
- 
--	if (sdev->host->hostt->change_queue_type)
-+	if (sdev->host->hostt->change_queue_type)  {
-+		sysfs_bin_attr_init(&sdev_attr_queue_type_rw);
- 		error = device_create_file(&sdev->sdev_gendev, &sdev_attr_queue_type_rw);
--	else
-+	} else {
-+		sysfs_bin_attr_init(&dev_attr_queue_type);
- 		error = device_create_file(&sdev->sdev_gendev, &dev_attr_queue_type);
-+	}
- 	if (error)
- 		return error;
- 
-@@ -935,6 +942,7 @@ int scsi_sysfs_add_sdev(struct scsi_devi
- 	/* add additional host specific attributes */
- 	if (sdev->host->hostt->sdev_attrs) {
- 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
-+			sysfs_bin_attr_init(sdev->host->hostt->sdev_attrs[i]);
- 			error = device_create_file(&sdev->sdev_gendev,
- 					sdev->host->hostt->sdev_attrs[i]);
- 			if (error)
-@@ -1060,6 +1068,7 @@ int scsi_sysfs_add_host(struct Scsi_Host
- 	/* add host specific attributes */
- 	if (shost->hostt->shost_attrs) {
- 		for (i = 0; shost->hostt->shost_attrs[i]; i++) {
-+			sysfs_bin_attr_init(shost->hostt->shost_attrs[i]);
- 			error = device_create_file(&shost->shost_dev,
- 					shost->hostt->shost_attrs[i]);
- 			if (error)
-Index: linux-2.6/drivers/base/attribute_container.c
-===================================================================
---- linux-2.6.orig/drivers/base/attribute_container.c
-+++ linux-2.6/drivers/base/attribute_container.c
-@@ -328,6 +328,7 @@ attribute_container_add_attrs(struct dev
- 		return sysfs_create_group(&classdev->kobj, cont->grp);
- 
- 	for (i = 0; attrs[i]; i++) {
-+		sysfs_bin_attr_init(attrs[i]);
- 		error = device_create_file(classdev, attrs[i]);
- 		if (error)
- 			return error;
+--=-xrXv5oDlTtut9kZq/lor
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2010-03-12 at 16:25 -0800, Greg KH wrote:
+> 2.6.32-stable review patch.  If anyone has any objections, please let me =
+know.
+>=20
+> ----------------
+> From: Ben Hutchings <ben@decadent.org.uk>
+>=20
+> commit fc4a7f93087a48619005111895dcaa115f807399 upstream.
+>=20
+> cxusb uses the atbm8830 and lgs8gxx (not lgs8gl5) frontends and the
+> max2165 tuner, so it needs to select them.
+
+I thought I already replied to say this is wrong for 2.6.32.
+
+The correct change would be:
+---
+From: Ben Hutchings <ben@decadent.org.uk>
+
+commit fc4a7f93087a48619005111895dcaa115f807399 upstream.
+
+cxusb now uses the lgs8gxx (not lgs8gl5) frontend.
+
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+--- a/drivers/media/dvb/dvb-usb/Kconfig
++++ b/drivers/media/dvb/dvb-usb/Kconfig
+@@ -112,8 +112,8 @@ config DVB_USB_CXUSB
+ 	select DVB_MT352 if !DVB_FE_CUSTOMISE
+ 	select DVB_ZL10353 if !DVB_FE_CUSTOMISE
+ 	select DVB_DIB7000P if !DVB_FE_CUSTOMISE
+-	select DVB_LGS8GL5 if !DVB_FE_CUSTOMISE
+ 	select DVB_TUNER_DIB0070 if !DVB_FE_CUSTOMISE
++	select DVB_LGS8GXX if !DVB_FE_CUSTOMISE
+ 	select MEDIA_TUNER_SIMPLE if !MEDIA_TUNER_CUSTOMISE
+ 	select MEDIA_TUNER_XC2028 if !MEDIA_TUNER_CUSTOMISE
+ 	select MEDIA_TUNER_MXL5005S if !MEDIA_TUNER_CUSTOMISE
+
+--=20
+Ben Hutchings
+If God had intended Man to program,
+we'd have been born with serial I/O ports.
+
+--=-xrXv5oDlTtut9kZq/lor
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIVAwUAS5sLEee/yOyVhhEJAQJnZBAAky4bTwuridE++nRKrzxlA3os1MuQ3CcB
+FWaH+MLJzhuo2lhZabgp5qUjzZTI7vKPn0s2KJNJdqEG6gaqxqKzocA2aDiUBAzx
++Vy9GhH3yDFhRVPj9yMhZjinMqsBRTEYe/hRDGLIy9nVmjEq+jvsgdP0dYBL/mOn
++6AUt9zLA50k8IR6jvlKGsVC94FIIIXE2cG4eOGdJwPyWQ4UnfsWaBQebSR+zLkD
+5EB0dCNIo1Uv+3nXy8eNTktjwkq8vRzD1zlctwBZZ4J68nCy5NVeFdgra9Z9tOJ1
+Ru9rIsJIA6inAn0rKngqDxGfF5nCpO3hPDsPwfvTXTgmVO08NfX3F8P5r/FitWoV
+e1JYeh7wPCebdc2CVMJggNmwZ2HhdxenlFG96uQYzTRbUr2vNWiTqcYo6i7xRoLB
+IHNDhsGjvnV7AObxGMZN3S2HVv71++PLKEpBT2W+ZroHWcUcdjbRrFBo8CxBUoOS
+Dg1ToMWK2eZmDO43mI2ykxFv4eKI1rnnj+8cheh8yCbjrNSZ50ZcPvHDcyiFHiue
+gdAiIIAxG8EDGSufoXx/MT2GIZC4aqy4oIZzEU6zj8pHe75MVgnNn8Z7MIcGFZE+
+VLRuo3AGq3RQMZfKEJ5leNSNiXEcfkTNycMsnAgB0AtD+FDMkZivBQ9b7/2gJsH/
+iAQ14Mos6y8=
+=kRzP
+-----END PGP SIGNATURE-----
+
+--=-xrXv5oDlTtut9kZq/lor--
