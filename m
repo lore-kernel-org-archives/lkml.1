@@ -1,24 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935829Ab0CMAuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:50:12 -0500
-Received: from kroah.org ([198.145.64.141]:47045 "EHLO coco.kroah.org"
+	id S935837Ab0CMAt5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:49:57 -0500
+Received: from kroah.org ([198.145.64.141]:47051 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935481Ab0CMAb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:57 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
-Message-Id: <20100313002712.813649794@kvm.kroah.org>
+	id S935485Ab0CMAb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:58 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
+Message-Id: <20100313002712.990989964@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:00 -0800
+Date: Fri, 12 Mar 2010 16:27:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Baruch Siach <baruch@tkos.co.il>, Alan Cox <alan@linux.intel.com>,
-       Sascha Hauer <s.hauer@pengutronix.de>, Oskar Schirmer <os@emlix.com>,
-       Fabian Godehardt <fg@emlix.com>,
-       =?UTF-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [087/145] serial: imx: fix NULL dereference Oops when pdata == NULL
+       Tanaka Akira <akr@fsij.org>
+Subject: [089/145] USB: SIS USB2VGA DRIVER: support KAIRENs USB VGA adaptor USB20SVGA-MB-PLUS
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,60 +24,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Baruch Siach <baruch@tkos.co.il>
+From: Tanaka Akira <akr@fsij.org>
 
-commit bbcd18d1b37413d25eaf4580682b1b8e4a09ff5e upstream.
+commit bbcb8bbad52b8795912e8f02c2b319092b96078e upstream.
 
-The platform code doesn't have to provide platform data to get sensible
-default behaviour from the imx serial driver.
+This patch adds the USB product ID of KAIREN's USB VGA Adaptor,
+USB20SVGA-MB-PLUS, to sisusbvga work with it.
 
-This patch does not handle NULL dereference in the IrDA case, which still
-requires a valid platform data pointer (in imx_startup()/imx_shutdown()),
-since I don't know whether there is a sensible default behaviour, or
-should the operation just fail cleanly.
-
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Cc: Baruch Siach <baruch@tkos.co.il>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Oskar Schirmer <os@emlix.com>
-Cc: Fabian Godehardt <fg@emlix.com>
-Cc: Daniel Glöckner <dg@emlix.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Tanaka Akira <akr@fsij.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/imx.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/usb/misc/sisusbvga/sisusb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/serial/imx.c
-+++ b/drivers/serial/imx.c
-@@ -1279,7 +1279,7 @@ static int serial_imx_probe(struct platf
- 		sport->use_irda = 1;
- #endif
- 
--	if (pdata->init) {
-+	if (pdata && pdata->init) {
- 		ret = pdata->init(pdev);
- 		if (ret)
- 			goto clkput;
-@@ -1292,7 +1292,7 @@ static int serial_imx_probe(struct platf
- 
- 	return 0;
- deinit:
--	if (pdata->exit)
-+	if (pdata && pdata->exit)
- 		pdata->exit(pdev);
- clkput:
- 	clk_put(sport->clk);
-@@ -1321,7 +1321,7 @@ static int serial_imx_remove(struct plat
- 
- 	clk_disable(sport->clk);
- 
--	if (pdata->exit)
-+	if (pdata && pdata->exit)
- 		pdata->exit(pdev);
- 
- 	iounmap(sport->port.membase);
+--- a/drivers/usb/misc/sisusbvga/sisusb.c
++++ b/drivers/usb/misc/sisusbvga/sisusb.c
+@@ -3245,6 +3245,7 @@ static struct usb_device_id sisusb_table
+ 	{ USB_DEVICE(0x0711, 0x0902) },
+ 	{ USB_DEVICE(0x0711, 0x0903) },
+ 	{ USB_DEVICE(0x0711, 0x0918) },
++	{ USB_DEVICE(0x0711, 0x0920) },
+ 	{ USB_DEVICE(0x182d, 0x021c) },
+ 	{ USB_DEVICE(0x182d, 0x0269) },
+ 	{ }
 
 
