@@ -1,22 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935937Ab0CMA5B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:57:01 -0500
-Received: from kroah.org ([198.145.64.141]:46843 "EHLO coco.kroah.org"
+	id S935429Ab0CMAbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:31:36 -0500
+Received: from kroah.org ([198.145.64.141]:46637 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935322Ab0CMAbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:20 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
-Message-Id: <20100313002709.167305520@kvm.kroah.org>
+	id S935328Ab0CMAaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:30:39 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:06 2010
+Message-Id: <20100313002706.267775961@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:18 -0800
+Date: Fri, 12 Mar 2010 16:25:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [045/145] sky2: fix transmit DMA map leakage
+       Stanislaw Gruszka <sgruszka@redhat.com>,
+       Wey-Yi Guy <wey-yi.w.guy@intel.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [012/145] iwlwifi: sanity check before counting number of tfds can be free
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,61 +27,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: stephen hemminger <shemminger@vyatta.com>
+From: Stanislaw Gruszka <sgruszka@redhat.com>
 
-[ Upstream commit f6815077e75c5b7f55b56fc3788e328514d4e72a ]
+commit a120e912eb51e347f36c71b60a1d13af74d30e83 upstream.
 
-The book keeping structure for transmit always had the flags value
-cleared so transmit DMA maps were never released correctly.
-Based on patch by Jarek Poplawski, problem observed by Michael Breuer.
+Check the frame control for ieee80211_is_data_qos() is true before
+counting the number of tfds can be free, the tfds_in_queue only
+increment when ieee80211_is_data_qos() is true before transmit; so it
+should only decrement if the type match.
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Remove ieee80211_is_data_qos check for frame_ctrl in tx_resp to avoid
+invalid information pass from uCode.
+
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+Signed-off-by: Wey-Yi Guy <wey-yi.w.guy@intel.com>
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/sky2.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-5000.c |    6 ++----
+ drivers/net/wireless/iwlwifi/iwl-tx.c   |    5 +++++
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -1008,11 +1008,8 @@ static void sky2_prefetch_init(struct sk
- static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
- {
- 	struct sky2_tx_le *le = sky2->tx_le + *slot;
--	struct tx_ring_info *re = sky2->tx_ring + *slot;
+--- a/drivers/net/wireless/iwlwifi/iwl-5000.c
++++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
+@@ -1293,16 +1293,14 @@ static void iwl5000_rx_reply_tx(struct i
+ 				   tx_resp->failure_frame);
  
- 	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
--	re->flags = 0;
--	re->skb = NULL;
- 	le->ctrl = 0;
- 	return le;
- }
-@@ -1580,8 +1577,7 @@ static unsigned tx_le_req(const struct s
- 	return count;
- }
+ 		freed = iwl_tx_queue_reclaim(priv, txq_id, index);
+-		if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
+-			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
++		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
  
--static void sky2_tx_unmap(struct pci_dev *pdev,
--			  const struct tx_ring_info *re)
-+static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
- {
- 	if (re->flags & TX_MAP_SINGLE)
- 		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
-@@ -1591,6 +1587,7 @@ static void sky2_tx_unmap(struct pci_dev
- 		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
- 			       pci_unmap_len(re, maplen),
- 			       PCI_DMA_TODEVICE);
-+	re->flags = 0;
- }
+ 		if (priv->mac80211_registered &&
+ 		    (iwl_queue_space(&txq->q) > txq->q.low_mark))
+ 			iwl_wake_queue(priv, txq_id);
+ 	}
  
- /*
-@@ -1797,6 +1794,7 @@ static void sky2_tx_complete(struct sky2
- 			dev->stats.tx_packets++;
- 			dev->stats.tx_bytes += skb->len;
+-	if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
+-		iwl_txq_check_empty(priv, sta_id, tid, txq_id);
++	iwl_txq_check_empty(priv, sta_id, tid, txq_id);
  
-+			re->skb = NULL;
- 			dev_kfree_skb_any(skb);
+ 	if (iwl_check_bits(status, TX_ABORT_REQUIRED_MSK))
+ 		IWL_ERR(priv, "TODO:  Implement Tx ABORT REQUIRED!!!\n");
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -1071,6 +1071,7 @@ int iwl_tx_queue_reclaim(struct iwl_priv
+ 	struct iwl_queue *q = &txq->q;
+ 	struct iwl_tx_info *tx_info;
+ 	int nfreed = 0;
++	struct ieee80211_hdr *hdr;
  
- 			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
+ 	if ((index >= q->n_bd) || (iwl_queue_used(q, index) == 0)) {
+ 		IWL_ERR(priv, "Read index for DMA queue txq id (%d), index %d, "
+@@ -1085,6 +1086,10 @@ int iwl_tx_queue_reclaim(struct iwl_priv
+ 
+ 		tx_info = &txq->txb[txq->q.read_ptr];
+ 		ieee80211_tx_status_irqsafe(priv->hw, tx_info->skb[0]);
++
++		hdr = (struct ieee80211_hdr *)tx_info->skb[0]->data;
++		if (hdr && ieee80211_is_data_qos(hdr->frame_control))
++			nfreed++;
+ 		tx_info->skb[0] = NULL;
+ 
+ 		if (priv->cfg->ops->lib->txq_inval_byte_cnt_tbl)
 
 
