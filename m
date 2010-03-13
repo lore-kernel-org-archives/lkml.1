@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935163Ab0CMAWP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:22:15 -0500
-Received: from kroah.org ([198.145.64.141]:32909 "EHLO coco.kroah.org"
+	id S935117Ab0CMAV4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:21:56 -0500
+Received: from kroah.org ([198.145.64.141]:32796 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935075Ab0CMAVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:15 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
-Message-Id: <20100313001515.899318972@kvm.kroah.org>
+	id S935023Ab0CMAU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:56 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
+Message-Id: <20100313001513.793358744@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:41 -0800
+Date: Fri, 12 Mar 2010 16:13:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ian Campbell <ian.campbell@citrix.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 123/123] x86, mm: Allow highmem user page tables to be disabled at boot time
+       Mitchell Solomon <mitchjs@rush2112.net>
+Subject: [patch 099/123] USB: add new ftdi_sio device ids
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,158 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Mitchell Solomon <mitchjs@rush2112.net>
 
-commit 14315592009c17035cac81f4954d5a1f4d71e489 upstream.
+commit 9714080d20f2ec4b671a06ce69367d91fa9e227e upstream.
 
-Distros generally (I looked at Debian, RHEL5 and SLES11) seem to
-enable CONFIG_HIGHPTE for any x86 configuration which has highmem
-enabled. This means that the overhead applies even to machines which
-have a fairly modest amount of high memory and which therefore do not
-really benefit from allocating PTEs in high memory but still pay the
-price of the additional mapping operations.
+PID patch for my products
 
-Running kernbench on a 4G box I found that with CONFIG_HIGHPTE=y but
-no actual highptes being allocated there was a reduction in system
-time used from 59.737s to 55.9s.
-
-With CONFIG_HIGHPTE=y and highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 175.396 (0.238914)
-  User Time 515.983 (5.85019)
-  System Time 59.737 (1.26727)
-  Percent CPU 263.8 (71.6796)
-  Context Switches 39989.7 (4672.64)
-  Sleeps 42617.7 (246.307)
-
-With CONFIG_HIGHPTE=y but with no highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 174.278 (0.831968)
-  User Time 515.659 (6.07012)
-  System Time 55.9 (1.07799)
-  Percent CPU 263.8 (71.266)
-  Context Switches 39929.6 (4485.13)
-  Sleeps 42583.7 (373.039)
-
-This patch allows the user to control the allocation of PTEs in
-highmem from the command line ("userpte=nohigh") but retains the
-status-quo as the default.
-
-It is possible that some simple heuristic could be developed which
-allows auto-tuning of this option however I don't have a sufficiently
-large machine available to me to perform any particularly meaningful
-experiments. We could probably handwave up an argument for a threshold
-at 16G of total RAM.
-
-Assuming 768M of lowmem we have 196608 potential lowmem PTE
-pages. Each page can map 2M of RAM in a PAE-enabled configuration,
-meaning a maximum of 384G of RAM could potentially be mapped using
-lowmem PTEs.
-
-Even allowing generous factor of 10 to account for other required
-lowmem allocations, generous slop to account for page sharing (which
-reduces the total amount of RAM mappable by a given number of PT
-pages) and other innacuracies in the estimations it would seem that
-even a 32G machine would not have a particularly pressing need for
-highmem PTEs. I think 32G could be considered to be at the upper bound
-of what might be sensible on a 32 bit machine (although I think in
-practice 64G is still supported).
-
-It's seems questionable if HIGHPTE is even a win for any amount of RAM
-you would sensibly run a 32 bit kernel on rather than going 64 bit.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-LKML-Reference: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Mitchell Solomon <mitchjs@rush2112.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/kernel-parameters.txt |    7 +++++++
- arch/x86/include/asm/pgalloc.h      |    5 +++++
- arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++++-----
- 3 files changed, 38 insertions(+), 5 deletions(-)
+ drivers/usb/serial/ftdi_sio.c     |    4 ++++
+ drivers/usb/serial/ftdi_sio_ids.h |    8 ++++++++
+ 2 files changed, 12 insertions(+)
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2703,6 +2703,13 @@ and is between 256 and 4096 characters.
- 					medium is write-protected).
- 			Example: quirks=0419:aaf5:rl,0421:0433:rc
- 
-+	userpte=
-+			[X86] Flags controlling user PTE allocations.
-+
-+				nohigh = do not allocate PTE pages in
-+					HIGHMEM regardless of setting
-+					of CONFIG_HIGHPTE.
-+
- 	vdso=		[X86,SH]
- 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso=1: enable VDSO (default)
---- a/arch/x86/include/asm/pgalloc.h
-+++ b/arch/x86/include/asm/pgalloc.h
-@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(
- #endif
- 
- /*
-+ * Flags to use when allocating a user page table page.
-+ */
-+extern gfp_t __userpte_alloc_gfp;
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -737,6 +737,10 @@ static struct usb_device_id id_table_com
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+ 	{ USB_DEVICE(FTDI_VID, HAMEG_HO820_PID) },
+ 	{ USB_DEVICE(FTDI_VID, HAMEG_HO870_PID) },
++	{ USB_DEVICE(FTDI_VID, MJSG_GENERIC_PID) },
++	{ USB_DEVICE(FTDI_VID, MJSG_SR_RADIO_PID) },
++	{ USB_DEVICE(FTDI_VID, MJSG_HD_RADIO_PID) },
++	{ USB_DEVICE(FTDI_VID, MJSG_XM_RADIO_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -1002,3 +1002,11 @@
+ #define EVO_8U232AM_PID	0x02FF	/* Evolution robotics RCM2 (FT232AM)*/
+ #define EVO_HYBRID_PID		0x0302	/* Evolution robotics RCM4 PID (FT232BM)*/
+ #define EVO_RCM4_PID		0x0303	/* Evolution robotics RCM4 PID */
 +
 +/*
-  * Allocate and free page tables.
-  */
- extern pgd_t *pgd_alloc(struct mm_struct *);
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -6,6 +6,14 @@
- 
- #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
- 
-+#ifdef CONFIG_HIGHPTE
-+#define PGALLOC_USER_GFP __GFP_HIGHMEM
-+#else
-+#define PGALLOC_USER_GFP 0
-+#endif
-+
-+gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
-+
- pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
- 	return (pte_t *)__get_free_page(PGALLOC_GFP);
-@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct
- {
- 	struct page *pte;
- 
--#ifdef CONFIG_HIGHPTE
--	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
--#else
--	pte = alloc_pages(PGALLOC_GFP, 0);
--#endif
-+	pte = alloc_pages(__userpte_alloc_gfp, 0);
- 	if (pte)
- 		pgtable_page_ctor(pte);
- 	return pte;
- }
- 
-+static int __init setup_userpte(char *arg)
-+{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	/*
-+	 * "userpte=nohigh" disables allocation of user pagetables in
-+	 * high memory.
-+	 */
-+	if (strcmp(arg, "nohigh") == 0)
-+		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
-+	else
-+		return -EINVAL;
-+	return 0;
-+}
-+early_param("userpte", setup_userpte);
-+
- void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
- {
- 	pgtable_page_dtor(pte);
++ * MJS Gadgets HD Radio / XM Radio / Sirius Radio interfaces (using VID 0x0403)
++ */
++#define MJSG_GENERIC_PID	0x9378
++#define MJSG_SR_RADIO_PID	0x9379
++#define MJSG_XM_RADIO_PID	0x937A
++#define MJSG_HD_RADIO_PID	0x937C
 
 
