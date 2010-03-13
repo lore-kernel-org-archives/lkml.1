@@ -1,186 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758924Ab0CMMiv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 07:38:51 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:43263 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758156Ab0CMMit (ORCPT
+	id S1759034Ab0CMMkw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 07:40:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:43449 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144Ab0CMMkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 07:38:49 -0500
-Date: Sat, 13 Mar 2010 13:38:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>, Greg KH <greg@kroah.com>
-Subject: Dream: Hook up trackball to drivers/staging interface
-Message-ID: <20100313123841.GE2192@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 13 Mar 2010 07:40:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=CbuwT6zc1X2IYs38fblyCc27UL9pnLnwTjgtnO03Xpe/Y/1TqM5YmZoO+dU+hEdEuo
+         4lYsL7DzFlNFrnOm5zm2gQ9GtvWkTR1nYmJclRbxI55bDfTNg8cEXGeYdGRClqqbttLI
+         N5tviMq1fS0xdR6ZE1UuE/TBbGB/B9Q5ih50g=
+From: Stefan Schick <stinder21@googlemail.com>
+To: gregkh@suse.de
+Cc: devel@driverdev.osuosl.com, linux-kernel@vger.kernel.org,
+       Stefan Schick <stinder21@googlemail.com>
+Subject: [PATCH] Staging: comedi: dt3000: fixed some coding style issues
+Date: Sat, 13 Mar 2010 13:47:09 +0100
+Message-Id: <1268484429-10900-1-git-send-email-stinder21@googlemail.com>
+X-Mailer: git-send-email 1.7.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Fixed some coding style issues
 
-With this and fixes from -rc4, applied on top of -working-mmc tree, I
-get working trackball. (Tested with cat, not evtest).
+Signed-off-by: Stefan Schick <stinder21@googlemail.com>
+---
+ drivers/staging/comedi/drivers/dt3000.c |   21 +++++++--------------
+ 1 files changed, 7 insertions(+), 14 deletions(-)
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/arch/arm/mach-msm/board-dream.c b/arch/arm/mach-msm/board-dream.c
-index d40ce48..f48c797 100644
---- a/arch/arm/mach-msm/board-dream.c
-+++ b/arch/arm/mach-msm/board-dream.c
-@@ -31,6 +31,132 @@
- #include "board-dream.h"
- #include "proc_comm.h"
+diff --git a/drivers/staging/comedi/drivers/dt3000.c b/drivers/staging/comedi/drivers/dt3000.c
+index bbbef79..ca68789 100644
+--- a/drivers/staging/comedi/drivers/dt3000.c
++++ b/drivers/staging/comedi/drivers/dt3000.c
+@@ -314,9 +314,8 @@ static int dt3k_send_cmd(struct comedi_device *dev, unsigned int cmd)
+ 			break;
+ 		udelay(1);
+ 	}
+-	if ((status & DT3000_COMPLETION_MASK) == DT3000_NOERROR) {
++	if ((status & DT3000_COMPLETION_MASK) == DT3000_NOERROR)
+ 		return 0;
+-	}
  
-+#include <linux/gpio.h>
-+
-+/*
-+ * Input devices
-+ */
-+
-+#ifndef CONFIG_INPUT_GPIO
-+#error Gpio input is very recommended on Dream
-+#else
-+#include "../../../drivers/staging/dream/include/linux/gpio_event.h"
-+struct dream_axis_info {
-+	struct gpio_event_axis_info info;
-+	uint16_t in_state;
-+	uint16_t out_state;
-+};
-+static bool nav_just_on;
-+static int nav_on_jiffies;
-+
-+uint16_t dream_axis_map(struct gpio_event_axis_info *info, uint16_t in)
-+{
-+	struct dream_axis_info *ai = container_of(info, struct dream_axis_info, info);
-+	uint16_t out = ai->out_state;
-+
-+	if (nav_just_on) {
-+		if (jiffies == nav_on_jiffies || jiffies == nav_on_jiffies + 1)
-+			goto ignore;
-+		nav_just_on = 0;
-+	}
-+	if((ai->in_state ^ in) & 1)
-+		out--;
-+	if((ai->in_state ^ in) & 2)
-+		out++;
-+	ai->out_state = out;
-+ignore:
-+	ai->in_state = in;
-+	return out;
-+}
-+
-+int dream_nav_power(const struct gpio_event_platform_data *pdata, bool on)
-+{
-+	gpio_set_value(DREAM_GPIO_JOG_EN, on);
-+	if (on) {
-+		nav_just_on = 1;
-+		nav_on_jiffies = jiffies;
-+	}
-+	return 0;
-+}
-+
-+static uint32_t dream_4_x_axis_gpios[] = {
-+	DREAM_4_BALL_LEFT_0, DREAM_4_BALL_RIGHT_0
-+};
-+static uint32_t dream_5_x_axis_gpios[] = {
-+	DREAM_5_BALL_LEFT_0, DREAM_5_BALL_RIGHT_0
-+};
-+
-+static struct dream_axis_info dream_x_axis = {
-+	.info = {
-+		.info.func = gpio_event_axis_func,
-+		.count = ARRAY_SIZE(dream_5_x_axis_gpios),
-+		.type = EV_REL,
-+		.code = REL_X,
-+		.decoded_size = 1U << ARRAY_SIZE(dream_5_x_axis_gpios),
-+		.map = dream_axis_map,
-+		.gpio = dream_5_x_axis_gpios,
-+		.flags = GPIOEAF_PRINT_UNKNOWN_DIRECTION /*| GPIOEAF_PRINT_RAW | GPIOEAF_PRINT_EVENT */
-+	}
-+};
-+
-+static uint32_t dream_4_y_axis_gpios[] = {
-+	DREAM_4_BALL_UP_0, DREAM_4_BALL_DOWN_0
-+};
-+static uint32_t dream_5_y_axis_gpios[] = {
-+	DREAM_5_BALL_UP_0, DREAM_5_BALL_DOWN_0
-+};
-+
-+static struct dream_axis_info dream_y_axis = {
-+	.info = {
-+		.info.func = gpio_event_axis_func,
-+		.count = ARRAY_SIZE(dream_5_y_axis_gpios),
-+		.type = EV_REL,
-+		.code = REL_Y,
-+		.decoded_size = 1U << ARRAY_SIZE(dream_5_y_axis_gpios),
-+		.map = dream_axis_map,
-+		.gpio = dream_5_y_axis_gpios,
-+		.flags = GPIOEAF_PRINT_UNKNOWN_DIRECTION /*| GPIOEAF_PRINT_RAW | GPIOEAF_PRINT_EVENT */
-+	}
-+};
-+
-+static struct gpio_event_direct_entry dream_nav_buttons[] = {
-+	{ DREAM_GPIO_NAVI_ACT_N, BTN_MOUSE }
-+};
-+
-+static struct gpio_event_input_info dream_nav_button_info = {
-+	.info.func = gpio_event_input_func,
-+	.flags = 0,
-+	.type = EV_KEY,
-+	.keymap = dream_nav_buttons,
-+	.keymap_size = ARRAY_SIZE(dream_nav_buttons)
-+};
-+
-+static struct gpio_event_info *dream_nav_info[] = {
-+	&dream_x_axis.info.info,
-+	&dream_y_axis.info.info,
-+	&dream_nav_button_info.info
-+};
-+
-+static struct gpio_event_platform_data dream_nav_data = {
-+	.name = "dream-nav",
-+	.info = dream_nav_info,
-+	.info_count = ARRAY_SIZE(dream_nav_info),
-+	.power = dream_nav_power,
-+};
-+
-+static struct platform_device dream_nav_device = {
-+	.name = GPIO_EVENT_DEV_NAME,
-+	.id = 2,
-+	.dev = {
-+		.platform_data = &dream_nav_data,
-+	},
-+};
-+#endif
-+
-+/*
-+ * Core stuff
-+ */
-+
- extern int dream_init_mmc(unsigned int);
+ 	printk("dt3k_send_cmd() timeout/error status=0x%04x\n", status);
  
- static struct platform_device *devices[] __initdata = {
-@@ -39,6 +165,9 @@ static struct platform_device *devices[] __initdata = {
- 	&msm_device_nand,
- 	&msm_device_hsusb,
- 	&msm_device_i2c,
-+#ifdef CONFIG_INPUT_GPIO
-+	&dream_nav_device,
-+#endif
- };
+@@ -359,9 +358,8 @@ static irqreturn_t dt3k_interrupt(int irq, void *d)
+ 	struct comedi_subdevice *s;
+ 	unsigned int status;
  
- extern struct sys_timer msm_timer;
-
+-	if (!dev->attached) {
++	if (!dev->attached)
+ 		return IRQ_NONE;
+-	}
+ 
+ 	s = dev->subdevices + 0;
+ 	status = readw(devpriv->io_addr + DPR_Intr_Flag);
+@@ -374,9 +372,8 @@ static irqreturn_t dt3k_interrupt(int irq, void *d)
+ 		s->async->events |= COMEDI_CB_BLOCK;
+ 	}
+ 
+-	if (status & (DT3000_ADSWERR | DT3000_ADHWERR)) {
++	if (status & (DT3000_ADSWERR | DT3000_ADHWERR))
+ 		s->async->events |= COMEDI_CB_ERROR | COMEDI_CB_EOA;
+-	}
+ 
+ 	debug_n_ints++;
+ 	if (debug_n_ints >= 10) {
+@@ -399,9 +396,8 @@ static void debug_intr_flags(unsigned int flags)
+ 	int i;
+ 	printk("dt3k: intr_flags:");
+ 	for (i = 0; i < 8; i++) {
+-		if (flags & (1 << i)) {
++		if (flags & (1 << i))
+ 			printk(" %s", intr_flags[i]);
+-		}
+ 	}
+ 	printk("\n");
+ }
+@@ -690,9 +686,8 @@ static int dt3k_ai_insn(struct comedi_device *dev, struct comedi_subdevice *s,
+ 	/* XXX docs don't explain how to select aref */
+ 	aref = CR_AREF(insn->chanspec);
+ 
+-	for (i = 0; i < insn->n; i++) {
++	for (i = 0; i < insn->n; i++)
+ 		data[i] = dt3k_readsingle(dev, SUBS_AI, chan, gain);
+-	}
+ 
+ 	return i;
+ }
+@@ -720,9 +715,8 @@ static int dt3k_ao_insn_read(struct comedi_device *dev,
+ 	unsigned int chan;
+ 
+ 	chan = CR_CHAN(insn->chanspec);
+-	for (i = 0; i < insn->n; i++) {
++	for (i = 0; i < insn->n; i++)
+ 		data[i] = devpriv->ao_readback[chan];
+-	}
+ 
+ 	return i;
+ }
+@@ -911,9 +905,8 @@ static int dt3000_detach(struct comedi_device *dev)
+ 
+ 	if (devpriv) {
+ 		if (devpriv->pci_dev) {
+-			if (devpriv->phys_addr) {
++			if (devpriv->phys_addr)
+ 				comedi_pci_disable(devpriv->pci_dev);
+-			}
+ 			pci_dev_put(devpriv->pci_dev);
+ 		}
+ 		if (devpriv->io_addr)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.0.2
+
