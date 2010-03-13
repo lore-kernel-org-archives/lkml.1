@@ -1,104 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140Ab0CMMwu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 07:52:50 -0500
-Received: from www84.your-server.de ([213.133.104.84]:45133 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757441Ab0CMMws (ORCPT
+	id S1759145Ab0CMMzs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 07:55:48 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:55283 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757480Ab0CMMzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 07:52:48 -0500
-Subject: [PATCH] fix PHY polling system blocking
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 13 Mar 2010 13:53:10 +0100
-Message-ID: <1268484790.6339.37.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3.1 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sat, 13 Mar 2010 07:55:46 -0500
+Date: Sat, 13 Mar 2010 07:53:59 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Philippe De Muyter <phdm@macqel.be>
+cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kobjects] Fix a rare memory leak in
+ kobject_set_name_vargs
+In-Reply-To: <20100313124324.GA15244@frolo.macqel>
+Message-ID: <alpine.LFD.2.00.1003130752001.8523@localhost>
+References: <20100313124324.GA15244@frolo.macqel>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fix the PHY poller, which can block the whole system. PHY
-access are normaly not very fast, since there are serial attached.
+On Sat, 13 Mar 2010, Philippe De Muyter wrote:
 
-For PHY chips without interrupts, the status of the ethernet will be
-polled every 2 sec. The poll function will read some register of the MII
-PHY. The time between the sending the MII_READ_COMMAND and receiving the
-result could be very long (>100us).
+> Hello Greg,
+>
+> This is a possible memory leak that I discovered only by accidental code
+> reading.
+>
+> --
+>
+> If kvasprintf fails in kobject_set_name_vargs, the memory used by
+> the original kobj->name is leaked.  Fix that.  I also avoid useless
+> memory accesses to kobj->name by using the local variables old_name
+> and new_name instead.
+>
+> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+>
+> diff -r 373fdd3df333 linux-2.6.x/lib/kobject.c
+> --- a/linux-2.6.x/lib/kobject.c	Wed Aug 19 23:26:44 2009 +0200
+> +++ b/linux-2.6.x/lib/kobject.c	Sat Mar 13 13:35:43 2010 +0100
+> @@ -216,20 +216,22 @@ int kobject_set_name_vargs(struct kobjec
+>  				  va_list vargs)
+>  {
+>  	const char *old_name = kobj->name;
+> +	char *new_name;
+>  	char *s;
+>
+> -	if (kobj->name && !fmt)
+> +	if (old_name && !fmt)
+>  		return 0;
+>
+> -	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> -	if (!kobj->name)
+> +	new_name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> +	if (!new_name)
+>  		return -ENOMEM;
+>
+>  	/* ewww... some of these buggers have '/' in the name ... */
+> -	while ((s = strchr(kobj->name, '/')))
+> +	while ((s = strchr(new_name, '/')))
+>  		s[0] = '!';
+>
+>  	kfree(old_name);
+> +	kobj->name = new_name;
+>  	return 0;
+>  }
 
-For example:
+  the routine kobject_set_name_vargs() is described in
+Documentation/kobject.txt as "legacy cruft" to be removed at some
+point, so it's not clear there's any value in "fixing" it.
 
-On a Freescale PPC 834x this result in a delay of 450 us due the slow
-communication with the PHY chip. The time between the sending the
-MII_READ_COMMAND and receiving the result is more the 100 us on this
-controller.
-   
-The patch modifies the poller a lit bit. Only a link status state change
-will result in a successive detection of the connection type. The poll
-cycle on the other hand will be increased to one every seconds.
+rday
+--
 
-All in all this patch will prevent a blocking of f.e nearly 400 us every
-two seconds of the whole system on a PPC 834x.
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-There is not real drawback, only the detection of a connection type
-change without unplugging the cable will not work. But this is more an
-esoteric use case.
+            Linux Consulting, Training and Kernel Pedantry.
 
-The patch is against kernel 2.6.33. Please merge it.
-
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- phy.c        |    5 ++---
- phy_device.c |   11 ++++++++---
- 2 files changed, 10 insertions(+), 6 deletions(-)
-
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net/phy/phy.c
---- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net/phy/phy.c	2010-02-28 22:53:14.725464101 +0100
-@@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
- 		case PHY_RUNNING:
- 			/* Only register a CHANGE if we are
- 			 * polling */
--			if (PHY_POLL == phydev->irq)
--				phydev->state = PHY_CHANGELINK;
--			break;
-+			if (PHY_POLL != phydev->irq)
-+				break;
- 		case PHY_CHANGELINK:
- 			err = phy_read_status(phydev);
- 
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net/phy/phy_device.c
---- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net/phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
-@@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
--	dev->link = 1;
-+	dev->link = 0;
- 	dev->interface = PHY_INTERFACE_MODE_GMII;
- 
- 	dev->autoneg = AUTONEG_ENABLE;
-@@ -694,10 +694,15 @@ int genphy_update_link(struct phy_device
- 	if (status < 0)
- 		return status;
- 
--	if ((status & BMSR_LSTATUS) == 0)
-+	if ((status & BMSR_LSTATUS) == 0) {
-+		if (phydev->link == 0)
-+			return 1;
- 		phydev->link = 0;
--	else
-+	} else {
-+		if (phydev->link == 1)
-+			return 1;
- 		phydev->link = 1;
-+	}
- 
- 	return 0;
- }
-
-
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
