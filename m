@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935873Ab0CMAvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:51:55 -0500
-Received: from kroah.org ([198.145.64.141]:46998 "EHLO coco.kroah.org"
+	id S935761Ab0CMAs6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:48:58 -0500
+Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935468Ab0CMAbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:51 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
-Message-Id: <20100313002712.212273458@kvm.kroah.org>
+	id S935453Ab0CMAcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:06 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:13 2010
+Message-Id: <20100313002713.784174318@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:53 -0800
+Date: Fri, 12 Mar 2010 16:27:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [080/145] ALSA: hda - Add a position_fix quirk for MSI Wind U115
+       Felix Fietkau <nbd@openwrt.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [098/145] ath9k: fix beacon timer restart after a card reset
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,29 +25,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Felix Fietkau <nbd@openwrt.org>
 
-commit 45d4ebf1a6255f2234a041685789cbecac3453f1 upstream.
+commit d8728ee919282c7b01b65cd479ec1e2a9c5d3ba8 upstream.
 
-MSI Wind U115 seems to require position_fix=1 explicitly.
-Otherwise it screws up PulseAudio.
+In AP mode, ath_beacon_config_ap only restarts the timer if a TSF
+restart is requested. Apparently this was added, because this function
+unconditionally sets the flag for TSF reset.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+The problem with this is, that ath9k_hw_reset() clobbers the timer
+registers (specified in the initvals), thus effectively disabling the
+SWBA interrupt whenever a card reset without TSF reset is issued
+(happens in a few places in the code).
+
+This patch fixes ath_beacon_config_ap to only issue the TSF reset flag
+when necessary, but reinitialize the timer unconditionally. Tests show,
+that this is enough to keep the SWBA interrupt going after a call to
+ath_reset()
+
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/wireless/ath/ath9k/beacon.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -2226,6 +2226,7 @@ static struct snd_pci_quirk position_fix
- 	SND_PCI_QUIRK(0x1028, 0x01de, "Dell Precision 390", POS_FIX_LPIB),
- 	SND_PCI_QUIRK(0x1043, 0x813d, "ASUS P5AD2", POS_FIX_LPIB),
- 	SND_PCI_QUIRK(0x1028, 0x01f6, "Dell Latitude 131L", POS_FIX_LPIB),
-+	SND_PCI_QUIRK(0x1462, 0x1002, "MSI Wind U115", POS_FIX_LPIB),
- 	SND_PCI_QUIRK(0x1565, 0x820f, "Biostar Microtech", POS_FIX_LPIB),
- 	{}
- };
+--- a/drivers/net/wireless/ath/ath9k/beacon.c
++++ b/drivers/net/wireless/ath/ath9k/beacon.c
+@@ -512,16 +512,13 @@ static void ath_beacon_config_ap(struct
+ {
+ 	u32 nexttbtt, intval;
+ 
+-	/* Configure the timers only when the TSF has to be reset */
+-
+-	if (!(sc->sc_flags & SC_OP_TSF_RESET))
+-		return;
+-
+ 	/* NB: the beacon interval is kept internally in TU's */
+ 	intval = conf->beacon_interval & ATH9K_BEACON_PERIOD;
+ 	intval /= ATH_BCBUF;    /* for staggered beacons */
+ 	nexttbtt = intval;
+-	intval |= ATH9K_BEACON_RESET_TSF;
++
++	if (sc->sc_flags & SC_OP_TSF_RESET)
++		intval |= ATH9K_BEACON_RESET_TSF;
+ 
+ 	/*
+ 	 * In AP mode we enable the beacon timers and SWBA interrupts to
 
 
