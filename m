@@ -1,92 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190Ab0CMC7w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 21:59:52 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42385 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757806Ab0CMC65 (ORCPT
+	id S1758516Ab0CMDIu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 22:08:50 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:49555 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757618Ab0CMDIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 21:58:57 -0500
-X-Authority-Analysis: v=1.0 c=1 a=X2CRS_YvNPgA:10 a=GzHTLUccyWwA:10 a=20KFwNOVAAAA:8 a=VwQbUJbxAAAA:8 a=omOdbC7AAAAA:8 a=meVymXHHAAAA:8 a=MeR8Nho3YvcMjC9bkv8A:9 a=qbGv0Q4E2z_XmG4gKR8A:7 a=cWzmtdUlVHdwmH1-eDxTVx4g4dUA:4 a=jEp0ucaQiEUA:10 a=LI9Vle30uBYA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Message-Id: <20100313025854.864204406@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 12 Mar 2010 21:56:58 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       stable@kernel.org
-Subject: [PATCH 3/5] tracing: Use same local variable when resetting the ring buffer
-References: <20100313025655.104950166@goodmis.org>
-Content-Disposition: inline; filename=0003-tracing-Use-same-local-variable-when-resetting-the-r.patch
+	Fri, 12 Mar 2010 22:08:49 -0500
+Subject: Re: Weird wireless/wpa_supplicant screw-up.
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <5220.1268430568@localhost>
+References: <7197.1268086939@localhost>
+	 <1268392481.4828.7.camel@jlt3.sipsolutions.net> <5220.1268430568@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 19:09:09 -0800
+Message-ID: <1268449749.4880.2.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Fri, 2010-03-12 at 16:49 -0500, Valdis.Kletnieks@vt.edu wrote:
 
-In the ftrace code that resets the ring buffer it references the
-buffer with a local variable, but then uses the tr->buffer as the
-parameter to reset. If the wakeup tracer is running, which can
-switch the tr->buffer with the max saved buffer, this can break
-the requirement of disabling the buffer before the reset.
+> OK, getting closer ;)
 
-   buffer = tr->buffer;
-   ring_buffer_record_disable(buffer);
-   synchronize_sched();
-   __tracing_reset(tr->buffer, cpu);
+No ... you're not getting closer at all ... you ignored my second email.
 
-If the tr->buffer is swapped, then the reset is not happening to the
-buffer that was disabled. This will cause the ring buffer to fail.
+> in net/wireless/wext-compat.c, we have this in cfg80211_wext_giwencode()
+> after I add some printk's:
+> 
+> printk(KERN_INFO "In giwencode idx=%d keys=%x cipher=%x\n", idx, wdev->wext.keys, wdev->wext.keys->params[idx].cipher);
+>         if (!wdev->wext.keys || !wdev->wext.keys->params[idx].cipher) {
+> printk(KERN_INFO "And we're going home...\n");
+>                 erq->flags |= IW_ENCODE_DISABLED;
+>                 erq->length = 0;
+>                 return 0;
+>         }
+> 
+> which produces
+> 
+> [  151.401195] In giwencode idx=0 keys=1d023600 cipher=0
+> [  151.401198] And we're going home...
 
-Found with Li Zefan's ftrace_stress_test.
+No ... look at _all_ that it produces.
 
-Cc: stable@kernel.org
-Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+[   98.592575] In giwencode idx=0 keys=ffff88001b304000 cipher=0
+[   98.592580] And we're going home...
+*****
+[   98.592633] In giwencode idx=1 keys=ffff88001b304000 cipher=fac04
+*****
+[   98.592749] In giwencode idx=2 keys=ffff88001b304000 cipher=0
+[   98.592751] And we're going home...
+[   98.592803] In giwencode idx=3 keys=ffff88001b304000 cipher=0
+[   98.592805] And we're going home...
+[   98.592856] In giwencode idx=0 keys=ffff88001b304000 cipher=0
+[   98.592859] And we're going home...
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6af8d7b..60de37b 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -840,10 +840,10 @@ out:
- 	mutex_unlock(&trace_types_lock);
- }
- 
--static void __tracing_reset(struct trace_array *tr, int cpu)
-+static void __tracing_reset(struct ring_buffer *buffer, int cpu)
- {
- 	ftrace_disable_cpu();
--	ring_buffer_reset_cpu(tr->buffer, cpu);
-+	ring_buffer_reset_cpu(buffer, cpu);
- 	ftrace_enable_cpu();
- }
- 
-@@ -855,7 +855,7 @@ void tracing_reset(struct trace_array *tr, int cpu)
- 
- 	/* Make sure all commits have finished */
- 	synchronize_sched();
--	__tracing_reset(tr, cpu);
-+	__tracing_reset(buffer, cpu);
- 
- 	ring_buffer_record_enable(buffer);
- }
-@@ -873,7 +873,7 @@ void tracing_reset_online_cpus(struct trace_array *tr)
- 	tr->time_start = ftrace_now(tr->cpu);
- 
- 	for_each_online_cpu(cpu)
--		__tracing_reset(tr, cpu);
-+		__tracing_reset(buffer, cpu);
- 
- 	ring_buffer_record_enable(buffer);
- }
--- 
-1.7.0
+See? It reports one key which is the RX-only group key which is
+absolutely correct.
 
+> So the root cause has something to do with params[idx].cipher being unset.
+
+Not at all.
+
+GIWENCODE is 100% unsuitable for WPA. Just forget about "iwlist key".
+And then we'd like to know what the actual problem is.
+
+johannes
 
