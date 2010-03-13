@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935526Ab0CMAg5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:36:57 -0500
-Received: from kroah.org ([198.145.64.141]:47246 "EHLO coco.kroah.org"
+	id S935633Ab0CMAdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:33:17 -0500
+Received: from kroah.org ([198.145.64.141]:46942 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935565Ab0CMAcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:36 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
-Message-Id: <20100313002717.164816903@kvm.kroah.org>
+	id S935434Ab0CMAbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:37 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
+Message-Id: <20100313002710.652362692@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:50 -0800
+Date: Fri, 12 Mar 2010 16:26:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [137/145] dm: free dm_io before bio_endio not after
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Hank Janssen <hjanssen@microsoft.com>
+Subject: [062/145] Staging: hv: match on DMI values to know if we should run.
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,69 +25,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit a97f925a32aad2a37971d7bfb657006acf04e42d upstream.
+commit c22090facd354749cfe99a46e903449c7ac07788 upstream.
 
-Free the dm_io structure before calling bio_endio() instead of after it,
-to ensure that the io_pool containing it is not referenced after it is
-freed.
+The HV core mucks around with specific irqs and other low-level stuff
+and takes forever to determine that it really shouldn't be running on a
+machine.  So instead, trigger off of the DMI system information and
+error out much sooner.  This also allows the module loading tools to
+recognize that this code should be loaded on this type of system.
 
-This partially fixes a problem described here
-  https://www.redhat.com/archives/dm-devel/2010-February/msg00109.html
-
-thread 1:
-bio_endio(bio, io_error);
-/* scheduling happens */
-					thread 2:
-					close the device
-					remove the device
-thread 1:
-free_io(md, io);
-
-Thread 2, when removing the device, sees non-empty md->io_pool (because the
-io hasn't been freed by thread 1 yet) and may crash with BUG in mempool_free.
-Thread 1 may also crash, when freeing into a nonexisting mempool.
-
-To fix this we must make sure that bio_endio() is the last call and
-the md structure is not accessed afterwards.
-
-There is another bio_endio in process_barrier, but it is called from the thread
-and the thread is destroyed prior to freeing the mempools, so this call is
-not affected by the bug.
-
-A similar bug exists with module unloads - the module may be unloaded
-immediately after bio_endio - but that is more difficult to fix.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/staging/hv/vmbus_drv.c |   21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -614,8 +614,10 @@ static void dec_pending(struct dm_io *io
- 			if (!md->barrier_error && io_error != -EOPNOTSUPP)
- 				md->barrier_error = io_error;
- 			end_io_acct(io);
-+			free_io(md, io);
- 		} else {
- 			end_io_acct(io);
-+			free_io(md, io);
- 
- 			if (io_error != DM_ENDIO_REQUEUE) {
- 				trace_block_bio_complete(md->queue, bio);
-@@ -623,8 +625,6 @@ static void dec_pending(struct dm_io *io
- 				bio_endio(bio, io_error);
- 			}
- 		}
--
--		free_io(md, io);
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sysctl.h>
+ #include <linux/pci.h>
++#include <linux/dmi.h>
+ #include "osd.h"
+ #include "logging.h"
+ #include "vmbus.h"
+@@ -947,6 +948,19 @@ static irqreturn_t vmbus_isr(int irq, vo
  	}
  }
  
++static struct dmi_system_id __initdata microsoft_hv_dmi_table[] = {
++	{
++		.ident = "Hyper-V",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Virtual Machine"),
++			DMI_MATCH(DMI_BOARD_NAME, "Virtual Machine"),
++		},
++	},
++	{ },
++};
++MODULE_DEVICE_TABLE(dmi, microsoft_hv_dmi_table);
++
+ static int __init vmbus_init(void)
+ {
+ 	int ret = 0;
+@@ -958,6 +972,9 @@ static int __init vmbus_init(void)
+ 		vmbus_loglevel, HIWORD(vmbus_loglevel), LOWORD(vmbus_loglevel));
+ 	/* Todo: it is used for loglevel, to be ported to new kernel. */
+ 
++	if (!dmi_check_system(microsoft_hv_dmi_table))
++		return -ENODEV;
++
+ 	ret = vmbus_bus_init(VmbusInitialize);
+ 
+ 	DPRINT_EXIT(VMBUS_DRV);
+@@ -979,10 +996,6 @@ static void __exit vmbus_exit(void)
+  * needed by distro tools to determine if the hyperv drivers should be
+  * installed and/or configured.  We don't do anything else with the table, but
+  * it needs to be present.
+- *
+- * We might consider triggering off of DMI table info as well, as that does
+- * decribe the virtual machine being run on, but not all configuration tools
+- * seem to be able to handle DMI device ids properly.
+  */
+ const static struct pci_device_id microsoft_hv_pci_table[] = {
+ 	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
 
 
