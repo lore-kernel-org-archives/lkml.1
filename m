@@ -1,60 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778Ab0CMDJO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 22:09:14 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60514 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758719Ab0CMDJK (ORCPT
+	id S933657Ab0CMDJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 22:09:47 -0500
+Received: from mga07.intel.com ([143.182.124.22]:21365 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757945Ab0CMDJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 22:09:10 -0500
-X-Authority-Analysis: v=1.0 c=1 a=8OTfl9jic9UA:10 a=7U3hwN5JcxgA:10 a=Q9fys5e9bTEA:10 a=meVymXHHAAAA:8 a=TLS6gJher1GsWqhQ0egA:9 a=OTmqYKwTmmkMlLXJcXDicy7bFSMA:4 a=PUjeQqilurYA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: Using tracing_off() in __schedule_bug()
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Chase Douglas <chase.douglas@canonical.com>
-Cc: linux-kernel@vger.kernel.org, kernel-team <kernel-team@lists.ubuntu.com>
-In-Reply-To: <40ec3ea41003121850y44e08737mf0544c10f1193129@mail.gmail.com>
-References: <40ec3ea41003120732w5f44a2ebq728047e742f32bba@mail.gmail.com>
-	 <1268436844.4471.783.camel@gandalf.stny.rr.com>
-	 <40ec3ea41003121812j7cb349e4g1c455ae096da35cd@mail.gmail.com>
-	 <1268447444.4471.789.camel@gandalf.stny.rr.com>
-	 <40ec3ea41003121850y44e08737mf0544c10f1193129@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 12 Mar 2010 22:09:08 -0500
-Message-ID: <1268449748.4471.795.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Fri, 12 Mar 2010 22:09:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,629,1262592000"; 
+   d="scan'208";a="254220832"
+Message-ID: <4B9B01F5.3000807@linux.intel.com>
+Date: Fri, 12 Mar 2010 19:09:41 -0800
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: akataria@vmware.com
+CC: Len Brown <lenb@kernel.org>, the arch/x86 maintainers <x86@kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Petr Vandrovec <petr@vmware.com>
+Subject: Re: swiotlb detection should be memory hotplug aware ?
+References: <1268446032.13691.69.camel@ank32>
+In-Reply-To: <1268446032.13691.69.camel@ank32>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-12 at 21:50 -0500, Chase Douglas wrote:
-> On Fri, Mar 12, 2010 at 9:30 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+, Alok Kataria wrote:
 
-> I was thinking that there may be times where you want to skip warnings
-> to trace real bugs. For example, there's a WARNING that you hit if
-> your resume takes too long. I may want to skip that warning for the
-> oops that occurs just after it. As a distro, we also want to be
-> flexible in our official kernels so we don't have to build special
-> ones when people hit bugs. It's not as though it would be very
-> difficult to design with a few priorities, so unless it's really
-> unnecessary I don't see why we shouldn't. The default would also fire
-> tracing_off in all cases, so most people wouldn't have to modify it
-> unless they hit a corner case.
+Hi Alok,
 
-I'm fine with having a two layer. Stop tracing on bugs and/or on
-warnings. I would actually have disable on warnings be default off.
-There are too many kernel warnings that trigger too easily, having your
-resume warning be one of them.
+> Hi,
+>
+> Looking at the current code swiotlb is initialized for 64bit kernels
+> only when the max_pfn value is greater than 4G (MAX_DMA32_PFN value).
+> So in cases when the initial memory is less than 4GB the kernel boots
+> without enabling swiotlb, when we hotadd memory to such a kernel and go
+> beyond the 4G limit, swiotlb is still disabled. As a result when any
+> 32bit devices start using this newly added memory beyond 4G, the kernel
+> starts spitting error messages like below or in some cases it causes
+> kernel panics.
 
-I'm still not sure we need a separate one for critical errors. A oops,
-panic and BUG should all be the same. Since any of them can cause the
-system to halt.
+Yes seems like a real problem.
 
--- Steve
+>
+> 1. Enable swiotlb for all 64bit kernels which have memory hot-add
+> support.
 
+I don't think that's a good idea. It would enable it everywhere on
+distributions which compile with hotadd. Need (2)
 
+> 2. Instead of checking the max_pfn value in pci_swiotlb_detect, check
+> for max_hotpluggable_pfn (or some such) value. Though I don't see such a
+> value readily available. I could parse the SRAT and get hotplug memory
+> information but that will make swiotlb detection logic a little too
+> complex. A quick look around srat_xx.c files and the acpi_memhotplug
+> module didn't find any useful API that could be used directly either.
+> So was wondering if any of you are aware of an easy way to get such
+> information ?
+
+I have a patchkit to revamp the SRAT parsing to store the hotadd information
+more efficiently (the current way is pretty dumb)  I need to repost that.
+
+With that it would be relatively easy to do I think.
+
+-Andi
