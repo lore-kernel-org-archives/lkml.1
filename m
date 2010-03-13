@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935783Ab0CMAfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:35:30 -0500
-Received: from kroah.org ([198.145.64.141]:47062 "EHLO coco.kroah.org"
+	id S935608Ab0CMAmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:42:49 -0500
+Received: from kroah.org ([198.145.64.141]:47264 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935503Ab0CMAcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:10 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
-Message-Id: <20100313002714.383681096@kvm.kroah.org>
+	id S935576Ab0CMAck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:40 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
+Message-Id: <20100313002717.597189257@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:18 -0800
+Date: Fri, 12 Mar 2010 16:27:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ben Hutchings <ben@decadent.org.uk>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [105/145] sunxvr500: Additional PCI id for sunxvr500 driver
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [142/145] sched: Fix sched_mv_power_savings for !SMT
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,31 +26,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Ben Hutchings <ben@decadent.org.uk>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-commit 275143e9b237dd7e0b6d01660fd9b8acd9922fa7 upstream.
+commit 28f5318167adf23b16c844b9c2253f355cb21796 upstream.
 
-Intergraph bought 3D Labs and some XVR-500 chips have Intergraph's
-vendor id.
+Fix for sched_mc_powersavigs for pre-Nehalem platforms.
+Child sched domain should clear SD_PREFER_SIBLING if parent will have
+SD_POWERSAVINGS_BALANCE because they are contradicting.
 
-Reported-by: Jurij Smakov <jurij@wooyd.org>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Sets the flags correctly based on sched_mc_power_savings.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20100208100555.GD2931@dirshya.in.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/sunxvr500.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/linux/sched.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/drivers/video/sunxvr500.c
-+++ b/drivers/video/sunxvr500.c
-@@ -400,6 +400,7 @@ static void __devexit e3d_pci_unregister
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -864,7 +864,10 @@ static inline int sd_balance_for_mc_powe
+ 	if (sched_smt_power_savings)
+ 		return SD_POWERSAVINGS_BALANCE;
  
- static struct pci_device_id e3d_pci_table[] = {
- 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a0),	},
-+	{	PCI_DEVICE(0x1091, 0x7a0),			},
- 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a2),	},
- 	{	.vendor = PCI_VENDOR_ID_3DLABS,
- 		.device = PCI_ANY_ID,
+-	return SD_PREFER_SIBLING;
++	if (!sched_mc_power_savings)
++		return SD_PREFER_SIBLING;
++
++	return 0;
+ }
+ 
+ static inline int sd_balance_for_package_power(void)
 
 
