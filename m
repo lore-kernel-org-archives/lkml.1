@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935188Ab0CMAg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:36:29 -0500
-Received: from kroah.org ([198.145.64.141]:47172 "EHLO coco.kroah.org"
+	id S935766Ab0CMAfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:35:21 -0500
+Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935526Ab0CMAcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:32:21 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:15 2010
-Message-Id: <20100313002715.619816233@kvm.kroah.org>
+	id S935500Ab0CMAcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:09 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:14 2010
+Message-Id: <20100313002714.214269789@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:27:32 -0800
+Date: Fri, 12 Mar 2010 16:27:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pete Zaitcev <zaitcev@redhat.com>
-Subject: [119/145] USB: fix crash in uhci_scan_schedule
+       Tim Gardner <tim.gardner@canonical.com>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [103/145] netfilter: xt_recent: fix buffer overflow
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,59 +25,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Pete Zaitcev <zaitcev@redhat.com>
+From: Tim Gardner <tim.gardner@canonical.com>
 
-commit d23356da714595b888686d22cd19061323c09190 upstream.
+commit 2c08522e5d2f0af2d6f05be558946dcbf8173683 upstream.
 
-When hardware is removed on a Stratus, the system may crash like this:
+e->index overflows e->stamps[] every ip_pkt_list_tot packets.
 
-ACPI: PCI interrupt for device 0000:7c:00.1 disabled
-Trying to free nonexistent resource <00000000a8000000-00000000afffffff>
-Trying to free nonexistent resource <00000000a4800000-00000000a480ffff>
-uhci_hcd 0000:7e:1d.0: remove, state 1
-usb usb2: USB disconnect, address 1
-usb 2-1: USB disconnect, address 2
-Unable to handle kernel paging request at 0000000000100100 RIP:
- [<ffffffff88021950>] :uhci_hcd:uhci_scan_schedule+0xa2/0x89c
+Consider the case when ip_pkt_list_tot==1; the first packet received is stored
+in e->stamps[0] and e->index is initialized to 1. The next received packet
+timestamp is then stored at e->stamps[1] in recent_entry_update(),
+a buffer overflow because the maximum e->stamps[] index is 0.
 
- #4 [ffff81011de17e50] uhci_scan_schedule at ffffffff88021918
- #5 [ffff81011de17ed0] uhci_irq at ffffffff88023cb8
- #6 [ffff81011de17f10] usb_hcd_irq at ffffffff801f1c1f
- #7 [ffff81011de17f20] handle_IRQ_event at ffffffff8001123b
- #8 [ffff81011de17f50] __do_IRQ at ffffffff800ba749
-
-This occurs because an interrupt scans uhci->skelqh, which is
-being freed. We do the right thing: disable the interrupts in the
-device, and do not do any processing if the interrupt is shared
-with other source, but it's possible that another CPU gets
-delayed somewhere (e.g. loops) until we started freeing.
-
-The agreed-upon solution is to wait for interrupts to play out
-before proceeding. No other bareers are neceesary.
-
-A backport of this patch was tested on a 2.6.18 based kernel.
-Testing of 2.6.32-based kernels is under way, but it takes us
-forever (months) to turn this around. So I think it's a good
-patch and we should keep it.
-
-Tracked in RH bz#516851
-
-Signed-Off-By: Pete Zaitcev <zaitcev@redhat.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/uhci-hcd.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/netfilter/xt_recent.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -735,6 +735,7 @@ static void uhci_stop(struct usb_hcd *hc
- 		uhci_hc_died(uhci);
- 	uhci_scan_schedule(uhci);
- 	spin_unlock_irq(&uhci->lock);
-+	synchronize_irq(hcd->irq);
+--- a/net/netfilter/xt_recent.c
++++ b/net/netfilter/xt_recent.c
+@@ -173,10 +173,10 @@ recent_entry_init(struct recent_table *t
  
- 	del_timer_sync(&uhci->fsbr_timer);
- 	release_uhci(uhci);
+ static void recent_entry_update(struct recent_table *t, struct recent_entry *e)
+ {
++	e->index %= ip_pkt_list_tot;
+ 	e->stamps[e->index++] = jiffies;
+ 	if (e->index > e->nstamps)
+ 		e->nstamps = e->index;
+-	e->index %= ip_pkt_list_tot;
+ 	list_move_tail(&e->lru_list, &t->lru_list);
+ }
+ 
 
 
