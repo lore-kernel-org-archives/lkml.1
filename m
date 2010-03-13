@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936352Ab0CMBQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:16:43 -0500
+	id S935548Ab0CMBQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:16:58 -0500
 Received: from kroah.org ([198.145.64.141]:60985 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935004Ab0CMAUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:49 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
-Message-Id: <20100313001512.955255807@kvm.kroah.org>
+	id S934998Ab0CMAUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:47 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
+Message-Id: <20100313001512.752710119@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:07 -0800
+Date: Fri, 12 Mar 2010 16:13:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 089/123] x86: Add iMac9,1 to pci_reboot_dmi_table
+       Tao Ma <tao.ma@oracle.com>, Joel Becker <joel.becker@oracle.com>
+Subject: [patch 087/123] ocfs2: Only bug out in direct io write for reflinked extent.
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,39 +26,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Justin P. Mattock <justinmattock@gmail.com>
+From: Tao Ma <tao.ma@oracle.com>
 
-commit 0a832320f1bae6a4169bf683e201378f2437cfc1 upstream.
+commit cbaee472f274ea9a98aabe47025f6e5551acadcb upstream.
 
-On the iMac9,1 /sbin/reboot results in a black mangled screen. Adding
-this DMI entry gets the machine to reboot cleanly as it should.
+In ocfs2_direct_IO_get_blocks, we only need to bug out
+in case of we are going to write a recounted extent rec.
 
-Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-LKML-Reference: <1266362249-3337-1-git-send-email-justinmattock@gmail.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+What a silly bug introduced by me!
+
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/reboot.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/ocfs2/aops.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -461,6 +461,14 @@ static struct dmi_system_id __initdata p
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini3,1"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on the iMac9,1. */
-+		.callback = set_pci_reboot,
-+		.ident = "Apple iMac9,1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "iMac9,1"),
-+		},
-+	},
- 	{ }
- };
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -577,8 +577,9 @@ static int ocfs2_direct_IO_get_blocks(st
+ 		goto bail;
+ 	}
  
+-	/* We should already CoW the refcounted extent. */
+-	BUG_ON(ext_flags & OCFS2_EXT_REFCOUNTED);
++	/* We should already CoW the refcounted extent in case of create. */
++	BUG_ON(create && (ext_flags & OCFS2_EXT_REFCOUNTED));
++
+ 	/*
+ 	 * get_more_blocks() expects us to describe a hole by clearing
+ 	 * the mapped bit on bh_result().
 
 
