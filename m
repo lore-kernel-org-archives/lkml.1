@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935166Ab0CMA3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:29:22 -0500
-Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	id S935168Ab0CMAYl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:24:41 -0500
+Received: from kroah.org ([198.145.64.141]:32900 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935033Ab0CMAU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:59 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
-Message-Id: <20100313001514.049227368@kvm.kroah.org>
+	id S935072Ab0CMAVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:14 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.727119810@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:20 -0800
+Date: Fri, 12 Mar 2010 16:13:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Dumon <j.dumon@option.com>, Phil Dibowitz <phil@ipom.com>
-Subject: [patch 102/123] USB: unusual_devs: Add support for multiple Option 3G sticks
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 121/123] sched: Fix SMT scheduler regression in find_busiest_queue()
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,126 +28,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Jan Dumon <j.dumon@option.com>
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-commit 46216e4fbe8c62059b5440dec0b236f386248a41 upstream.
+commit 9000f05c6d1607f79c0deacf42b09693be673f4c upstream.
 
-Enable the SD-Card interface on multiple Option 3G sticks.
-The unusual_devs.h entry is necessary because the device descriptor is
-vendor-specific. That prevents usb-storage from binding to it as an interface
-driver.
+Fix a SMT scheduler performance regression that is leading to a scenario
+where SMT threads in one core are completely idle while both the SMT threads
+in another core (on the same socket) are busy.
 
-Signed-off-by: Jan Dumon <j.dumon@option.com>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+This is caused by this commit (with the problematic code highlighted)
+
+   commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
+   Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+   Date:   Tue Sep 1 10:34:38 2009 +0200
+
+   sched: Try to deal with low capacity
+
+   @@ -4203,15 +4223,18 @@ find_busiest_queue()
+   ...
+	for_each_cpu(i, sched_group_cpus(group)) {
+   +	unsigned long power = power_of(i);
+
+   ...
+
+   -	wl = weighted_cpuload(i);
+   +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+   +	wl /= power;
+
+   -	if (rq->nr_running == 1 && wl > imbalance)
+   +	if (capacity && rq->nr_running == 1 && wl > imbalance)
+		continue;
+
+On a SMT system, power of the HT logical cpu will be 589 and
+the scheduler load imbalance (for scenarios like the one mentioned above)
+can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
+the weighted load with the power will result in "wl > imbalance" and
+ultimately resulting in find_busiest_queue() return NULL, causing
+load_balance() to think that the load is well balanced. But infact
+one of the tasks can be moved to the idle core for optimal performance.
+
+We don't need to use the weighted load (wl) scaled by the cpu power to
+compare with  imabalance. In that condition, we already know there is only a
+single task "rq->nr_running == 1" and the comparison between imbalance,
+wl is to make sure that we select the correct priority thread which matches
+imbalance. So we really need to compare the imabalnce with the original
+weighted load of the cpu and not the scaled load.
+
+But in other conditions where we want the most hammered(busiest) cpu, we can
+use scaled load to ensure that we consider the cpu power in addition to the
+actual load on that cpu, so that we can move the load away from the
+guy that is getting most hammered with respect to the actual capacity,
+as compared with the rest of the cpu's in that busiest group.
+
+Fix it.
+
+Reported-by: Ma Ling <ling.ma@intel.com>
+Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |   88 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 86 insertions(+), 2 deletions(-)
+ kernel/sched.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1147,8 +1147,8 @@ UNUSUAL_DEV( 0x0af0, 0x7401, 0x0000, 0x0
- 		0 ),
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *g
+ 			continue;
  
- /* Reported by Jan Dumon <j.dumon@option.com>
-- * This device (wrongly) has a vendor-specific device descriptor.
-- * The entry is needed so usb-storage can bind to it's mass-storage
-+ * These devices (wrongly) have a vendor-specific device descriptor.
-+ * These entries are needed so usb-storage can bind to their mass-storage
-  * interface as an interface driver */
- UNUSUAL_DEV( 0x0af0, 0x7501, 0x0000, 0x0000,
- 		"Option",
-@@ -1156,6 +1156,90 @@ UNUSUAL_DEV( 0x0af0, 0x7501, 0x0000, 0x0
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		0 ),
+ 		rq = cpu_rq(i);
+-		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+-		wl /= power;
++		wl = weighted_cpuload(i);
  
-+UNUSUAL_DEV( 0x0af0, 0x7701, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0451 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
++		/*
++		 * When comparing with imbalance, use weighted_cpuload()
++		 * which is not scaled with the cpu power.
++		 */
+ 		if (capacity && rq->nr_running == 1 && wl > imbalance)
+ 			continue;
+ 
++		/*
++		 * For the load comparisons with the other cpu's, consider
++		 * the weighted_cpuload() scaled with the cpu power, so that
++		 * the load can be moved away from the cpu that is potentially
++		 * running at a lower capacity.
++		 */
++		wl = (wl * SCHED_LOAD_SCALE) / power;
 +
-+UNUSUAL_DEV( 0x0af0, 0x7706, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0451 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x7901, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0452 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x7A01, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0461 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x7A05, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0461 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x8300, 0x0000, 0x0000,
-+		"Option",
-+		"GI 033x SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x8302, 0x0000, 0x0000,
-+		"Option",
-+		"GI 033x SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0x8304, 0x0000, 0x0000,
-+		"Option",
-+		"GI 033x SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xc100, 0x0000, 0x0000,
-+		"Option",
-+		"GI 070x SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xd057, 0x0000, 0x0000,
-+		"Option",
-+		"GI 1505 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xd058, 0x0000, 0x0000,
-+		"Option",
-+		"GI 1509 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xd157, 0x0000, 0x0000,
-+		"Option",
-+		"GI 1515 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xd257, 0x0000, 0x0000,
-+		"Option",
-+		"GI 1215 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
-+UNUSUAL_DEV( 0x0af0, 0xd357, 0x0000, 0x0000,
-+		"Option",
-+		"GI 1505 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
-+
- /* Reported by Ben Efros <ben@pc-doctor.com> */
- UNUSUAL_DEV( 0x0bc2, 0x3010, 0x0000, 0x0000,
- 		"Seagate",
+ 		if (wl > max_load) {
+ 			max_load = wl;
+ 			busiest = rq;
 
 
