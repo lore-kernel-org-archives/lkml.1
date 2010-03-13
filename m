@@ -1,165 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935516Ab0CMAcR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:32:17 -0500
-Received: from kroah.org ([198.145.64.141]:46780 "EHLO coco.kroah.org"
+	id S935134Ab0CMAYi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:24:38 -0500
+Received: from kroah.org ([198.145.64.141]:32904 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935386Ab0CMAbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:09 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:08 2010
-Message-Id: <20100313002708.215028751@kvm.kroah.org>
+	id S934942Ab0CMAVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:14 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.812359063@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:07 -0800
+Date: Fri, 12 Mar 2010 16:13:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [034/145] sparc: Align clone and signal stacks to 16 bytes.
-In-Reply-To: <20100313002816.GA18903@kroah.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [patch 122/123] sched: Dont use possibly stale sched_class
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let me know.
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-----------------
-From: David S. Miller <davem@davemloft.net>
+-----------------
 
-[ Upstream commits f036d9f3985a529a81e582f68aa984eb7b20d54d
-  and 440ab7ac2d6b735fb278a1ff1674f6716314c6bb ]
+From: Thomas Gleixner <tglx@linutronix.de>
 
-This is mandatory for 64-bit processes, and doing it also for 32-bit
-processes saves a conditional in the compat case.
+commit 83ab0aa0d5623d823444db82c3b3c34d7ec364ae upstream.
 
-This fixes the glibc/nptl/tst-stdio1 test case, as well
-as many others, on 64-bit.
+setscheduler() saves task->sched_class outside of the rq->lock held
+region for a check after the setscheduler changes have become
+effective. That might result in checking a stale value.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+rtmutex_setprio() has the same problem, though it is protected by
+p->pi_lock against setscheduler(), but for correctness sake (and to
+avoid bad examples) it needs to be fixed as well.
+
+Retrieve task->sched_class inside of the rq->lock held region.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/kernel/process_32.c |    2 +-
- arch/sparc/kernel/process_64.c |    8 ++++----
- arch/sparc/kernel/signal32.c   |   10 ++++++----
- arch/sparc/kernel/signal_32.c  |    6 ++++--
- arch/sparc/kernel/signal_64.c  |    8 +++++---
- 5 files changed, 20 insertions(+), 14 deletions(-)
+ kernel/sched.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/sparc/kernel/process_32.c
-+++ b/arch/sparc/kernel/process_32.c
-@@ -526,7 +526,7 @@ int copy_thread(unsigned long clone_flag
- 			 * Set some valid stack frames to give to the child.
- 			 */
- 			childstack = (struct sparc_stackf __user *)
--				(sp & ~0x7UL);
-+				(sp & ~0xfUL);
- 			parentstack = (struct sparc_stackf __user *)
- 				regs->u_regs[UREG_FP];
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6065,7 +6065,7 @@ void rt_mutex_setprio(struct task_struct
+ 	unsigned long flags;
+ 	int oldprio, on_rq, running;
+ 	struct rq *rq;
+-	const struct sched_class *prev_class = p->sched_class;
++	const struct sched_class *prev_class;
  
---- a/arch/sparc/kernel/process_64.c
-+++ b/arch/sparc/kernel/process_64.c
-@@ -398,11 +398,11 @@ static unsigned long clone_stackframe(un
- 	} else
- 		__get_user(fp, &(((struct reg_window32 __user *)psp)->ins[6]));
+ 	BUG_ON(prio < 0 || prio > MAX_PRIO);
  
--	/* Now 8-byte align the stack as this is mandatory in the
--	 * Sparc ABI due to how register windows work.  This hides
--	 * the restriction from thread libraries etc.  -DaveM
-+	/* Now align the stack as this is mandatory in the Sparc ABI
-+	 * due to how register windows work.  This hides the
-+	 * restriction from thread libraries etc.
- 	 */
--	csp &= ~7UL;
-+	csp &= ~15UL;
+@@ -6073,6 +6073,7 @@ void rt_mutex_setprio(struct task_struct
+ 	update_rq_clock(rq);
  
- 	distance = fp - psp;
- 	rval = (csp - distance);
---- a/arch/sparc/kernel/signal32.c
-+++ b/arch/sparc/kernel/signal32.c
-@@ -120,8 +120,8 @@ struct rt_signal_frame32 {
- };
- 
- /* Align macros */
--#define SF_ALIGNEDSZ  (((sizeof(struct signal_frame32) + 7) & (~7)))
--#define RT_ALIGNEDSZ  (((sizeof(struct rt_signal_frame32) + 7) & (~7)))
-+#define SF_ALIGNEDSZ  (((sizeof(struct signal_frame32) + 15) & (~15)))
-+#define RT_ALIGNEDSZ  (((sizeof(struct rt_signal_frame32) + 15) & (~15)))
- 
- int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
+ 	oldprio = p->prio;
++	prev_class = p->sched_class;
+ 	on_rq = p->se.on_rq;
+ 	running = task_current(rq, p);
+ 	if (on_rq)
+@@ -6292,7 +6293,7 @@ static int __sched_setscheduler(struct t
  {
-@@ -420,15 +420,17 @@ static void __user *get_sigframe(struct
- 			sp = current->sas_ss_sp + current->sas_ss_size;
- 	}
+ 	int retval, oldprio, oldpolicy = -1, on_rq, running;
+ 	unsigned long flags;
+-	const struct sched_class *prev_class = p->sched_class;
++	const struct sched_class *prev_class;
+ 	struct rq *rq;
+ 	int reset_on_fork;
  
-+	sp -= framesize;
-+
- 	/* Always align the stack frame.  This handles two cases.  First,
- 	 * sigaltstack need not be mindful of platform specific stack
- 	 * alignment.  Second, if we took this signal because the stack
- 	 * is not aligned properly, we'd like to take the signal cleanly
- 	 * and report that.
- 	 */
--	sp &= ~7UL;
-+	sp &= ~15UL;
+@@ -6406,6 +6407,7 @@ recheck:
+ 	p->sched_reset_on_fork = reset_on_fork;
  
--	return (void __user *)(sp - framesize);
-+	return (void __user *) sp;
- }
+ 	oldprio = p->prio;
++	prev_class = p->sched_class;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
  
- static int save_fpu_state32(struct pt_regs *regs, __siginfo_fpu_t __user *fpu)
---- a/arch/sparc/kernel/signal_32.c
-+++ b/arch/sparc/kernel/signal_32.c
-@@ -267,15 +267,17 @@ static inline void __user *get_sigframe(
- 			sp = current->sas_ss_sp + current->sas_ss_size;
- 	}
- 
-+	sp -= framesize;
-+
- 	/* Always align the stack frame.  This handles two cases.  First,
- 	 * sigaltstack need not be mindful of platform specific stack
- 	 * alignment.  Second, if we took this signal because the stack
- 	 * is not aligned properly, we'd like to take the signal cleanly
- 	 * and report that.
- 	 */
--	sp &= ~7UL;
-+	sp &= ~15UL;
- 
--	return (void __user *)(sp - framesize);
-+	return (void __user *) sp;
- }
- 
- static inline int
---- a/arch/sparc/kernel/signal_64.c
-+++ b/arch/sparc/kernel/signal_64.c
-@@ -353,7 +353,7 @@ segv:
- /* Checks if the fp is valid */
- static int invalid_frame_pointer(void __user *fp, int fplen)
- {
--	if (((unsigned long) fp) & 7)
-+	if (((unsigned long) fp) & 15)
- 		return 1;
- 	return 0;
- }
-@@ -396,15 +396,17 @@ static inline void __user *get_sigframe(
- 			sp = current->sas_ss_sp + current->sas_ss_size;
- 	}
- 
-+	sp -= framesize;
-+
- 	/* Always align the stack frame.  This handles two cases.  First,
- 	 * sigaltstack need not be mindful of platform specific stack
- 	 * alignment.  Second, if we took this signal because the stack
- 	 * is not aligned properly, we'd like to take the signal cleanly
- 	 * and report that.
- 	 */
--	sp &= ~7UL;
-+	sp &= ~15UL;
- 
--	return (void __user *)(sp - framesize);
-+	return (void __user *) sp;
- }
- 
- static inline void
+ 	if (running)
 
 
