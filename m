@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935605Ab0CMAdF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:33:05 -0500
-Received: from kroah.org ([198.145.64.141]:46903 "EHLO coco.kroah.org"
+	id S935649Ab0CMApM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:45:12 -0500
+Received: from kroah.org ([198.145.64.141]:47216 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935413Ab0CMAba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:30 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
-Message-Id: <20100313002709.858526562@kvm.kroah.org>
+	id S935549Ab0CMAca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:30 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:16 2010
+Message-Id: <20100313002716.566888858@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:26 -0800
+Date: Fri, 12 Mar 2010 16:27:43 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dave Airlie <airlied@redhat.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [053/145] offb: Add support for framebuffer handoff to offb.
+       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [130/145] drm/i915: Use a dmi quirk to skip a broken SDVO TV output.
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,56 +24,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Dave Airlie <airlied@ppcg5.localdomain>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit ceae8cbe94f3127253110e2d01b9334069e93177 upstream.
+commit 6070a4a928f8c92b9fae7d6717ebbb05f425d6b2 upstream.
 
-This allows offb to be used for initial framebuffer,
-and a kms driver to take over later in the boot sequence.
+This IBM system has a multi-function SDVO card that reports both VGA
+and TV, but the system has no TV connector.  The TV connector always
+reported as connected, which would lead to poor modesetting choices.
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+https://bugs.freedesktop.org/show_bug.cgi?id=25787
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Tested-by: Vance <liangghv@sg.ibm.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/offb.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/i915/intel_sdvo.c |   23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -282,8 +282,17 @@ static int offb_set_par(struct fb_info *
- 	return 0;
+--- a/drivers/gpu/drm/i915/intel_sdvo.c
++++ b/drivers/gpu/drm/i915/intel_sdvo.c
+@@ -35,6 +35,7 @@
+ #include "i915_drm.h"
+ #include "i915_drv.h"
+ #include "intel_sdvo_regs.h"
++#include <linux/dmi.h>
+ 
+ #undef SDVO_DEBUG
+ 
+@@ -2289,6 +2290,25 @@ intel_sdvo_get_slave_addr(struct drm_dev
+ 		return 0x72;
  }
  
-+static void offb_destroy(struct fb_info *info)
++static int intel_sdvo_bad_tv_callback(const struct dmi_system_id *id)
 +{
-+	if (info->screen_base)
-+		iounmap(info->screen_base);
-+	release_mem_region(info->aperture_base, info->aperture_size);
-+	framebuffer_release(info);
++	DRM_DEBUG_KMS("Ignoring bad SDVO TV connector for %s\n", id->ident);
++	return 1;
 +}
 +
- static struct fb_ops offb_ops = {
- 	.owner		= THIS_MODULE,
-+	.fb_destroy	= offb_destroy,
- 	.fb_setcolreg	= offb_setcolreg,
- 	.fb_set_par	= offb_set_par,
- 	.fb_blank	= offb_blank,
-@@ -482,10 +491,14 @@ static void __init offb_init_fb(const ch
- 	var->sync = 0;
- 	var->vmode = FB_VMODE_NONINTERLACED;
- 
-+	/* set offb aperture size for generic probing */
-+	info->aperture_base = address;
-+	info->aperture_size = fix->smem_len;
++static struct dmi_system_id intel_sdvo_bad_tv[] = {
++	{
++		.callback = intel_sdvo_bad_tv_callback,
++		.ident = "IntelG45/ICH10R/DME1737",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM CORPORATION"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "4800784"),
++		},
++	},
 +
- 	info->fbops = &offb_ops;
- 	info->screen_base = ioremap(address, fix->smem_len);
- 	info->pseudo_palette = (void *) (info + 1);
--	info->flags = FBINFO_DEFAULT | foreign_endian;
-+	info->flags = FBINFO_DEFAULT | FBINFO_MISC_FIRMWARE | foreign_endian;
++	{ }	/* terminating entry */
++};
++
+ static bool
+ intel_sdvo_output_setup(struct intel_output *intel_output, uint16_t flags)
+ {
+@@ -2329,7 +2349,8 @@ intel_sdvo_output_setup(struct intel_out
+ 					(1 << INTEL_SDVO_NON_TV_CLONE_BIT) |
+ 					(1 << INTEL_ANALOG_CLONE_BIT);
+ 		}
+-	} else if (flags & SDVO_OUTPUT_SVID0) {
++	} else if ((flags & SDVO_OUTPUT_SVID0) &&
++		   !dmi_check_system(intel_sdvo_bad_tv)) {
  
- 	fb_alloc_cmap(&info->cmap, 256, 0);
- 
+ 		sdvo_priv->controlled_output = SDVO_OUTPUT_SVID0;
+ 		encoder->encoder_type = DRM_MODE_ENCODER_TVDAC;
 
 
