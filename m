@@ -1,66 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935607Ab0CMTgM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 14:36:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38859 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935476Ab0CMTgJ (ORCPT
+	id S935620Ab0CMTgZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 14:36:25 -0500
+Received: from mail-iw0-f176.google.com ([209.85.223.176]:39942 "EHLO
+	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935476Ab0CMTgU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 14:36:09 -0500
-X-Authority-Analysis: v=1.0 c=1 a=e8g_rxFtlFIA:10 a=kj9zAlcOel0A:10 a=yQdBAQUQAAAA:8 a=nFsLIzLyHDBlFbnoaNUA:9 a=u-2cL92-TPdDWCARUIEA:7 a=yOKDC7BEhPy-Dj7IpFwKXPlNrJIA:4 a=CjuIK1q_8ugA:10 a=IcxpeKGZWnEA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 65.28.92.235
-Date: Sat, 13 Mar 2010 13:36:05 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: torvalds@linux-foundation.org, ebiederm@xmission.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: Fix BUG from sysfs attributes change in commit
- a2db6842873c8e5a70652f278d469128cb52db70
-Message-ID: <4b9be925.V1GDM6zOAFHGuyuW%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Sat, 13 Mar 2010 14:36:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=q1optY1sjt85YxwlevxsQ2EOtKhWZReuErKoAwKSX1azHezlOweIlzTySLa2FNqVB4
+         ORS0Yx8x5Sn8HdMJFiirlMbNQBixbg5+Zz6ZoPI6t7avbhL2RrY2IDBvD+BteovQVQ6Q
+         Vv/80EDxO+bapQt5IKxghZGSn2ReRcPP1I4RU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1268418441.2802.61.camel@mulgrave.site>
+References: <1268242604.22601.25.camel@mulgrave.site> <alpine.LFD.2.00.1003121008420.3719@i5.linux-foundation.org> 
+	<1268418441.2802.61.camel@mulgrave.site>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Sat, 13 Mar 2010 11:35:59 -0800
+X-Google-Sender-Auth: 2498aba4f791670d
+Message-ID: <2c0942db1003131135m1bea386dx4dd7990832cfbfea@mail.gmail.com>
+Subject: Re: [GIT PULL] final scsi updates for 2.6.34-rc1
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit a2db6842873c8e5a70652f278d469128cb52db70 changed the way that
-sysfs attributes are handled. With lockdep checking enabled, the
-following BUG comes from thermal_zone_bind_cooling_device:
+On Fri, Mar 12, 2010 at 10:27 AM, James Bottomley wrote:
+> I do always have a tree ready in the first days of the merge window.  It
+> was, in fact, here:
 
-BUG: key ffff880037469060 not in .data!
-------------[ cut here ]------------
-WARNING: at kernel/lockdep.c:2706 lockdep_init_map+0x236/0x5d0()
-Hardware name: HP Pavilion dv2700 Notebook PC
-Modules linked in: processor(+) ide_pci_generic amd74xx ide_core thermal
-Pid: 621, comm: modprobe Not tainted 2.6.34-rc1-wl #318
-Call Trace:
- [<ffffffff81046068>] warn_slowpath_common+0x78/0xb0
- [<ffffffff810460af>] warn_slowpath_null+0xf/0x20
- [<ffffffff810765e6>] lockdep_init_map+0x236/0x5d0
- [<ffffffff811633aa>] sysfs_add_file_mode+0x6a/0xc0
- [<ffffffff811ab0f0>] ? sprintf+0x40/0x50
- [<ffffffff8116340c>] sysfs_add_file+0xc/0x10
- [<ffffffff811634e1>] sysfs_create_file+0x21/0x30
- [<ffffffff81245d14>] device_create_file+0x14/0x20
- [<ffffffff8126b814>] thermal_zone_bind_cooling_device+0x1c4/0x310
- [<ffffffffa0000f09>] acpi_thermal_cooling_device_cb+0x98/0x18f [thermal]
- [<ffffffff8126ac50>] ? thermal_cooling_device_register+0x200/0x2f0
-(Rest of dump snipped.)
+[...]
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+> The slight problem is that I accumulate updates (like almost everyone
+> else) from the few days before the merge window opened up until about
+> the middle of the second week.  That's what goes into the final pull,
+> plus assorted bug fixes that showed up during the window.
 
-Index: wireless-testing/drivers/thermal/thermal_sys.c
-===================================================================
---- wireless-testing.orig/drivers/thermal/thermal_sys.c
-+++ wireless-testing/drivers/thermal/thermal_sys.c
-@@ -728,6 +728,7 @@ int thermal_zone_bind_cooling_device(str
- 	dev->attr.attr.name = dev->attr_name;
- 	dev->attr.attr.mode = 0444;
- 	dev->attr.show = thermal_cooling_device_trip_point_show;
-+	sysfs_bin_attr_init(&dev->attr);
- 	result = device_create_file(&tz->device, &dev->attr);
- 	if (result)
- 		goto remove_symbol_link;
+You appear to being using git as a sort of baroque CVS. Fixes that
+arrive after the beginning of the merge window should be put into a
+separate branch other than the one ready for submission. Features that
+arrive after the beginning of the merge window should be placed into
+yet another branch destined for the next merge window.
