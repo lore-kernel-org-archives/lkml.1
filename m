@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935930Ab0CMAz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:55:57 -0500
-Received: from kroah.org ([198.145.64.141]:46878 "EHLO coco.kroah.org"
+	id S935899Ab0CMAxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:53:46 -0500
+Received: from kroah.org ([198.145.64.141]:46950 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935376Ab0CMAb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:26 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
-Message-Id: <20100313002709.597157937@kvm.kroah.org>
+	id S935343Ab0CMAbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:39 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
+Message-Id: <20100313002710.819906955@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:23 -0800
+Date: Fri, 12 Mar 2010 16:26:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Aaro Koskinen <aaro.koskinen@nokia.com>,
-       Alessandro Zummo <a.zummo@towertech.it>
-Subject: [050/145] rtc-core: fix memory leak
+       Ang Way Chuang <wcang79@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [064/145] dvb-core: Fix DoS bug in ULE decapsulation code that can be triggered by an invalid Payload Pointer
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,32 +25,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
+From: Ang Way Chuang <wcang79@gmail.com>
 
-commit 2a7a06a0cdd86d572e91657603180da5992be6d3 upstream.
+commit 29e1fa3565a7951cc415c634eb2b78dbdbee151d upstream.
 
-The idr should be destroyed when the module is unloaded. Found with
-kmemleak.
+ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
+has a bug that causes endless loop when Payload Pointer of MPEG2-TS
+frame is 182 or 183.  Anyone who sends malicious MPEG2-TS frame will
+cause the receiver of ULE SNDU to go into endless loop.
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+This patch was generated and tested against linux-2.6.32.9 and should
+apply cleanly to linux-2.6.33 as well because there was only one typo
+fix to dvb_net.c since v2.6.32.
+
+This bug was brought to you by modern day Santa Claus who decided to
+shower the satellite dish at Keio University with heavy snow causing
+huge burst of errors.  We, receiver end, received Santa Claus's gift in
+the form of kernel bug.
+
+Care has been taken not to introduce more bug by fixing this bug, but
+please scrutinize the code for I always produces buggy code.
+
+Signed-off-by: Ang Way Chuang <wcang79@gmail.com>
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/rtc/class.c |    1 +
+ drivers/media/dvb/dvb-core/dvb_net.c |    1 +
  1 file changed, 1 insertion(+)
 
---- a/drivers/rtc/class.c
-+++ b/drivers/rtc/class.c
-@@ -226,6 +226,7 @@ static void __exit rtc_exit(void)
- {
- 	rtc_dev_exit();
- 	class_destroy(rtc_class);
-+	idr_destroy(&rtc_idr);
- }
+--- a/drivers/media/dvb/dvb-core/dvb_net.c
++++ b/drivers/media/dvb/dvb-core/dvb_net.c
+@@ -504,6 +504,7 @@ static void dvb_net_ule( struct net_devi
+ 				       "bytes left in TS.  Resyncing.\n", ts_remain);
+ 				priv->ule_sndu_len = 0;
+ 				priv->need_pusi = 1;
++				ts += TS_SZ;
+ 				continue;
+ 			}
  
- subsys_initcall(rtc_init);
 
 
