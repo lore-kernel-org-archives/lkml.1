@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935005Ab0CMAUt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:20:49 -0500
-Received: from kroah.org ([198.145.64.141]:60703 "EHLO coco.kroah.org"
+	id S935019Ab0CMBP7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:15:59 -0500
+Received: from kroah.org ([198.145.64.141]:32800 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934896Ab0CMAUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:01 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:08 2010
-Message-Id: <20100313001508.681890784@kvm.kroah.org>
+	id S935017Ab0CMAUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:53 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
+Message-Id: <20100313001513.362171207@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:18 -0800
+Date: Fri, 12 Mar 2010 16:13:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 040/123] perf: Reimplement frequency driven sampling
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: [patch 094/123] USB: fix the idProduct value for USB-3.0 root hubs
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,226 +27,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit abd50713944c8ea9e0af5b7bffa0aacae21cc91a upstream.
+commit cd780694920fbf869b23c8afb0bd083e7b0448c7 upstream.
 
-There was a bug in the old period code that caused intel_pmu_enable_all()
-or native_write_msr_safe() to show up quite high in the profiles.
+This patch (as1346) changes the idProduct value for USB-3.0 root hubs
+from 0x0002 (which we already use for USB-2.0 root hubs) to 0x0003.
 
-In staring at that code it made my head hurt, so I rewrote it in a
-hopefully simpler fashion. Its now fully symetric between tick and
-overflow driven adjustments and uses less data to boot.
-
-The only complication is that it basically wants to do a u128 division.
-The code approximates that in a rather simple truncate until it fits
-fashion, taking care to balance the terms while truncating.
-
-This version does not generate that sampling artefact.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Acked-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/perf_event.h |    5 -
- kernel/perf_event.c        |  132 +++++++++++++++++++++++++++++++--------------
- 2 files changed, 94 insertions(+), 43 deletions(-)
+ drivers/usb/core/hcd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -496,9 +496,8 @@ struct hw_perf_event {
- 	atomic64_t			period_left;
- 	u64				interrupts;
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -141,7 +141,7 @@ static const u8 usb3_rh_dev_descriptor[1
+ 	0x09,       /*  __u8  bMaxPacketSize0; 2^9 = 512 Bytes */
  
--	u64				freq_count;
--	u64				freq_interrupts;
--	u64				freq_stamp;
-+	u64				freq_time_stamp;
-+	u64				freq_count_stamp;
- #endif
- };
+ 	0x6b, 0x1d, /*  __le16 idVendor; Linux Foundation */
+-	0x02, 0x00, /*  __le16 idProduct; device 0x0002 */
++	0x03, 0x00, /*  __le16 idProduct; device 0x0003 */
+ 	KERNEL_VER, KERNEL_REL, /*  __le16 bcdDevice */
  
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1350,14 +1350,83 @@ static void perf_event_cpu_sched_in(stru
- 
- static void perf_log_throttle(struct perf_event *event, int enable);
- 
--static void perf_adjust_period(struct perf_event *event, u64 events)
-+static u64 perf_calculate_period(struct perf_event *event, u64 nsec, u64 count)
-+{
-+	u64 frequency = event->attr.sample_freq;
-+	u64 sec = NSEC_PER_SEC;
-+	u64 divisor, dividend;
-+
-+	int count_fls, nsec_fls, frequency_fls, sec_fls;
-+
-+	count_fls = fls64(count);
-+	nsec_fls = fls64(nsec);
-+	frequency_fls = fls64(frequency);
-+	sec_fls = 30;
-+
-+	/*
-+	 * We got @count in @nsec, with a target of sample_freq HZ
-+	 * the target period becomes:
-+	 *
-+	 *             @count * 10^9
-+	 * period = -------------------
-+	 *          @nsec * sample_freq
-+	 *
-+	 */
-+
-+	/*
-+	 * Reduce accuracy by one bit such that @a and @b converge
-+	 * to a similar magnitude.
-+	 */
-+#define REDUCE_FLS(a, b) 		\
-+do {					\
-+	if (a##_fls > b##_fls) {	\
-+		a >>= 1;		\
-+		a##_fls--;		\
-+	} else {			\
-+		b >>= 1;		\
-+		b##_fls--;		\
-+	}				\
-+} while (0)
-+
-+	/*
-+	 * Reduce accuracy until either term fits in a u64, then proceed with
-+	 * the other, so that finally we can do a u64/u64 division.
-+	 */
-+	while (count_fls + sec_fls > 64 && nsec_fls + frequency_fls > 64) {
-+		REDUCE_FLS(nsec, frequency);
-+		REDUCE_FLS(sec, count);
-+	}
-+
-+	if (count_fls + sec_fls > 64) {
-+		divisor = nsec * frequency;
-+
-+		while (count_fls + sec_fls > 64) {
-+			REDUCE_FLS(count, sec);
-+			divisor >>= 1;
-+		}
-+
-+		dividend = count * sec;
-+	} else {
-+		dividend = count * sec;
-+
-+		while (nsec_fls + frequency_fls > 64) {
-+			REDUCE_FLS(nsec, frequency);
-+			dividend >>= 1;
-+		}
-+
-+		divisor = nsec * frequency;
-+	}
-+
-+	return div64_u64(dividend, divisor);
-+}
-+
-+static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
- {
- 	struct hw_perf_event *hwc = &event->hw;
- 	u64 period, sample_period;
- 	s64 delta;
- 
--	events *= hwc->sample_period;
--	period = div64_u64(events, event->attr.sample_freq);
-+	period = perf_calculate_period(event, nsec, count);
- 
- 	delta = (s64)(period - hwc->sample_period);
- 	delta = (delta + 7) / 8; /* low pass filter */
-@@ -1368,13 +1437,22 @@ static void perf_adjust_period(struct pe
- 		sample_period = 1;
- 
- 	hwc->sample_period = sample_period;
-+
-+	if (atomic64_read(&hwc->period_left) > 8*sample_period) {
-+		perf_disable();
-+		event->pmu->disable(event);
-+		atomic64_set(&hwc->period_left, 0);
-+		event->pmu->enable(event);
-+		perf_enable();
-+	}
- }
- 
- static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
- {
- 	struct perf_event *event;
- 	struct hw_perf_event *hwc;
--	u64 interrupts, freq;
-+	u64 interrupts, now;
-+	s64 delta;
- 
- 	raw_spin_lock(&ctx->lock);
- 	list_for_each_entry_rcu(event, &ctx->event_list, event_entry) {
-@@ -1395,44 +1473,18 @@ static void perf_ctx_adjust_freq(struct
- 		if (interrupts == MAX_INTERRUPTS) {
- 			perf_log_throttle(event, 1);
- 			event->pmu->unthrottle(event);
--			interrupts = 2*sysctl_perf_event_sample_rate/HZ;
- 		}
- 
- 		if (!event->attr.freq || !event->attr.sample_freq)
- 			continue;
- 
--		/*
--		 * if the specified freq < HZ then we need to skip ticks
--		 */
--		if (event->attr.sample_freq < HZ) {
--			freq = event->attr.sample_freq;
--
--			hwc->freq_count += freq;
--			hwc->freq_interrupts += interrupts;
--
--			if (hwc->freq_count < HZ)
--				continue;
--
--			interrupts = hwc->freq_interrupts;
--			hwc->freq_interrupts = 0;
--			hwc->freq_count -= HZ;
--		} else
--			freq = HZ;
-+		event->pmu->read(event);
-+		now = atomic64_read(&event->count);
-+		delta = now - hwc->freq_count_stamp;
-+		hwc->freq_count_stamp = now;
- 
--		perf_adjust_period(event, freq * interrupts);
--
--		/*
--		 * In order to avoid being stalled by an (accidental) huge
--		 * sample period, force reset the sample period if we didn't
--		 * get any events in this freq period.
--		 */
--		if (!interrupts) {
--			perf_disable();
--			event->pmu->disable(event);
--			atomic64_set(&hwc->period_left, 0);
--			event->pmu->enable(event);
--			perf_enable();
--		}
-+		if (delta > 0)
-+			perf_adjust_period(event, TICK_NSEC, delta);
- 	}
- 	raw_spin_unlock(&ctx->lock);
- }
-@@ -3688,12 +3740,12 @@ static int __perf_event_overflow(struct
- 
- 	if (event->attr.freq) {
- 		u64 now = perf_clock();
--		s64 delta = now - hwc->freq_stamp;
-+		s64 delta = now - hwc->freq_time_stamp;
- 
--		hwc->freq_stamp = now;
-+		hwc->freq_time_stamp = now;
- 
--		if (delta > 0 && delta < TICK_NSEC)
--			perf_adjust_period(event, NSEC_PER_SEC / (int)delta);
-+		if (delta > 0 && delta < 2*TICK_NSEC)
-+			perf_adjust_period(event, delta, hwc->last_period);
- 	}
- 
- 	/*
+ 	0x03,       /*  __u8  iManufacturer; */
 
 
