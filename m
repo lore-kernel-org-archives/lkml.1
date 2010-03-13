@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936356Ab0CMBRb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:17:31 -0500
-Received: from kroah.org ([198.145.64.141]:60982 "EHLO coco.kroah.org"
+	id S936340Ab0CMBR2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:17:28 -0500
+Received: from kroah.org ([198.145.64.141]:60985 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934992Ab0CMAUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:44 -0500
+	id S934993Ab0CMAUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:45 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:12 2010
-Message-Id: <20100313001512.406988965@kvm.kroah.org>
+Message-Id: <20100313001512.497683521@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:01 -0800
+Date: Fri, 12 Mar 2010 16:13:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [patch 083/123] thinkpad-acpi: document HKEY event 3006
+Subject: [patch 084/123] thinkpad-acpi: make driver events work in NVRAM poll mode
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,54 +28,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit bf8b29c8f7f8269e99eca8b19048ed5b34b51810 upstream.
+commit 7f0cf712a74fcc3ad21f0bde95bd32c2f2cc3888 upstream.
 
-Event 0x3006 is used to help power management of the ODD in the
-UltraBay.  The EC generates this event when the ODD eject button is
-pressed (even if the bay is powered down).
+Thadeu Lima de Souza Cascardo reports this:
 
-Normally, Linux doesn't need this as we keep the SATA link powered
-up (which wastes power).  The EC powers up the bay by itself when the
-ODD eject button is pressed, and the SATA PHY reports the hotplug.
+Brightness notification does not work until the user writes to
+hotkey_mask attribute.  That's because the polling thread will only run
+if hotkey_user_mask is set and someone is reading the input device or
+if hotkey_driver_mask is set.  In this second case, this condition is
+not tested after the mask is changed, because the brightness and
+volume drivers are started after the hotkey drivers.
 
-However, we could also power that SATA link down (and for that matter,
-also power down the Ultrabay) if the ODD is left idle for a while with
-no disk inside, and use event 0x3006 to know when we need that SATA link
-powered back up.
+Fix tpacpi_hotkey_driver_mask_set() to call hotkey_poll_setup(), so
+that the poller kthread will be started when needed.
 
-For now, just stop asking for more information when event 0x3006 is
-seen, there is no point in pestering users about it anymore.
-
+Reported-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Tested-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/thinkpad_acpi.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/platform/x86/thinkpad_acpi.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -3650,13 +3650,19 @@ static void hotkey_notify(struct ibm_str
- 			break;
- 		case 3:
- 			/* 0x3000-0x3FFF: bay-related wakeups */
--			if (hkey == TP_HKEY_EV_BAYEJ_ACK) {
-+			switch (hkey) {
-+			case TP_HKEY_EV_BAYEJ_ACK:
- 				hotkey_autosleep_ack = 1;
- 				printk(TPACPI_INFO
- 				       "bay ejected\n");
- 				hotkey_wakeup_hotunplug_complete_notify_change();
- 				known_ev = true;
--			} else {
-+				break;
-+			case TP_HKEY_EV_OPTDRV_EJ:
-+				/* FIXME: kick libata if SATA link offline */
-+				known_ev = true;
-+				break;
-+			default:
- 				known_ev = false;
- 			}
- 			break;
+@@ -2082,6 +2082,7 @@ static struct attribute_set *hotkey_dev_
+ 
+ static void tpacpi_driver_event(const unsigned int hkey_event);
+ static void hotkey_driver_event(const unsigned int scancode);
++static void hotkey_poll_setup(const bool may_warn);
+ 
+ /* HKEY.MHKG() return bits */
+ #define TP_HOTKEY_TABLET_MASK (1 << 3)
+@@ -2264,6 +2265,8 @@ static int tpacpi_hotkey_driver_mask_set
+ 
+ 	rc = hotkey_mask_set((hotkey_acpi_mask | hotkey_driver_mask) &
+ 							~hotkey_source_mask);
++	hotkey_poll_setup(true);
++
+ 	mutex_unlock(&hotkey_mutex);
+ 
+ 	return rc;
+@@ -2548,7 +2551,7 @@ static void hotkey_poll_stop_sync(void)
+ }
+ 
+ /* call with hotkey_mutex held */
+-static void hotkey_poll_setup(bool may_warn)
++static void hotkey_poll_setup(const bool may_warn)
+ {
+ 	const u32 poll_driver_mask = hotkey_driver_mask & hotkey_source_mask;
+ 	const u32 poll_user_mask = hotkey_user_mask & hotkey_source_mask;
+@@ -2579,7 +2582,7 @@ static void hotkey_poll_setup(bool may_w
+ 	}
+ }
+ 
+-static void hotkey_poll_setup_safe(bool may_warn)
++static void hotkey_poll_setup_safe(const bool may_warn)
+ {
+ 	mutex_lock(&hotkey_mutex);
+ 	hotkey_poll_setup(may_warn);
+@@ -2597,7 +2600,11 @@ static void hotkey_poll_set_freq(unsigne
+ 
+ #else /* CONFIG_THINKPAD_ACPI_HOTKEY_POLL */
+ 
+-static void hotkey_poll_setup_safe(bool __unused)
++static void hotkey_poll_setup(const bool __unused)
++{
++}
++
++static void hotkey_poll_setup_safe(const bool __unused)
+ {
+ }
+ 
 
 
