@@ -1,60 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935028Ab0CMAU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:20:57 -0500
-Received: from kroah.org ([198.145.64.141]:60716 "EHLO coco.kroah.org"
+	id S935330Ab0CMAak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:30:40 -0500
+Received: from kroah.org ([198.145.64.141]:46574 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934902Ab0CMAUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:04 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:09 2010
-Message-Id: <20100313001508.936807588@kvm.kroah.org>
+	id S935272Ab0CMAa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:30:29 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:05 2010
+Message-Id: <20100313002705.491180729@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:21 -0800
+Date: Fri, 12 Mar 2010 16:25:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Clemens Ladisch <clemens@ladisch.de>, Jaroslav Kysela <perex@perex.cz>
-Subject: [patch 043/123] ALSA: via82xx: add quirk for D1289 motherboard
-In-Reply-To: <20100313001618.GA9811@kroah.com>
-In-Reply-To: <20100313001618.GA9811@kroah.com>
+       Richard Guenther <rguenther@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [003/145] V4L/DVB: dvb: l64781.ko broken with gcc 4.5
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.33-stable review patch.  If anyone has any objections, please let me know.
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
------------------
+----------------
+From: Richard Guenther <rguenther@suse.de>
 
-From: Clemens Ladisch <clemens@ladisch.de>
+commit c1db53b36633e6a7511dbec7c372f01a31528f0c upstream.
 
-commit bf30a4309d4294d3eca248ea8a20c1c3570f5e74 upstream.
+I'm trying to fix it on the GCC side (PR43007), but the module is
+quite stupid in using ULL constants to operate on u32 values:
 
-Add a headphones-only quirk for the Fujitsu Siemens D1289.
+static int apply_frontend_param (struct dvb_frontend* fe, struct
+dvb_frontend_parameters *param)
+{
+...
+ static const u32 ppm = 8000;
+ u32 spi_bias;
+...
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Reported-and-tested-by: Marc Haber <mh+alsa201002@zugschlus.de>
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+ spi_bias *= 1000ULL;
+ spi_bias /= 1000ULL + ppm/1000;
+
+which causes current GCC 4.5 to emit calls to __udivdi3 for i?86 again.
+
+This patch fixes this issue.
+
+Signed-off-by: Richard Guenther <rguenther@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
 ---
- sound/pci/via82xx.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/media/dvb/frontends/l64781.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/sound/pci/via82xx.c
-+++ b/sound/pci/via82xx.c
-@@ -1791,6 +1791,12 @@ static struct ac97_quirk ac97_quirks[] =
- 		.type = AC97_TUNE_HP_ONLY
- 	},
- 	{
-+		.subvendor = 0x110a,
-+		.subdevice = 0x0079,
-+		.name = "Fujitsu Siemens D1289",
-+		.type = AC97_TUNE_HP_ONLY
-+	},
-+	{
- 		.subvendor = 0x1019,
- 		.subdevice = 0x0a81,
- 		.name = "ECS K7VTA3",
+--- a/drivers/media/dvb/frontends/l64781.c
++++ b/drivers/media/dvb/frontends/l64781.c
+@@ -192,8 +192,8 @@ static int apply_frontend_param (struct
+ 	spi_bias *= qam_tab[p->constellation];
+ 	spi_bias /= p->code_rate_HP + 1;
+ 	spi_bias /= (guard_tab[p->guard_interval] + 32);
+-	spi_bias *= 1000ULL;
+-	spi_bias /= 1000ULL + ppm/1000;
++	spi_bias *= 1000;
++	spi_bias /= 1000 + ppm/1000;
+ 	spi_bias *= p->code_rate_HP;
+ 
+ 	val0x04 = (p->transmission_mode << 2) | p->guard_interval;
 
 
