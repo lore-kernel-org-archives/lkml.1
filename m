@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935055Ab0CMA2F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:28:05 -0500
-Received: from kroah.org ([198.145.64.141]:32846 "EHLO coco.kroah.org"
+	id S935147Ab0CMAWD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:22:03 -0500
+Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935047Ab0CMAVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:21:06 -0500
+	id S935039Ab0CMAVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:01 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:14 2010
-Message-Id: <20100313001514.586476887@kvm.kroah.org>
+Message-Id: <20100313001514.241125623@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:13:26 -0800
+Date: Fri, 12 Mar 2010 16:13:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Lars-Peter Clausen <lars@metafoo.de>, Ben Dooks <ben-linux@fluff.org>,
-       <linux-mmc@vger.kernel.org>
-Subject: [patch 108/123] s3cmci: s3cmci_card_present: Use no_detect to decide whether there is a card detect pin
+       Maarten Maathuis <madman2003@gmail.com>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       Dave Airlie <airlied@redhat.com>
+Subject: [patch 104/123] drm/ttm: handle OOM in ttm_tt_swapout
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,31 +28,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Lars-Peter Clausen <lars@metafoo.de>
+From: Maarten Maathuis <madman2003@gmail.com>
 
-commit dc2ed552804f3a2ae41c0ffe4bc09879ec8f7396 upstream.
+commit 290e55056ec3d25c72088628245d8cae037b30db upstream.
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: <linux-mmc@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+- Without this change I get a general protection fault.
+- Also use PTR_ERR where applicable.
+
+Signed-off-by: Maarten Maathuis <madman2003@gmail.com>
+Reviewed-by: Dave Airlie <airlied@redhat.com>
+Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/s3cmci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/ttm/ttm_tt.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
---- a/drivers/mmc/host/s3cmci.c
-+++ b/drivers/mmc/host/s3cmci.c
-@@ -1179,7 +1179,7 @@ static int s3cmci_card_present(struct mm
- 	struct s3c24xx_mci_pdata *pdata = host->pdata;
- 	int ret;
+--- a/drivers/gpu/drm/ttm/ttm_tt.c
++++ b/drivers/gpu/drm/ttm/ttm_tt.c
+@@ -480,7 +480,7 @@ static int ttm_tt_swapin(struct ttm_tt *
+ 	void *from_virtual;
+ 	void *to_virtual;
+ 	int i;
+-	int ret;
++	int ret = -ENOMEM;
  
--	if (pdata->gpio_detect == 0)
-+	if (pdata->no_detect)
- 		return -ENOSYS;
+ 	if (ttm->page_flags & TTM_PAGE_FLAG_USER) {
+ 		ret = ttm_tt_set_user(ttm, ttm->tsk, ttm->start,
+@@ -499,8 +499,10 @@ static int ttm_tt_swapin(struct ttm_tt *
  
- 	ret = gpio_get_value(pdata->gpio_detect) ? 0 : 1;
+ 	for (i = 0; i < ttm->num_pages; ++i) {
+ 		from_page = read_mapping_page(swap_space, i, NULL);
+-		if (IS_ERR(from_page))
++		if (IS_ERR(from_page)) {
++			ret = PTR_ERR(from_page);
+ 			goto out_err;
++		}
+ 		to_page = __ttm_tt_get_page(ttm, i);
+ 		if (unlikely(to_page == NULL))
+ 			goto out_err;
+@@ -523,7 +525,7 @@ static int ttm_tt_swapin(struct ttm_tt *
+ 	return 0;
+ out_err:
+ 	ttm_tt_free_alloced_pages(ttm);
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ int ttm_tt_swapout(struct ttm_tt *ttm, struct file *persistant_swap_storage)
+@@ -535,6 +537,7 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
+ 	void *from_virtual;
+ 	void *to_virtual;
+ 	int i;
++	int ret = -ENOMEM;
+ 
+ 	BUG_ON(ttm->state != tt_unbound && ttm->state != tt_unpopulated);
+ 	BUG_ON(ttm->caching_state != tt_cached);
+@@ -557,7 +560,7 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
+ 						0);
+ 		if (unlikely(IS_ERR(swap_storage))) {
+ 			printk(KERN_ERR "Failed allocating swap storage.\n");
+-			return -ENOMEM;
++			return PTR_ERR(swap_storage);
+ 		}
+ 	} else
+ 		swap_storage = persistant_swap_storage;
+@@ -569,9 +572,10 @@ int ttm_tt_swapout(struct ttm_tt *ttm, s
+ 		if (unlikely(from_page == NULL))
+ 			continue;
+ 		to_page = read_mapping_page(swap_space, i, NULL);
+-		if (unlikely(to_page == NULL))
++		if (unlikely(IS_ERR(to_page))) {
++			ret = PTR_ERR(to_page);
+ 			goto out_err;
+-
++		}
+ 		preempt_disable();
+ 		from_virtual = kmap_atomic(from_page, KM_USER0);
+ 		to_virtual = kmap_atomic(to_page, KM_USER1);
+@@ -595,5 +599,5 @@ out_err:
+ 	if (!persistant_swap_storage)
+ 		fput(swap_storage);
+ 
+-	return -ENOMEM;
++	return ret;
+ }
 
 
