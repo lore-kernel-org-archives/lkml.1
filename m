@@ -1,101 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757806Ab0CMDsu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 22:48:50 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:50812 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757337Ab0CMDss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 22:48:48 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <20100313002705.836357664@kvm.kroah.org>
-References: <20100313002705.836357664@kvm.kroah.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-xrXv5oDlTtut9kZq/lor"
-Date: Sat, 13 Mar 2010 03:48:42 +0000
-Message-ID: <1268452122.7439.29.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: [007/145] V4L/DVB: cxusb: Select all required frontend and
- tuner modules
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S1758814Ab0CMDxx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 22:53:53 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33724 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757362Ab0CMDxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 22:53:50 -0500
+Date: Fri, 12 Mar 2010 19:54:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.34-rc1: ACPI: BUG: key f71f0168 not in .data!
+Message-ID: <20100313035410.GA12084@suse.de>
+References: <a4423d671003081547v5c955d58t248db945c06d2a7f@mail.gmail.com> <86802c441003081612r2f44efd6n9664b4b7c98a636a@mail.gmail.com> <m1d3zel4b4.fsf@fess.ebiederm.org> <4B95F37E.6060309@kernel.org> <m14okqnczd.fsf@fess.ebiederm.org> <4B99A6F0.4080203@kernel.org> <4B99A7B9.3000802@kernel.org> <4B9B0836.7080508@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B9B0836.7080508@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 12, 2010 at 07:36:22PM -0800, Yinghai Lu wrote:
+> ---
+>  drivers/net/mlx4/main.c |    1 +
+>  1 file changed, 1 insertion(+)
 
---=-xrXv5oDlTtut9kZq/lor
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+No change log entry + no Signed-off-by: line = email deleted
 
-On Fri, 2010-03-12 at 16:25 -0800, Greg KH wrote:
-> 2.6.32-stable review patch.  If anyone has any objections, please let me =
-know.
->=20
-> ----------------
-> From: Ben Hutchings <ben@decadent.org.uk>
->=20
-> commit fc4a7f93087a48619005111895dcaa115f807399 upstream.
->=20
-> cxusb uses the atbm8830 and lgs8gxx (not lgs8gl5) frontends and the
-> max2165 tuner, so it needs to select them.
-
-I thought I already replied to say this is wrong for 2.6.32.
-
-The correct change would be:
----
-From: Ben Hutchings <ben@decadent.org.uk>
-
-commit fc4a7f93087a48619005111895dcaa115f807399 upstream.
-
-cxusb now uses the lgs8gxx (not lgs8gl5) frontend.
-
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
---- a/drivers/media/dvb/dvb-usb/Kconfig
-+++ b/drivers/media/dvb/dvb-usb/Kconfig
-@@ -112,8 +112,8 @@ config DVB_USB_CXUSB
- 	select DVB_MT352 if !DVB_FE_CUSTOMISE
- 	select DVB_ZL10353 if !DVB_FE_CUSTOMISE
- 	select DVB_DIB7000P if !DVB_FE_CUSTOMISE
--	select DVB_LGS8GL5 if !DVB_FE_CUSTOMISE
- 	select DVB_TUNER_DIB0070 if !DVB_FE_CUSTOMISE
-+	select DVB_LGS8GXX if !DVB_FE_CUSTOMISE
- 	select MEDIA_TUNER_SIMPLE if !MEDIA_TUNER_CUSTOMISE
- 	select MEDIA_TUNER_XC2028 if !MEDIA_TUNER_CUSTOMISE
- 	select MEDIA_TUNER_MXL5005S if !MEDIA_TUNER_CUSTOMISE
-
---=20
-Ben Hutchings
-If God had intended Man to program,
-we'd have been born with serial I/O ports.
-
---=-xrXv5oDlTtut9kZq/lor
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS5sLEee/yOyVhhEJAQJnZBAAky4bTwuridE++nRKrzxlA3os1MuQ3CcB
-FWaH+MLJzhuo2lhZabgp5qUjzZTI7vKPn0s2KJNJdqEG6gaqxqKzocA2aDiUBAzx
-+Vy9GhH3yDFhRVPj9yMhZjinMqsBRTEYe/hRDGLIy9nVmjEq+jvsgdP0dYBL/mOn
-+6AUt9zLA50k8IR6jvlKGsVC94FIIIXE2cG4eOGdJwPyWQ4UnfsWaBQebSR+zLkD
-5EB0dCNIo1Uv+3nXy8eNTktjwkq8vRzD1zlctwBZZ4J68nCy5NVeFdgra9Z9tOJ1
-Ru9rIsJIA6inAn0rKngqDxGfF5nCpO3hPDsPwfvTXTgmVO08NfX3F8P5r/FitWoV
-e1JYeh7wPCebdc2CVMJggNmwZ2HhdxenlFG96uQYzTRbUr2vNWiTqcYo6i7xRoLB
-IHNDhsGjvnV7AObxGMZN3S2HVv71++PLKEpBT2W+ZroHWcUcdjbRrFBo8CxBUoOS
-Dg1ToMWK2eZmDO43mI2ykxFv4eKI1rnnj+8cheh8yCbjrNSZ50ZcPvHDcyiFHiue
-gdAiIIAxG8EDGSufoXx/MT2GIZC4aqy4oIZzEU6zj8pHe75MVgnNn8Z7MIcGFZE+
-VLRuo3AGq3RQMZfKEJ5leNSNiXEcfkTNycMsnAgB0AtD+FDMkZivBQ9b7/2gJsH/
-iAQ14Mos6y8=
-=kRzP
------END PGP SIGNATURE-----
-
---=-xrXv5oDlTtut9kZq/lor--
+It's as if we write documentation on how to do all of this to just watch
+no one read it :(
