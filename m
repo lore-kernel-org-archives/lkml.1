@@ -1,77 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935366Ab0CMAa4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:30:56 -0500
-Received: from kroah.org ([198.145.64.141]:46578 "EHLO coco.kroah.org"
+	id S935287Ab0CMA34 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:29:56 -0500
+Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935286Ab0CMAaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:30:30 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:05 2010
-Message-Id: <20100313002705.575203876@kvm.kroah.org>
+	id S935029Ab0CMAU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:20:58 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:13 2010
+Message-Id: <20100313001513.880016929@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:25:37 -0800
+Date: Fri, 12 Mar 2010 16:13:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Frysinger <vapier@gentoo.org>, Wim Van Sebroeck <wim@iguana.be>
-Subject: [004/145] [WATCHDOG] bfin: fix max timeout calculation
-In-Reply-To: <20100313002816.GA18903@kroah.com>
+       Daniel Sangorrin <daniel.sangorrin@gmail.com>,
+       Andreas Mohr <andi@lisas.de>
+Subject: [patch 100/123] USB: serial: ftdi: add CONTEC vendor and product id
+In-Reply-To: <20100313001618.GA9811@kroah.com>
+In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let me know.
+2.6.33-stable review patch.  If anyone has any objections, please let me know.
 
-----------------
-From: Mike Frysinger <vapier@gentoo.org>
+-----------------
 
-commit 3dae93ec3ee1fceec69f40ef9b97892ce62ba7a5 upstream.
+From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
 
-Relying on overflow/wrap around isn't exact because if you wrap far
-enough, you get back to "valid" values.
+commit 46b72d78cb022714c89a9ebc00b9581b550cfca7 upstream.
 
-Reported-by: Thorsten Pohlmann <pohlmann@tetronik.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
+identifiers for CONTEC USB serial converter. I tested it
+with the device COM-1(USB)H
+
+Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/bfin_wdt.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/usb/serial/ftdi_sio.c     |    1 +
+ drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
+ 2 files changed, 8 insertions(+)
 
---- a/drivers/watchdog/bfin_wdt.c
-+++ b/drivers/watchdog/bfin_wdt.c
-@@ -1,9 +1,8 @@
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -614,6 +614,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(FTDI_VID, FTDI_OCEANIC_PID) },
+ 	{ USB_DEVICE(TTI_VID, TTI_QL355P_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_RM_CANVIEW_PID) },
++	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -494,6 +494,13 @@
+ #define RATOC_PRODUCT_ID_USB60F	0xb020
+ 
  /*
-  * Blackfin On-Chip Watchdog Driver
-- *  Supports BF53[123]/BF53[467]/BF54[2489]/BF561
-  *
-  * Originally based on softdog.c
-- * Copyright 2006-2007 Analog Devices Inc.
-+ * Copyright 2006-2010 Analog Devices Inc.
-  * Copyright 2006-2007 Michele d'Amico
-  * Copyright 1996 Alan Cox <alan@lxorguk.ukuu.org.uk>
-  *
-@@ -137,13 +136,15 @@ static int bfin_wdt_running(void)
++ * Contec products (http://www.contec.com)
++ * Submitted by Daniel Sangorrin
++ */
++#define CONTEC_VID		0x06CE	/* Vendor ID */
++#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
++
++/*
+  * Definitions for B&B Electronics products.
   */
- static int bfin_wdt_set_timeout(unsigned long t)
- {
--	u32 cnt;
-+	u32 cnt, max_t, sclk;
- 	unsigned long flags;
- 
--	stampit();
-+	sclk = get_sclk();
-+	max_t = -1 / sclk;
-+	cnt = t * sclk;
-+	stamp("maxtimeout=%us newtimeout=%lus (cnt=%#x)", max_t, t, cnt);
- 
--	cnt = t * get_sclk();
--	if (cnt < get_sclk()) {
-+	if (t > max_t) {
- 		printk(KERN_WARNING PFX "timeout value is too large\n");
- 		return -EINVAL;
- 	}
+ #define BANDB_VID		0x0856	/* B&B Electronics Vendor ID */
 
 
