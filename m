@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935913Ab0CMAzI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:55:08 -0500
-Received: from kroah.org ([198.145.64.141]:46928 "EHLO coco.kroah.org"
+	id S935904Ab0CMAxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:53:36 -0500
+Received: from kroah.org ([198.145.64.141]:46956 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935425Ab0CMAbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:34 -0500
+	id S935439Ab0CMAbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:40 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
-Message-Id: <20100313002710.315702699@kvm.kroah.org>
+Message-Id: <20100313002710.904871308@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:31 -0800
+Date: Fri, 12 Mar 2010 16:26:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [058/145] net/via-rhine: Fix scheduling while atomic bugs
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       maximilian attems <max@stro.at>
+Subject: [065/145] V4L/DVB (13148): uvcvideo: Handle V4L2_CTRL_TYPE_BUTTON control type in VIDIOC_QUERYCTRL
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,135 +26,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jarek Poplawski <jarkao2@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-commit c0d7a0212becebe11ffe6979ee3d6f1c4104568d upstream.
+commit f4eabafeb3ea41801260fba624cbf2da971d19f8 upstream.
 
-There are BUGs "scheduling while atomic" triggered by the timer
-rhine_tx_timeout(). They are caused by calling napi_disable() (with
-msleep()). This patch fixes it by moving most of the timer content to
-the workqueue function (similarly to other drivers, like tg3), with
-spin_lock() changed to BH version.
+Return minimum, maximum and step set to 0 without querying the hardware.
 
-Additionally, there is spin_lock_irq() moved in rhine_close() to
-exclude napi_disable() etc., also tg3's way.
-
-Reported-by: Andrey Rahmatullin <wrar@altlinux.org>
-Tested-by: Andrey Rahmatullin <wrar@altlinux.org>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: maximilian attems <max@stro.at>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/via-rhine.c |   41 ++++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
+ drivers/media/video/uvc/uvc_ctrl.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/drivers/net/via-rhine.c
-+++ b/drivers/net/via-rhine.c
-@@ -102,6 +102,7 @@ static const int multicast_filter_limit
- #include <linux/ethtool.h>
- #include <linux/crc32.h>
- #include <linux/bitops.h>
-+#include <linux/workqueue.h>
- #include <asm/processor.h>	/* Processor type for cache alignment. */
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -389,6 +390,7 @@ struct rhine_private {
- 	struct net_device *dev;
- 	struct napi_struct napi;
- 	spinlock_t lock;
-+	struct work_struct reset_task;
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -826,6 +826,13 @@ int uvc_query_v4l2_ctrl(struct uvc_video
+ 		ret = 0;
+ 		goto out;
  
- 	/* Frequently used values: keep some adjacent for cache effect. */
- 	u32 quirks;
-@@ -407,6 +409,7 @@ struct rhine_private {
- static int  mdio_read(struct net_device *dev, int phy_id, int location);
- static void mdio_write(struct net_device *dev, int phy_id, int location, int value);
- static int  rhine_open(struct net_device *dev);
-+static void rhine_reset_task(struct work_struct *work);
- static void rhine_tx_timeout(struct net_device *dev);
- static netdev_tx_t rhine_start_tx(struct sk_buff *skb,
- 				  struct net_device *dev);
-@@ -775,6 +778,8 @@ static int __devinit rhine_init_one(stru
- 	dev->irq = pdev->irq;
- 
- 	spin_lock_init(&rp->lock);
-+	INIT_WORK(&rp->reset_task, rhine_reset_task);
++	case V4L2_CTRL_TYPE_BUTTON:
++		v4l2_ctrl->minimum = 0;
++		v4l2_ctrl->maximum = 0;
++		v4l2_ctrl->step = 0;
++		ret = 0;
++		goto out;
 +
- 	rp->mii_if.dev = dev;
- 	rp->mii_if.mdio_read = mdio_read;
- 	rp->mii_if.mdio_write = mdio_write;
-@@ -1179,22 +1184,18 @@ static int rhine_open(struct net_device
- 	return 0;
- }
- 
--static void rhine_tx_timeout(struct net_device *dev)
-+static void rhine_reset_task(struct work_struct *work)
- {
--	struct rhine_private *rp = netdev_priv(dev);
--	void __iomem *ioaddr = rp->base;
--
--	printk(KERN_WARNING "%s: Transmit timed out, status %4.4x, PHY status "
--	       "%4.4x, resetting...\n",
--	       dev->name, ioread16(ioaddr + IntrStatus),
--	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
-+	struct rhine_private *rp = container_of(work, struct rhine_private,
-+						reset_task);
-+	struct net_device *dev = rp->dev;
- 
- 	/* protect against concurrent rx interrupts */
- 	disable_irq(rp->pdev->irq);
- 
- 	napi_disable(&rp->napi);
- 
--	spin_lock(&rp->lock);
-+	spin_lock_bh(&rp->lock);
- 
- 	/* clear all descriptors */
- 	free_tbufs(dev);
-@@ -1206,7 +1207,7 @@ static void rhine_tx_timeout(struct net_
- 	rhine_chip_reset(dev);
- 	init_registers(dev);
- 
--	spin_unlock(&rp->lock);
-+	spin_unlock_bh(&rp->lock);
- 	enable_irq(rp->pdev->irq);
- 
- 	dev->trans_start = jiffies;
-@@ -1214,6 +1215,19 @@ static void rhine_tx_timeout(struct net_
- 	netif_wake_queue(dev);
- }
- 
-+static void rhine_tx_timeout(struct net_device *dev)
-+{
-+	struct rhine_private *rp = netdev_priv(dev);
-+	void __iomem *ioaddr = rp->base;
-+
-+	printk(KERN_WARNING "%s: Transmit timed out, status %4.4x, PHY status "
-+	       "%4.4x, resetting...\n",
-+	       dev->name, ioread16(ioaddr + IntrStatus),
-+	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
-+
-+	schedule_work(&rp->reset_task);
-+}
-+
- static netdev_tx_t rhine_start_tx(struct sk_buff *skb,
- 				  struct net_device *dev)
- {
-@@ -1830,10 +1844,11 @@ static int rhine_close(struct net_device
- 	struct rhine_private *rp = netdev_priv(dev);
- 	void __iomem *ioaddr = rp->base;
- 
--	spin_lock_irq(&rp->lock);
--
--	netif_stop_queue(dev);
- 	napi_disable(&rp->napi);
-+	cancel_work_sync(&rp->reset_task);
-+	netif_stop_queue(dev);
-+
-+	spin_lock_irq(&rp->lock);
- 
- 	if (debug > 1)
- 		printk(KERN_DEBUG "%s: Shutting down ethercard, "
+ 	default:
+ 		break;
+ 	}
 
 
