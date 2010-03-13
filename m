@@ -1,87 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935811Ab0CMTkl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 14:40:41 -0500
-Received: from legolas.restena.lu ([158.64.1.34]:59995 "EHLO
-	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935670Ab0CMTkh convert rfc822-to-8bit (ORCPT
+	id S935863Ab0CMTtT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 14:49:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44379
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935639Ab0CMTtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 14:40:37 -0500
-Date: Sat, 13 Mar 2010 20:39:53 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
-       Nicu Pavel <npavel@ituner.com>
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-Message-ID: <20100313203953.0f3436b3@neptune.home>
-In-Reply-To: <alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
-References: <20100221002001.0a7e05a7@neptune.home>
-	<20100224170049.0d04af3c@neptune.home>
-	<alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
-	<20100225123214.0523a310@neptune.home>
-	<alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+	Sat, 13 Mar 2010 14:49:17 -0500
+Date: Sat, 13 Mar 2010 11:49:39 -0800 (PST)
+Message-Id: <20100313.114939.120459447.davem@davemloft.net>
+To: sjharms@gmail.com
+Cc: mcarlson@broadcom.com, mchan@broadcom.com, benli@broadcom.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sharms@ubuntu.com
+Subject: Re: [PATCH] NET: tg3: fix brace, switch, and comma spacing coding
+ style in tg3.c This is a patch to the tg3.c file that aligns switch and
+ case statements, else statements following braces, and inserts a space
+ after commas listed in the coding style guidelines and verified by
+ checkpatch.pl tool.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1268509151-27281-1-git-send-email-sharms@ubuntu.com>
+References: <1268509151-27281-1-git-send-email-sharms@ubuntu.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 February 2010 Jiri Kosina <jkosina@suse.cz> wrote:
-> On Thu, 25 Feb 2010, Bruno Prémont wrote:
-> 
-> > For the two sysfs attributes I currently use, the 'reset' one shall 
-> > probably be moved to debugfs (I would like to place it under 
-> > /sys/kernel/debug/hid/$device/ next to rdesc and events).
-> 
-> Yes, that would make sense.
+From: Steven Harms <sjharms@gmail.com>
+Date: Sat, 13 Mar 2010 14:39:11 -0500
 
-Hm, that works only when driver module gets loaded when USBHID device
-is already plugged in.
-When driver is registered and has it's probe function called on hotplug
-it runs right before hid-core registers the debugfs entries.
-As such hid_device's debug_dir is still NULL.
+> -#define tw32_mailbox(reg, val)	tp->write32_mbox(tp, reg, val)
+> -#define tw32_mailbox_f(reg, val)	tw32_mailbox_flush(tp, (reg), (val))
+> -#define tw32_rx_mbox(reg, val)	tp->write32_rx_mbox(tp, reg, val)
+> -#define tw32_tx_mbox(reg, val)	tp->write32_tx_mbox(tp, reg, val)
+> -#define tr32_mailbox(reg)	tp->read32_mbox(tp, reg)
+> +#define tw32_mailbox(reg, val)	(tp->write32_mbox(tp, reg, val))
 
-To get around this, in hid_add_device(), hid_debug_register() would
-have to be called before device_add() instead of right after.
-
-Is something like below acceptable? (from error handling point of view
-it makes no difference...)
-
-Thanks,
-Bruno
-
-file: drivers/hid/hid-core.c
-
- int hid_add_device(struct hid_device *hdev)
- {
-         static atomic_t id = ATOMIC_INIT(0);
-         int ret;
- 
-         if (WARN_ON(hdev->status & HID_STAT_ADDED))
-                 return -EBUSY;
- 
-         /* we need to kill them here, otherwise they will stay allocated to
-          * wait for coming driver */
-         if (hid_ignore(hdev))
-                 return -ENODEV;
- 
-         /* XXX hack, any other cleaner solution after the driver core
-          * is converted to allow more than 20 bytes as the device name? */
-         dev_set_name(&hdev->dev, "%04X:%04X:%04X.%04X", hdev->bus,
-                      hdev->vendor, hdev->product, atomic_inc_return(&id));
- 
-+        hid_debug_register(hdev, dev_name(&hdev->dev));
-         ret = device_add(&hdev->dev);
-         if (!ret)
-                 hdev->status |= HID_STAT_ADDED;
- 
--        hid_debug_register(hdev, dev_name(&hdev->dev));
- 
-         return ret;
- }
- EXPORT_SYMBOL_GPL(hid_add_device);
-
+Please keep this kind of code masterbation to yourself.
+This is not the style we want for this driver.
