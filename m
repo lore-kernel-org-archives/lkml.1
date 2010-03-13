@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934983Ab0CMAVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:21:07 -0500
-Received: from kroah.org ([198.145.64.141]:60747 "EHLO coco.kroah.org"
+	id S935163Ab0CMAWP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:22:15 -0500
+Received: from kroah.org ([198.145.64.141]:32909 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934882Ab0CMAUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:20:13 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:09 2010
-Message-Id: <20100313001509.895788453@kvm.kroah.org>
+	id S935075Ab0CMAVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:21:15 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:15 2010
+Message-Id: <20100313001515.899318972@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:12:32 -0800
+Date: Fri, 12 Mar 2010 16:13:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: [patch 054/123] sysfs: Cache the last sysfs_dirent to improve readdir scalability v2
+       Ian Campbell <ian.campbell@citrix.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 123/123] x86, mm: Allow highmem user page tables to be disabled at boot time
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,143 +27,158 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-commit 1e5289c97bba2d8ee7239a416bc3f28743362cd9 upstream.
+commit 14315592009c17035cac81f4954d5a1f4d71e489 upstream.
 
-When sysfs_readdir stops short we now cache the next
-sysfs_dirent to return to user space in filp->private_data.
-There is no impact on the rest of sysfs by doing this and
-in the common case it allows us to pick up exactly where
-we left off with no seeking.
+Distros generally (I looked at Debian, RHEL5 and SLES11) seem to
+enable CONFIG_HIGHPTE for any x86 configuration which has highmem
+enabled. This means that the overhead applies even to machines which
+have a fairly modest amount of high memory and which therefore do not
+really benefit from allocating PTEs in high memory but still pay the
+price of the additional mapping operations.
 
-Additionally I drop and regrab the sysfs_mutex around
-filldir to avoid a page fault abritrarily increasing the
-hold time on the sysfs_mutex.
+Running kernbench on a 4G box I found that with CONFIG_HIGHPTE=y but
+no actual highptes being allocated there was a reduction in system
+time used from 59.737s to 55.9s.
 
-v2: Returned to using INT_MAX as the EOF condition.
-    seekdir is ambiguous unless all directory entries have
-    a unique f_pos value.
+With CONFIG_HIGHPTE=y and highmem PTEs being allocated:
+  Average Optimal load -j 4 Run (std deviation):
+  Elapsed Time 175.396 (0.238914)
+  User Time 515.983 (5.85019)
+  System Time 59.737 (1.26727)
+  Percent CPU 263.8 (71.6796)
+  Context Switches 39989.7 (4672.64)
+  Sleeps 42617.7 (246.307)
 
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14949
+With CONFIG_HIGHPTE=y but with no highmem PTEs being allocated:
+  Average Optimal load -j 4 Run (std deviation):
+  Elapsed Time 174.278 (0.831968)
+  User Time 515.659 (6.07012)
+  System Time 55.9 (1.07799)
+  Percent CPU 263.8 (71.266)
+  Context Switches 39929.6 (4485.13)
+  Sleeps 42583.7 (373.039)
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+This patch allows the user to control the allocation of PTEs in
+highmem from the command line ("userpte=nohigh") but retains the
+status-quo as the default.
+
+It is possible that some simple heuristic could be developed which
+allows auto-tuning of this option however I don't have a sufficiently
+large machine available to me to perform any particularly meaningful
+experiments. We could probably handwave up an argument for a threshold
+at 16G of total RAM.
+
+Assuming 768M of lowmem we have 196608 potential lowmem PTE
+pages. Each page can map 2M of RAM in a PAE-enabled configuration,
+meaning a maximum of 384G of RAM could potentially be mapped using
+lowmem PTEs.
+
+Even allowing generous factor of 10 to account for other required
+lowmem allocations, generous slop to account for page sharing (which
+reduces the total amount of RAM mappable by a given number of PT
+pages) and other innacuracies in the estimations it would seem that
+even a 32G machine would not have a particularly pressing need for
+highmem PTEs. I think 32G could be considered to be at the upper bound
+of what might be sensible on a 32 bit machine (although I think in
+practice 64G is still supported).
+
+It's seems questionable if HIGHPTE is even a win for any amount of RAM
+you would sensibly run a 32 bit kernel on rather than going 64 bit.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+LKML-Reference: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sysfs/dir.c |   82 +++++++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 60 insertions(+), 22 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +++++++
+ arch/x86/include/asm/pgalloc.h      |    5 +++++
+ arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++++-----
+ 3 files changed, 38 insertions(+), 5 deletions(-)
 
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -837,11 +837,46 @@ static inline unsigned char dt_type(stru
- 	return (sd->s_mode >> 12) & 15;
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2703,6 +2703,13 @@ and is between 256 and 4096 characters.
+ 					medium is write-protected).
+ 			Example: quirks=0419:aaf5:rl,0421:0433:rc
+ 
++	userpte=
++			[X86] Flags controlling user PTE allocations.
++
++				nohigh = do not allocate PTE pages in
++					HIGHMEM regardless of setting
++					of CONFIG_HIGHPTE.
++
+ 	vdso=		[X86,SH]
+ 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
+ 			vdso=1: enable VDSO (default)
+--- a/arch/x86/include/asm/pgalloc.h
++++ b/arch/x86/include/asm/pgalloc.h
+@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(
+ #endif
+ 
+ /*
++ * Flags to use when allocating a user page table page.
++ */
++extern gfp_t __userpte_alloc_gfp;
++
++/*
+  * Allocate and free page tables.
+  */
+ extern pgd_t *pgd_alloc(struct mm_struct *);
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -6,6 +6,14 @@
+ 
+ #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
+ 
++#ifdef CONFIG_HIGHPTE
++#define PGALLOC_USER_GFP __GFP_HIGHMEM
++#else
++#define PGALLOC_USER_GFP 0
++#endif
++
++gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
++
+ pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+ {
+ 	return (pte_t *)__get_free_page(PGALLOC_GFP);
+@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct
+ {
+ 	struct page *pte;
+ 
+-#ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
+-#else
+-	pte = alloc_pages(PGALLOC_GFP, 0);
+-#endif
++	pte = alloc_pages(__userpte_alloc_gfp, 0);
+ 	if (pte)
+ 		pgtable_page_ctor(pte);
+ 	return pte;
  }
  
-+static int sysfs_dir_release(struct inode *inode, struct file *filp)
++static int __init setup_userpte(char *arg)
 +{
-+	sysfs_put(filp->private_data);
++	if (!arg)
++		return -EINVAL;
++
++	/*
++	 * "userpte=nohigh" disables allocation of user pagetables in
++	 * high memory.
++	 */
++	if (strcmp(arg, "nohigh") == 0)
++		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
++	else
++		return -EINVAL;
 +	return 0;
 +}
++early_param("userpte", setup_userpte);
 +
-+static struct sysfs_dirent *sysfs_dir_pos(struct sysfs_dirent *parent_sd,
-+	ino_t ino, struct sysfs_dirent *pos)
-+{
-+	if (pos) {
-+		int valid = !(pos->s_flags & SYSFS_FLAG_REMOVED) &&
-+			pos->s_parent == parent_sd &&
-+			ino == pos->s_ino;
-+		sysfs_put(pos);
-+		if (valid)
-+			return pos;
-+	}
-+	pos = NULL;
-+	if ((ino > 1) && (ino < INT_MAX)) {
-+		pos = parent_sd->s_dir.children;
-+		while (pos && (ino > pos->s_ino))
-+			pos = pos->s_sibling;
-+	}
-+	return pos;
-+}
-+
-+static struct sysfs_dirent *sysfs_dir_next_pos(struct sysfs_dirent *parent_sd,
-+	ino_t ino, struct sysfs_dirent *pos)
-+{
-+	pos = sysfs_dir_pos(parent_sd, ino, pos);
-+	if (pos)
-+		pos = pos->s_sibling;
-+	return pos;
-+}
-+
- static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
  {
- 	struct dentry *dentry = filp->f_path.dentry;
- 	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
--	struct sysfs_dirent *pos;
-+	struct sysfs_dirent *pos = filp->private_data;
- 	ino_t ino;
- 
- 	if (filp->f_pos == 0) {
-@@ -857,29 +892,31 @@ static int sysfs_readdir(struct file * f
- 		if (filldir(dirent, "..", 2, filp->f_pos, ino, DT_DIR) == 0)
- 			filp->f_pos++;
- 	}
--	if ((filp->f_pos > 1) && (filp->f_pos < INT_MAX)) {
--		mutex_lock(&sysfs_mutex);
-+	mutex_lock(&sysfs_mutex);
-+	for (pos = sysfs_dir_pos(parent_sd, filp->f_pos, pos);
-+	     pos;
-+	     pos = sysfs_dir_next_pos(parent_sd, filp->f_pos, pos)) {
-+		const char * name;
-+		unsigned int type;
-+		int len, ret;
-+
-+		name = pos->s_name;
-+		len = strlen(name);
-+		ino = pos->s_ino;
-+		type = dt_type(pos);
-+		filp->f_pos = ino;
-+		filp->private_data = sysfs_get(pos);
- 
--		/* Skip the dentries we have already reported */
--		pos = parent_sd->s_dir.children;
--		while (pos && (filp->f_pos > pos->s_ino))
--			pos = pos->s_sibling;
--
--		for ( ; pos; pos = pos->s_sibling) {
--			const char * name;
--			int len;
--
--			name = pos->s_name;
--			len = strlen(name);
--			filp->f_pos = ino = pos->s_ino;
--
--			if (filldir(dirent, name, len, filp->f_pos, ino,
--					 dt_type(pos)) < 0)
--				break;
--		}
--		if (!pos)
--			filp->f_pos = INT_MAX;
- 		mutex_unlock(&sysfs_mutex);
-+		ret = filldir(dirent, name, len, filp->f_pos, ino, type);
-+		mutex_lock(&sysfs_mutex);
-+		if (ret < 0)
-+			break;
-+	}
-+	mutex_unlock(&sysfs_mutex);
-+	if ((filp->f_pos > 1) && !pos) { /* EOF */
-+		filp->f_pos = INT_MAX;
-+		filp->private_data = NULL;
- 	}
- 	return 0;
- }
-@@ -888,5 +925,6 @@ static int sysfs_readdir(struct file * f
- const struct file_operations sysfs_dir_operations = {
- 	.read		= generic_read_dir,
- 	.readdir	= sysfs_readdir,
-+	.release	= sysfs_dir_release,
- 	.llseek		= generic_file_llseek,
- };
+ 	pgtable_page_dtor(pte);
 
 
