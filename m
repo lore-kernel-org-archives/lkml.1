@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935709Ab0CMAeW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:34:22 -0500
-Received: from kroah.org ([198.145.64.141]:47016 "EHLO coco.kroah.org"
+	id S935648Ab0CMAoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:44:09 -0500
+Received: from kroah.org ([198.145.64.141]:47236 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935474Ab0CMAby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:54 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:12 2010
-Message-Id: <20100313002712.464396258@kvm.kroah.org>
+	id S935559Ab0CMAce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:32:34 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:17 2010
+Message-Id: <20100313002716.989504976@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:56 -0800
+Date: Fri, 12 Mar 2010 16:27:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Mack <daniel@caiaq.de>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [083/145] ASoC: fix ak4104 register array access
+       James Hogan <james@albanarts.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Alessandro Zummo <a.zummo@towertech.it>
+Subject: [135/145] rtc-coh901331: fix braces in resume code
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,40 +26,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Daniel Mack <daniel@caiaq.de>
+From: James Hogan <james@albanarts.com>
 
-commit e555317c083fda01f516d2153589e82514e20e70 upstream.
+commit 5a98c04d78c896d52baef20ffc11f6d1ba6eb786 upstream.
 
-Don't touch the variable 'reg' to construct the value for the actual SPI
-transport. This variable is again used to access the driver's register
-cache, and so random memory is overwritten.
-Compute the value in-place instead.
+The else part of the if statement is indented but does not have braces
+around it. It clearly should since it uses clk_enable and clk_disable
+which are supposed to balance.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Acked-by: Liam Girdwood <lrg@slimlogic.co.uk>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: James Hogan <james@albanarts.com>
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/soc/codecs/ak4104.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/rtc/rtc-coh901331.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/sound/soc/codecs/ak4104.c
-+++ b/sound/soc/codecs/ak4104.c
-@@ -90,12 +90,10 @@ static int ak4104_spi_write(struct snd_s
- 	if (reg >= codec->reg_cache_size)
- 		return -EINVAL;
+--- a/drivers/rtc/rtc-coh901331.c
++++ b/drivers/rtc/rtc-coh901331.c
+@@ -271,12 +271,13 @@ static int coh901331_resume(struct platf
+ {
+ 	struct coh901331_port *rtap = dev_get_drvdata(&pdev->dev);
  
--	reg &= AK4104_REG_MASK;
--	reg |= AK4104_WRITE;
--
- 	/* only write to the hardware if value has changed */
- 	if (cache[reg] != value) {
--		u8 tmp[2] = { reg, value };
-+		u8 tmp[2] = { (reg & AK4104_REG_MASK) | AK4104_WRITE, value };
-+
- 		if (spi_write(spi, tmp, sizeof(tmp))) {
- 			dev_err(&spi->dev, "SPI write failed\n");
- 			return -EIO;
+-	if (device_may_wakeup(&pdev->dev))
++	if (device_may_wakeup(&pdev->dev)) {
+ 		disable_irq_wake(rtap->irq);
+-	else
++	} else {
+ 		clk_enable(rtap->clk);
+ 		writel(rtap->irqmaskstore, rtap->virtbase + COH901331_IRQ_MASK);
+ 		clk_disable(rtap->clk);
++	}
+ 	return 0;
+ }
+ #else
 
 
