@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936538Ab0CMBf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:35:27 -0500
-Received: from kroah.org ([198.145.64.141]:60545 "EHLO coco.kroah.org"
+	id S965290Ab0CMBfs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:35:48 -0500
+Received: from kroah.org ([198.145.64.141]:60535 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934811Ab0CMATh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:19:37 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:06 2010
-Message-Id: <20100313001505.974972719@kvm.kroah.org>
+	id S934804Ab0CMATg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:19:36 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:05 2010
+Message-Id: <20100313001505.780277390@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:11:47 -0800
+Date: Fri, 12 Mar 2010 16:11:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhu Yi <yi.zhu@intel.com>, Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 009/123] mac80211: quit addba_resp_timer if Tx BA session is torn down
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 007/123] HID: remove TENX iBuddy from blacklist
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,36 +26,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Zhu Yi <yi.zhu@intel.com>
+From: Jiri Kosina <jkosina@suse.cz>
 
-commit 3dc1de0bf23816ed557ac8addf680cd5ee57e805 upstream.
+commit 4bb9508bbbb06f10bc3e249dd34375b4a4d6bfc0 upstream.
 
-Make addba_resp_timer aware the HT_AGG_STATE_REQ_STOP_BA_MSK mask
-so that when ___ieee80211_stop_tx_ba_session() is issued the timer
-will quit. Otherwise when suspend happens before the timer expired,
-the timer handler will be called immediately after resume and
-messes up driver status.
+There were multiple reports which indicate that vendor messed up horribly
+and the same VID/PID combination is used for completely different devices,
+some of them requiring the blacklist entry and other not.
 
-Signed-off-by: Zhu Yi <yi.zhu@intel.com>
-Acked-by: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Remove the blacklist entry for this combination of VID/PID completely, and let
+the user decide and unbind the driver via sysfs eventually, if needed. Proper
+fix would be fixing the vendor.
+
+http://lkml.org/lkml/2009/2/10/434
+http://bugzilla.kernel.org/show_bug.cgi?id=13411
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/agg-tx.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/hid/hid-core.c |    2 --
+ drivers/hid/hid-ids.h  |    4 ----
+ 2 files changed, 6 deletions(-)
 
---- a/net/mac80211/agg-tx.c
-+++ b/net/mac80211/agg-tx.c
-@@ -179,7 +179,8 @@ static void sta_addba_resp_timer_expired
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1661,8 +1661,6 @@ static const struct hid_device_id hid_ig
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_PANJIT, 0x0004) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_PHILIPS, USB_DEVICE_ID_PHILIPS_IEEE802154_DONGLE) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_POWERCOM, USB_DEVICE_ID_POWERCOM_UPS) },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_TENX, USB_DEVICE_ID_TENX_IBUDDY1) },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_TENX, USB_DEVICE_ID_TENX_IBUDDY2) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_LABPRO) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_GOTEMP) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_SKIP) },
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -402,10 +402,6 @@
+ #define USB_VENDOR_ID_SUNPLUS		0x04fc
+ #define USB_DEVICE_ID_SUNPLUS_WDESKTOP	0x05d8
  
- 	/* check if the TID waits for addBA response */
- 	spin_lock_bh(&sta->lock);
--	if ((*state & (HT_ADDBA_REQUESTED_MSK | HT_ADDBA_RECEIVED_MSK)) !=
-+	if ((*state & (HT_ADDBA_REQUESTED_MSK | HT_ADDBA_RECEIVED_MSK |
-+		       HT_AGG_STATE_REQ_STOP_BA_MSK)) !=
- 						HT_ADDBA_REQUESTED_MSK) {
- 		spin_unlock_bh(&sta->lock);
- 		*state = HT_AGG_STATE_IDLE;
+-#define USB_VENDOR_ID_TENX		0x1130
+-#define USB_DEVICE_ID_TENX_IBUDDY1	0x0001
+-#define USB_DEVICE_ID_TENX_IBUDDY2	0x0002
+-
+ #define USB_VENDOR_ID_THRUSTMASTER	0x044f
+ 
+ #define USB_VENDOR_ID_TOPMAX		0x0663
 
 
