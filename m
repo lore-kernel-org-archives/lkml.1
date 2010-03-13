@@ -1,46 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935047Ab0CMAj7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:39:59 -0500
-Received: from borg.medozas.de ([188.40.89.202]:52145 "EHLO borg.medozas.de"
+	id S935614Ab0CMAdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:33:09 -0500
+Received: from kroah.org ([198.145.64.141]:46914 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935740Ab0CMAev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:34:51 -0500
-Date: Sat, 13 Mar 2010 01:34:49 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Andi Kleen <ak@linux.intel.com>
-cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: page_to_nid not linked in on PAE
-In-Reply-To: <4B9AC149.1010507@linux.intel.com>
-Message-ID: <alpine.LSU.2.01.1003130132120.24334@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1003091210230.10157@obet.zrqbmnf.qr>  <alpine.LSU.2.01.1003101128340.9318@obet.zrqbmnf.qr> <1268423424.2793.21.camel@sbs-t61.sc.intel.com> <4B9AC149.1010507@linux.intel.com>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S935418Ab0CMAbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:31 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:10 2010
+Message-Id: <20100313002710.037693826@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 12 Mar 2010 16:26:28 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [055/145] rndis_wlan: handle NL80211_AUTHTYPE_AUTOMATIC
+In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
-On Friday 2010-03-12 23:33, Andi Kleen wrote:
->
->> Jan, Even with out using the PG_head, PG_tail, PG_uncached and
->> PG_hwpoison, by allowing the NODES_SHIFT to have a maximum value of 9 on
->> 32bit kernel, can still result in the page flags to runout and result in
->> this problem. Best solution for now is to limit the NODES_SHIFT to 5. I
->> don't know of any platforms that have>  32nodes and where we care about
->> 32bit linux kernel. So it should be ok as a fix. If someone in future
->> cares about>  32 nodes for 32bit kernel, then we can think of a better
->> solution. Do you agree? I copied Andi/Nick for their eyes aswell on
->> this.
->
-> Seems like the right approach to me. Although it might be better to
-> use 1 3 or 1..4 or so, just in case someone else adds more page bits
-> later (I'm sure it'll happen again). Even 8 nodes should be plenty for
-> 32bit.
+----------------
+From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
 
-Perfectly fine with me. Though I wonder: with SPARSEMEM selected,
-I can easily choose the maximum possible value for NODES_SHIFT,
-(currently 9, limited imposed by arch/x86/Kconfig).
+commit 634a555ce3ee5ea1fdcaee8b4ac9ce7b54f301ac upstream.
+
+rndis_wlan didn't know about NL80211_AUTHTYPE_AUTOMATIC and simple
+setup with 'iwconfig wlan essid no-encrypt' would fail (ENOSUPP).
+
+v2: use NDIS_80211_AUTH_AUTO_SWITCH instead of _OPEN.
+    This will make device try shared key auth first, then open.
+
+Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/net/wireless/rndis_wlan.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/drivers/net/wireless/rndis_wlan.c
++++ b/drivers/net/wireless/rndis_wlan.c
+@@ -1072,6 +1072,8 @@ static int set_auth_mode(struct usbnet *
+ 		auth_mode = NDIS_80211_AUTH_SHARED;
+ 	else if (auth_type == NL80211_AUTHTYPE_OPEN_SYSTEM)
+ 		auth_mode = NDIS_80211_AUTH_OPEN;
++	else if (auth_type == NL80211_AUTHTYPE_AUTOMATIC)
++		auth_mode = NDIS_80211_AUTH_AUTO_SWITCH;
+ 	else
+ 		return -ENOTSUPP;
+ 
+
+
