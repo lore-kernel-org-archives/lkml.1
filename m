@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936532Ab0CMBer (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 20:34:47 -0500
-Received: from kroah.org ([198.145.64.141]:60535 "EHLO coco.kroah.org"
+	id S934819Ab0CMBey (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 20:34:54 -0500
+Received: from kroah.org ([198.145.64.141]:60553 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934814Ab0CMATi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934796Ab0CMATi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Mar 2010 19:19:38 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:15:06 2010
-Message-Id: <20100313001506.148732734@kvm.kroah.org>
+Message-Id: <20100313001506.065002368@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:11:49 -0800
+Date: Fri, 12 Mar 2010 16:11:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kashyap Desai <kashyap.desai@lsi.com>,
-       James Bottomley <James.Bottomley@suse.de>
-Subject: [patch 011/123] [SCSI] mpt2sas: Delete volume before HBA detach.
+       Vivek Natarajan <vnatarajan@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 010/123] mac80211: Reset dynamic ps timer in Rx path.
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 In-Reply-To: <20100313001618.GA9811@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,59 +27,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 -----------------
 
-From: Kashyap, Desai <kashyap.desai@lsi.com>
+From: Vivek Natarajan <vnatarajan@atheros.com>
 
-commit d7384b28afb2bf2b7be835ddc8c852bdc5e0ce1c upstream.
+commit e15276a4b220c54db665cf46a92bd9ceb9aeb052 upstream.
 
-The driver hangs when doing `rmmod mpt2sas` if there are any
-IR volumes present.The hang is due the scsi midlayer trying to access the
-IR volumes after the driver releases controller resources.  Perhaps when
-scsi_remove_host is called,the scsi mid layer is sending some request.
-This doesn't occur for bare drives becuase the driver is already reporting
-those drives deleted prior to calling mpt2sas_base_detach.
-To solve this issue, we need to delete the volumes as well.
+The current mac80211 implementation enables power save if there
+is no Tx traffic for a specific timeout. Hence, PS is triggered
+even if there is a continuous Rx only traffic(like UDP) going on.
+This makes the drivers to wait on the tim bit in the next beacon
+to awake which leads to redundant sleep-wake cycles.
+Fix this by restarting the dynamic ps timer on receiving every
+data packet.
 
-Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-Reviewed-by: Eric Moore <eric.moore@lsi.com>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Vivek Natarajan <vnatarajan@atheros.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mpt2sas/mpt2sas_scsih.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ net/mac80211/rx.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -5998,6 +5998,8 @@ _scsih_remove(struct pci_dev *pdev)
- 	struct _sas_port *mpt2sas_port;
- 	struct _sas_device *sas_device;
- 	struct _sas_node *expander_sibling;
-+	struct _raid_device *raid_device, *next;
-+	struct MPT2SAS_TARGET *sas_target_priv_data;
- 	struct workqueue_struct	*wq;
- 	unsigned long flags;
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -1788,6 +1788,7 @@ static ieee80211_rx_result debug_noinlin
+ ieee80211_rx_h_data(struct ieee80211_rx_data *rx)
+ {
+ 	struct ieee80211_sub_if_data *sdata = rx->sdata;
++	struct ieee80211_local *local = rx->local;
+ 	struct net_device *dev = sdata->dev;
+ 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)rx->skb->data;
+ 	__le16 fc = hdr->frame_control;
+@@ -1819,6 +1820,13 @@ ieee80211_rx_h_data(struct ieee80211_rx_
+ 	dev->stats.rx_packets++;
+ 	dev->stats.rx_bytes += rx->skb->len;
  
-@@ -6011,6 +6013,21 @@ _scsih_remove(struct pci_dev *pdev)
- 	if (wq)
- 		destroy_workqueue(wq);
- 
-+	/* release all the volumes */
-+	list_for_each_entry_safe(raid_device, next, &ioc->raid_device_list,
-+	    list) {
-+		if (raid_device->starget) {
-+			sas_target_priv_data =
-+			    raid_device->starget->hostdata;
-+			sas_target_priv_data->deleted = 1;
-+			scsi_remove_target(&raid_device->starget->dev);
-+		}
-+		printk(MPT2SAS_INFO_FMT "removing handle(0x%04x), wwid"
-+		    "(0x%016llx)\n", ioc->name,  raid_device->handle,
-+		    (unsigned long long) raid_device->wwid);
-+		_scsih_raid_device_remove(ioc, raid_device);
++	if (ieee80211_is_data(hdr->frame_control) &&
++	    !is_multicast_ether_addr(hdr->addr1) &&
++	    local->hw.conf.dynamic_ps_timeout > 0 && local->ps_sdata) {
++			mod_timer(&local->dynamic_ps_timer, jiffies +
++			 msecs_to_jiffies(local->hw.conf.dynamic_ps_timeout));
 +	}
 +
- 	/* free ports attached to the sas_host */
-  retry_again:
- 	list_for_each_entry(mpt2sas_port,
+ 	ieee80211_deliver_skb(rx);
+ 
+ 	return RX_QUEUED;
 
 
