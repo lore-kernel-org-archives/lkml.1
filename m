@@ -1,173 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935728Ab0CMTjo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 14:39:44 -0500
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:52421 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935476Ab0CMTjm (ORCPT
+	id S935811Ab0CMTkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 14:40:41 -0500
+Received: from legolas.restena.lu ([158.64.1.34]:59995 "EHLO
+	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935670Ab0CMTkh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 14:39:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:signed-off-by;
-        b=XpWBgkn5KQktYZZ7ZfvSi3EVn/jsn++FB+rAKb4gSi7TK8q5xnlOV63RY+PqO2EZMg
-         FSxcMsBRH0wuMEfcGnzPK1YDx0T7Dkbjz3Aur51TfjvMFHfL1eUI10fW3tjP1RctM6u4
-         nB1wFn0TRx/TRWf/QJA0PjqhBoqhLxC2OW0uo=
-From: Steven Harms <sjharms@gmail.com>
-To: mcarlson@broadcom.com, mchan@broadcom.com, davem@davemloft.net,
-       benli@broadcom.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sharms@ubuntu.com
-Subject: [PATCH] NET: tg3: fix brace, switch, and comma spacing coding style in tg3.c This is a patch to the tg3.c file that aligns switch and case statements, else statements following braces, and inserts a space after commas listed in the coding style guidelines and verified by checkpatch.pl tool.
-Date: Sat, 13 Mar 2010 14:39:11 -0500
-Message-Id: <1268509151-27281-1-git-send-email-sharms@ubuntu.com>
-X-Mailer: git-send-email 1.6.3.3
-Signed-off-by: Steven Harms <sharms@ubuntu.com>
+	Sat, 13 Mar 2010 14:40:37 -0500
+Date: Sat, 13 Mar 2010 20:39:53 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
+       Nicu Pavel <npavel@ituner.com>
+Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
+Message-ID: <20100313203953.0f3436b3@neptune.home>
+In-Reply-To: <alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
+References: <20100221002001.0a7e05a7@neptune.home>
+	<20100224170049.0d04af3c@neptune.home>
+	<alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+	<20100225123214.0523a310@neptune.home>
+	<alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/net/tg3.c |   60 +++++++++++++++++++++++-----------------------------
- 1 files changed, 27 insertions(+), 33 deletions(-)
+On Thu, 25 February 2010 Jiri Kosina <jkosina@suse.cz> wrote:
+> On Thu, 25 Feb 2010, Bruno Prémont wrote:
+> 
+> > For the two sysfs attributes I currently use, the 'reset' one shall 
+> > probably be moved to debugfs (I would like to place it under 
+> > /sys/kernel/debug/hid/$device/ next to rdesc and events).
+> 
+> Yes, that would make sense.
 
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index 0fa7688..02e6326 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -496,16 +496,16 @@ static void tg3_write32_mbox_5906(struct tg3 *tp, u32 off, u32 val)
- 	writel(val, tp->regs + off + GRCMBOX_BASE);
- }
- 
--#define tw32_mailbox(reg, val)	tp->write32_mbox(tp, reg, val)
--#define tw32_mailbox_f(reg, val)	tw32_mailbox_flush(tp, (reg), (val))
--#define tw32_rx_mbox(reg, val)	tp->write32_rx_mbox(tp, reg, val)
--#define tw32_tx_mbox(reg, val)	tp->write32_tx_mbox(tp, reg, val)
--#define tr32_mailbox(reg)	tp->read32_mbox(tp, reg)
-+#define tw32_mailbox(reg, val)	(tp->write32_mbox(tp, reg, val))
-+#define tw32_mailbox_f(reg, val)	(tw32_mailbox_flush(tp, (reg), (val)))
-+#define tw32_rx_mbox(reg, val)	(tp->write32_rx_mbox(tp, reg, val))
-+#define tw32_tx_mbox(reg, val)	(tp->write32_tx_mbox(tp, reg, val))
-+#define tr32_mailbox(reg)	(tp->read32_mbox(tp, reg))
- 
--#define tw32(reg,val)		tp->write32(tp, reg, val)
--#define tw32_f(reg,val)		_tw32_flush(tp,(reg),(val), 0)
--#define tw32_wait_f(reg,val,us)	_tw32_flush(tp,(reg),(val), (us))
--#define tr32(reg)		tp->read32(tp, reg)
-+#define tw32(reg, val)		(tp->write32(tp, (reg), (val)))
-+#define tw32_f(reg, val)		(_tw32_flush(tp, (reg), (val), 0))
-+#define tw32_wait_f(reg, val, us)	(_tw32_flush(tp, (reg), (val), (us)))
-+#define tr32(reg)		(tp->read32(tp, reg))
- 
- static void tg3_write_mem(struct tg3 *tp, u32 off, u32 val)
+Hm, that works only when driver module gets loaded when USBHID device
+is already plugged in.
+When driver is registered and has it's probe function called on hotplug
+it runs right before hid-core registers the debugfs entries.
+As such hid_device's debug_dir is still NULL.
+
+To get around this, in hid_add_device(), hid_debug_register() would
+have to be called before device_add() instead of right after.
+
+Is something like below acceptable? (from error handling point of view
+it makes no difference...)
+
+Thanks,
+Bruno
+
+file: drivers/hid/hid-core.c
+
+ int hid_add_device(struct hid_device *hdev)
  {
-@@ -579,11 +579,11 @@ static int tg3_ape_lock(struct tg3 *tp, int locknum)
- 		return 0;
+         static atomic_t id = ATOMIC_INIT(0);
+         int ret;
  
- 	switch (locknum) {
--		case TG3_APE_LOCK_GRC:
--		case TG3_APE_LOCK_MEM:
--			break;
--		default:
--			return -EINVAL;
-+	case TG3_APE_LOCK_GRC:
-+	case TG3_APE_LOCK_MEM:
-+		break;
-+	default:
-+		return -EINVAL;
- 	}
+         if (WARN_ON(hdev->status & HID_STAT_ADDED))
+                 return -EBUSY;
  
- 	off = 4 * locknum;
-@@ -617,11 +617,11 @@ static void tg3_ape_unlock(struct tg3 *tp, int locknum)
- 		return;
+         /* we need to kill them here, otherwise they will stay allocated to
+          * wait for coming driver */
+         if (hid_ignore(hdev))
+                 return -ENODEV;
  
- 	switch (locknum) {
--		case TG3_APE_LOCK_GRC:
--		case TG3_APE_LOCK_MEM:
--			break;
--		default:
--			return;
-+	case TG3_APE_LOCK_GRC:
-+	case TG3_APE_LOCK_MEM:
-+		break;
-+	default:
-+		return;
- 	}
+         /* XXX hack, any other cleaner solution after the driver core
+          * is converted to allow more than 20 bytes as the device name? */
+         dev_set_name(&hdev->dev, "%04X:%04X:%04X.%04X", hdev->bus,
+                      hdev->vendor, hdev->product, atomic_inc_return(&id));
  
- 	off = 4 * locknum;
-@@ -1855,8 +1855,7 @@ static int tg3_phy_reset_5703_4_5(struct tg3 *tp)
- 	    GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5704) {
- 		/* Set Extended packet length bit for jumbo frames */
- 		tg3_writephy(tp, MII_TG3_AUX_CTRL, 0x4400);
--	}
--	else {
-+	} else {
- 		tg3_writephy(tp, MII_TG3_AUX_CTRL, 0x0400);
- 	}
++        hid_debug_register(hdev, dev_name(&hdev->dev));
+         ret = device_add(&hdev->dev);
+         if (!ret)
+                 hdev->status |= HID_STAT_ADDED;
  
-@@ -1974,8 +1973,7 @@ out:
- 		tg3_writephy(tp, MII_TG3_DSP_ADDRESS, 0x401f);
- 		tg3_writephy(tp, MII_TG3_DSP_RW_PORT, 0x14e2);
- 		tg3_writephy(tp, MII_TG3_AUX_CTRL, 0x0400);
--	}
--	else if (tp->tg3_flags2 & TG3_FLG2_PHY_JITTER_BUG) {
-+	} else if (tp->tg3_flags2 & TG3_FLG2_PHY_JITTER_BUG) {
- 		tg3_writephy(tp, MII_TG3_AUX_CTRL, 0x0c00);
- 		tg3_writephy(tp, MII_TG3_DSP_ADDRESS, 0x000a);
- 		if (tp->tg3_flags2 & TG3_FLG2_PHY_ADJUST_TRIM) {
-@@ -3425,7 +3423,7 @@ static int tg3_fiber_aneg_smachine(struct tg3 *tp,
- 	ap->rxconfig = rx_cfg_reg;
- 	ret = ANEG_OK;
+-        hid_debug_register(hdev, dev_name(&hdev->dev));
  
--	switch(ap->state) {
-+	switch (ap->state) {
- 	case ANEG_STATE_UNKNOWN:
- 		if (ap->flags & (MR_AN_ENABLE | MR_RESTART_AN))
- 			ap->state = ANEG_STATE_AN_ENABLE;
-@@ -3463,11 +3461,10 @@ static int tg3_fiber_aneg_smachine(struct tg3 *tp,
- 		/* fallthru */
- 	case ANEG_STATE_RESTART:
- 		delta = ap->cur_time - ap->link_time;
--		if (delta > ANEG_STATE_SETTLE_TIME) {
-+		if (delta > ANEG_STATE_SETTLE_TIME)
- 			ap->state = ANEG_STATE_ABILITY_DETECT_INIT;
--		} else {
-+		else
- 			ret = ANEG_TIMER_ENAB;
--		}
- 		break;
- 
- 	case ANEG_STATE_DISABLE_LINK_OK:
-@@ -3491,9 +3488,8 @@ static int tg3_fiber_aneg_smachine(struct tg3 *tp,
- 		break;
- 
- 	case ANEG_STATE_ABILITY_DETECT:
--		if (ap->ability_match != 0 && ap->rxconfig != 0) {
-+		if (ap->ability_match != 0 && ap->rxconfig != 0)
- 			ap->state = ANEG_STATE_ACK_DETECT_INIT;
--		}
- 		break;
- 
- 	case ANEG_STATE_ACK_DETECT_INIT:
-@@ -4171,8 +4167,7 @@ static int tg3_setup_fiber_mii_phy(struct tg3 *tp, int force_reset)
- 					current_duplex = DUPLEX_FULL;
- 				else
- 					current_duplex = DUPLEX_HALF;
--			}
--			else
-+			} else
- 				current_link_up = 0;
- 		}
- 	}
-@@ -4240,8 +4235,7 @@ static void tg3_serdes_parallel_detect(struct tg3 *tp)
- 				tp->tg3_flags2 |= TG3_FLG2_PARALLEL_DETECT;
- 			}
- 		}
--	}
--	else if (netif_carrier_ok(tp->dev) &&
-+	} else if (netif_carrier_ok(tp->dev) &&
- 		 (tp->link_config.autoneg == AUTONEG_ENABLE) &&
- 		 (tp->tg3_flags2 & TG3_FLG2_PARALLEL_DETECT)) {
- 		u32 phy2;
--- 
-1.6.3.3
+         return ret;
+ }
+ EXPORT_SYMBOL_GPL(hid_add_device);
 
