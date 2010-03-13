@@ -1,57 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077Ab0CMLUP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 06:20:15 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:55585 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759034Ab0CMLUL (ORCPT
+	id S1759090Ab0CMLUw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 06:20:52 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:58497 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759034Ab0CMLUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 06:20:11 -0500
-Date: Sat, 13 Mar 2010 12:20:05 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Lars Lindley <lindley@coyote.org>, gregkh@suse.de, penberg@cs.helsinki.fi,
-       diegoliz@gmail.com, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] staging/winbond: camelCase should be fixed
-Message-ID: <20100313112005.GB2192@elf.ucw.cz>
-References: <1268430337-18192-1-git-send-email-lindley@coyote.org>
- <20100313063109.GB12554@elf.ucw.cz>
- <4B9B6409.3070502@coyote.org>
- <4B9B6ADC.6060204@s5r6.in-berlin.de>
+	Sat, 13 Mar 2010 06:20:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=DZSG1M0ml0TGBg6dM6be/yfN98ywG/IUkfMDqSB8+XGkqNp1w7Z2EDmdbX9jWV2yld
+         qtEqIXseC18EWOYd4DsDZC8z3Ix3Rhm54B85bLndbcoFM97pqIpz5X5agZjtTbr0u+RT
+         OOovAAozYLU8+U3l+/4UhS8XlLjPHw28lGeO8=
+Date: Sat, 13 Mar 2010 14:14:22 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       James Morris <jmorris@namei.org>, Serge Hallyn <serue@us.ibm.com>,
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [patch] tomoyo: fix potential use after free
+Message-ID: <20100313111422.GA2594@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Kentaro Takeda <takedakn@nttdata.co.jp>,
+	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+	James Morris <jmorris@namei.org>, Serge Hallyn <serue@us.ibm.com>,
+	Toshiharu Harada <haradats@nttdata.co.jp>,
+	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B9B6ADC.6060204@s5r6.in-berlin.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The original code returns a freed pointer.  This function is expected to 
+return NULL on errors.
 
-> (BTW, winbond/README alias winbond/TODO doesn't mention it, but another
-> (trivial) step is going to be to change variable names and function
-> names from CamelCase to lower_case spelling.)
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-Yes.
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/drivers/staging/winbond/README b/drivers/staging/winbond/README
-index cb944e4..2771024 100644
---- a/drivers/staging/winbond/README
-+++ b/drivers/staging/winbond/README
-@@ -2,6 +2,7 @@ TODO:
- 	- sparse cleanups
- 	- checkpatch cleanups
- 	- kerneldoc cleanups
-+	- fix severeCamelCaseInfestation
- 	- remove typedefs
- 	- remove unused ioctls
- 	- use cfg80211 for regulatory stuff
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
+index ff51f10..ef89947 100644
+--- a/security/tomoyo/common.c
++++ b/security/tomoyo/common.c
+@@ -886,6 +886,7 @@ static struct tomoyo_profile *tomoyo_find_or_assign_new_profile(const unsigned
+ 	ptr = kmalloc(sizeof(*ptr), GFP_KERNEL);
+ 	if (!tomoyo_memory_ok(ptr)) {
+ 		kfree(ptr);
++		ptr = NULL;
+ 		goto ok;
+ 	}
+ 	for (i = 0; i < TOMOYO_MAX_CONTROL_INDEX; i++)
