@@ -1,24 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935846Ab0CMAxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Mar 2010 19:53:24 -0500
-Received: from kroah.org ([198.145.64.141]:46968 "EHLO coco.kroah.org"
+	id S935937Ab0CMA5B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Mar 2010 19:57:01 -0500
+Received: from kroah.org ([198.145.64.141]:46843 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935401Ab0CMAbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Mar 2010 19:31:42 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:11 2010
-Message-Id: <20100313002711.165444000@kvm.kroah.org>
+	id S935322Ab0CMAbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Mar 2010 19:31:20 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Mar 12 16:27:09 2010
+Message-Id: <20100313002709.167305520@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 12 Mar 2010 16:26:41 -0800
+Date: Fri, 12 Mar 2010 16:26:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Stelian Pop <stelian@popies.net>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>
-Subject: [068/145] macintosh/hwmon/ams: Fix device removal sequence
+       Stephen Hemminger <shemminger@vyatta.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [045/145] sky2: fix transmit DMA map leakage
 In-Reply-To: <20100313002816.GA18903@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,98 +25,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.32-stable review patch.  If anyone has any objections, please let me know.
 
 ----------------
-From: Jean Delvare <khali@linux-fr.org>
+From: stephen hemminger <shemminger@vyatta.com>
 
-commit 98ceb75c7c14eada76b0aa9f03a635a735cee3cb upstream.
+[ Upstream commit f6815077e75c5b7f55b56fc3788e328514d4e72a ]
 
-Some code that is in ams_exit() (the module exit code) should instead
-be called when the device (not module) is removed. It probably doesn't
-make much of a difference in the PMU case, but in the I2C case it does
-matter.
+The book keeping structure for transmit always had the flags value
+cleared so transmit DMA maps were never released correctly.
+Based on patch by Jarek Poplawski, problem observed by Michael Breuer.
 
-I make no guarantee that my fix isn't racy, I'm not familiar enough
-with the ams driver code to tell for sure.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Tested-by: Christian Kujau <lists@nerdbynature.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Stelian Pop <stelian@popies.net>
-Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/ams/ams-core.c |   11 +++++++----
- drivers/hwmon/ams/ams-i2c.c  |    2 ++
- drivers/hwmon/ams/ams-pmu.c  |    2 ++
- drivers/hwmon/ams/ams.h      |    1 +
- 4 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/net/sky2.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
---- a/drivers/hwmon/ams/ams-core.c
-+++ b/drivers/hwmon/ams/ams-core.c
-@@ -213,7 +213,7 @@ int __init ams_init(void)
- 	return -ENODEV;
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1008,11 +1008,8 @@ static void sky2_prefetch_init(struct sk
+ static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
+ {
+ 	struct sky2_tx_le *le = sky2->tx_le + *slot;
+-	struct tx_ring_info *re = sky2->tx_ring + *slot;
+ 
+ 	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
+-	re->flags = 0;
+-	re->skb = NULL;
+ 	le->ctrl = 0;
+ 	return le;
+ }
+@@ -1580,8 +1577,7 @@ static unsigned tx_le_req(const struct s
+ 	return count;
  }
  
--void ams_exit(void)
-+void ams_sensor_detach(void)
+-static void sky2_tx_unmap(struct pci_dev *pdev,
+-			  const struct tx_ring_info *re)
++static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
  {
- 	/* Remove input device */
- 	ams_input_exit();
-@@ -221,9 +221,6 @@ void ams_exit(void)
- 	/* Remove attributes */
- 	device_remove_file(&ams_info.of_dev->dev, &dev_attr_current);
- 
--	/* Shut down implementation */
--	ams_info.exit();
--
- 	/* Flush interrupt worker
- 	 *
- 	 * We do this after ams_info.exit(), because an interrupt might
-@@ -239,6 +236,12 @@ void ams_exit(void)
- 	pmf_unregister_irq_client(&ams_freefall_client);
+ 	if (re->flags & TX_MAP_SINGLE)
+ 		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
+@@ -1591,6 +1587,7 @@ static void sky2_tx_unmap(struct pci_dev
+ 		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
+ 			       pci_unmap_len(re, maplen),
+ 			       PCI_DMA_TODEVICE);
++	re->flags = 0;
  }
  
-+static void __exit ams_exit(void)
-+{
-+	/* Shut down implementation */
-+	ams_info.exit();
-+}
-+
- MODULE_AUTHOR("Stelian Pop, Michael Hanselmann");
- MODULE_DESCRIPTION("Apple Motion Sensor driver");
- MODULE_LICENSE("GPL");
---- a/drivers/hwmon/ams/ams-i2c.c
-+++ b/drivers/hwmon/ams/ams-i2c.c
-@@ -238,6 +238,8 @@ static int ams_i2c_probe(struct i2c_clie
- static int ams_i2c_remove(struct i2c_client *client)
- {
- 	if (ams_info.has_device) {
-+		ams_sensor_detach();
-+
- 		/* Disable interrupts */
- 		ams_i2c_set_irq(AMS_IRQ_ALL, 0);
+ /*
+@@ -1797,6 +1794,7 @@ static void sky2_tx_complete(struct sky2
+ 			dev->stats.tx_packets++;
+ 			dev->stats.tx_bytes += skb->len;
  
---- a/drivers/hwmon/ams/ams-pmu.c
-+++ b/drivers/hwmon/ams/ams-pmu.c
-@@ -133,6 +133,8 @@ static void ams_pmu_get_xyz(s8 *x, s8 *y
++			re->skb = NULL;
+ 			dev_kfree_skb_any(skb);
  
- static void ams_pmu_exit(void)
- {
-+	ams_sensor_detach();
-+
- 	/* Disable interrupts */
- 	ams_pmu_set_irq(AMS_IRQ_ALL, 0);
- 
---- a/drivers/hwmon/ams/ams.h
-+++ b/drivers/hwmon/ams/ams.h
-@@ -61,6 +61,7 @@ extern struct ams ams_info;
- 
- extern void ams_sensors(s8 *x, s8 *y, s8 *z);
- extern int ams_sensor_attach(void);
-+extern void ams_sensor_detach(void);
- 
- extern int ams_pmu_init(struct device_node *np);
- extern int ams_i2c_init(struct device_node *np);
+ 			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
 
 
