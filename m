@@ -1,69 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753060Ab0CNCHa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 21:07:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54072 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751155Ab0CNCH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 21:07:28 -0500
-Message-ID: <4B9C446A.9020208@redhat.com>
-Date: Sat, 13 Mar 2010 21:05:30 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Dieter Ries <mail@dieterries.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH -tip 1/3] kprobes: Hide CONFIG_OPTPROBES and set if arch
- support optimized kprobes
-References: <20100312232208.2017.55337.stgit@localhost6.localdomain6> <87k4tfyd08.fsf@devron.myhome.or.jp>
-In-Reply-To: <87k4tfyd08.fsf@devron.myhome.or.jp>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754246Ab0CNCLx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 21:11:53 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57252 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882Ab0CNCLv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Mar 2010 21:11:51 -0500
+Subject: Re: Q: select_fallback_rq() && cpuset_lock()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100313192823.GA21462@redhat.com>
+References: <20100309180615.GA11681@redhat.com>
+	 <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com>
+	 <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com>
+	 <20100311145248.GA12907@redhat.com> <1268321759.5037.113.camel@laptop>
+	 <20100311161909.GA16008@redhat.com>  <20100313192823.GA21462@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Mar 2010 03:11:39 +0100
+Message-ID: <1268532699.9440.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
-> Masami Hiramatsu <mhiramat@redhat.com> writes:
+On Sat, 2010-03-13 at 20:28 +0100, Oleg Nesterov wrote:
 > 
->> Hide CONFIG_OPTPROBES and set if arch support optimized kprobes, since
->> this option doesn't change the behavior of kprobes, but just reduces
->> the overhead.
+> Peter, I seem to see the simple fix for the discussed cpuset problems,
+> but it turns out sched.c has more problems evem without cpusets.
 > 
-> I don't so care whether this is configurable or not, but this confuses
-> me now. The following seems to say it's changed, but now this comment
-> says it wasn't changed. The following docs was obsoleted?
+> I'll try to send the whole series on Monday, but perhaps you can look
+> at the attached compile-tested patches (especially 2 and 3) to quickly
+> correct me if the 3rd one is wrong.
 > 
-> Thanks.
-> 
-> NOTE for geeks:
-> The jump optimization changes the kprobe's pre_handler behavior.
-> Without optimization, the pre_handler can change the kernel's execution
-> path by changing regs->ip and returning 1.  However, when the probe
-> is optimized, that modification is ignored.  Thus, if you want to
-> tweak the kernel's execution path, you need to suppress optimization,
-> using one of the following techniques:
+> The subsequent fix in cpuset.c depends on the locking rules enforced
+> by 2-3. 
 
-Ah, good point. This is only one point of changing the behavior.
-So if someone makes an out of tree module for changing the ip
-address by using kprobes, e.g. live code patching or something
-like that, it will be affected by this change.
-However, I think using kprobes for this way is not obviously
-documented, moreover, some workarounds for that are documented
-as above. So I don't worried about it.
+In as far as I can trust my jet-lagged brain, they look good. I'll try
+and have another look later.
 
-Anyway, indeed, the patch comment is wrong. I need to say "this option
-doesn't change the major behavior of kprobes, and workarounds for minor
-change are documented." :)
-
-Thank you for pointing it out!
-
-
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
