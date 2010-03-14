@@ -1,67 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758559Ab0CNMJh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 08:09:37 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41641 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755997Ab0CNMJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 08:09:09 -0400
-Date: Sun, 14 Mar 2010 23:07:47 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: =?UTF-8?B?IlJpY2hhcmQgUsO2amZvcnMi?= 
-	<richard.rojfors@pelagicore.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Ben Dooks <ben@fluff.org>,
-       linux-i2c@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
-       xtfeng@gmail.com, linux-next@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH, fix 2/2] Add include to i2c-xii.c to fix build error
-Message-Id: <20100314230747.1a118846.sfr@canb.auug.org.au>
-In-Reply-To: <20100314230525.352410e5.sfr@canb.auug.org.au>
-References: <4B94C951.6050703@pelagicore.com>
-	<20100308150121.GW10014@trinity.fluff.org>
-	<4B956F9E.8020304@oracle.com>
-	<4B960420.8040804@pelagicore.com>
-	<20100314230525.352410e5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1757615Ab0CNMoq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 08:44:46 -0400
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:37433 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756164Ab0CNMon convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 08:44:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:reply-to:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=T25QFNK+XIHIBhhjdwq71ONlxG/4HSg7Id6YWGobHfzZz3ntlHz0E6khk9r3IKb8RG
+         h5UbZl5noUddMc2ig92T2SECeHuIqbP/gqb5UpBxdeIddVtBTJame2rInDwRk7DanE6d
+         FuNpoGRvjurI+bmuO+o33fbYWGyGJyBiZBpnU=
+From: Florian Fainelli <florian@openwrt.org>
+Reply-To: Florian Fainelli <florian@openwrt.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/4] RDC321x southbridge and GPIO support
+Date: Sun, 14 Mar 2010 13:44:31 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-trunk-686; KDE/4.3.4; i686; ; )
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Ingo Molnar <mingo@elte.hu>
+References: <201003110942.03602.florian@openwrt.org>
+In-Reply-To: <201003110942.03602.florian@openwrt.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201003141344.34139.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Thu, 04 Feb 2010 12:11:09 -0800
+Samuel,
 
-drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of function 'mdelay'
+Any comments on this? Thanks.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Richard Röjfors" <richard.rojfors@pelagicore.com>
-Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
-Cc: linux-i2c@vger.kernel.org
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/i2c/busses/i2c-xiic.c |    1 +
- 1 file changed, 1 insertion(+)
+Le jeudi 11 mars 2010 09:42:03, Florian Fainelli a écrit :
+> Hi Wim, Samuel, Ingo,
+> 
+> Here are 4 patches relative to adding support for the RDC321x southbridge.
+> This southbridge is present on all x86-based RDC321x System-on-a-Chip and
+> provides access to GPIOs and Wathchdog. The watchdog driver is already
+>  merged.
+> 
+> Samuel, this is rebased on top of your mfd-2.6 master branch after commit
+> 522dba7 and I think the 4 patches should go via your tree to make sure the
+> merge is consistent.
+> 
+> Thank you.
+> 
+> Florian Fainelli (4):
+>   x86: remove rdc321x_defs.h
+>   MFD: add support for the RDC321x southbridge
+>   GPIO: add support for RDC321x GPIO controller
+>   WATCHDOG: convert rdc321x_wdt to use southbridge accessors
+> 
 
-Hi Linus,
-
-This patch has been in linux-next for a while as well.  Please apply.
-
---- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
-+++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/delay.h>
- #include <linux/platform_device.h>
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
