@@ -1,90 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134Ab0CNP4B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 11:56:01 -0400
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:33810 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751560Ab0CNPz7 (ORCPT
+	id S1758225Ab0CNQCK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 12:02:10 -0400
+Received: from ironport2-out.teksavvy.com ([206.248.154.183]:29408 "EHLO
+	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752532Ab0CNQCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 11:55:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=S0giWJm7dBcc5gnvmNEuycSvoLVbpNyv+CusmhrdNcz/XVp49eI8XoHmWq2EcRSdQ2
-         0RhJLoXm90HjGinP0Vc1pgT8+10Gv4KPNJWym+xK+BI4u0v/s/0TEm+s9XCrr77Zb/kK
-         Rr4/lMDvEznaNbT7O2texN55wUEe9rzlNrbOs=
-From: Steven Harms <sjharms@gmail.com>
-To: gregkh@suse.de, bobby.prani@gmail.com, sharms@ubuntu.com,
-       dcb314@hotmail.com, horms@verge.net.au, a.beregalov@gmail.com
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: otus: Remove mix of tabs and spaces with just tabs in ioctl.c
-Date: Sun, 14 Mar 2010 11:56:00 -0400
-Message-Id: <1268582160-8713-1-git-send-email-sharms@ubuntu.com>
-X-Mailer: git-send-email 1.6.3.3
+	Sun, 14 Mar 2010 12:02:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApIBAM6lnEtLd/sX/2dsb2JhbAAHgwW/RI8FgTKBFIFLagQ
+X-IronPort-AV: E=Sophos;i="4.49,639,1262581200"; 
+   d="scan'208";a="58223378"
+Message-ID: <4B9D0879.5050809@teksavvy.com>
+Date: Sun, 14 Mar 2010 12:02:01 -0400
+From: Mark Lord <kernel@teksavvy.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-GB; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Greg Freemyer <greg.freemyer@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, foo saa <foosaa@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+ program
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>	 <4B8FC6AC.4060801@teksavvy.com> <87f94c371003111029s7c7daebgf691ab11e6bdda25@mail.gmail.com>
+In-Reply-To: <87f94c371003111029s7c7daebgf691ab11e6bdda25@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously defines had a mix of both tabs and spaces, causing an error in the checkpatch tool.  These tabs and spaces have been consolidated to only tabs.
-Signed-off-by: Steven Harms <sharms@ubuntu.com>
----
- drivers/staging/otus/ioctl.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+On 03/11/10 13:29, Greg Freemyer wrote:
+>>
+>> But really.. isn't "hdparm --security-erase NULL /dev/sdX" good enough ???
+>>
+>
+> This thread seems to have died off.  If there is a real problem, I
+> hope it picks back up.
+>
+> Mark, as to your question the few times I've tried that the bios on
+> the test machine blocked the command.  So it may have some specific
+> utility, but it's a not a generic solution in my mind.
+..
 
-diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
-index 8c47b1a..963d807 100644
---- a/drivers/staging/otus/ioctl.c
-+++ b/drivers/staging/otus/ioctl.c
-@@ -29,34 +29,34 @@
+Yeah, a lot of BIOSs do a "SECURITY FREEZE" command before booting,
+which disables things like "SECURITY ERASE" until the next hard reset.
 
- #include "usbdrv.h"
+So, on a Linux system, just unplug the drive after booting, replug it,
+and usually it can then be erased.
 
--#define ZD_IOCTL_WPA			    (SIOCDEVPRIVATE + 1)
--#define ZD_IOCTL_PARAM			    (SIOCDEVPRIVATE + 2)
--#define ZD_IOCTL_GETWPAIE		    (SIOCDEVPRIVATE + 3)
-+#define ZD_IOCTL_WPA			(SIOCDEVPRIVATE + 1)
-+#define ZD_IOCTL_PARAM			(SIOCDEVPRIVATE + 2)
-+#define ZD_IOCTL_GETWPAIE		(SIOCDEVPRIVATE + 3)
- #ifdef ZM_ENABLE_CENC
--#define ZM_IOCTL_CENC               (SIOCDEVPRIVATE + 4)
-+#define ZM_IOCTL_CENC			(SIOCDEVPRIVATE + 4)
- #endif  /* ZM_ENABLE_CENC */
--#define ZD_PARAM_ROAMING		    0x0001
--#define ZD_PARAM_PRIVACY		    0x0002
--#define ZD_PARAM_WPA			    0x0003
-+#define ZD_PARAM_ROAMING		0x0001
-+#define ZD_PARAM_PRIVACY		0x0002
-+#define ZD_PARAM_WPA			0x0003
- #define ZD_PARAM_COUNTERMEASURES	0x0004
- #define ZD_PARAM_DROPUNENCRYPTED	0x0005
--#define ZD_PARAM_AUTH_ALGS		    0x0006
--#define ZD_PARAM_WPS_FILTER		    0x0007
-+#define ZD_PARAM_AUTH_ALGS		0x0006
-+#define ZD_PARAM_WPS_FILTER		0x0007
+But yeah.. that all makes things tricker for non-techies.
 
- #ifdef ZM_ENABLE_CENC
- #define P80211_PACKET_CENCFLAG		0x0001
- #endif  /* ZM_ENABLE_CENC */
--#define P80211_PACKET_SETKEY     	0x0003
-+#define P80211_PACKET_SETKEY		0x0003
-
- #define ZD_CMD_SET_ENCRYPT_KEY		0x0001
--#define ZD_CMD_SET_MLME			    0x0002
--#define ZD_CMD_SCAN_REQ			    0x0003
-+#define ZD_CMD_SET_MLME			0x0002
-+#define ZD_CMD_SCAN_REQ			0x0003
- #define ZD_CMD_SET_GENERIC_ELEMENT	0x0004
--#define ZD_CMD_GET_TSC			    0x0005
-+#define ZD_CMD_GET_TSC			0x0005
-
- #define ZD_CRYPT_ALG_NAME_LEN		16
--#define ZD_MAX_KEY_SIZE			    32
--#define ZD_MAX_GENERIC_SIZE		    64
-+#define ZD_MAX_KEY_SIZE			32
-+#define ZD_MAX_GENERIC_SIZE		64
-
- #include <net/iw_handler.h>
-
---
-1.6.3.3
-
+Cheers
