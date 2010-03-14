@@ -1,80 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042Ab0CNKkf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 06:40:35 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52867 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757054Ab0CNKix (ORCPT
+	id S932280Ab0CNKsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 06:48:13 -0400
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:48082 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932072Ab0CNKsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 06:38:53 -0400
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: fweisbec@gmail.com
-Cc: linux-kernel@vger.kernel.org, mitake@dcl.info.waseda.ac.jp,
-       h.mitake@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Jason Baron <jbaron@redhat.com>
-Subject: [PATCH RFC 06/11] Adopt rwsem of x86 to lock monitor
-Date: Sun, 14 Mar 2010 19:38:43 +0900
-Message-Id: <1268563128-6486-7-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	Sun, 14 Mar 2010 06:48:12 -0400
+Message-ID: <4B9CBEE6.1090509@in.ibm.com>
+Date: Sun, 14 Mar 2010 16:18:06 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, nishimura@mxp.nes.nec.co.jp,
+       lizf@cn.fujitsu.com
+Subject: 34-rc1-git3 build failure with CGROUP_MEM_RES_CTLR_SWAP=y
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current struct rw_semaphore holds struct lockdep_map,
-but it is a special thing of lockdep subsystem.
+On a PowerPC box, latest 34-rc1 git(d89b218b8...) fails to build
+with CGROUPS_MEM_RES_CTRL_SWAP=y. 
 
-So I replaced it with struct lock_monitor.
-Now it contains lockdep_map, and adding new members is easy.
+LD      init/built-in.o
+LD      .tmp_vmlinux1
+mm/built-in.o: In function __xchg:
+arch/powerpc/include/asm/system.h:331: undefined reference to .__xchg_called_with_bad_pointer
+mm/built-in.o: In function __cmpxchg:
+arch/powerpc/include/asm/system.h:474: undefined reference to .__cmpxchg_called_with_bad_pointer
+make: *** [.tmp_vmlinux1] Error 1
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jason Baron <jbaron@redhat.com>
----
- arch/x86/include/asm/rwsem.h |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+The code in question was added via commit 024914477e...
 
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index ca7517d..a6862f1 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -68,22 +68,22 @@ struct rw_semaphore {
- 	signed long		count;
- 	spinlock_t		wait_lock;
- 	struct list_head	wait_list;
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--	struct lockdep_map dep_map;
-+#ifdef CONFIG_LOCK_MONITOR
-+	struct lock_monitor     monitor;
- #endif
- };
- 
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
-+#ifdef CONFIG_LOCK_MONITOR
-+# define __RWSEM_LOCK_MONITOR_INIT(lockname) , .monitor = { __LOCK_MONITOR_INIT(lockname) }
- #else
--# define __RWSEM_DEP_MAP_INIT(lockname)
-+# define __RWSEM_LOCK_MONITOR_INIT(lockname)
- #endif
- 
- 
- #define __RWSEM_INITIALIZER(name)				\
- {								\
- 	RWSEM_UNLOCKED_VALUE, __SPIN_LOCK_UNLOCKED((name).wait_lock), \
--	LIST_HEAD_INIT((name).wait_list) __RWSEM_DEP_MAP_INIT(name) \
-+	LIST_HEAD_INIT((name).wait_list) __RWSEM_LOCK_MONITOR_INIT(name) \
- }
- 
- #define DECLARE_RWSEM(name)					\
+memcg: move charges of anonymous swap
+
+Thanks
+-Sachin
+
+
 -- 
-1.6.5.2
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
