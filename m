@@ -1,52 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438Ab0CNOeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 10:34:11 -0400
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:45213 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027Ab0CNOeG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 10:34:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=mSDVil9xWHCgM1NwTDGfYs+7D5tkRs84ynVntVHBgGp3JsIvCotcN5pDaVkpp2teAp
-         +GGl+VU8rqtuD4+wkzeZJCXKD3JPqpXPC/vQ7SA1abwpj0m/C6cuYGZv3zKVPowhHxNC
-         3IynlCW9k1+vhI0vVe2XSvGed4LEgTa1OF71w=
+	id S1758221Ab0CNOrh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 10:47:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45283 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753739Ab0CNOrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 10:47:36 -0400
+Date: Sun, 14 Mar 2010 15:47:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/2] perf hist: Don't fprintf the callgraph
+ unconditionally
+Message-ID: <20100314144723.GA6705@elte.hu>
+References: <1268408808-13595-1-git-send-email-acme@infradead.org>
+ <1268408808-13595-2-git-send-email-acme@infradead.org>
+ <20100314094732.GC5158@nowhere>
+ <20100314142152.GG6965@ghostprotocols.net>
 MIME-Version: 1.0
-In-Reply-To: <20100313.181754.107699673.davem@davemloft.net>
-References: <20100313.181754.107699673.davem@davemloft.net>
-Date: Sun, 14 Mar 2010 15:34:03 +0100
-X-Google-Sender-Auth: 1fbcafb88ab62d7d
-Message-ID: <10f740e81003140734p30959952ld4563d2b22d834af@mail.gmail.com>
-Subject: Re: [GIT]: Sparc
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100314142152.GG6965@ghostprotocols.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-On Sun, Mar 14, 2010 at 03:17, David Miller <davem@davemloft.net> wrote:
-> David S. Miller (1):
->      sparc64: Add very basic XVR-1000 framebuffer driver.
+* Arnaldo Carvalho de Melo <acme@ghostprotocols.net> wrote:
 
-Have you ever looked into getting offb to work on sparc64?
+> Em Sun, Mar 14, 2010 at 10:47:34AM +0100, Frederic Weisbecker escreveu:
+> > Hmm, so for now the callchain won't work anymore until
+> > it gets properly reimplemented right?
+> 
+> It doesn't work in the newt interface only, it remais working if you do:
+> 
+> perf report | less
+> perf report > output.txt
+> rpm -e newt-devel ; make -C tools/perf install
+> 
+> :-)
 
-Gr{oetje,eeting}s,
+We'll also need a .perfconfig variable for people who prefer flat ascii.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
