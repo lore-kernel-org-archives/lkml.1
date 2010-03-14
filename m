@@ -1,85 +1,1821 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875Ab0CNIm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 04:42:27 -0400
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:56549 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755415Ab0CNImW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 04:42:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Z5EYInuj2ew5sSRD9FOd1fFboQIOnpMsagiIfdjPguXFcIa/OSXJdBE0zWsndxMWdN
-         jjOGJdi6Ydo38NhDCcfreof7Kzv3OPVBrbvtXayamBDNVSj5ejXV3GNQBbMbmxE4Zeb5
-         3yddcZn7cxDGIqM++wH1ieLVEYc/zL2Bm9jP0=
-Date: Sun, 14 Mar 2010 00:42:15 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Stefan Achatz <erazor_de@users.sourceforge.net>
-Cc: Jiri Kosina <jkosina@suse.cz>, Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       wylda@volny.cz, Pavel Machek <pavel@suse.cz>,
-       Alessandro Guido <ag@alessandroguido.name>,
-       Tomas Hanak <tomas.hanak@gmail.com>, Jason Noble <nobleja@polezero.com>,
-       simon.windows@gmail.com, Sean Hildebrand <silverwraithii@gmail.com>,
-       Sid Boyce <sboyce@blueyonder.co.uk>, Henning Glawe <glaweh@debian.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] Added locks for sysfs attributes and internal data.
-Message-ID: <20100314084215.GA8226@core.coreip.homeip.net>
-References: <201002200911.53900.stefan_achatz@web.de>
- <201003081704.30119.stefan_achatz@web.de>
- <20100309074155.GA17288@core.coreip.homeip.net>
- <201003131219.27482.erazor_de@users.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003131219.27482.erazor_de@users.sourceforge.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1756181Ab0CNJD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 05:03:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:45516 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756070Ab0CNJDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 05:03:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,638,1262592000"; 
+   d="scan'208";a="780630225"
+From: Ossama Othman <ossama.othman@intel.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Cc: Ossama Othman <ossama.othman@intel.com>
+Subject: [PATCH] Intel Restricted Access Region Handler 
+Date: Sun, 14 Mar 2010 01:14:23 -0800
+Message-Id: <1268558064-7973-1-git-send-email-ossama.othman@intel.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan,
+The Intel Restricted Access Region Handler provides a buffer allocation
+mechanism to RAR users.  Since the intended usage model is to lock out
+CPU access to RAR (the CPU will not be able to access RAR memory), this
+driver does not access RAR memory, and merely keeps track of what areas
+of RAR memory are in use.  It has it's own simple allocator that does
+not rely on existing kernel allocators (SLAB, etc) since those
+allocators are too tightly coupled with the paging mechanism, which isn't
+needed for the intended RAR use cases.
 
-On Sat, Mar 13, 2010 at 12:19:27PM +0100, Stefan Achatz wrote:
-> Hello,
-> I have some more questions regarding the work on my driver:
-> 
-> 1. binary vs text sysfs attributes
-> As I found little information about binary sysfs attributes I used the normal 
-> sysfs attributes to transfer binary data because they are also easier to use. 
-> The transfered data is far less than the 4096 bytes minimum page size.
-> So, is there a significant difference in these two variants that should force 
-> me to use the binary variant?
-> 
+An mmap() implementation is provided for debugging purposes to simplify
+RAR memory access from the user space.  However, it will effectively be
+a no-op when RAR access control is enabled since the CPU will not be
+able to access RAR.
 
-I'd say in this case it just sets expectations for the interface -
-normal sysfs attributes are supposed to pass data in human-readable
-form, one value per attribute.
+This driver should not be confused with the rar_register driver.  That
+driver exposes an interface to access RAR registers on the Moorestown
+platform.  The RAR handler driver relies on the rar_register driver for
+low level RAR register reads and writes.
 
-> 2. memory footprint
-> I'm thinking about a redesign of my sysfs attributes to reduce io and simplify 
-> the use of binary sysfs attributes (if needed, see above). This would 
-> increase the memory footprint of hid_drvdata to around 5kbytes.
-> Is it allowed for a driver to constantly alloc such an amount of data or 
-> should I stick with more complicated code and more io?
+Signed-off-by: Ossama Othman <ossama.othman@intel.com>
+---
+ drivers/staging/Kconfig                   |    2 +
+ drivers/staging/Makefile                  |    1 +
+ drivers/staging/memrar/Kconfig            |   15 +
+ drivers/staging/memrar/Makefile           |    2 +
+ drivers/staging/memrar/memrar.h           |  160 +++++
+ drivers/staging/memrar/memrar_allocator.c |  432 +++++++++++++
+ drivers/staging/memrar/memrar_allocator.h |  141 +++++
+ drivers/staging/memrar/memrar_handler.c   |  948 +++++++++++++++++++++++++++++
+ 8 files changed, 1701 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/staging/memrar/Kconfig
+ create mode 100644 drivers/staging/memrar/Makefile
+ create mode 100644 drivers/staging/memrar/memrar.h
+ create mode 100644 drivers/staging/memrar/memrar_allocator.c
+ create mode 100644 drivers/staging/memrar/memrar_allocator.h
+ create mode 100644 drivers/staging/memrar/memrar_handler.c
 
-5K is not that much but why do you think binary attributes will require
-such increase?
-
-> 
-> 3. grow up of driver
-> I see my work is not quite ready for kernel inclusion. Maybe I'm wrong in this 
-> list and should bug other people. Would the linuxdriverproject.org be a 
-> better place to raise my work to adulthood?
-> 
-
-Rarely a driver is ready for inclusion right away ;) Normally that
-happens after someone submitted a few of them to the same subsystem so
-he knows maintainers perferences, etc. I'd say you are doing well as is
-here, there is no sense to move away somewhere else at this point.
-
-Thanks.
-
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 7696a66..a4b402e 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -111,6 +111,8 @@ source "drivers/staging/vme/Kconfig"
+ 
+ source "drivers/staging/rar_register/Kconfig"
+ 
++source "drivers/staging/memrar/Kconfig"
++
+ source "drivers/staging/sep/Kconfig"
+ 
+ source "drivers/staging/iio/Kconfig"
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index ea2e70e..a517236 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -36,6 +36,7 @@ obj-$(CONFIG_FB_UDL)		+= udlfb/
+ obj-$(CONFIG_HYPERV)		+= hv/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_RAR_REGISTER)	+= rar_register/
++obj-$(CONFIG_MRST_RAR_HANDLER)	+= memrar/
+ obj-$(CONFIG_DX_SEP)		+= sep/
+ obj-$(CONFIG_IIO)		+= iio/
+ obj-$(CONFIG_RAMZSWAP)		+= ramzswap/
+diff --git a/drivers/staging/memrar/Kconfig b/drivers/staging/memrar/Kconfig
+new file mode 100644
+index 0000000..a5598a8
+--- /dev/null
++++ b/drivers/staging/memrar/Kconfig
+@@ -0,0 +1,15 @@
++config MRST_RAR_HANDLER
++	tristate "RAR handler driver for Intel Moorestown platform"
++	select RAR_REGISTER
++	---help---
++	  This driver provides a memory management interface to
++	  restricted access regions (RAR) available on the Intel
++	  Moorestown platform.
++
++	  Once locked down, restricted access regions are only
++	  accessible by specific hardware on the platform.  The x86
++	  CPU is typically not one of those platforms.  As such this
++	  driver does not access RAR, and only provides a buffer
++	  allocation/bookkeeping mechanism.
++
++	  If unsure, say N.
+diff --git a/drivers/staging/memrar/Makefile b/drivers/staging/memrar/Makefile
+new file mode 100644
+index 0000000..a3336c0
+--- /dev/null
++++ b/drivers/staging/memrar/Makefile
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_MRST_RAR_HANDLER)	+= memrar.o
++memrar-y			:= memrar_allocator.o memrar_handler.o
+diff --git a/drivers/staging/memrar/memrar.h b/drivers/staging/memrar/memrar.h
+new file mode 100644
+index 0000000..7a09e7d
+--- /dev/null
++++ b/drivers/staging/memrar/memrar.h
+@@ -0,0 +1,160 @@
++/*
++ *      RAR Handler (/dev/memrar) internal driver API.
++ *      Copyright (C) 2009 Intel Corporation. All rights reserved.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of version 2 of the GNU General
++ *      Public License as published by the Free Software Foundation.
++ *
++ *      This program is distributed in the hope that it will be
++ *      useful, but WITHOUT ANY WARRANTY; without even the implied
++ *      warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *      PURPOSE.  See the GNU General Public License for more details.
++ *      You should have received a copy of the GNU General Public
++ *      License along with this program; if not, write to the Free
++ *      Software Foundation, Inc., 59 Temple Place - Suite 330,
++ *      Boston, MA  02111-1307, USA.
++ *      The full GNU General Public License is included in this
++ *      distribution in the file called COPYING.
++ */
++
++
++#ifndef _MEMRAR_H
++#define _MEMRAR_H
++
++#include <linux/ioctl.h>
++#include <linux/types.h>
++
++
++/*
++ * @struct RAR_stat
++ *
++ * @brief This structure is used for @c RAR_HANDLER_STAT ioctl and for
++ *        @c RAR_get_stat() user space wrapper function.
++ */
++struct RAR_stat {
++	/* Type of RAR memory (e.g., audio vs. video) */
++	__u32 type;
++
++	/*
++	* Total size of RAR memory region.
++	*/
++	__u32 capacity;
++
++	/* Size of the largest reservable block. */
++	__u32 largest_block_size;
++};
++
++
++/*
++ * @struct RAR_block_info
++ *
++ * @brief The argument for the @c RAR_HANDLER_RESERVE @c ioctl.
++ *
++ */
++struct RAR_block_info {
++	/* Type of RAR memory (e.g., audio vs. video) */
++	__u32 type;
++
++	/* Requested size of a block to be reserved in RAR. */
++	__u32 size;
++
++	/* Handle that can be used to refer to reserved block. */
++	__u32 handle;
++};
++
++
++#define RAR_IOCTL_BASE 0xE0
++
++/* Reserve RAR block. */
++#define RAR_HANDLER_RESERVE _IOWR(RAR_IOCTL_BASE, 0x00, struct RAR_block_info)
++
++/* Release previously reserved RAR block. */
++#define RAR_HANDLER_RELEASE _IOW(RAR_IOCTL_BASE, 0x01, __u32)
++
++/* Get RAR stats. */
++#define RAR_HANDLER_STAT    _IOWR(RAR_IOCTL_BASE, 0x02, struct RAR_stat)
++
++
++#ifdef __KERNEL__
++
++/* -------------------------------------------------------------- */
++/*               Kernel Side RAR Handler Interface                */
++/* -------------------------------------------------------------- */
++
++/*
++ * @struct RAR_buffer
++ *
++ * Structure that contains all information related to a given block of
++ * memory in RAR.  It is generally only used when retrieving bus
++ * addresses.
++ *
++ * @note This structure is used only by RAR-enabled drivers, and is
++ *       not intended to be exposed to the user space.
++ */
++struct RAR_buffer {
++	/* Structure containing base RAR buffer information */
++	struct RAR_block_info info;
++
++	/* Buffer bus address */
++	dma_addr_t bus_address;
++};
++
++/*
++ * @function rar_reserve
++ *
++ * @brief Reserve RAR buffers.
++ *
++ * This function will reserve buffers in the restricted access regions
++ * of given types.
++ *
++ * @return Number of successfully reserved buffers.
++ *         Successful buffer reservations will have the corresponding
++ *         @c bus_address field set to a non-zero value in the
++ *         given @a buffers vector.
++ */
++extern size_t rar_reserve(struct RAR_buffer *buffers,
++			  size_t count);
++
++/*
++ * @function rar_release
++ *
++ * @brief Release RAR buffers retrieved through call to
++ *        @c rar_reserve() or @c rar_handle_to_bus().
++ *
++ * This function will release RAR buffers that were retrieved through
++ * a call to @c rar_reserve() or @c rar_handle_to_bus() by
++ * decrementing the reference count.  The RAR buffer will be reclaimed
++ * when the reference count drops to zero.
++ *
++ * @return Number of successfully released buffers.
++ *         Successful releases will have their handle field set to
++ *         zero in the given @a buffers vector.
++ */
++extern size_t rar_release(struct RAR_buffer *buffers,
++			  size_t count);
++
++/*
++ * @function rar_handle_to_bus
++ *
++ * @brief Convert a vector of RAR handles to bus addresses.
++ *
++ * This function will retrieve the RAR buffer bus addresses, type and
++ * size corresponding to the RAR handles provided in the @a buffers
++ * vector.
++ *
++ * @return Number of successfully converted buffers.
++ *         The bus address will be set to @c 0 for unrecognized
++ *         handles.
++ *
++ * @note The reference count for each corresponding buffer in RAR will
++ *       be incremented.  Call @c rar_release() when done with the
++ *       buffers.
++ */
++extern size_t rar_handle_to_bus(struct RAR_buffer *buffers,
++				size_t count);
++
++
++#endif  /* __KERNEL__ */
++
++#endif  /* _MEMRAR_H */
+diff --git a/drivers/staging/memrar/memrar_allocator.c b/drivers/staging/memrar/memrar_allocator.c
+new file mode 100644
+index 0000000..af066e2
+--- /dev/null
++++ b/drivers/staging/memrar/memrar_allocator.c
+@@ -0,0 +1,432 @@
++/*
++ *      memrar_allocator 0.2:  An allocator for Intel RAR.
++ *
++ *      Copyright (C) 2009 Intel Corporation. All rights reserved.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of version 2 of the GNU General
++ *      Public License as published by the Free Software Foundation.
++ *
++ *      This program is distributed in the hope that it will be
++ *      useful, but WITHOUT ANY WARRANTY; without even the implied
++ *      warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *      PURPOSE.  See the GNU General Public License for more details.
++ *      You should have received a copy of the GNU General Public
++ *      License along with this program; if not, write to the Free
++ *      Software Foundation, Inc., 59 Temple Place - Suite 330,
++ *      Boston, MA  02111-1307, USA.
++ *      The full GNU General Public License is included in this
++ *      distribution in the file called COPYING.
++ *
++ *
++ *  ------------------------------------------------------------------
++ *
++ *      This simple allocator implementation provides a
++ *      malloc()/free()-like interface for reserving space within a
++ *      previously reserved block of memory.  It is not specific to
++ *      any hardware, nor is it coupled with the lower level paging
++ *      mechanism.
++ *
++ *      The primary goal of this implementation is to provide a means
++ *      to partition an arbitrary block of memory without actually
++ *      accessing the memory or incurring any hardware side-effects
++ *      (e.g. paging).  It is, in effect, a bookkeeping mechanism for
++ *      buffers.
++ */
++
++
++#include "memrar_allocator.h"
++#include <linux/slab.h>
++#include <linux/bug.h>
++#include <linux/kernel.h>
++
++
++struct memrar_allocator *memrar_create_allocator(unsigned long base,
++						 size_t capacity,
++						 size_t block_size)
++{
++	struct memrar_allocator *allocator  = NULL;
++	struct memrar_address_ranges *first_node = NULL;
++
++	/*
++	 * Make sure the base address is aligned on a block_size
++	 * boundary.
++	 *
++	 * @todo Is this necessary?
++	 */
++	/* base = ALIGN(base, block_size); */
++
++	/* Validate parameters.
++	 *
++	 * Make sure we can allocate the entire memory space.  Zero
++	 * capacity or block size are obviously invalid.
++	 */
++	if (base == 0
++	    || capacity == 0
++	    || block_size == 0
++	    || ULONG_MAX - capacity < base
++	    || capacity < block_size)
++		return allocator;
++
++	/*
++	 * There isn't much point in creating a memory allocator that
++	 * is only capable of holding one block but we'll allow it,
++	 * and issue a diagnostic.
++	 */
++	WARN(capacity < block_size * 2,
++	     "memrar: Only one block available to allocator.\n");
++
++	allocator = kmalloc(sizeof(*allocator), GFP_KERNEL);
++
++	if (allocator == NULL)
++		return allocator;
++
++	mutex_init(&allocator->lock);
++	allocator->base = base;
++
++	/* Round the capacity down to a multiple of block_size. */
++	allocator->capacity = (capacity / block_size) * block_size;
++
++	allocator->block_size = block_size;
++
++	allocator->largest_free_area = allocator->capacity;
++
++	/* Initialize the handle and free lists. */
++	INIT_LIST_HEAD(&allocator->allocated_list.list);
++	INIT_LIST_HEAD(&allocator->free_list.list);
++
++	first_node = kmalloc(sizeof(*first_node), GFP_KERNEL);
++	if (first_node == NULL)	{
++		kfree(allocator);
++		allocator = NULL;
++	} else {
++		/* Full range of blocks is available. */
++		first_node->range.begin = base;
++		first_node->range.end   = base + allocator->capacity;
++		list_add(&first_node->list,
++			 &allocator->free_list.list);
++	}
++
++	return allocator;
++}
++
++void memrar_destroy_allocator(struct memrar_allocator *allocator)
++{
++	/*
++	 * Assume that the memory allocator lock isn't held at this
++	 * point in time.  Caller must ensure that.
++	 */
++
++	struct memrar_address_ranges *pos = NULL;
++	struct memrar_address_ranges *n   = NULL;
++
++	if (allocator == NULL)
++		return;
++
++	mutex_lock(&allocator->lock);
++
++	/* Reclaim free list resources. */
++	list_for_each_entry_safe(pos,
++				 n,
++				 &allocator->free_list.list,
++				 list) {
++		list_del(&pos->list);
++		kfree(pos);
++	}
++
++	mutex_unlock(&allocator->lock);
++
++	kfree(allocator);
++}
++
++unsigned long memrar_allocator_alloc(struct memrar_allocator *allocator,
++				     size_t size)
++{
++	struct memrar_address_ranges *pos = NULL;
++
++	size_t num_blocks;
++	unsigned long reserved_bytes;
++
++	/*
++	 * Address of allocated buffer.  We assume that zero is not a
++	 * valid address.
++	 */
++	unsigned long addr = 0;
++
++	if (allocator == NULL || size == 0)
++		return addr;
++
++	/* Reserve enough blocks to hold the amount of bytes requested. */
++	num_blocks = DIV_ROUND_UP(size, allocator->block_size);
++
++	reserved_bytes = num_blocks * allocator->block_size;
++
++	mutex_lock(&allocator->lock);
++
++	if (reserved_bytes > allocator->largest_free_area) {
++		mutex_unlock(&allocator->lock);
++		return addr;
++	}
++
++	/*
++	 * Iterate through the free list to find a suitably sized
++	 * range of free contiguous memory blocks.
++	 *
++	 * We also take the opportunity to reset the size of the
++	 * largest free area size statistic.
++	 */
++	list_for_each_entry(pos, &allocator->free_list.list, list) {
++		struct memrar_address_range * const fr = &pos->range;
++		size_t const curr_size = fr->end - fr->begin;
++
++		if (curr_size >= reserved_bytes && addr == 0) {
++			struct memrar_address_range *range = NULL;
++			struct memrar_address_ranges * const new_node =
++				kmalloc(sizeof(*new_node), GFP_KERNEL);
++
++			if (new_node == NULL)
++				break;
++
++			list_add(&new_node->list,
++				 &allocator->allocated_list.list);
++
++			/*
++			 * Carve out area of memory from end of free
++			 * range.
++			 */
++			range        = &new_node->range;
++			range->end   = fr->end;
++			fr->end     -= reserved_bytes;
++			range->begin = fr->end;
++			addr         = range->begin;
++
++			/*
++			 * Check if largest area has decreased in
++			 * size.  We'll need to continue scanning for
++			 * the next largest area if it has.
++			 */
++			if (curr_size == allocator->largest_free_area)
++				allocator->largest_free_area -=
++					reserved_bytes;
++			else
++				break;
++		}
++
++		/*
++		 * Reset largest free area size statistic as needed,
++		 * but only if we've actually allocated memory.
++		 */
++		if (addr != 0
++		    && curr_size > allocator->largest_free_area) {
++			allocator->largest_free_area = curr_size;
++			break;
++		}
++	}
++
++	mutex_unlock(&allocator->lock);
++
++	return addr;
++}
++
++long memrar_allocator_free(struct memrar_allocator *allocator,
++			   unsigned long addr)
++{
++	struct list_head *pos = NULL;
++	struct list_head *tmp = NULL;
++	struct list_head *dst = NULL;
++
++	struct memrar_address_ranges      *allocated = NULL;
++	struct memrar_address_range const *handle    = NULL;
++
++	unsigned long old_end        = 0;
++	unsigned long new_chunk_size = 0;
++
++	if (allocator == NULL)
++		return -EINVAL;
++
++	if (addr == 0)
++		return 0;  /* Ignore "free(0)". */
++
++	mutex_lock(&allocator->lock);
++
++	/* Find the corresponding handle. */
++	list_for_each_entry(allocated,
++			    &allocator->allocated_list.list,
++			    list) {
++		if (allocated->range.begin == addr) {
++			handle = &allocated->range;
++			break;
++		}
++	}
++
++	/* No such buffer created by this allocator. */
++	if (handle == NULL) {
++		mutex_unlock(&allocator->lock);
++		return -EFAULT;
++	}
++
++	/*
++	 * Coalesce adjacent chunks of memory if possible.
++	 *
++	 * @note This isn't full blown coalescing since we're only
++	 *       coalescing at most three chunks of memory.
++	 */
++	list_for_each_safe(pos, tmp, &allocator->free_list.list) {
++		/* @todo O(n) performance.  Optimize. */
++
++		struct memrar_address_range * const chunk =
++			&list_entry(pos,
++				    struct memrar_address_ranges,
++				    list)->range;
++
++		/* Extend size of existing free adjacent chunk. */
++		if (chunk->end == handle->begin) {
++			/*
++			 * Chunk "less than" than the one we're
++			 * freeing is adjacent.
++			 *
++			 * Before:
++			 *
++			 *   +-----+------+
++			 *   |chunk|handle|
++			 *   +-----+------+
++			 *
++			 * After:
++			 *
++			 *   +------------+
++			 *   |   chunk    |
++			 *   +------------+
++			 */
++
++			struct memrar_address_ranges const * const next =
++				list_entry(pos->next,
++					   struct memrar_address_ranges,
++					   list);
++
++			chunk->end = handle->end;
++
++			/*
++			 * Now check if next free chunk is adjacent to
++			 * the current extended free chunk.
++			 *
++			 * Before:
++			 *
++			 *   +------------+----+
++			 *   |   chunk    |next|
++			 *   +------------+----+
++			 *
++			 * After:
++			 *
++			 *   +-----------------+
++			 *   |      chunk      |
++			 *   +-----------------+
++			 */
++			if (!list_is_singular(pos)
++			    && chunk->end == next->range.begin) {
++				chunk->end = next->range.end;
++				list_del(pos->next);
++				kfree(next);
++			}
++
++			list_del(&allocated->list);
++
++			new_chunk_size = chunk->end - chunk->begin;
++
++			goto exit_memrar_free;
++
++		} else if (handle->end == chunk->begin) {
++			/*
++			 * Chunk "greater than" than the one we're
++			 * freeing is adjacent.
++			 *
++			 *   +------+-----+
++			 *   |handle|chunk|
++			 *   +------+-----+
++			 *
++			 * After:
++			 *
++			 *   +------------+
++			 *   |   chunk    |
++			 *   +------------+
++			 */
++
++			struct memrar_address_ranges const * const prev =
++				list_entry(pos->prev,
++					   struct memrar_address_ranges,
++					   list);
++
++			chunk->begin = handle->begin;
++
++			/*
++			 * Now check if previous free chunk is
++			 * adjacent to the current extended free
++			 * chunk.
++			 *
++			 *
++			 * Before:
++			 *
++			 *   +----+------------+
++			 *   |prev|   chunk    |
++			 *   +----+------------+
++			 *
++			 * After:
++			 *
++			 *   +-----------------+
++			 *   |      chunk      |
++			 *   +-----------------+
++			 */
++			if (!list_is_singular(pos)
++			    && prev->range.end == chunk->begin) {
++				chunk->begin = prev->range.begin;
++				list_del(pos->prev);
++				kfree(prev);
++			}
++
++			list_del(&allocated->list);
++
++			new_chunk_size = chunk->end - chunk->begin;
++
++			goto exit_memrar_free;
++
++		} else if (chunk->end < handle->begin
++			   && chunk->end > old_end) {
++			/* Keep track of where the entry could be
++			 * potentially moved from the "allocated" list
++			 * to the "free" list if coalescing doesn't
++			 * occur, making sure the "free" list remains
++			 * sorted.
++			 */
++			old_end = chunk->end;
++			dst = pos;
++		}
++	}
++
++	/*
++	 * Nothing to coalesce.
++	 *
++	 * Move the entry from the "allocated" list to the "free"
++	 * list.
++	 */
++	list_move(&allocated->list, dst);
++	new_chunk_size = handle->end - handle->begin;
++	allocated = NULL;
++
++exit_memrar_free:
++
++	if (new_chunk_size > allocator->largest_free_area)
++		allocator->largest_free_area = new_chunk_size;
++
++	mutex_unlock(&allocator->lock);
++
++	kfree(allocated);
++
++	return 0;
++}
++
++
++
++/*
++  Local Variables:
++    c-file-style: "linux"
++  End:
++*/
+diff --git a/drivers/staging/memrar/memrar_allocator.h b/drivers/staging/memrar/memrar_allocator.h
+new file mode 100644
+index 0000000..3636437
+--- /dev/null
++++ b/drivers/staging/memrar/memrar_allocator.h
+@@ -0,0 +1,141 @@
++/*
++ *      Copyright (C) 2009 Intel Corporation. All rights reserved.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of version 2 of the GNU General
++ *      Public License as published by the Free Software Foundation.
++ *
++ *      This program is distributed in the hope that it will be
++ *      useful, but WITHOUT ANY WARRANTY; without even the implied
++ *      warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *      PURPOSE.  See the GNU General Public License for more details.
++ *      You should have received a copy of the GNU General Public
++ *      License along with this program; if not, write to the Free
++ *      Software Foundation, Inc., 59 Temple Place - Suite 330,
++ *      Boston, MA  02111-1307, USA.
++ *      The full GNU General Public License is included in this
++ *      distribution in the file called COPYING.
++ */
++
++#ifndef MEMRAR_ALLOCATOR_H
++#define MEMRAR_ALLOCATOR_H
++
++
++#include <linux/mutex.h>
++#include <linux/list.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++
++
++/* Structure that describes a memory range reserved by the allocator. */
++struct memrar_address_range {
++	/* Beginning of available address range. */
++	unsigned long begin;
++
++	/*
++	 * End of available address range, one past the end,
++	 * i.e. [begin, end).
++	 */
++	unsigned long end;
++};
++
++/* List of areas of memory. */
++struct memrar_address_ranges {
++	/* Linked list of address ranges. */
++	struct list_head list;
++
++	/* Address range. */
++	struct memrar_address_range range;
++};
++
++/*
++ * @struct memrar_allocator
++ *
++ * @brief Encapsulation of the memory allocator state.
++ *
++ * This structure contains all memory allocator state, including the
++ * base address, capacity, free list, lock, etc.
++ */
++struct memrar_allocator {
++	/*
++	 * Lock used to synchronize access to the memory allocator
++	 * state.
++	 */
++	struct mutex lock;
++
++	/* Base (start) address of the memory allocator. */
++	unsigned long base;
++
++	/* Size of the memory allocator in bytes. */
++	size_t capacity;
++
++	/*
++	 * The size in bytes of individual blocks within the memory
++	 * allocator.
++	 */
++	size_t block_size;
++
++	/* Largest free area of memory in the allocator in bytes. */
++	size_t largest_free_area;
++
++	/* List of handles for allocated blocks of memory. */
++	struct memrar_address_ranges allocated_list;
++
++	/* List of free address ranges. */
++	struct memrar_address_ranges free_list;
++};
++
++/*
++ * @function memrar_create_allocator
++ *
++ * @brief Create a memory allocator.
++ *
++ * Create a memory allocator with the given capacity and block size.
++ * The capacity will be reduced to be a multiple of the block size, if
++ * necessary.
++ *
++ * @param base       Address at which the memory allocator begins.
++ * @param capacity   Desired size of the memory allocator.  This value
++ *                   must be larger than the block_size, ideally more
++ *                   than twice as large since there wouldn't be much
++ *                   point in using a memory allocator otherwise.
++ * @param block_size The size of individual blocks within the memory
++ *                   allocator.  This value must smaller than the
++ *                   capacity.
++ * @return An instance of the memory allocator, if creation succeeds.
++ * @return Zero if creation fails.  Failure may occur if not enough
++ *         kernel memory exists to create the memrar_allocator
++ *         instance itself, or if the capacity and block_size
++ *         arguments are not compatible or make sense.
++ */
++struct memrar_allocator *memrar_create_allocator(unsigned long base,
++						 size_t capacity,
++						 size_t block_size);
++
++/*
++ * Reclaim resources held by the memory allocator.  The caller must
++ * explicitly free all memory reserved by memrar_allocator_alloc()
++ * prior to calling this function.  Otherwise leaks will occur.
++ */
++void memrar_destroy_allocator(struct memrar_allocator *allocator);
++
++/*
++ * Reserve an area of memory of given size.
++ */
++unsigned long memrar_allocator_alloc(struct memrar_allocator *allocator,
++				     size_t size);
++
++/*
++ * Release an area of memory starting at the given address.
++ */
++long memrar_allocator_free(struct memrar_allocator *allocator,
++			   unsigned long address);
++
++#endif  /* MEMRAR_ALLOCATOR_H */
++
++
++/*
++  Local Variables:
++    c-file-style: "linux"
++  End:
++*/
+diff --git a/drivers/staging/memrar/memrar_handler.c b/drivers/staging/memrar/memrar_handler.c
+new file mode 100644
+index 0000000..0b46a03
+--- /dev/null
++++ b/drivers/staging/memrar/memrar_handler.c
+@@ -0,0 +1,948 @@
++/*
++ *      memrar_handler 1.0:  An Intel restricted access region handler device
++ *
++ *      Copyright (C) 2009 Intel Corporation. All rights reserved.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of version 2 of the GNU General
++ *      Public License as published by the Free Software Foundation.
++ *
++ *      This program is distributed in the hope that it will be
++ *      useful, but WITHOUT ANY WARRANTY; without even the implied
++ *      warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *      PURPOSE.  See the GNU General Public License for more details.
++ *      You should have received a copy of the GNU General Public
++ *      License along with this program; if not, write to the Free
++ *      Software Foundation, Inc., 59 Temple Place - Suite 330,
++ *      Boston, MA  02111-1307, USA.
++ *      The full GNU General Public License is included in this
++ *      distribution in the file called COPYING.
++ *
++ * -------------------------------------------------------------------
++ *
++ *      Moorestown restricted access regions (RAR) provide isolated
++ *      areas of main memory that are only acceessible by authorized
++ *      devices.
++ *
++ *      The Intel Moorestown RAR handler module exposes a kernel space
++ *      RAR memory management mechanism.  It is essentially a
++ *      RAR-specific allocator.
++ *
++ *      Besides providing RAR buffer management, the RAR handler also
++ *      behaves in many ways like an OS virtual memory manager.  For
++ *      example, the RAR "handles" created by the RAR handler are
++ *      analogous to user space virtual addresses.
++ *
++ *      RAR memory itself is never accessed directly by the RAR
++ *      handler.
++ *
++ * -------------------------------------------------------------------
++ *
++ *      TODO
++ *
++ *      1. Split user space interface from core/kernel code, e.g.:
++ *           memrar_handler.c -> memrar_core.c, memrar_user.c
++ *
++ *      2. Convert API documentation to Kerneldoc.
++ *
++ *      3. Move memrar_allocator.* to kernel lib' directory since it
++ *         is HW neutral.
++ *         a. Alternatively, use lib/genalloc.c instead.
++ *         b. A kernel port of Doug Lea's malloc() implementation may
++ *            also be an option.
++ */
++
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/kref.h>
++#include <linux/mutex.h>
++#include <linux/kernel.h>
++#include <linux/uaccess.h>
++#include <linux/mm.h>
++#include <linux/ioport.h>
++#include <linux/io.h>
++
++#include "../rar_register/rar_register.h"
++
++#include "memrar.h"
++#include "memrar_allocator.h"
++
++
++#define MEMRAR_VER "1.0"
++
++/*
++ * Moorestown supports three restricted access regions.
++ *
++ * We only care about the first two, video and audio.  The third,
++ * reserved for Chaabi and the P-unit, will be handled by their
++ * respective drivers.
++ */
++#define MRST_NUM_RAR 2
++
++/* ---------------- -------------------- ------------------- */
++
++/*
++ * List structure that keeps track of all RAR buffers.
++ */
++struct memrar_buffer_info {
++	/* Linked list of memrar_buffer_info objects. */
++	struct list_head list;
++
++	/* Core RAR buffer information. */
++	struct RAR_buffer buffer;
++
++	/* Reference count */
++	struct kref refcount;
++
++	/*
++	 * File handle corresponding to process that reserved the
++	 * block of memory in RAR.  This will be zero for buffers
++	 * allocated by other drivers instead of by a user space
++	 * process.
++	 */
++	struct file *owner;
++};
++
++/*
++ * Structure that describes that characteristics of a given RAR.
++ */
++struct memrar_rar_info {
++	/* Base bus address of the RAR. */
++	dma_addr_t base;
++
++	/* Length of the RAR. */
++	unsigned long length;
++
++	/* Virtual address of RAR mapped into kernel. */
++	void __iomem *iobase;
++
++	/*
++	 * Allocator associated with the RAR.
++	 *
++	 * @note The allocator "capacity" may be smaller than the RAR
++	 *       length if the length is not a multiple of the
++	 *       configured allocator block size.
++	 */
++	struct memrar_allocator *allocator;
++
++	/*
++	 * Table that keeps track of all reserved RAR buffers.
++	 */
++	struct memrar_buffer_info buffers;
++
++	/*
++	 * Lock used to synchronize access to RAR-specific data
++	 * structures.
++	 */
++	struct mutex lock;
++};
++
++/*
++ * Array of RAR characteristics.
++ */
++static struct memrar_rar_info memrars[MRST_NUM_RAR];
++
++
++/* ---------------- -------------------- ------------------- */
++
++/* Validate RAR type. */
++static inline int memrar_is_valid_rar_type(u32 type)
++{
++	return type == RAR_TYPE_VIDEO || type == RAR_TYPE_AUDIO;
++}
++
++/* Check if an address/handle falls with the given RAR memory range. */
++static inline int memrar_handle_in_range(struct memrar_rar_info *rar,
++					 u32 vaddr)
++{
++	unsigned long const iobase = (unsigned long) (rar->iobase);
++	return (vaddr >= iobase && vaddr < iobase + rar->length);
++}
++
++/* Retrieve RAR information associated with the given handle. */
++static struct memrar_rar_info *memrar_get_rar_info(u32 vaddr)
++{
++	int i;
++	for (i = 0; i < MRST_NUM_RAR; ++i) {
++		struct memrar_rar_info * const rar = &memrars[i];
++		if (memrar_handle_in_range(rar, vaddr))
++			return rar;
++	}
++
++	return NULL;
++}
++
++/*
++ * Retrieve bus address from given handle.
++ *
++ * @return Address corresponding to given handle.  Zero if handle
++ *         is invalid.
++ */
++static dma_addr_t memrar_get_bus_address(
++	struct memrar_rar_info *rar,
++	u32 vaddr)
++{
++	unsigned long const iobase = (unsigned long) (rar->iobase);
++
++	if (!memrar_handle_in_range(rar, vaddr))
++		return 0;
++
++	/*
++	 * An assumption is made that the virtual address offset is
++	 * the same as the bus address offset, at least based on the
++	 * way this driver is implemented.  For example, vaddr + 2 ==
++	 * baddr + 2.
++	 *
++	 * @todo Is that a valid assumption?
++	 */
++	return rar->base + (vaddr - iobase);
++}
++
++/*
++ * Retrieve physical address from given handle.
++ *
++ * @return Address corresponding to given handle.  Zero if handle
++ *         is invalid.
++ */
++static dma_addr_t memrar_get_physical_address(
++	struct memrar_rar_info *rar,
++	u32 vaddr)
++{
++	/*
++	 * @todo This assumes that the bus address and physical
++	 *       address are the same.  That is true for Moorestown
++	 *       but not necessarily on other platforms.  This
++	 *       deficiency should be addressed at some point.
++	 */
++	return memrar_get_bus_address(rar, vaddr);
++}
++
++/*
++ * Core block release code.
++ *
++ * @note This code removes the node from a list.  Make sure any list
++ *       iteration is performed using list_for_each_safe().
++ */
++static void memrar_release_block_i(struct kref *ref)
++{
++	/*
++	 * Last reference is being released.  Remove from the table,
++	 * and reclaim resources.
++	 */
++
++	struct memrar_buffer_info * const node =
++		container_of(ref, struct memrar_buffer_info, refcount);
++
++	struct RAR_block_info * const user_info =
++		&node->buffer.info;
++
++	struct memrar_allocator * const allocator =
++		memrars[user_info->type].allocator;
++
++	list_del(&node->list);
++
++	memrar_allocator_free(allocator, user_info->handle);
++
++	kfree(node);
++}
++
++/*
++ * Initialize RAR parameters, such as bus addresses, etc.
++ */
++static int memrar_init_rar_resources(char const *devname)
++{
++	/* ---- Sanity Checks ----
++	 * 1. RAR bus addresses in both Lincroft and Langwell RAR
++	 *    registers should be the same.
++	 *    a. There's no way we can do this through IA.
++	 *
++	 * 2. Secure device ID in Langwell RAR registers should be set
++	 *    appropriately, e.g. only LPE DMA for the audio RAR, and
++	 *    security for the other Langwell based RAR registers.
++	 *    a. There's no way we can do this through IA.
++	 *
++	 * 3. Audio and video RAR registers and RAR access should be
++	 *    locked down.  If not, enable RAR access control.  Except
++	 *    for debugging purposes, there is no reason for them to
++	 *    be unlocked.
++	 *    a.  We can only do this for the Lincroft (IA) side.
++	 *
++	 * @todo Should the RAR handler driver even be aware of audio
++	 *       and video RAR settings?
++	 */
++
++	/*
++	 * RAR buffer block size.
++	 *
++	 * We choose it to be the size of a page to simplify the
++	 * /dev/memrar mmap() implementation and usage.  Otherwise
++	 * paging is not involved once an RAR is locked down.
++	 */
++	static size_t const RAR_BLOCK_SIZE = PAGE_SIZE;
++
++	int z;
++	int found_rar = 0;
++
++	BUG_ON(MRST_NUM_RAR != ARRAY_SIZE(memrars));
++
++	for (z = 0; z != MRST_NUM_RAR; ++z) {
++		dma_addr_t low, high;
++		struct memrar_rar_info * const rar = &memrars[z];
++
++		BUG_ON(!memrar_is_valid_rar_type(z));
++
++		mutex_init(&rar->lock);
++
++		/*
++		 * Initialize the process table before we reach any
++		 * code that exit on failure since the finalization
++		 * code requires an initialized list.
++		 */
++		INIT_LIST_HEAD(&rar->buffers.list);
++
++		if (rar_get_address(z, &low, &high) != 0) {
++			/* No RAR is available. */
++			break;
++		} else if (low == 0 || high == 0) {
++			/*
++			 * We don't immediately break out of the loop
++			 * since the next type of RAR may be enabled.
++			 */
++			rar->base      = 0;
++			rar->length    = 0;
++			rar->iobase    = NULL;
++			rar->allocator = NULL;
++			continue;
++		}
++
++		/*
++		 * @todo Verify that LNC and LNW RAR register contents
++		 *       addresses, security, etc are compatible and
++		 *       consistent).
++		 */
++
++		rar->length = high - low + 1;
++
++		/* Claim RAR memory as our own. */
++		if (request_mem_region(low, rar->length, devname) == NULL) {
++			rar->length = 0;
++
++			pr_err("%s: Unable to claim RAR[%d] memory.\n",
++			       devname,
++			       z);
++			pr_err("%s: RAR[%d] disabled.\n", devname, z);
++
++			/*
++			 * Rather than break out of the loop by
++			 * returning -EBUSY, for example, we may be
++			 * able to claim memory of the next RAR region
++			 * as our own.
++			 */
++			continue;
++		}
++
++		rar->base = low;
++
++		/*
++		 * Now map it into the kernel address space.
++		 *
++		 * Note that the RAR memory may only be accessed by IA
++		 * when debugging.  Otherwise attempts to access the
++		 * RAR memory when it is locked down will result in
++		 * behavior similar to writing to /dev/null and
++		 * reading from /dev/zero.  This behavior is enforced
++		 * by the hardware.  Even if we don't access the
++		 * memory, mapping it into the kernel provides us with
++		 * a convenient RAR handle to physical address mapping.
++		 */
++		rar->iobase = ioremap_nocache(rar->base, rar->length);
++		if (rar->iobase == NULL) {
++			pr_err("%s: Unable to map RAR memory.\n",
++			       devname);
++			return -ENOMEM;
++		}
++
++		/* Initialize corresponding memory allocator. */
++		rar->allocator = memrar_create_allocator(
++			(unsigned long) rar->iobase,
++			rar->length,
++			RAR_BLOCK_SIZE);
++		if (rar->allocator == NULL)
++			return -1;
++
++		/*
++		 * -------------------------------------------------
++		 * Make sure all RARs handled by us are locked down.
++		 * -------------------------------------------------
++		 */
++
++		/* Enable RAR protection on the Lincroft side. */
++		if (0) {
++			/*
++			 * This is mostly a sanity check since the
++			 * vendor should have locked down RAR in the
++			 * SMIP header RAR configuration.
++			 */
++			rar_lock(z);
++		} else {
++			pr_warning("%s: LNC RAR[%d] no lock sanity check.\n",
++				   devname,
++				   z);
++		}
++
++		/* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
++		/* |||||||||||||||||||||||||||||||||||||||||||||||||| */
++
++		/*
++		 * It would be nice if we could verify that RAR
++		 * protection on the Langwell side is enabled, but
++		 * there is no way to do that from here.  The
++		 * necessary Langwell RAR registers are not accessible
++		 * from the Lincroft (IA) side.
++		 *
++		 * Hopefully the ODM did the right thing and enabled
++		 * Langwell side RAR protection in the integrated
++		 * firmware SMIP header.
++		 */
++
++		pr_info("%s: BRAR[%d] bus address range = "
++			"[0x%lx, 0x%lx]\n",
++			devname,
++			z,
++			(unsigned long) low,
++			(unsigned long) high);
++
++		pr_info("%s: BRAR[%d] size = %u KiB\n",
++			devname,
++			z,
++			rar->allocator->capacity / 1024);
++
++		found_rar = 1;
++	}
++
++	if (!found_rar)	{
++		/*
++		 * No RAR support.  Don't bother continuing.
++		 *
++		 * Note that this is not a failure.
++		 */
++		pr_info("%s: No Moorestown RAR support available.\n",
++			devname);
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++/*
++ * Finalize RAR resources.
++ */
++static void memrar_fini_rar_resources(void)
++{
++	int z;
++	struct memrar_buffer_info *pos;
++	struct memrar_buffer_info *tmp;
++
++	/*
++	 * @todo Do we need to hold a lock at this point in time?
++	 *       (module initialization failure or exit?)
++	 */
++
++	for (z = MRST_NUM_RAR; z-- != 0; ) {
++		struct memrar_rar_info * const rar = &memrars[z];
++
++		/* Clean up remaining resources. */
++
++		list_for_each_entry_safe(pos,
++					 tmp,
++					 &rar->buffers.list,
++					 list) {
++			kref_put(&pos->refcount, memrar_release_block_i);
++		}
++
++		memrar_destroy_allocator(rar->allocator);
++		rar->allocator = NULL;
++
++		iounmap(rar->iobase);
++		rar->iobase = NULL;
++
++		release_mem_region(rar->base, rar->length);
++		rar->base = 0;
++
++		rar->length = 0;
++	}
++}
++
++static long memrar_reserve_block(struct RAR_buffer *request,
++				 struct file *filp)
++{
++	struct RAR_block_info * const rinfo = &request->info;
++	struct RAR_buffer *buffer;
++	struct memrar_buffer_info *buffer_info;
++	u32 handle;
++	struct memrar_rar_info *rar = NULL;
++
++	/* Prevent array overflow. */
++	if (!memrar_is_valid_rar_type(rinfo->type))
++		return -EINVAL;
++
++	rar = &memrars[rinfo->type];
++
++	/* Reserve memory in RAR. */
++	handle = memrar_allocator_alloc(rar->allocator, rinfo->size);
++	if (handle == 0)
++		return -ENOMEM;
++
++	buffer_info = kmalloc(sizeof(*buffer_info), GFP_KERNEL);
++
++	if (buffer_info == NULL) {
++		memrar_allocator_free(rar->allocator, handle);
++		return -ENOMEM;
++	}
++
++	buffer = &buffer_info->buffer;
++	buffer->info.type = rinfo->type;
++	buffer->info.size = rinfo->size;
++
++	/* Memory handle corresponding to the bus address. */
++	buffer->info.handle = handle;
++	buffer->bus_address = memrar_get_bus_address(rar, handle);
++
++	/*
++	 * Keep track of owner so that we can later cleanup if
++	 * necessary.
++	 */
++	buffer_info->owner = filp;
++
++	kref_init(&buffer_info->refcount);
++
++	mutex_lock(&rar->lock);
++	list_add(&buffer_info->list, &rar->buffers.list);
++	mutex_unlock(&rar->lock);
++
++	rinfo->handle = buffer->info.handle;
++	request->bus_address = buffer->bus_address;
++
++	return 0;
++}
++
++static long memrar_release_block(u32 addr)
++{
++	struct memrar_buffer_info *pos;
++	struct memrar_buffer_info *tmp;
++	struct memrar_rar_info * const rar = memrar_get_rar_info(addr);
++	long result = -EINVAL;
++
++	if (rar == NULL)
++		return -EFAULT;
++
++	mutex_lock(&rar->lock);
++
++	/*
++	 * Iterate through the buffer list to find the corresponding
++	 * buffer to be released.
++	 */
++	list_for_each_entry_safe(pos,
++				 tmp,
++				 &rar->buffers.list,
++				 list) {
++		struct RAR_block_info * const info =
++			&pos->buffer.info;
++
++		/*
++		 * Take into account handle offsets that may have been
++		 * added to the base handle, such as in the following
++		 * scenario:
++		 *
++		 *     u32 handle = base + offset;
++		 *     rar_handle_to_bus(handle);
++		 *     rar_release(handle);
++		 */
++		if (addr >= info->handle
++		    && addr < (info->handle + info->size)
++		    && memrar_is_valid_rar_type(info->type)) {
++			kref_put(&pos->refcount, memrar_release_block_i);
++			result = 0;
++			break;
++		}
++	}
++
++	mutex_unlock(&rar->lock);
++
++	return result;
++}
++
++static long memrar_get_stat(struct RAR_stat *r)
++{
++	long result = -EINVAL;
++
++	if (likely(r != NULL) && memrar_is_valid_rar_type(r->type)) {
++		struct memrar_allocator * const allocator =
++			memrars[r->type].allocator;
++
++		BUG_ON(allocator == NULL);
++
++		/*
++		 * Allocator capacity doesn't change over time.  No
++		 * need to synchronize.
++		 */
++		r->capacity = allocator->capacity;
++
++		mutex_lock(&allocator->lock);
++
++		r->largest_block_size = allocator->largest_free_area;
++
++		mutex_unlock(&allocator->lock);
++
++		result = 0;
++	}
++
++	return result;
++}
++
++static long memrar_ioctl(struct file *filp,
++			 unsigned int cmd,
++			 unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	long result = 0;
++
++	struct RAR_buffer buffer;
++	struct RAR_block_info * const request = &buffer.info;
++	struct RAR_stat rar_info;
++	u32 rar_handle;
++
++	switch (cmd) {
++	case RAR_HANDLER_RESERVE:
++		if (copy_from_user(request,
++				   argp,
++				   sizeof(*request)))
++			return -EFAULT;
++
++		result = memrar_reserve_block(&buffer, filp);
++		if (result != 0)
++			return result;
++
++		return copy_to_user(argp, request, sizeof(*request));
++
++	case RAR_HANDLER_RELEASE:
++		if (copy_from_user(&rar_handle,
++				   argp,
++				   sizeof(rar_handle)))
++			return -EFAULT;
++
++		return memrar_release_block(rar_handle);
++
++	case RAR_HANDLER_STAT:
++		if (copy_from_user(&rar_info,
++				   argp,
++				   sizeof(rar_info)))
++			return -EFAULT;
++
++		/*
++		 * Populate the RAR_stat structure based on the RAR
++		 * type given by the user
++		 */
++		if (memrar_get_stat(&rar_info) != 0)
++			return -EINVAL;
++
++		/*
++		 * @todo Do we need to verify destination pointer
++		 *       "argp" is non-zero?  Is that already done by
++		 *       copy_to_user()?
++		 */
++		return copy_to_user(argp,
++				    &rar_info,
++				    sizeof(rar_info)) ? -EFAULT : 0;
++
++	default:
++		return -ENOTTY;
++	}
++
++	return 0;
++}
++
++static int memrar_mmap(struct file *filp, struct vm_area_struct *vma)
++{
++	size_t const size = vma->vm_end - vma->vm_start;
++
++	/* Users pass the RAR handle as the mmap() offset parameter. */
++	unsigned long const handle = vma->vm_pgoff << PAGE_SHIFT;
++
++	struct memrar_rar_info * const rar = memrar_get_rar_info(handle);
++
++	unsigned long pfn;
++
++	/* Invalid RAR handle or size passed to mmap(). */
++	if (rar == NULL
++	    || handle == 0
++	    || size > (handle - (unsigned long) rar->iobase))
++		return -EINVAL;
++
++	/*
++	 * Retrieve physical address corresponding to the RAR handle,
++	 * and convert it to a page frame.
++	 */
++	pfn = memrar_get_physical_address(rar, handle) >> PAGE_SHIFT;
++
++
++	pr_debug("memrar: mapping RAR range [0x%lx, 0x%lx) into user space.\n",
++		 handle,
++		 handle + size);
++
++	/*
++	 * Map RAR memory into user space.  This is really only useful
++	 * for debugging purposes since the memory won't be
++	 * accessible, i.e. reads return zero and writes are ignored,
++	 * when RAR access control is enabled.
++	 */
++	if (remap_pfn_range(vma,
++			    vma->vm_start,
++			    pfn,
++			    size,
++			    vma->vm_page_prot))
++		return -EAGAIN;
++
++	/* vma->vm_ops = &memrar_mem_ops; */
++
++	return 0;
++}
++
++static int memrar_open(struct inode *inode, struct file *filp)
++{
++	/* Nothing to do yet. */
++
++	return 0;
++}
++
++static int memrar_release(struct inode *inode, struct file *filp)
++{
++	/* Free all regions associated with the given file handle. */
++
++	struct memrar_buffer_info *pos;
++	struct memrar_buffer_info *tmp;
++	int z;
++
++	for (z = 0; z != MRST_NUM_RAR; ++z) {
++		struct memrar_rar_info * const rar = &memrars[z];
++
++		mutex_lock(&rar->lock);
++
++		list_for_each_entry_safe(pos,
++					 tmp,
++					 &rar->buffers.list,
++					 list) {
++			if (filp == pos->owner)
++				kref_put(&pos->refcount,
++					 memrar_release_block_i);
++		}
++
++		mutex_unlock(&rar->lock);
++	}
++
++	return 0;
++}
++
++/*
++ * @note This function is part of the kernel space memrar driver API.
++ */
++size_t rar_reserve(struct RAR_buffer *buffers, size_t count)
++{
++	struct RAR_buffer * const end =
++		(buffers == NULL ? buffers : buffers + count);
++	struct RAR_buffer *i;
++
++	size_t reserve_count = 0;
++
++	for (i = buffers; i != end; ++i) {
++		if (memrar_reserve_block(i, NULL) == 0)
++			++reserve_count;
++		else
++			i->bus_address = 0;
++	}
++
++	return reserve_count;
++}
++EXPORT_SYMBOL(rar_reserve);
++
++/*
++ * @note This function is part of the kernel space memrar driver API.
++ */
++size_t rar_release(struct RAR_buffer *buffers, size_t count)
++{
++	struct RAR_buffer * const end =
++		(buffers == NULL ? buffers : buffers + count);
++	struct RAR_buffer *i;
++
++	size_t release_count = 0;
++
++	for (i = buffers; i != end; ++i) {
++		u32 * const handle = &i->info.handle;
++		if (memrar_release_block(*handle) == 0) {
++			/*
++			 * @todo We assume we should do this each time
++			 *       the ref count is decremented.  Should
++			 *       we instead only do this when the ref
++			 *       count has dropped to zero, and the
++			 *       buffer has been completely
++			 *       released/unmapped?
++			 */
++			*handle = 0;
++			++release_count;
++		}
++	}
++
++	return release_count;
++}
++EXPORT_SYMBOL(rar_release);
++
++/*
++ * @note This function is part of the kernel space driver API.
++ */
++size_t rar_handle_to_bus(struct RAR_buffer *buffers, size_t count)
++{
++	struct RAR_buffer * const end =
++		(buffers == NULL ? buffers : buffers + count);
++	struct RAR_buffer *i;
++	struct memrar_buffer_info *pos;
++
++	size_t conversion_count = 0;
++
++	/*
++	 * Find all bus addresses corresponding to the given handles.
++	 *
++	 * @todo Not liking this nested loop.  Optimize.
++	 */
++	for (i = buffers; i != end; ++i) {
++		struct memrar_rar_info * const rar =
++			memrar_get_rar_info(i->info.handle);
++
++		/*
++		 * Check if we have a bogus handle, and then continue
++		 * with remaining buffers.
++		 */
++		if (rar == NULL) {
++			i->bus_address = 0;
++			continue;
++		}
++
++		mutex_lock(&rar->lock);
++
++		list_for_each_entry(pos, &rar->buffers.list, list) {
++			struct RAR_block_info * const user_info =
++				&pos->buffer.info;
++
++			/*
++			 * Take into account handle offsets that may
++			 * have been added to the base handle, such as
++			 * in the following scenario:
++			 *
++			 *     u32 handle = base + offset;
++			 *     rar_handle_to_bus(handle);
++			 */
++
++			if (i->info.handle >= user_info->handle
++			    && i->info.handle < (user_info->handle
++						 + user_info->size)) {
++				u32 const offset =
++					i->info.handle - user_info->handle;
++
++				i->info.type = user_info->type;
++				i->info.size = user_info->size - offset;
++				i->bus_address =
++					pos->buffer.bus_address
++					+ offset;
++
++				/* Increment the reference count. */
++				kref_get(&pos->refcount);
++
++				++conversion_count;
++				break;
++			} else {
++				i->bus_address = 0;
++			}
++		}
++
++		mutex_unlock(&rar->lock);
++	}
++
++	return conversion_count;
++}
++EXPORT_SYMBOL(rar_handle_to_bus);
++
++static const struct file_operations memrar_fops = {
++	.owner = THIS_MODULE,
++	.unlocked_ioctl = memrar_ioctl,
++	.mmap           = memrar_mmap,
++	.open           = memrar_open,
++	.release        = memrar_release,
++};
++
++static struct miscdevice memrar_miscdev = {
++	.minor = MISC_DYNAMIC_MINOR,    /* dynamic allocation */
++	.name = "memrar",               /* /dev/memrar */
++	.fops = &memrar_fops
++};
++
++static char const banner[] __initdata =
++	KERN_INFO
++	"Intel RAR Handler: " MEMRAR_VER " initialized.\n";
++
++static int memrar_registration_callback(void *ctx)
++{
++	/*
++	 * We initialize the RAR parameters early on so that we can
++	 * discontinue memrar device initialization and registration
++	 * if suitably configured RARs are not available.
++	 */
++	int result = memrar_init_rar_resources(memrar_miscdev.name);
++
++	if (result != 0)
++		return result;
++
++	result = misc_register(&memrar_miscdev);
++
++	if (result != 0) {
++		pr_err("%s: misc_register() failed.\n",
++			memrar_miscdev.name);
++
++		/* Clean up resources previously reserved. */
++		memrar_fini_rar_resources();
++	}
++
++	return result;
++}
++
++static int __init memrar_init(void)
++{
++	printk(banner);
++
++	return register_rar(&memrar_registration_callback, 0);
++}
++
++static void __exit memrar_exit(void)
++{
++	memrar_fini_rar_resources();
++
++	misc_deregister(&memrar_miscdev);
++}
++
++
++module_init(memrar_init);
++module_exit(memrar_exit);
++
++
++MODULE_AUTHOR("Ossama Othman <ossama.othman@intel.com>");
++MODULE_DESCRIPTION("Intel Restricted Access Region Handler");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(MISC_DYNAMIC_MINOR);
++MODULE_VERSION(MEMRAR_VER);
++
++
++
++/*
++  Local Variables:
++    c-file-style: "linux"
++  End:
++*/
 -- 
-Dmitry
+1.6.3.3
+
