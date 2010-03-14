@@ -1,81 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548Ab0CNSPR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 14:15:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41964 "EHLO mx2.mail.elte.hu"
+	id S932756Ab0CNSRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 14:17:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48690 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758696Ab0CNSPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 14:15:14 -0400
-Date: Sun, 14 Mar 2010 19:14:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] core kernel fixes (fix:
- arch/x86/kernel/cpu/mcheck/mce.c:166: error: 'mce_read_mutex' undeclared)
-Message-ID: <20100314181458.GA24622@elte.hu>
-References: <20100313163556.GA14263@elte.hu>
+	id S1754946Ab0CNSRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 14:17:20 -0400
+Date: Sun, 14 Mar 2010 11:10:40 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ossama Othman <ossama.othman@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Restricted Access Region Handler
+Message-ID: <20100314181040.GB28359@suse.de>
+References: <1268558064-7973-1-git-send-email-ossama.othman@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100313163556.GA14263@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <1268558064-7973-1-git-send-email-ossama.othman@intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 14, 2010 at 01:14:23AM -0800, Ossama Othman wrote:
+> The Intel Restricted Access Region Handler provides a buffer allocation
+> mechanism to RAR users.  Since the intended usage model is to lock out
+> CPU access to RAR (the CPU will not be able to access RAR memory), this
+> driver does not access RAR memory, and merely keeps track of what areas
+> of RAR memory are in use.  It has it's own simple allocator that does
+> not rely on existing kernel allocators (SLAB, etc) since those
+> allocators are too tightly coupled with the paging mechanism, which isn't
+> needed for the intended RAR use cases.
+> 
+> An mmap() implementation is provided for debugging purposes to simplify
+> RAR memory access from the user space.  However, it will effectively be
+> a no-op when RAR access control is enabled since the CPU will not be
+> able to access RAR.
+> 
+> This driver should not be confused with the rar_register driver.  That
+> driver exposes an interface to access RAR registers on the Moorestown
+> platform.  The RAR handler driver relies on the rar_register driver for
+> low level RAR register reads and writes.
 
-Linus,
+Can you also send me a patch, that adds a TODO file to the directory of
+this driver, that explains what you think needs to be done in order to
+get this code merged into the main portion of the kernel tree, and
+include your email address in it so that people who wish to send
+patches, know who to copy on them?
 
-Please pull the latest core-fixes-for-linus git tree from:
+See the other drivers/staging/*/TODO files for an example of what is
+expected here.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+thanks,
 
-This fixes a PROVE_LOCKING=y && PROVE_RCU=y build bug that slipped through. 
-
-Both options are off by default (and PROVE_RCU is new in .34) but i'd still 
-expect it to trigger more commonly with debug-enabled kernels so please pull 
-this fix as the first one in the morning if possible.
- 
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      x86/mce: Fix build bug with CONFIG_PROVE_LOCKING=y && CONFIG_X86_MCE_INTEL=y
-
-
- arch/x86/kernel/cpu/mcheck/mce.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index bd58de4..3ab9c88 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -46,6 +46,8 @@
- 
- #include "mce-internal.h"
- 
-+static DEFINE_MUTEX(mce_read_mutex);
-+
- #define rcu_dereference_check_mce(p) \
- 	rcu_dereference_check((p), \
- 			      rcu_read_lock_sched_held() || \
-@@ -1490,8 +1492,6 @@ static void collect_tscs(void *data)
- 	rdtscll(cpu_tsc[smp_processor_id()]);
- }
- 
--static DEFINE_MUTEX(mce_read_mutex);
--
- static ssize_t mce_read(struct file *filp, char __user *ubuf, size_t usize,
- 			loff_t *off)
- {
+greg k-h
