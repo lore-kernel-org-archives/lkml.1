@@ -1,106 +1,396 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758586Ab0CNQQg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 12:16:36 -0400
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:48412 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753446Ab0CNQQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 12:16:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=p/ayIrW/jfL4w9eottO0D1QqOa/UUU2h5hQqr8P5RhifI7kqpbPj2d6zYcCNijGhSP
-         7Bx1/3YtT6T9syjNwyGn7A4rkbgeAdPoCTaa7OlWpKPw6FRRb34k51vlp4h10M2N4iJJ
-         xUOysg7CroF/jwYXeLwLxb6ZDyw96a/tShDjQ=
-Message-ID: <4B9D0BDD.4030706@gmail.com>
-Date: Sun, 14 Mar 2010 10:16:29 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-CC: ide <linux-ide@vger.kernel.org>
-Subject: Re: nvidia controller failed command, possibly related to SMART selftest
- (2.6.32)
-References: <20100313092559.GA14213@piper.oerlikon.madduck.net>
-In-Reply-To: <20100313092559.GA14213@piper.oerlikon.madduck.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1751917Ab0CNQUG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 12:20:06 -0400
+Received: from smtp1.rdslink.ro ([81.196.12.70]:46972 "EHLO smtp.rdslink.ro"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751480Ab0CNQUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 12:20:00 -0400
+X-Mail-Scanner: Scanned by qSheff-II-2.1-r3 (http://www.enderunix.org/qsheff/)
+Subject: 0844-Staging-cx25821-fix-coding-style-issues-in-cx25821-a.patch
+From: Olimpiu Pascariu <olimpiu.pascariu@gmail.com>
+To: gregkh@suse.de, mchehab@redhat.com, palash.bandyopadhyay@conexant.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 14 Mar 2010 18:13:16 +0200
+Message-ID: <1268583196.7043.8.camel@tuxtm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(ccing linux-ide)
+>From 9473816c446a6ca91905fc49a73732f70b5223b4 Mon Sep 17 00:00:00 2001
+From: Olimpiu Pascariu <olimpiu.pascariu@gmail.com>
+Date: Sun, 14 Mar 2010 17:44:37 +0200
+Subject: [PATCH 844/844] Staging: cx25821: fix coding style issues in cx25821-alsa.c
+ This is a patch to the cx25821-alsa.c file that fixes up errors and warnings found by the checkpatch.pl tool
+ Signed-off-by: Olimpiu Pascariu <olimpiu.pascariu@gmail.com>
 
-On 03/13/2010 03:25 AM, martin f krafft wrote:
-> Hello,
->
-> I swapped in a new motherboard into a server that was previously
-> having the occasional SATA hiccoughs[0]. It didn't last 24 hours
-> before I got the next set of troubles:
->
-> 0. http://marc.info/?l=linux-kernel&m=125654588201284&w=2
->
->    kernel: [45091.756037] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
->    kernel: [45091.756042] ata4: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
->    kernel: [45091.756043]   dhfis 0x1 dmafis 0x0 sdbfis 0x0
->    kernel: [45091.756046] ata4: ATA_REG 0x40 ERR_REG 0x0
->    kernel: [45091.756048] ata4: tag : dhfis dmafis sdbfis sacitve
->    kernel: [45091.756051] ata4: tag 0x0: 1 0 0 1
->    kernel: [45091.756063] ata4.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
->    kernel: [45091.756068] ata4.00: failed command: WRITE FPDMA QUEUED
->    kernel: [45091.756074] ata4.00: cmd 61/08:00:07:30:e1/00:00:01:00:00/40 tag 0 ncq 4096 out
->    kernel: [45091.756075]          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
->    kernel: [45091.756077] ata4.00: status: { DRDY }
->    kernel: [45091.756085] ata4: hard resetting link
->    kernel: [45091.756087] ata4: nv: skipping hardreset on occupied port
->    kernel: [45097.264713] ata4: link is slow to respond, please be patient (ready=0)
->    kernel: [45101.800044] ata4: SRST failed (errno=-16)
->                           […]
->    kernel: [45151.900793] ata4: reset failed, giving up
->    kernel: [45151.900797] ata4.00: disabled
->    kernel: [45151.900851] sd 3:0:0:0: [sdd] Unhandled error code
->    kernel: [45151.900853] sd 3:0:0:0: [sdd] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK
->    kernel: [45151.900856] sd 3:0:0:0: [sdd] CDB: Write(10): 2a 00 01 e1 30 07 00 00 08 00
->    kernel: [45151.900864] end_request: I/O error, dev sdd, sector 31535111
->    kernel: [45151.900870] raid1: Disk failure on sdd2, disabling device.
->    kernel: [45151.900871] raid1: Operation continuing on 1 devices.
->
-> How do I learn how to interpret such kernel logs?
-> Does it suggest anything about who's at fault?
+---
+ drivers/staging/cx25821/cx25821-alsa.c |  104 +++++++++++++++++---------------
+ 1 files changed, 55 insertions(+), 49 deletions(-)
 
-Well, it seems like a genuine timeout, though it's not clear why the 
-reset ended up failing afterwards. It could be that the drive's 
-implementation of the SMART self test is buggy (it's supposed to still 
-respond to host commands while it's running, but it could be it doesn't 
-always, or takes so long to respond that the kernel times out).
+diff --git a/drivers/staging/cx25821/cx25821-alsa.c b/drivers/staging/cx25821/cx25821-alsa.c
+index e0eef12..bb297ca 100644
+--- a/drivers/staging/cx25821/cx25821-alsa.c
++++ b/drivers/staging/cx25821/cx25821-alsa.c
+@@ -28,7 +28,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/pci.h>
 
->
-> If it's of any relevance, the problems also occured with 2.6.26, but
-> the RAID code didn't always eject the disks on that kernel; the
-> first time I encountered a degraded array due to this was shortly
-> after the upgrade to 2.6.32. However, this is speculation, I have
-> not verified the causality.
->
->
-> All this happened at 2:09am, which made me wonder about smartd, and
-> indeed this is the time I scheduled SMART self-tests on the device.
->
-> What's more: I can reproduce the problem at will, e.g. run a short
-> SMART self-test and a RAID resync on the device at the same time,
-> and boom!
->
-> However, I can only reproduce this on two disks, which are on
-> separate SATA controller channels ata2 and ata4, which makes me
-> think that the problems are with the disks, not with the controller
-> (ata1 and ata3 stand up fine to the stress test)
->
-> Generally, SMART self-tests should be a transparent operation that
-> doesn't affect the operating system's use of the devices, right? Is
-> it conceivable or even common that the disks' own controllers are
-> broken to the point where they fall over SMART tests?
->
-> Thank you for any feedback,
->
+-#include <asm/delay.h>
++#include <linux/delay.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/pcm_params.h>
+@@ -41,10 +41,10 @@
+
+ #define AUDIO_SRAM_CHANNEL	SRAM_CH08
+
+-#define dprintk(level,fmt, arg...)	if (debug >= level) \
++#define dprintk(level, fmt, arg...)	if (debug >= level) \
+ 	printk(KERN_INFO "%s/1: " fmt, chip->dev->name , ## arg)
+
+-#define dprintk_core(level,fmt, arg...)	if (debug >= level) \
++#define dprintk_core(level, fmt, arg...)	if (debug >= level) \
+ 	printk(KERN_DEBUG "%s/1: " fmt, chip->dev->name , ## arg)
+
+ /****************************************************************************
+@@ -80,7 +80,6 @@ struct cx25821_audio_dev {
+
+ 	struct snd_pcm_substream *substream;
+ };
+-typedef struct cx25821_audio_dev snd_cx25821_card_t;
+
+
+ /****************************************************************************
+@@ -89,7 +88,7 @@ typedef struct cx25821_audio_dev snd_cx25821_card_t;
+
+ static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	/* Index 0-MAX */
+ static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	/* ID for this card */
+-static int enable[SNDRV_CARDS] = { 1,[1 ... (SNDRV_CARDS - 1)] = 1 };
++static int enable[SNDRV_CARDS] = { 1, [1 ... (SNDRV_CARDS - 1)] = 1 };
+
+ module_param_array(enable, bool, NULL, 0444);
+ MODULE_PARM_DESC(enable, "Enable cx25821 soundcard. default enabled.");
+@@ -104,7 +103,7 @@ MODULE_PARM_DESC(index, "Index value for cx25821 capture interface(s).");
+ MODULE_DESCRIPTION("ALSA driver module for cx25821 based capture cards");
+ MODULE_AUTHOR("Hiep Huynh");
+ MODULE_LICENSE("GPL");
+-MODULE_SUPPORTED_DEVICE("{{Conexant,25821}");	//"{{Conexant,23881},"
++MODULE_SUPPORTED_DEVICE("{{Conexant,25821}");	/* "{{Conexant,23881}," */
+
+ static unsigned int debug;
+ module_param(debug, int, 0644);
+@@ -134,7 +133,7 @@ MODULE_PARM_DESC(debug, "enable debug messages");
+  * BOARD Specific: Sets audio DMA
+  */
+
+-static int _cx25821_start_audio_dma(snd_cx25821_card_t * chip)
++static int _cx25821_start_audio_dma(struct cx25821_audio_dev *chip)
+ {
+ 	struct cx25821_buffer *buf = chip->buf;
+ 	struct cx25821_dev *dev = chip->dev;
+@@ -142,7 +141,7 @@ static int _cx25821_start_audio_dma(snd_cx25821_card_t * chip)
+ 	    &cx25821_sram_channels[AUDIO_SRAM_CHANNEL];
+ 	u32 tmp = 0;
+
+-	// enable output on the GPIO 0 for the MCLK ADC (Audio)
++	/* enable output on the GPIO 0 for the MCLK ADC (Audio)*/
+ 	cx25821_set_gpiopin_direction(chip->dev, 0, 0);
+
+ 	/* Make sure RISC/FIFO are off before changing FIFO/RISC settings */
+@@ -156,19 +155,24 @@ static int _cx25821_start_audio_dma(snd_cx25821_card_t * chip)
+ 	/* sets bpl size */
+ 	cx_write(AUD_A_LNGTH, buf->bpl);
+
+-	/* reset counter */
+-	cx_write(AUD_A_GPCNT_CTL, GP_COUNT_CONTROL_RESET);	//GP_COUNT_CONTROL_RESET = 0x3
++	/* reset counter
++	GP_COUNT_CONTROL_RESET = 0x3*/
++	cx_write(AUD_A_GPCNT_CTL, GP_COUNT_CONTROL_RESET);
+ 	atomic_set(&chip->count, 0);
+
+-	//Set the input mode to 16-bit
++	/*Set the input mode to 16-bit*/
+ 	tmp = cx_read(AUD_A_CFG);
+ 	cx_write(AUD_A_CFG,
+ 		 tmp | FLD_AUD_DST_PK_MODE | FLD_AUD_DST_ENABLE |
+ 		 FLD_AUD_CLK_ENABLE);
+
+-	//printk(KERN_INFO "DEBUG: Start audio DMA, %d B/line, cmds_start(0x%x)= %d lines/FIFO, %d periods, %d "
+-	//      "byte buffer\n", buf->bpl, audio_ch->cmds_start, cx_read(audio_ch->cmds_start + 12)>>1,
+-	//      chip->num_periods, buf->bpl * chip->num_periods);
++	/*printk(KERN_INFO "DEBUG: Start audio DMA, %d B/line,"
++				"cmds_start(0x%x)= %d lines/FIFO, %d periods, "
++				"%d byte buffer\n", buf->bpl,
++				audio_ch->cmds_start,
++				cx_read(audio_ch->cmds_start + 12)>>1,
++				chip->num_periods, buf->bpl *chip->num_periods);
++	*/
+
+ 	/* Enables corresponding bits at AUD_INT_STAT */
+ 	cx_write(AUD_A_INT_MSK,
+@@ -181,7 +185,7 @@ static int _cx25821_start_audio_dma(snd_cx25821_card_t * chip)
+ 	/* enable audio irqs */
+ 	cx_set(PCI_INT_MSK, chip->dev->pci_irqmask | PCI_MSK_AUD_INT);
+
+-	// Turn on audio downstream fifo and risc enable 0x101
++	/* Turn on audio downstream fifo and risc enable 0x101*/
+ 	tmp = cx_read(AUD_INT_DMA_CTL);
+ 	cx_set(AUD_INT_DMA_CTL,
+ 	       tmp | (FLD_AUD_DST_A_RISC_EN | FLD_AUD_DST_A_FIFO_EN));
+@@ -193,7 +197,7 @@ static int _cx25821_start_audio_dma(snd_cx25821_card_t * chip)
+ /*
+  * BOARD Specific: Resets audio DMA
+  */
+-static int _cx25821_stop_audio_dma(snd_cx25821_card_t * chip)
++static int _cx25821_stop_audio_dma(struct cx25821_audio_dev *chip)
+ {
+ 	struct cx25821_dev *dev = chip->dev;
+
+@@ -231,13 +235,13 @@ static char *cx25821_aud_irqs[32] = {
+ /*
+  * BOARD Specific: Threats IRQ audio specific calls
+  */
+-static void cx25821_aud_irq(snd_cx25821_card_t * chip, u32 status, u32 mask)
++static void cx25821_aud_irq(struct cx25821_audio_dev *chip, u32 status,
++			    u32 mask)
+ {
+ 	struct cx25821_dev *dev = chip->dev;
+
+-	if (0 == (status & mask)) {
++	if (0 == (status & mask))
+ 		return;
+-	}
+
+ 	cx_write(AUD_A_INT_STAT, status);
+ 	if (debug > 1 || (status & mask & ~0xff))
+@@ -276,7 +280,7 @@ static void cx25821_aud_irq(snd_cx25821_card_t * chip, u32 status, u32 mask)
+  */
+ static irqreturn_t cx25821_irq(int irq, void *dev_id)
+ {
+-	snd_cx25821_card_t *chip = dev_id;
++	struct cx25821_audio_dev *chip = dev_id;
+ 	struct cx25821_dev *dev = chip->dev;
+ 	u32 status, pci_status;
+ 	u32 audint_status, audint_mask;
+@@ -317,11 +321,11 @@ static irqreturn_t cx25821_irq(int irq, void *dev_id)
+ 	if (handled)
+ 		cx_write(PCI_INT_STAT, pci_status);
+
+-      out:
++out:
+ 	return IRQ_RETVAL(handled);
+ }
+
+-static int dsp_buffer_free(snd_cx25821_card_t * chip)
++static int dsp_buffer_free(struct cx25821_audio_dev *chip)
+ {
+ 	BUG_ON(!chip->dma_size);
+
+@@ -362,7 +366,8 @@ static struct snd_pcm_hardware snd_cx25821_digital_hw = {
+ 	.period_bytes_max = DEFAULT_FIFO_SIZE / 3,
+ 	.periods_min = 1,
+ 	.periods_max = AUDIO_LINE_SIZE,
+-	.buffer_bytes_max = (AUDIO_LINE_SIZE * AUDIO_LINE_SIZE),	//128*128 = 16384 = 1024 * 16
++	/*128*128 = 16384 = 1024 * 16*/
++	.buffer_bytes_max = (AUDIO_LINE_SIZE * AUDIO_LINE_SIZE),
+ };
+
+ /*
+@@ -370,7 +375,7 @@ static struct snd_pcm_hardware snd_cx25821_digital_hw = {
+  */
+ static int snd_cx25821_pcm_open(struct snd_pcm_substream *substream)
+ {
+-	snd_cx25821_card_t *chip = snd_pcm_substream_chip(substream);
++	struct cx25821_audio_dev *chip = snd_pcm_substream_chip(substream);
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+ 	int err;
+ 	unsigned int bpl = 0;
+@@ -392,18 +397,19 @@ static int snd_cx25821_pcm_open(struct snd_pcm_substream *substream)
+
+ 	if (cx25821_sram_channels[AUDIO_SRAM_CHANNEL].fifo_size !=
+ 	    DEFAULT_FIFO_SIZE) {
+-		bpl = cx25821_sram_channels[AUDIO_SRAM_CHANNEL].fifo_size / 3;	//since there are 3 audio Clusters
++		/*since there are 3 audio Clusters*/
++		bpl = cx25821_sram_channels[AUDIO_SRAM_CHANNEL].fifo_size / 3;
+ 		bpl &= ~7;	/* must be multiple of 8 */
+
+-		if (bpl > AUDIO_LINE_SIZE) {
++		if (bpl > AUDIO_LINE_SIZE)
+ 			bpl = AUDIO_LINE_SIZE;
+-		}
++
+ 		runtime->hw.period_bytes_min = bpl;
+ 		runtime->hw.period_bytes_max = bpl;
+ 	}
+
+ 	return 0;
+-      _error:
++_error:
+ 	dprintk(1, "Error opening PCM!\n");
+ 	return err;
+ }
+@@ -422,7 +428,7 @@ static int snd_cx25821_close(struct snd_pcm_substream *substream)
+ static int snd_cx25821_hw_params(struct snd_pcm_substream *substream,
+ 				 struct snd_pcm_hw_params *hw_params)
+ {
+-	snd_cx25821_card_t *chip = snd_pcm_substream_chip(substream);
++	struct cx25821_audio_dev *chip = snd_pcm_substream_chip(substream);
+ 	struct videobuf_dmabuf *dma;
+
+ 	struct cx25821_buffer *buf;
+@@ -444,9 +450,8 @@ static int snd_cx25821_hw_params(struct snd_pcm_substream *substream,
+ 	if (NULL == buf)
+ 		return -ENOMEM;
+
+-	if (chip->period_size > AUDIO_LINE_SIZE) {
++	if (chip->period_size > AUDIO_LINE_SIZE)
+ 		chip->period_size = AUDIO_LINE_SIZE;
+-	}
+
+ 	buf->vb.memory = V4L2_MEMORY_MMAP;
+ 	buf->vb.field = V4L2_FIELD_NONE;
+@@ -473,7 +478,7 @@ static int snd_cx25821_hw_params(struct snd_pcm_substream *substream,
+ 					  buf->vb.width, buf->vb.height, 1);
+ 	if (ret < 0) {
+ 		printk(KERN_INFO
+-		       "DEBUG: ERROR after cx25821_risc_databuffer_audio() \n");
++			"DEBUG: ERROR after cx25821_risc_databuffer_audio()\n");
+ 		goto error;
+ 	}
+
+@@ -493,7 +498,7 @@ static int snd_cx25821_hw_params(struct snd_pcm_substream *substream,
+
+ 	return 0;
+
+-      error:
++error:
+ 	kfree(buf);
+ 	return ret;
+ }
+@@ -503,7 +508,7 @@ static int snd_cx25821_hw_params(struct snd_pcm_substream *substream,
+  */
+ static int snd_cx25821_hw_free(struct snd_pcm_substream *substream)
+ {
+-	snd_cx25821_card_t *chip = snd_pcm_substream_chip(substream);
++	struct cx25821_audio_dev *chip = snd_pcm_substream_chip(substream);
+
+ 	if (substream->runtime->dma_area) {
+ 		dsp_buffer_free(chip);
+@@ -527,7 +532,7 @@ static int snd_cx25821_prepare(struct snd_pcm_substream *substream)
+ static int snd_cx25821_card_trigger(struct snd_pcm_substream *substream,
+ 				    int cmd)
+ {
+-	snd_cx25821_card_t *chip = snd_pcm_substream_chip(substream);
++	struct cx25821_audio_dev *chip = snd_pcm_substream_chip(substream);
+ 	int err = 0;
+
+ 	/* Local interrupts are already disabled by ALSA */
+@@ -556,7 +561,7 @@ static int snd_cx25821_card_trigger(struct snd_pcm_substream *substream,
+ static snd_pcm_uframes_t snd_cx25821_pointer(struct snd_pcm_substream
+ 					     *substream)
+ {
+-	snd_cx25821_card_t *chip = snd_pcm_substream_chip(substream);
++	struct cx25821_audio_dev *chip = snd_pcm_substream_chip(substream);
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+ 	u16 count;
+
+@@ -592,10 +597,11 @@ static struct snd_pcm_ops snd_cx25821_pcm_ops = {
+ };
+
+ /*
+- * ALSA create a PCM device:  Called when initializing the board. Sets up the name and hooks up
+- *  the callbacks
++ * ALSA create a PCM device:  Called when initializing the board.
++ * Sets up the name and hooks up the callbacks
+  */
+-static int snd_cx25821_pcm(snd_cx25821_card_t * chip, int device, char *name)
++static int snd_cx25821_pcm(struct cx25821_audio_dev *chip, int device,
++			   char *name)
+ {
+ 	struct snd_pcm *pcm;
+ 	int err;
+@@ -635,7 +641,7 @@ MODULE_DEVICE_TABLE(pci, cx25821_audio_pci_tbl);
+  * from the file.
+  */
+ /*
+-static int snd_cx25821_free(snd_cx25821_card_t *chip)
++static int snd_cx25821_free(struct cx25821_audio_dev *chip)
+ {
+ 	if (chip->irq >= 0)
+ 		free_irq(chip->irq, chip);
+@@ -652,9 +658,9 @@ static int snd_cx25821_free(snd_cx25821_card_t *chip)
+  */
+ static void snd_cx25821_dev_free(struct snd_card *card)
+ {
+-	snd_cx25821_card_t *chip = card->private_data;
++	struct cx25821_audio_dev *chip = card->private_data;
+
+-	//snd_cx25821_free(chip);
++	/*snd_cx25821_free(chip);*/
+ 	snd_card_free(chip->card);
+ }
+
+@@ -664,23 +670,23 @@ static void snd_cx25821_dev_free(struct snd_card *card)
+ static int cx25821_audio_initdev(struct cx25821_dev *dev)
+ {
+ 	struct snd_card *card;
+-	snd_cx25821_card_t *chip;
++	struct cx25821_audio_dev *chip;
+ 	int err;
+
+ 	if (devno >= SNDRV_CARDS) {
+ 		printk(KERN_INFO "DEBUG ERROR: devno >= SNDRV_CARDS %s\n",
+ 		       __func__);
+-		return (-ENODEV);
++		return -ENODEV;
+ 	}
+
+ 	if (!enable[devno]) {
+ 		++devno;
+ 		printk(KERN_INFO "DEBUG ERROR: !enable[devno] %s\n", __func__);
+-		return (-ENOENT);
++		return -ENOENT;
+ 	}
+
+ 	err = snd_card_create(index[devno], id[devno], THIS_MODULE,
+-			 sizeof(snd_cx25821_card_t), &card);
++			 sizeof(struct cx25821_audio_dev), &card);
+ 	if (err < 0) {
+ 		printk(KERN_INFO
+ 		       "DEBUG ERROR: cannot create snd_card_new in %s\n",
+@@ -692,7 +698,7 @@ static int cx25821_audio_initdev(struct cx25821_dev *dev)
+
+ 	/* Card "creation" */
+ 	card->private_free = snd_cx25821_dev_free;
+-	chip = (snd_cx25821_card_t *) card->private_data;
++	chip = (struct cx25821_audio_dev *) card->private_data;
+ 	spin_lock_init(&chip->reg_lock);
+
+ 	chip->dev = dev;
+@@ -711,7 +717,7 @@ static int cx25821_audio_initdev(struct cx25821_dev *dev)
+ 		goto error;
+ 	}
+
+-	if ((err = snd_cx25821_pcm(chip, 0, "cx25821 Digital")) < 0) {
++	if ((err == snd_cx25821_pcm(chip, 0, "cx25821 Digital")) < 0) {
+ 		printk(KERN_INFO
+ 		       "DEBUG ERROR: cannot create snd_cx25821_pcm %s\n",
+ 		       __func__);
+@@ -740,7 +746,7 @@ static int cx25821_audio_initdev(struct cx25821_dev *dev)
+ 	devno++;
+ 	return 0;
+
+-      error:
++error:
+ 	snd_card_free(card);
+ 	return err;
+ }
+--
+1.7.0
 
