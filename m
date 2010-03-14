@@ -1,55 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932756Ab0CNSRV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 14:17:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48690 "EHLO mx1.suse.de"
+	id S1759559Ab0CNSR2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 14:17:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48692 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754946Ab0CNSRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 14:17:20 -0400
-Date: Sun, 14 Mar 2010 11:10:40 -0700
+	id S1758696Ab0CNSRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 14:17:24 -0400
+Date: Sun, 14 Mar 2010 11:11:31 -0700
 From: Greg KH <gregkh@suse.de>
-To: Ossama Othman <ossama.othman@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Restricted Access Region Handler
-Message-ID: <20100314181040.GB28359@suse.de>
-References: <1268558064-7973-1-git-send-email-ossama.othman@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Jiri Kosina <jkosina@suse.cz>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] base firmware: Fix BUG from sysfs attributes change in
+	commit a2db6842873c8e5a70652f278d469128cb52db70
+Message-ID: <20100314181131.GC28359@suse.de>
+References: <4b9be956.x5+yAHXGDfXer810%Larry.Finger@lwfinger.net> <alpine.LFD.2.00.1003131426480.3719@i5.linux-foundation.org> <alpine.LRH.2.00.1003132336380.12517@twin.jikos.cz> <alpine.LFD.2.00.1003131455420.3719@i5.linux-foundation.org> <m1fx43zhbd.fsf@fess.ebiederm.org> <alpine.LFD.2.00.1003132131470.3719@i5.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1268558064-7973-1-git-send-email-ossama.othman@intel.com>
+In-Reply-To: <alpine.LFD.2.00.1003132131470.3719@i5.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 14, 2010 at 01:14:23AM -0800, Ossama Othman wrote:
-> The Intel Restricted Access Region Handler provides a buffer allocation
-> mechanism to RAR users.  Since the intended usage model is to lock out
-> CPU access to RAR (the CPU will not be able to access RAR memory), this
-> driver does not access RAR memory, and merely keeps track of what areas
-> of RAR memory are in use.  It has it's own simple allocator that does
-> not rely on existing kernel allocators (SLAB, etc) since those
-> allocators are too tightly coupled with the paging mechanism, which isn't
-> needed for the intended RAR use cases.
+On Sat, Mar 13, 2010 at 09:46:46PM -0800, Linus Torvalds wrote:
 > 
-> An mmap() implementation is provided for debugging purposes to simplify
-> RAR memory access from the user space.  However, it will effectively be
-> a no-op when RAR access control is enabled since the CPU will not be
-> able to access RAR.
 > 
-> This driver should not be confused with the rar_register driver.  That
-> driver exposes an interface to access RAR registers on the Moorestown
-> platform.  The RAR handler driver relies on the rar_register driver for
-> low level RAR register reads and writes.
+> On Sat, 13 Mar 2010, Eric W. Biederman wrote:
+> > 
+> > It also only affects those fairly rare lockdep users as well, and the only
+> > affect is to throw a nasty warning message.  Isn't lockdep all about throwing
+> > nasty warning messages?
+> 
+> Hmm. The report has that "BUG: " message in it (and in the subject line), 
+> but you're right - it ends up being just a warning, not actually a real 
+> BUG() (which is a machine killer).
+> 
+> So yeah - it's not as bad as I thought. Sorry.
 
-Can you also send me a patch, that adds a TODO file to the directory of
-this driver, that explains what you think needs to be done in order to
-get this code merged into the main portion of the kernel tree, and
-include your email address in it so that people who wish to send
-patches, know who to copy on them?
-
-See the other drivers/staging/*/TODO files for an example of what is
-expected here.
+It's a messy warning, I have patches that should fix the remaining ones
+that I will send to you tomorrow.
 
 thanks,
 
