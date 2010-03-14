@@ -1,60 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783Ab0CNGl4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 01:41:56 -0500
-Received: from sh.osrg.net ([192.16.179.4]:44566 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753397Ab0CNGlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 01:41:53 -0500
-Date: Sun, 14 Mar 2010 15:41:46 +0900 (JST)
-Message-Id: <20100314.154146.220052544.ryusuke@osrg.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [GIT PULL] nilfs2 fixes for 2.6.34
-From: Ryusuke Konishi <ryusuke@osrg.net>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 14 Mar 2010 15:41:47 +0900 (JST)
+	id S1754407Ab0CNGzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 01:55:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:42756 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753472Ab0CNGze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 01:55:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LhKTpNJ99fgfK+llZn/13w0iNxvwjgPDy6B46crpvFBTeMZk8jSnt1A6ls8rvjEQmd
+         OGO9A9+NKjyQZWBzHGNeu/sf58fMQVYFocVV9pVHdMhkuwVpv556RHGu+6WQ1be0e2eF
+         S0NLADhC38z6YXlsXpZwriPm7YeQMJTLdUdCU=
+Date: Sun, 14 Mar 2010 08:55:26 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.34-rc1: Badness at fs/proc/generic.c:316
+Message-ID: <20100314065526.GA5353@x200>
+References: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, Mar 13, 2010 at 03:53:28PM -0800, Christian Kujau wrote:
+> after upgrading from 2.6.33 to today's latest mainline (daf9fe2...), I'm 
+> getting this during bootup on a powerpc machine (Powerbook G4):
+> 
+> [    0.002187] ------------[ cut here ]------------
+> [    0.002197] Badness at fs/proc/generic.c:316
 
-please pull from:
+> device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
+> name 'pulses/rev'
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
+Uh-oh.
 
-to receive the following patches.  All of these are trivial fixes.
+> Is this something to worry about? The machine seems to run fine so far...
 
-Thanks!
-
-Ryusuke Konishi
---
-The following changes since commit 57d54889cd00db2752994b389ba714138652e60c:
-  Linus Torvalds (1):
-        Linux 2.6.34-rc1
-
-Ryusuke Konishi (6):
-      nilfs2: fix discrepancy in use of static specifier
-      nilfs2: fix function name typos in docbook comments
-      nilfs2: fix typo "cout" -> "count" in error message
-      nilfs2: fix various typos in comments
-      nilfs2: remove spaces before tabs
-      nilfs2: remove whitespaces before quoted newlines
-
- fs/nilfs2/alloc.h     |    2 +-
- fs/nilfs2/dat.c       |    2 +-
- fs/nilfs2/dir.c       |    2 +-
- fs/nilfs2/gcinode.c   |    4 ++--
- fs/nilfs2/page.c      |    4 ++--
- fs/nilfs2/segbuf.c    |   10 +++++-----
- fs/nilfs2/segment.c   |    8 ++++----
- fs/nilfs2/segment.h   |    4 ++--
- fs/nilfs2/sufile.c    |    2 +-
- fs/nilfs2/super.c     |    4 ++--
- fs/nilfs2/the_nilfs.c |    2 +-
- 11 files changed, 22 insertions(+), 22 deletions(-)
+Runtime behaviour remains the same, it's just new warning message.
