@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473Ab0CNJSs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 05:18:48 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:45021 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756190Ab0CNJSj (ORCPT
+	id S1756685Ab0CNJS5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 05:18:57 -0400
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:45212 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756356Ab0CNJSr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 05:18:39 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Mar 2010 05:18:39 EDT
+	Sun, 14 Mar 2010 05:18:47 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Mar 2010 05:18:47 EDT
 X-Yahoo-SMTP: fzDSGlOswBCWnIOrNw7KwwK1j9PqyNbe5PtLKiS4dDU.UNl_t6bdEZu9tTLW
-X-YMail-OSG: Ui4Kf_EVM1klIaIZotcJmqY7N2VluH.oNMkGjORU_bk3cQop0cyLNx2bWhG0rINuksEL_ZfgBls4YzrAUT9EfgxwlCJpydgdR4O.l3Y3GQjqXjaYX4fANkZfoRTOOb8uXG0LJlyaFE4LEq3l609xgBbnJ6IEEQw8ThQW7VRFbOennr4WEY0wPY5OjWC_Gp9YxvZ1MiUWCrkStb8oIcY7Ks6F3055Tu9ki1RtcgA5ma9SCdhte7.cVCYU.7hu_nTWJCQbGGDucPWIHg8hEadloomu6QZHaL.VeVQ7Uy.2vUH2b9TthUtAPzbnq8DyNid6lpHyeQwDmWdfSbBKC2Ymy.KkCQ--
+X-YMail-OSG: _MnKlKAVM1n9LMBzCf.J4unUWsMY8HbCe3IPQStzUSHCptsyI7KPBYV7bVWzvw9CKpFIWvzoYfIvaUHgqtrISi1ZlMM0Tmbu8ZuqDIf5EzLAkRpCoSsvwLu9CQ0jmLJ4IjJnefdk19mOIKD6_iMs_0Krdy10ToN1mEIgjlHsmZe8DySN7VAhh3feLrvNPtOv_txEhvOQdBPhsu3uLEmUBa8qgCSSKvxrpXqmI01PyIuyrdthtON9yf4mJxNxmGArtlY0PrEzd6TXOvi3CIcZ8ViCt_rqGWCLA.zQFa7Lx6cokK_o8d3pm2xre4djYAf.Ct3PmaXlAPkpS3y5h8q2qrv2SEP0JS_q5nb.Js7OJoyVtw--
 X-Yahoo-Newman-Property: ymail-3
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: linux-kernel <linux-kernel@vger.kernel.org>,
@@ -22,9 +22,9 @@ To: linux-kernel <linux-kernel@vger.kernel.org>,
        Joe Eykholt <jeykholt@cisco.com>,
        James Bottomley <James.Bottomley@suse.de>
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Subject: [PATCH 0/3] [TCM/PR]: Intra-fabric iSCSI/SAS/FCoE Persistent Reservations support
-Date: Sun, 14 Mar 2010 01:17:38 -0800
-Message-Id: <1268558258-10738-1-git-send-email-nab@linux-iscsi.org>
+Subject: [PATCH 1/3] [TCM/PR]: Add TPG, NodeACL and MappedLUN wrappers for configfs_[un]depend_item()
+Date: Sun, 14 Mar 2010 01:17:45 -0800
+Message-Id: <1268558265-10761-1-git-send-email-nab@linux-iscsi.org>
 X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,167 +32,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Greetings Linux/SCSI folks,
+This patch adds TPG, NodeACL and MappedLUN wrappers for configfs_depend_item() and
+configfs_undepend_item() to properly handler the reference counting of *pr_ref_count
+during multi-fabric SPEC_I_PT=1 TransportID and REGISTER_AND_MOVE processing.
 
-This patch series to lio-core-2.6.git/master adds support for TCM v3.x >= Persistent
-Reservation SPEC_I_PT=1 TransportID processing and REGISTER_AND_MOVE logic to safely
-function in intra-fabric mode across all available TCM fabric modules using a new set
-of demo-mode safe configfs dependency wrappers.
+For the NodeACL and MappedLUN wrappers, there is also logic to handle the
+NAF_DYNAMIC_NODE_ACL case so that demo-mode (eg: no explict node ACLs) works for
+SPEC_I_PT=1 TransportID and REGISTER_AND_MOVE as well.
 
-This means that the exhaustive (all SPC-4 defined feature bits) Persistent Reservation
-support in TCM v3.x at:
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/target/target_core_pr.c |   85 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 85 insertions(+), 0 deletions(-)
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/target/target_core_pr.c;hb=HEAD
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 5b23767..03f40e3 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -54,6 +54,7 @@
+ struct pr_transport_id_holder {
+ 	int dest_local_nexus;
+ 	struct t10_pr_registration_s *dest_pr_reg;
++	struct se_portal_group_s *dest_tpg;
+ 	struct se_node_acl_s *dest_node_acl;
+ 	struct se_dev_entry_s *dest_se_deve;
+ 	struct list_head dest_list;
+@@ -1035,6 +1036,90 @@ void core_scsi3_free_all_registrations(
+ 	spin_unlock(&pr_tmpl->aptpl_reg_lock);
+ }
+ 
++static int core_scsi3_tpg_depend_item(se_portal_group_t *tpg)
++{
++	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
++			&tpg->tpg_group.cg_item);
++}
++
++static void core_scsi3_tpg_undepend_item(se_portal_group_t *tpg)
++{
++	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
++			&tpg->tpg_group.cg_item);
++
++	atomic_dec(&tpg->tpg_pr_ref_count);
++	smp_mb__after_atomic_dec();
++}
++
++static int core_scsi3_nodeacl_depend_item(se_node_acl_t *nacl)
++{
++	se_portal_group_t *tpg = nacl->se_tpg;
++
++	if (nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
++		return 0;
++
++	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
++			&nacl->acl_group.cg_item);
++}
++
++static void core_scsi3_nodeacl_undepend_item(se_node_acl_t *nacl)
++{
++	se_portal_group_t *tpg = nacl->se_tpg;
++
++	if (nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL) {
++		atomic_dec(&nacl->acl_pr_ref_count);
++		smp_mb__after_atomic_dec();
++		return;
++	}
++
++	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
++			&nacl->acl_group.cg_item);	
++
++	atomic_dec(&nacl->acl_pr_ref_count);
++	smp_mb__after_atomic_dec();
++}
++
++static int core_scsi3_lunacl_depend_item(se_dev_entry_t *se_deve)
++{
++	se_lun_acl_t *lun_acl = se_deve->se_lun_acl;
++	se_node_acl_t *nacl;
++	se_portal_group_t *tpg;
++	/*
++	 * For nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
++	 */
++	if (!(lun_acl))
++		return 0;
++
++	nacl = lun_acl->se_lun_nacl;
++	tpg = nacl->se_tpg;
++
++	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
++			&lun_acl->se_lun_group.cg_item);
++}
++
++static void core_scsi3_lunacl_undepend_item(se_dev_entry_t *se_deve)
++{
++	se_lun_acl_t *lun_acl = se_deve->se_lun_acl;
++	se_node_acl_t *nacl;
++	se_portal_group_t *tpg;
++	/*
++	 * For nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
++	 */
++	if (!(lun_acl)) {
++		atomic_dec(&se_deve->pr_ref_count);
++		smp_mb__after_atomic_dec();
++		return;	
++	}
++	nacl = lun_acl->se_lun_nacl;
++	tpg = nacl->se_tpg;
++
++	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
++			&lun_acl->se_lun_group.cg_item);
++
++	atomic_dec(&se_deve->pr_ref_count);
++	smp_mb__after_atomic_dec();
++}
++
+ static int core_scsi3_decode_spec_i_port(
+ 	se_cmd_t *cmd,
+ 	se_portal_group_t *tpg,
+-- 
+1.5.6.5
 
-is now functioning not only in multi-fabric mode (processing PR ops across multiple
-fabric modules), but also in intra-fabric mode (a single PR op spanning multiple fabrics)
-for the SPEC_I_PT=1 TransportID processing and REGISTER_AND_MOVE op cases in both explict
-ACL and demo-mode operation..
-
-This patch has been tested using LIO-Target iSCSI Target Ports, TCM_Loop Virtual SAS
-Target Ports, and tcm_fc OpenFCoE.org Target Ports from new code in lio-core-2.6.git/tcm_fc.
-Below is the example usage of intra-fabric PR ops with APTPL=1 using SCSI ports from these
-three independent (3) fabric modules.
-
-Comments..?
-
---nab
-
-Nicholas Bellinger (3):
-  [TCM/PR]: Add TPG, NodeACL and MappedLUN wrappers for
-    configfs_[un]depend_item()
-  [TCM/PR]: Convert REGISTER_AND_MOVE use new configfs dependency
-    wrappers
-  [TCM/PR]: Add support for intra-fabric SPEC_I_PT=1 TransportID
-    processing
-
- drivers/target/target_core_pr.c |  360 ++++++++++++++++++++++++++++-----------
- 1 files changed, 260 insertions(+), 100 deletions(-)
-
-*) Create PR registrations for iSCSI (iqn.1993-08.org.debian:01:2dadf92d0ef) and
-   Virtual SAS (naa.60014051e4328f54) fabric from iSCSI port using SPEC_I_PT=1 and APTPL=0
-
- sg_persist -vvv --out --device /dev/sde --register --param-rk=0 --param-sark=0x1234ffff -T 5 -X 06,00,00,00,6E,61,61,2E,36,30,30,31,34,30,35,31,65,34,33,32,38,66,35,34,00
-number of tranport-ids decoded from command line (or stdin): 1
-  Decode given transport-ids:
-      Transport Id of initiator:
-        SAS address: 0x6e61612e36303031
-open /dev/sde with flags=0x800
-    inquiry cdb: 12 00 00 00 24 00 
-      duration=0 ms
-  LIO-ORG  IBLOCK  3.1
-  Peripheral device type: disk
-open /dev/sde with flags=0x802
-    Persistent Reservation Out cmd: 5f 00 05 00 00 00 00 00 34 00 
-    Persistent Reservation Out parameters:
- 00     00 00 00 00 00 00 00 00  00 00 00 00 12 34 ff ff    .............4..
- 10     00 00 00 00 08 00 00 00  00 00 00 18 06 00 00 00    ................
- 20     6e 61 61 2e 36 30 30 31  34 30 35 31 65 34 33 32    naa.60014051e432
- 30     38 66 35 34                                         8f54            
-      duration=8 ms
-PR out: command (Register) successful
-
-*) Create PR Write Exclusive Registrants Only Reservation from Virtual SAS Port (naa.60014051e4328f54)
-
-sg_persist -vvv --out --reserve -d /dev/sdg --param-rk=0x1234ffff -T 5
-open /dev/sdg with flags=0x800
-    inquiry cdb: 12 00 00 00 24 00 
-      duration=0 ms
-  LIO-ORG  IBLOCK  3.1
-  Peripheral device type: disk
-open /dev/sdg with flags=0x802
-    Persistent Reservation Out cmd: 5f 01 05 00 00 00 00 00 18 00 
-    Persistent Reservation Out parameters:
- 00     00 00 00 00 12 34 ff ff  00 00 00 00 00 00 00 00    .....4..........
- 10     00 00 00 00 00 00 00 00                             ........        
-      duration=0 ms
-PR out: command (Reserve) successful
-
-*) Call REGISTER_AND_MOVE with APTPL=1 to transfer PR reservation from Virtual SAS Port (naa.60014051e4328f54)
-   to a new registration on the FCoE Target port (20:00:50:41:4c:4f:3b:00)
-
-sg_persist -vvv --out --register-move --relative-target-port 3 -Z -d /dev/sdg --param-rk=0x1234ffff --param-sark=0xabcdffff -X 00,00,00,00,00,00,00,00,32,30,3A,30,30,3A,35,30,3A,34,31,3A,34,63,3A,34,66,3A,33,62,3A,30,30,00
-number of tranport-ids decoded from command line (or stdin): 1
-  Decode given transport-ids:
-      Transport Id of initiator:
-        FCP-2 World Wide Name:
- 00     32 30 3a 30 30 3a 35 30                             20:00:50        
-      Transport Id of initiator:
-        SAS address: 0x3a30300000000000
-        [Unexpected format code: 1]
-open /dev/sdg with flags=0x800
-    inquiry cdb: 12 00 00 00 24 00 
-      duration=0 ms
-  LIO-ORG  IBLOCK  3.1
-  Peripheral device type: disk
-open /dev/sdg with flags=0x802
-    Persistent Reservation Out cmd: 5f 07 08 00 00 00 00 00 38 00 
-    Persistent Reservation Out parameters:
- 00     00 00 00 00 12 34 ff ff  00 00 00 00 ab cd ff ff    .....4..........
- 10     00 01 00 03 00 00 00 20  00 00 00 00 00 00 00 00    ....... ........
- 20     32 30 3a 30 30 3a 35 30  3a 34 31 3a 34 63 3a 34    20:00:50:41:4c:4
- 30     66 3a 33 62 3a 30 30 00                             f:3b:00.        
-      duration=8 ms
-PR out: 'register and move' command successful
-
-*) Display PERSISTENT_RESERVE_IN READ_FULL_STATUS
-
-sg_persist --in -s -d /dev/sdg  LIO-ORG  IBLOCK  3.1
-  Peripheral device type: disk
-  PR generation=0x3
-    Key=0x1234ffff
-      All target ports bit clear
-      Relative port address: 0x2
-      not reservation holder
-      Transport Id of initiator:
-        iSCSI world wide unique port id: iqn.1993-08.org.debian:01:2dadf92d0ef
-    Key=0x1234ffff
-      All target ports bit clear
-      Relative port address: 0x4
-      not reservation holder
-      Transport Id of initiator:
-        SAS address: 0x60014051e4328f54
-    Key=0xabcdffff
-      All target ports bit clear
-      Relative port address: 0x3
-      << Reservation holder >>
-      scope: LU_SCOPE,  type: Write Exclusive, registrants only
-      Transport Id of initiator:
-        FCP-2 World Wide Name:
- 00     20 00 50 41 4c 4f 3b 00                              .PALO;.     
-
-*) kernel ring buffer output, note that virtual SAS ports appear as 'loopback'
-
-SPC-3 PR SPEC_I_PT: Located loopback Node: naa.60014051e4328f54 Port RTPI: 4
-SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for SINGLE TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000001234ffff PRgeneration: 0x00000000  APTPL: 0
-SPC-3 PR [iSCSI] SPEC_I_PT: Successfully registered Transport ID for Node: iqn.1993-08.org.debian:01:2dadf92d0ef Mapped LUN: 0
-SPC-3 PR [loopback] Service Action: REGISTER Initiator Node: naa.60014051e4328f54
-SPC-3 PR [loopback] for SINGLE TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [loopback] SA Res Key: 0x000000001234ffff PRgeneration: 0x00000001  APTPL: 0
-SPC-3 PR [loopback] SPEC_I_PT: Successfully registered Transport ID for Node: naa.60014051e4328f54 Mapped LUN: 0
-SPC-3 PR: Set APTPL Bit Deactivated for REGISTER
-SPC-3 PR [loopback] Service Action: RESERVE created new reservation holder TYPE: Write Exclusive Access, Registrants Only ALL_TG_PT: 0
-SPC-3 PR [loopback] RESERVE Node: naa.60014051e4328f54
-SPC-3 PR [fc] Extracted initiator device identifier: 20:00:50:41:4c:4f:3b:00 
-SPC-3 PR [fc] Service Action: REGISTER_AND_MOVE Initiator Node: 20:00:50:41:4c:4f:3b:00
-SPC-3 PR [fc] for SINGLE TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [fc] SA Res Key: 0x00000000abcdffff PRgeneration: 0x00000002  APTPL: 1
-SPC-3 PR [loopback] Service Action: implict RELEASE cleared reservation holder TYPE: Write Exclusive Access, Registrants Only ALL_TG_PT: 0
-SPC-3 PR [loopback] RELEASE Node: naa.60014051e4328f54
-SPC-3 PR [fc] Service Action: REGISTER_AND_MOVE created new reservation holder TYPE: Write Exclusive Access, Registrants Only on object RTPI: 3  PRGeneration: 0x00000002
-SPC-3 PR Successfully moved reservation from loopback Fabric Node: naa.60014051e4328f54 -> fc Fabric Node: 20:00:50:41:4c:4f:3b:00 
-SPC-3 PR: Set APTPL Bit Activated for REGISTER_AND_MOVE
-
-*) lsmod output
-
-lsmod
-Module                  Size  Used by
-tcm_loop               12593  5 
-tcm_fc                 21107  6 
-libfc                  71025  1 tcm_fc
-iscsi_target_mod      201832  54 
-target_core_mod       233736  92 tcm_loop,tcm_fc,iscsi_target_mod
-scsi_tgt                8646  1 target_core_mod
-configfs               20592  5 tcm_loop,tcm_fc,iscsi_target_mod,target_core_mod
