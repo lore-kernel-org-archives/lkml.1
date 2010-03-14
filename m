@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574Ab0CNKkv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 06:40:51 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52841 "EHLO
+	id S1758294Ab0CNKki (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 06:40:38 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52863 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756916Ab0CNKix (ORCPT
+	with ESMTP id S1756925Ab0CNKix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 14 Mar 2010 06:38:53 -0400
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
@@ -15,9 +15,9 @@ Cc: linux-kernel@vger.kernel.org, mitake@dcl.info.waseda.ac.jp,
        Paul Mackerras <paulus@samba.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>, Jason Baron <jbaron@redhat.com>
-Subject: [PATCH RFC 03/11] Adopt spinlock to lock monitor
-Date: Sun, 14 Mar 2010 19:38:40 +0900
-Message-Id: <1268563128-6486-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH RFC 05/11] Adopt arch dependent rwsem to lock monitor
+Date: Sun, 14 Mar 2010 19:38:42 +0900
+Message-Id: <1268563128-6486-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -25,7 +25,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current spinlock_t holds struct lockdep_map,
+Current struct rw_semaphore holds struct lockdep_map,
 but it is a special thing of lockdep subsystem.
 
 So I replaced it with struct lock_monitor.
@@ -39,245 +39,159 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 Cc: Jason Baron <jbaron@redhat.com>
 ---
- include/linux/spinlock.h         |    4 ++--
- include/linux/spinlock_api_smp.h |   22 +++++++++++-----------
- include/linux/spinlock_types.h   |   16 ++++++++--------
- kernel/spinlock.c                |    8 ++++----
- lib/spinlock_debug.c             |    4 ++--
- 5 files changed, 27 insertions(+), 27 deletions(-)
+ include/linux/rwsem-spinlock.h |   12 ++++++------
+ include/linux/rwsem.h          |    2 ++
+ kernel/rwsem.c                 |   16 ++++++++--------
+ lib/rwsem-spinlock.c           |    2 +-
+ lib/rwsem.c                    |    2 +-
+ 5 files changed, 18 insertions(+), 16 deletions(-)
 
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 8608821..98a6314 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -171,8 +171,8 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock)
- 
- # define raw_spin_lock_nest_lock(lock, nest_lock)			\
- 	 do {								\
--		 typecheck(struct lockdep_map *, &(nest_lock)->dep_map);\
--		 _raw_spin_lock_nest_lock(lock, &(nest_lock)->dep_map);	\
-+		 typecheck(struct lock_monitor *, &(nest_lock)->monitor);\
-+		 _raw_spin_lock_nest_lock(lock, &(nest_lock)->monitor);	\
- 	 } while (0)
- #else
- # define raw_spin_lock_nested(lock, subclass)		_raw_spin_lock(lock)
-diff --git a/include/linux/spinlock_api_smp.h b/include/linux/spinlock_api_smp.h
-index e253ccd..3290593 100644
---- a/include/linux/spinlock_api_smp.h
-+++ b/include/linux/spinlock_api_smp.h
-@@ -23,7 +23,7 @@ void __lockfunc _raw_spin_lock(raw_spinlock_t *lock)		__acquires(lock);
- void __lockfunc _raw_spin_lock_nested(raw_spinlock_t *lock, int subclass)
- 								__acquires(lock);
- void __lockfunc
--_raw_spin_lock_nest_lock(raw_spinlock_t *lock, struct lockdep_map *map)
-+_raw_spin_lock_nest_lock(raw_spinlock_t *lock, struct lock_monitor *monitor)
- 								__acquires(lock);
- void __lockfunc _raw_spin_lock_bh(raw_spinlock_t *lock)		__acquires(lock);
- void __lockfunc _raw_spin_lock_irq(raw_spinlock_t *lock)
-@@ -87,7 +87,7 @@ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
- {
- 	preempt_disable();
- 	if (do_raw_spin_trylock(lock)) {
--		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
-+		spin_acquire(&lock->monitor, 0, 1, _RET_IP_);
- 		return 1;
- 	}
- 	preempt_enable();
-@@ -107,7 +107,7 @@ static inline unsigned long __raw_spin_lock_irqsave(raw_spinlock_t *lock)
- 
- 	local_irq_save(flags);
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, 0, 0, _RET_IP_);
- 	/*
- 	 * On lockdep we dont want the hand-coded irq-enable of
- 	 * do_raw_spin_lock_flags() code, because lockdep assumes
-@@ -125,7 +125,7 @@ static inline void __raw_spin_lock_irq(raw_spinlock_t *lock)
- {
- 	local_irq_disable();
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, 0, 0, _RET_IP_);
- 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
- }
- 
-@@ -133,14 +133,14 @@ static inline void __raw_spin_lock_bh(raw_spinlock_t *lock)
- {
- 	local_bh_disable();
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, 0, 0, _RET_IP_);
- 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
- }
- 
- static inline void __raw_spin_lock(raw_spinlock_t *lock)
- {
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, 0, 0, _RET_IP_);
- 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
- }
- 
-@@ -148,7 +148,7 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
- 
- static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- {
--	spin_release(&lock->dep_map, 1, _RET_IP_);
-+	spin_release(&lock->monitor, 1, _RET_IP_);
- 	do_raw_spin_unlock(lock);
- 	preempt_enable();
- }
-@@ -156,7 +156,7 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- static inline void __raw_spin_unlock_irqrestore(raw_spinlock_t *lock,
- 					    unsigned long flags)
- {
--	spin_release(&lock->dep_map, 1, _RET_IP_);
-+	spin_release(&lock->monitor, 1, _RET_IP_);
- 	do_raw_spin_unlock(lock);
- 	local_irq_restore(flags);
- 	preempt_enable();
-@@ -164,7 +164,7 @@ static inline void __raw_spin_unlock_irqrestore(raw_spinlock_t *lock,
- 
- static inline void __raw_spin_unlock_irq(raw_spinlock_t *lock)
- {
--	spin_release(&lock->dep_map, 1, _RET_IP_);
-+	spin_release(&lock->monitor, 1, _RET_IP_);
- 	do_raw_spin_unlock(lock);
- 	local_irq_enable();
- 	preempt_enable();
-@@ -172,7 +172,7 @@ static inline void __raw_spin_unlock_irq(raw_spinlock_t *lock)
- 
- static inline void __raw_spin_unlock_bh(raw_spinlock_t *lock)
- {
--	spin_release(&lock->dep_map, 1, _RET_IP_);
-+	spin_release(&lock->monitor, 1, _RET_IP_);
- 	do_raw_spin_unlock(lock);
- 	preempt_enable_no_resched();
- 	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
-@@ -183,7 +183,7 @@ static inline int __raw_spin_trylock_bh(raw_spinlock_t *lock)
- 	local_bh_disable();
- 	preempt_disable();
- 	if (do_raw_spin_trylock(lock)) {
--		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
-+		spin_acquire(&lock->monitor, 0, 1, _RET_IP_);
- 		return 1;
- 	}
- 	preempt_enable_no_resched();
-diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
-index 851b778..cb113f5 100644
---- a/include/linux/spinlock_types.h
-+++ b/include/linux/spinlock_types.h
-@@ -15,7 +15,7 @@
- # include <linux/spinlock_types_up.h>
- #endif
- 
--#include <linux/lockdep.h>
-+#include <linux/lock_monitor.h>
- 
- typedef struct raw_spinlock {
- 	arch_spinlock_t raw_lock;
-@@ -26,8 +26,8 @@ typedef struct raw_spinlock {
- 	unsigned int magic, owner_cpu;
- 	void *owner;
- #endif
+diff --git a/include/linux/rwsem-spinlock.h b/include/linux/rwsem-spinlock.h
+index bdfcc25..e99c42b 100644
+--- a/include/linux/rwsem-spinlock.h
++++ b/include/linux/rwsem-spinlock.h
+@@ -32,20 +32,20 @@ struct rw_semaphore {
+ 	__s32			activity;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
 -#ifdef CONFIG_DEBUG_LOCK_ALLOC
 -	struct lockdep_map dep_map;
 +#ifdef CONFIG_LOCK_MONITOR
-+	struct lock_monitor monitor;
++	struct lock_monitor     monitor;
  #endif
- } raw_spinlock_t;
+ };
  
-@@ -36,9 +36,9 @@ typedef struct raw_spinlock {
- #define SPINLOCK_OWNER_INIT	((void *)-1L)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define SPIN_DEP_MAP_INIT(lockname)	.dep_map = { .name = #lockname }
-+# define SPIN_LOCK_MONITOR_INIT(lockname)	.monitor = { __LOCK_MONITOR_INIT(lockname) }
+-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+-# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
++#ifdef CONFIG_LOCK_MONITOR
++# define __RWSEM_LOCK_MONITOR_INIT(lockname) , .monitor = { __LOCK_MONITOR_INIT(lockname) }
  #else
--# define SPIN_DEP_MAP_INIT(lockname)
-+# define SPIN_LOCK_MONITOR_INIT(lockname)
+-# define __RWSEM_DEP_MAP_INIT(lockname)
++# define __RWSEM_LOCK_MONITOR_INIT(lockname)
  #endif
  
- #ifdef CONFIG_DEBUG_SPINLOCK
-@@ -54,7 +54,7 @@ typedef struct raw_spinlock {
- 	{					\
- 	.raw_lock = __ARCH_SPIN_LOCK_UNLOCKED,	\
- 	SPIN_DEBUG_INIT(lockname)		\
--	SPIN_DEP_MAP_INIT(lockname) }
-+	SPIN_LOCK_MONITOR_INIT(lockname) }
+ #define __RWSEM_INITIALIZER(name) \
+ { 0, __SPIN_LOCK_UNLOCKED(name.wait_lock), LIST_HEAD_INIT((name).wait_list) \
+-  __RWSEM_DEP_MAP_INIT(name) }
++  __RWSEM_LOCK_MONITOR_INIT(name) }
  
- #define __RAW_SPIN_LOCK_UNLOCKED(lockname)	\
- 	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)
-@@ -66,10 +66,10 @@ typedef struct spinlock {
- 		struct raw_spinlock rlock;
+ #define DECLARE_RWSEM(name) \
+ 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
+diff --git a/include/linux/rwsem.h b/include/linux/rwsem.h
+index efd348f..5440a95 100644
+--- a/include/linux/rwsem.h
++++ b/include/linux/rwsem.h
+@@ -16,6 +16,8 @@
  
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define LOCK_PADSIZE (offsetof(struct raw_spinlock, dep_map))
-+# define LOCK_PADSIZE (offsetof(struct raw_spinlock, monitor))
- 		struct {
- 			u8 __padding[LOCK_PADSIZE];
--			struct lockdep_map dep_map;
-+			struct lock_monitor monitor;
- 		};
- #endif
- 	};
-diff --git a/kernel/spinlock.c b/kernel/spinlock.c
-index be6517f..f2150d5 100644
---- a/kernel/spinlock.c
-+++ b/kernel/spinlock.c
-@@ -344,7 +344,7 @@ EXPORT_SYMBOL(_raw_write_unlock_bh);
- void __lockfunc _raw_spin_lock_nested(raw_spinlock_t *lock, int subclass)
+ struct rw_semaphore;
+ 
++#include <linux/lock_monitor.h>
++
+ #ifdef CONFIG_RWSEM_GENERIC_SPINLOCK
+ #include <linux/rwsem-spinlock.h> /* use a generic implementation */
+ #else
+diff --git a/kernel/rwsem.c b/kernel/rwsem.c
+index cae050b..c2fd9e6 100644
+--- a/kernel/rwsem.c
++++ b/kernel/rwsem.c
+@@ -19,7 +19,7 @@
+ void __sched down_read(struct rw_semaphore *sem)
  {
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, subclass, 0, _RET_IP_);
- 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
+ 	might_sleep();
+-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
++	rwsem_acquire_read(&sem->monitor, 0, 0, _RET_IP_);
+ 
+ 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
  }
- EXPORT_SYMBOL(_raw_spin_lock_nested);
-@@ -356,7 +356,7 @@ unsigned long __lockfunc _raw_spin_lock_irqsave_nested(raw_spinlock_t *lock,
+@@ -34,7 +34,7 @@ int down_read_trylock(struct rw_semaphore *sem)
+ 	int ret = __down_read_trylock(sem);
  
- 	local_irq_save(flags);
- 	preempt_disable();
--	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
-+	spin_acquire(&lock->monitor, subclass, 0, _RET_IP_);
- 	LOCK_CONTENDED_FLAGS(lock, do_raw_spin_trylock, do_raw_spin_lock,
- 				do_raw_spin_lock_flags, &flags);
- 	return flags;
-@@ -364,10 +364,10 @@ unsigned long __lockfunc _raw_spin_lock_irqsave_nested(raw_spinlock_t *lock,
- EXPORT_SYMBOL(_raw_spin_lock_irqsave_nested);
+ 	if (ret == 1)
+-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
++		rwsem_acquire_read(&sem->monitor, 0, 1, _RET_IP_);
+ 	return ret;
+ }
  
- void __lockfunc _raw_spin_lock_nest_lock(raw_spinlock_t *lock,
--				     struct lockdep_map *nest_lock)
-+				     struct lock_monitor *nest_monitor)
+@@ -46,7 +46,7 @@ EXPORT_SYMBOL(down_read_trylock);
+ void __sched down_write(struct rw_semaphore *sem)
  {
- 	preempt_disable();
--	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
-+	spin_acquire_nest(&lock->monitor, 0, 0, nest_monitor, _RET_IP_);
- 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
+ 	might_sleep();
+-	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
++	rwsem_acquire(&sem->monitor, 0, 0, _RET_IP_);
+ 
+ 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
  }
- EXPORT_SYMBOL(_raw_spin_lock_nest_lock);
-diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
-index 4755b98..b4b3bbe 100644
---- a/lib/spinlock_debug.c
-+++ b/lib/spinlock_debug.c
-@@ -21,7 +21,7 @@ void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
- 	 * Make sure we are not reinitializing a held lock:
+@@ -61,7 +61,7 @@ int down_write_trylock(struct rw_semaphore *sem)
+ 	int ret = __down_write_trylock(sem);
+ 
+ 	if (ret == 1)
+-		rwsem_acquire(&sem->dep_map, 0, 1, _RET_IP_);
++		rwsem_acquire(&sem->monitor, 0, 1, _RET_IP_);
+ 	return ret;
+ }
+ 
+@@ -72,7 +72,7 @@ EXPORT_SYMBOL(down_write_trylock);
+  */
+ void up_read(struct rw_semaphore *sem)
+ {
+-	rwsem_release(&sem->dep_map, 1, _RET_IP_);
++	rwsem_release(&sem->monitor, 1, _RET_IP_);
+ 
+ 	__up_read(sem);
+ }
+@@ -84,7 +84,7 @@ EXPORT_SYMBOL(up_read);
+  */
+ void up_write(struct rw_semaphore *sem)
+ {
+-	rwsem_release(&sem->dep_map, 1, _RET_IP_);
++	rwsem_release(&sem->monitor, 1, _RET_IP_);
+ 
+ 	__up_write(sem);
+ }
+@@ -110,7 +110,7 @@ EXPORT_SYMBOL(downgrade_write);
+ void down_read_nested(struct rw_semaphore *sem, int subclass)
+ {
+ 	might_sleep();
+-	rwsem_acquire_read(&sem->dep_map, subclass, 0, _RET_IP_);
++	rwsem_acquire_read(&sem->monitor, subclass, 0, _RET_IP_);
+ 
+ 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
+ }
+@@ -129,7 +129,7 @@ EXPORT_SYMBOL(down_read_non_owner);
+ void down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+ 	might_sleep();
+-	rwsem_acquire(&sem->dep_map, subclass, 0, _RET_IP_);
++	rwsem_acquire(&sem->monitor, subclass, 0, _RET_IP_);
+ 
+ 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
+ }
+diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
+index ccf95bf..3bd0ed0 100644
+--- a/lib/rwsem-spinlock.c
++++ b/lib/rwsem-spinlock.c
+@@ -41,7 +41,7 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
+ 	 * Make sure we are not reinitializing a held semaphore:
  	 */
- 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
--	lockdep_init_map(&lock->dep_map, name, key, 0);
-+	lockdep_init_map(&lock->monitor.dep_map, name, key, 0);
+ 	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
+-	lockdep_init_map(&sem->dep_map, name, key, 0);
++	lockdep_init_map(&sem->monitor.dep_map, name, key, 0);
  #endif
- 	lock->raw_lock = (arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
- 	lock->magic = SPINLOCK_MAGIC;
-@@ -39,7 +39,7 @@ void __rwlock_init(rwlock_t *lock, const char *name,
- 	 * Make sure we are not reinitializing a held lock:
+ 	sem->activity = 0;
+ 	spin_lock_init(&sem->wait_lock);
+diff --git a/lib/rwsem.c b/lib/rwsem.c
+index 3e3365e..fab3db0 100644
+--- a/lib/rwsem.c
++++ b/lib/rwsem.c
+@@ -19,7 +19,7 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
+ 	 * Make sure we are not reinitializing a held semaphore:
  	 */
- 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
--	lockdep_init_map(&lock->dep_map, name, key, 0);
-+	lockdep_init_map(&lock->monitor.dep_map, name, key, 0);
+ 	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
+-	lockdep_init_map(&sem->dep_map, name, key, 0);
++	lockdep_init_map(&sem->monitor.dep_map, name, key, 0);
  #endif
- 	lock->raw_lock = (arch_rwlock_t) __ARCH_RW_LOCK_UNLOCKED;
- 	lock->magic = RWLOCK_MAGIC;
+ 	sem->count = RWSEM_UNLOCKED_VALUE;
+ 	spin_lock_init(&sem->wait_lock);
 -- 
 1.6.5.2
 
