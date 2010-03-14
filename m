@@ -1,37 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557Ab0CNPtg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 11:49:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:44682 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751560Ab0CNPtd (ORCPT
+	id S1756134Ab0CNP4B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 11:56:01 -0400
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:33810 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751560Ab0CNPz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 11:49:33 -0400
+	Sun, 14 Mar 2010 11:55:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=iF0EHaJtkaHZP4DlldW8I6jQzylBPrzSnFIjjqWa102oJ0snyCqF4Qg9QB0mv985D4
-         XL+BPZRmjWB1Nv+gZiisI44KFr6LKUUj88YqHIn2fld2YSjIz+A3xNgOieYvO0/YxuDv
-         JzFIFX+Ib/JI43fP5tGS4PWpE0Cafz3hPM/2w=
-MIME-Version: 1.0
-Date: Sun, 14 Mar 2010 17:49:31 +0200
-Message-ID: <c1fb08351003140849l23e826d3hfddd3e2aa952d3e5@mail.gmail.com>
-Subject: Leadtek WinFast PxPVR2200
-From: Anca Emanuel <anca.emanuel@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Toth <stoth@linuxtv.org>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=S0giWJm7dBcc5gnvmNEuycSvoLVbpNyv+CusmhrdNcz/XVp49eI8XoHmWq2EcRSdQ2
+         0RhJLoXm90HjGinP0Vc1pgT8+10Gv4KPNJWym+xK+BI4u0v/s/0TEm+s9XCrr77Zb/kK
+         Rr4/lMDvEznaNbT7O2texN55wUEe9rzlNrbOs=
+From: Steven Harms <sjharms@gmail.com>
+To: gregkh@suse.de, bobby.prani@gmail.com, sharms@ubuntu.com,
+       dcb314@hotmail.com, horms@verge.net.au, a.beregalov@gmail.com
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: otus: Remove mix of tabs and spaces with just tabs in ioctl.c
+Date: Sun, 14 Mar 2010 11:56:00 -0400
+Message-Id: <1268582160-8713-1-git-send-email-sharms@ubuntu.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in the file
-drivers\media\video\cx23885\cx23885-cards.c
+Previously defines had a mix of both tabs and spaces, causing an error in the checkpatch tool.  These tabs and spaces have been consolidated to only tabs.
+Signed-off-by: Steven Harms <sharms@ubuntu.com>
+---
+ drivers/staging/otus/ioctl.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-there is:
-CX23885_BOARD_LEADTEK_WINFAST_PXTV1200
+diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
+index 8c47b1a..963d807 100644
+--- a/drivers/staging/otus/ioctl.c
++++ b/drivers/staging/otus/ioctl.c
+@@ -29,34 +29,34 @@
 
-it is possible to add LeadTek WinFast PxPVR2200 to that file ?
+ #include "usbdrv.h"
 
-it uses the CONEXANT PCIe A/V Decoder CX23885-13Z
-and CONEXANT MPEG II A/V ENCODER CX23417-11Z
+-#define ZD_IOCTL_WPA			    (SIOCDEVPRIVATE + 1)
+-#define ZD_IOCTL_PARAM			    (SIOCDEVPRIVATE + 2)
+-#define ZD_IOCTL_GETWPAIE		    (SIOCDEVPRIVATE + 3)
++#define ZD_IOCTL_WPA			(SIOCDEVPRIVATE + 1)
++#define ZD_IOCTL_PARAM			(SIOCDEVPRIVATE + 2)
++#define ZD_IOCTL_GETWPAIE		(SIOCDEVPRIVATE + 3)
+ #ifdef ZM_ENABLE_CENC
+-#define ZM_IOCTL_CENC               (SIOCDEVPRIVATE + 4)
++#define ZM_IOCTL_CENC			(SIOCDEVPRIVATE + 4)
+ #endif  /* ZM_ENABLE_CENC */
+-#define ZD_PARAM_ROAMING		    0x0001
+-#define ZD_PARAM_PRIVACY		    0x0002
+-#define ZD_PARAM_WPA			    0x0003
++#define ZD_PARAM_ROAMING		0x0001
++#define ZD_PARAM_PRIVACY		0x0002
++#define ZD_PARAM_WPA			0x0003
+ #define ZD_PARAM_COUNTERMEASURES	0x0004
+ #define ZD_PARAM_DROPUNENCRYPTED	0x0005
+-#define ZD_PARAM_AUTH_ALGS		    0x0006
+-#define ZD_PARAM_WPS_FILTER		    0x0007
++#define ZD_PARAM_AUTH_ALGS		0x0006
++#define ZD_PARAM_WPS_FILTER		0x0007
+
+ #ifdef ZM_ENABLE_CENC
+ #define P80211_PACKET_CENCFLAG		0x0001
+ #endif  /* ZM_ENABLE_CENC */
+-#define P80211_PACKET_SETKEY     	0x0003
++#define P80211_PACKET_SETKEY		0x0003
+
+ #define ZD_CMD_SET_ENCRYPT_KEY		0x0001
+-#define ZD_CMD_SET_MLME			    0x0002
+-#define ZD_CMD_SCAN_REQ			    0x0003
++#define ZD_CMD_SET_MLME			0x0002
++#define ZD_CMD_SCAN_REQ			0x0003
+ #define ZD_CMD_SET_GENERIC_ELEMENT	0x0004
+-#define ZD_CMD_GET_TSC			    0x0005
++#define ZD_CMD_GET_TSC			0x0005
+
+ #define ZD_CRYPT_ALG_NAME_LEN		16
+-#define ZD_MAX_KEY_SIZE			    32
+-#define ZD_MAX_GENERIC_SIZE		    64
++#define ZD_MAX_KEY_SIZE			32
++#define ZD_MAX_GENERIC_SIZE		64
+
+ #include <net/iw_handler.h>
+
+--
+1.6.3.3
+
