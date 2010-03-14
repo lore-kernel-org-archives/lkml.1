@@ -1,56 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752326Ab0CNFfZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 00:35:25 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:48426 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796Ab0CNFfX (ORCPT
+	id S1752816Ab0CNFtj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 00:49:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51704 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750796Ab0CNFtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 00:35:23 -0500
-Date: Sat, 13 Mar 2010 23:35:21 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: mtk.manpages@gmail.com
-Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
-       SELinux <selinux@tycho.nsa.gov>, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@epoch.ncsc.mil>,
-       Kees Cook <kees.cook@canonical.com>, Andrew Morgan <morgan@kernel.org>,
-       "Christopher J. PeBenito" <cpebenito@tresys.com>,
-       Eric Paris <eparis@parisplace.org>
-Subject: Re: [PATCH] Define CAP_SYSLOG
-Message-ID: <20100314053521.GA12410@us.ibm.com>
-References: <20100312205537.GA1091@us.ibm.com>
- <cfd18e0f1003132118y21bd71band2d07ae85c8d4c9@mail.gmail.com>
+	Sun, 14 Mar 2010 00:49:36 -0500
+Date: Sat, 13 Mar 2010 21:46:46 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Jiri Kosina <jkosina@suse.cz>, Larry Finger <Larry.Finger@lwfinger.net>,
+       WANG Cong <xiyou.wangcong@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] base firmware: Fix BUG from sysfs attributes change in
+ commit a2db6842873c8e5a70652f278d469128cb52db70
+In-Reply-To: <m1fx43zhbd.fsf@fess.ebiederm.org>
+Message-ID: <alpine.LFD.2.00.1003132131470.3719@i5.linux-foundation.org>
+References: <4b9be956.x5+yAHXGDfXer810%Larry.Finger@lwfinger.net> <alpine.LFD.2.00.1003131426480.3719@i5.linux-foundation.org> <alpine.LRH.2.00.1003132336380.12517@twin.jikos.cz> <alpine.LFD.2.00.1003131455420.3719@i5.linux-foundation.org>
+ <m1fx43zhbd.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cfd18e0f1003132118y21bd71band2d07ae85c8d4c9@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
-> > There is one downside to this patch:  If some site or distro currently
-> > has syslogd/whatever running as a non-root user with cap_sys_admin+pe,
-> > then it will need to be changed to run with cap_syslog+pe.  I don't
-> > know if there are such sites, or if that concern means we should take
-> > a different approach to introducing this change, or simply refuse this
-> > change.
+
+
+On Sat, 13 Mar 2010, Eric W. Biederman wrote:
 > 
-> *If* this is a problem, would the way to address it not be to permit
-> syslog if the caller has *either* CAP_SYS_ADMIN or CAP_SYSLOG? (The
-> only weakness I see in this idea is that it fails to lighten the
-> hugely overlaoded CAP_SYS_ADMIN.)
+> It also only affects those fairly rare lockdep users as well, and the only
+> affect is to throw a nasty warning message.  Isn't lockdep all about throwing
+> nasty warning messages?
 
-Which becomes a very big weakness because it won't allow a
-container to be started with cap_sys_admin but not cap_syslog
-in its capability bounding set.
+Hmm. The report has that "BUG: " message in it (and in the subject line), 
+but you're right - it ends up being just a warning, not actually a real 
+BUG() (which is a machine killer).
 
-So, if it is deemed a problem, then the alternative will be to
-introduce a syslog namespace.  Container setup can then create
-a new syslog namespace, and can no longer read or clear the
-host's syslog.
+So yeah - it's not as bad as I thought. Sorry.
 
-thanks,
--serge
+[ And that "BUG:" in turn seems to be due to Ingo for some reason wanting 
+  to confuse BUG_ON() messages (which have that "BUG: " prefix thing) with 
+  whatever warning conditions he adds.
+
+  Our warnings used to have that bug too (see commit 8f53b6fcc4: "Don't 
+  call a warnign a bug. It's a warning.").
+
+  Ingo: can we agree to not put "BUG: " messages in warnings, ok? It may 
+  be a bug (lower-case) that triggers them, but that whole "BUG()" thing 
+  has it's own semantics with rather more serious consequences than some 
+  warning that lets things continue.
+
+  So I - and I suspect others - react rather more strongly to "BUG:" than 
+  to "WARNING:" or to just some regular innocuous message without the
+  associations of the machine likely being dead as a result. ]
+
+				Linus
