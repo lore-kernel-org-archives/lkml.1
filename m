@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934618Ab0CNX1J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 19:27:09 -0400
-Received: from trinity.develer.com ([83.149.158.210]:52265 "EHLO
+	id S934697Ab0CNX1N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 19:27:13 -0400
+Received: from trinity.develer.com ([83.149.158.210]:52281 "EHLO
 	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754698Ab0CNX0y (ORCPT
+	with ESMTP id S1754742Ab0CNX04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 19:26:54 -0400
+	Sun, 14 Mar 2010 19:26:56 -0400
 From: Andrea Righi <arighi@develer.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
@@ -18,10 +18,11 @@ Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
        "Kirill A. Shutemov" <kirill@shutemov.name>,
        Andrew Morton <akpm@linux-foundation.org>,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Righi <arighi@develer.com>
-Subject: [PATCH -mmotm 2/5] memcg: dirty memory documentation
-Date: Mon, 15 Mar 2010 00:26:39 +0100
-Message-Id: <1268609202-15581-3-git-send-email-arighi@develer.com>
+       linux-mm@kvack.org, Andrea Righi <arighi@develer.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH -mmotm 3/5] page_cgroup: introduce file cache flags
+Date: Mon, 15 Mar 2010 00:26:40 +0100
+Message-Id: <1268609202-15581-4-git-send-email-arighi@develer.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1268609202-15581-1-git-send-email-arighi@develer.com>
 References: <1268609202-15581-1-git-send-email-arighi@develer.com>
@@ -29,67 +30,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document cgroup dirty memory interfaces and statistics.
+Introduce page_cgroup flags to keep track of file cache pages.
 
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Andrea Righi <arighi@develer.com>
 ---
- Documentation/cgroups/memory.txt |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
+ include/linux/page_cgroup.h |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-index 49f86f3..38ca499 100644
---- a/Documentation/cgroups/memory.txt
-+++ b/Documentation/cgroups/memory.txt
-@@ -310,6 +310,11 @@ cache		- # of bytes of page cache memory.
- rss		- # of bytes of anonymous and swap cache memory.
- pgpgin		- # of pages paged in (equivalent to # of charging events).
- pgpgout		- # of pages paged out (equivalent to # of uncharging events).
-+filedirty	- # of pages that are waiting to get written back to the disk.
-+writeback	- # of pages that are actively being written back to the disk.
-+writeback_tmp	- # of pages used by FUSE for temporary writeback buffers.
-+nfs		- # of NFS pages sent to the server, but not yet committed to
-+		  the actual storage.
- active_anon	- # of bytes of anonymous and  swap cache memory on active
- 		  lru list.
- inactive_anon	- # of bytes of anonymous memory and swap cache memory on
-@@ -345,6 +350,37 @@ Note:
-   - a cgroup which uses hierarchy and it has child cgroup.
-   - a cgroup which uses hierarchy and not the root of hierarchy.
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index bf9a913..65247e4 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -40,7 +40,11 @@ enum {
+ 	PCG_USED, /* this object is in use. */
+ 	PCG_ACCT_LRU, /* page has been accounted for */
+ 	/* for cache-status accounting */
+-	PCG_FILE_MAPPED,
++	PCG_FILE_MAPPED, /* page is accounted as file rss*/
++	PCG_FILE_DIRTY, /* page is dirty */
++	PCG_FILE_WRITEBACK, /* page is being written back to disk */
++	PCG_FILE_WRITEBACK_TEMP, /* page is used as temporary buffer for FUSE */
++	PCG_FILE_UNSTABLE_NFS, /* NFS page not yet committed to the server */
+ };
  
-+5.4 dirty memory
-+
-+  Control the maximum amount of dirty pages a cgroup can have at any given time.
-+
-+  Limiting dirty memory is like fixing the max amount of dirty (hard to
-+  reclaim) page cache used by any cgroup. So, in case of multiple cgroup writers,
-+  they will not be able to consume more than their designated share of dirty
-+  pages and will be forced to perform write-out if they cross that limit.
-+
-+  The interface is equivalent to the procfs interface: /proc/sys/vm/dirty_*.
-+  It is possible to configure a limit to trigger both a direct writeback or a
-+  background writeback performed by per-bdi flusher threads.
-+
-+  Per-cgroup dirty limits can be set using the following files in the cgroupfs:
-+
-+  - memory.dirty_ratio: contains, as a percentage of cgroup memory, the
-+    amount of dirty memory at which a process which is generating disk writes
-+    inside the cgroup will start itself writing out dirty data.
-+
-+  - memory.dirty_bytes: the amount of dirty memory of the cgroup (expressed in
-+    bytes) at which a process generating disk writes will start itself writing
-+    out dirty data.
-+
-+  - memory.dirty_background_ratio: contains, as a percentage of the cgroup
-+    memory, the amount of dirty memory at which background writeback kernel
-+    threads will start writing out dirty data.
-+
-+  - memory.dirty_background_bytes: the amount of dirty memory of the cgroup (in
-+    bytes) at which background writeback kernel threads will start writing out
-+    dirty data.
-+
+ #define TESTPCGFLAG(uname, lname)			\
+@@ -83,6 +87,22 @@ TESTPCGFLAG(FileMapped, FILE_MAPPED)
+ SETPCGFLAG(FileMapped, FILE_MAPPED)
+ CLEARPCGFLAG(FileMapped, FILE_MAPPED)
  
- 6. Hierarchy support
- 
++TESTPCGFLAG(FileDirty, FILE_DIRTY)
++SETPCGFLAG(FileDirty, FILE_DIRTY)
++CLEARPCGFLAG(FileDirty, FILE_DIRTY)
++
++TESTPCGFLAG(FileWriteback, FILE_WRITEBACK)
++SETPCGFLAG(FileWriteback, FILE_WRITEBACK)
++CLEARPCGFLAG(FileWriteback, FILE_WRITEBACK)
++
++TESTPCGFLAG(FileWritebackTemp, FILE_WRITEBACK_TEMP)
++SETPCGFLAG(FileWritebackTemp, FILE_WRITEBACK_TEMP)
++CLEARPCGFLAG(FileWritebackTemp, FILE_WRITEBACK_TEMP)
++
++TESTPCGFLAG(FileUnstableNFS, FILE_UNSTABLE_NFS)
++SETPCGFLAG(FileUnstableNFS, FILE_UNSTABLE_NFS)
++CLEARPCGFLAG(FileUnstableNFS, FILE_UNSTABLE_NFS)
++
+ static inline int page_cgroup_nid(struct page_cgroup *pc)
+ {
+ 	return page_to_nid(pc->page);
 -- 
 1.6.3.3
 
