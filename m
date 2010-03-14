@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758395Ab0CNKkp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 06:40:45 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52851 "EHLO
+	id S1757895Ab0CNKka (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 06:40:30 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52866 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756918Ab0CNKix (ORCPT
+	with ESMTP id S1756977Ab0CNKix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 14 Mar 2010 06:38:53 -0400
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
@@ -15,9 +15,9 @@ Cc: linux-kernel@vger.kernel.org, mitake@dcl.info.waseda.ac.jp,
        Paul Mackerras <paulus@samba.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>, Jason Baron <jbaron@redhat.com>
-Subject: [PATCH RFC 02/11] Adopt lockdep to lock monitor
-Date: Sun, 14 Mar 2010 19:38:39 +0900
-Message-Id: <1268563128-6486-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH RFC 04/11] Adopt rwlock to lock monitor
+Date: Sun, 14 Mar 2010 19:38:41 +0900
+Message-Id: <1268563128-6486-5-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1268563128-6486-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -25,11 +25,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now lockdep is a hook of lock monitor.
+Current rwlock_t holds struct lockdep_map,
+but it is a special thing of lockdep subsystem.
 
-lockdep still does stat and event tracing.
-I'll remove these from it later. And these can be
-individual hook of lock monitor.
+So I replaced it with struct lock_monitor.
+Now it contains lockdep_map, and adding new members is easy.
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -39,338 +39,214 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 Cc: Jason Baron <jbaron@redhat.com>
 ---
- include/linux/lockdep.h |  138 ++++++++--------------------------------------
- kernel/lockdep.c        |   51 +++++++++++++++---
- 2 files changed, 67 insertions(+), 122 deletions(-)
+ include/linux/rwlock_api_smp.h |   36 ++++++++++++++++++------------------
+ include/linux/rwlock_types.h   |   12 ++++++------
+ 2 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 371161c..1faa4e1 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -261,18 +261,18 @@ extern void lockdep_init_map(struct lockdep_map *lock, const char *name,
-  * or they are too narrow (they suffer from a false class-split):
-  */
- #define lockdep_set_class(lock, key) \
--		lockdep_init_map(&(lock)->dep_map, #key, key, 0)
-+		lockdep_init_map(&(lock)->monitor.dep_map, #key, key, 0)
- #define lockdep_set_class_and_name(lock, key, name) \
--		lockdep_init_map(&(lock)->dep_map, name, key, 0)
-+		lockdep_init_map(&(lock)->monitor.dep_map, name, key, 0)
- #define lockdep_set_class_and_subclass(lock, key, sub) \
--		lockdep_init_map(&(lock)->dep_map, #key, key, sub)
-+		lockdep_init_map(&(lock)->monitor.dep_map, #key, key, sub)
- #define lockdep_set_subclass(lock, sub)	\
--		lockdep_init_map(&(lock)->dep_map, #lock, \
--				 (lock)->dep_map.key, sub)
-+		lockdep_init_map(&(lock)->monitor.dep_map, #lock, \
-+				 (lock)->monitor.dep_map.key, sub)
- /*
-  * Compare locking classes
-  */
--#define lockdep_match_class(lock, key) lockdep_match_key(&(lock)->dep_map, key)
-+#define lockdep_match_class(lock, key) lockdep_match_key(&(lock)->monitor.dep_map, key)
- 
- static inline int lockdep_match_key(struct lockdep_map *lock,
- 				    struct lock_class_key *key)
-@@ -295,14 +295,14 @@ static inline int lockdep_match_key(struct lockdep_map *lock,
-  *   1: simple checks (freeing, held-at-exit-time, etc.)
-  *   2: full validation
-  */
--extern void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
-+extern void lockdep_acquire(struct lockdep_map *lock, unsigned int subclass,
- 			 int trylock, int read, int check,
- 			 struct lockdep_map *nest_lock, unsigned long ip);
- 
--extern void lock_release(struct lockdep_map *lock, int nested,
-+extern void lockdep_release(struct lockdep_map *lock, int nested,
- 			 unsigned long ip);
- 
--#define lockdep_is_held(lock)	lock_is_held(&(lock)->dep_map)
-+#define lockdep_is_held(lock)	lock_is_held(&(lock)->monitor.dep_map)
- 
- extern int lock_is_held(struct lockdep_map *lock);
- 
-@@ -340,8 +340,8 @@ static inline void lockdep_on(void)
+diff --git a/include/linux/rwlock_api_smp.h b/include/linux/rwlock_api_smp.h
+index 9c9f049..d8458d9 100644
+--- a/include/linux/rwlock_api_smp.h
++++ b/include/linux/rwlock_api_smp.h
+@@ -118,7 +118,7 @@ static inline int __raw_read_trylock(rwlock_t *lock)
  {
+ 	preempt_disable();
+ 	if (do_raw_read_trylock(lock)) {
+-		rwlock_acquire_read(&lock->dep_map, 0, 1, _RET_IP_);
++		rwlock_acquire_read(&lock->monitor, 0, 1, _RET_IP_);
+ 		return 1;
+ 	}
+ 	preempt_enable();
+@@ -129,7 +129,7 @@ static inline int __raw_write_trylock(rwlock_t *lock)
+ {
+ 	preempt_disable();
+ 	if (do_raw_write_trylock(lock)) {
+-		rwlock_acquire(&lock->dep_map, 0, 1, _RET_IP_);
++		rwlock_acquire(&lock->monitor, 0, 1, _RET_IP_);
+ 		return 1;
+ 	}
+ 	preempt_enable();
+@@ -146,7 +146,7 @@ static inline int __raw_write_trylock(rwlock_t *lock)
+ static inline void __raw_read_lock(rwlock_t *lock)
+ {
+ 	preempt_disable();
+-	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire_read(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
  }
  
--# define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
--# define lock_release(l, n, i)			do { } while (0)
-+# define lockdep_acquire(l, s, t, r, c, n, i)	do { } while (0)
-+# define lockdep_release(l, n, i)		do { } while (0)
- # define lock_set_class(l, n, k, s, i)		do { } while (0)
- # define lock_set_subclass(l, s, i)		do { } while (0)
- # define lockdep_set_current_reclaim_state(g)	do { } while (0)
-@@ -380,45 +380,16 @@ struct lock_class_key { };
+@@ -156,7 +156,7 @@ static inline unsigned long __raw_read_lock_irqsave(rwlock_t *lock)
  
- #ifdef CONFIG_LOCK_STAT
+ 	local_irq_save(flags);
+ 	preempt_disable();
+-	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire_read(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED_FLAGS(lock, do_raw_read_trylock, do_raw_read_lock,
+ 			     do_raw_read_lock_flags, &flags);
+ 	return flags;
+@@ -166,7 +166,7 @@ static inline void __raw_read_lock_irq(rwlock_t *lock)
+ {
+ 	local_irq_disable();
+ 	preempt_disable();
+-	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire_read(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
+ }
  
--extern void lock_contended(struct lockdep_map *lock, unsigned long ip);
--extern void lock_acquired(struct lockdep_map *lock, unsigned long ip);
--
--#define LOCK_CONTENDED(_lock, try, lock)			\
--do {								\
--	if (!try(_lock)) {					\
--		lock_contended(&(_lock)->dep_map, _RET_IP_);	\
--		lock(_lock);					\
--	}							\
--	lock_acquired(&(_lock)->dep_map, _RET_IP_);			\
--} while (0)
-+extern void lockdep_contended(struct lockdep_map *lock, unsigned long ip);
-+extern void lockdep_acquired(struct lockdep_map *lock, unsigned long ip);
+@@ -174,7 +174,7 @@ static inline void __raw_read_lock_bh(rwlock_t *lock)
+ {
+ 	local_bh_disable();
+ 	preempt_disable();
+-	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire_read(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
+ }
  
- #else /* CONFIG_LOCK_STAT */
+@@ -184,7 +184,7 @@ static inline unsigned long __raw_write_lock_irqsave(rwlock_t *lock)
  
--#define lock_contended(lockdep_map, ip) do {} while (0)
--#define lock_acquired(lockdep_map, ip) do {} while (0)
--
--#define LOCK_CONTENDED(_lock, try, lock) \
--	lock(_lock)
-+#define lockdep_contended(lockdep_map, ip) do {} while (0)
-+#define lockdep_acquired(lockdep_map, ip) do {} while (0)
+ 	local_irq_save(flags);
+ 	preempt_disable();
+-	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED_FLAGS(lock, do_raw_write_trylock, do_raw_write_lock,
+ 			     do_raw_write_lock_flags, &flags);
+ 	return flags;
+@@ -194,7 +194,7 @@ static inline void __raw_write_lock_irq(rwlock_t *lock)
+ {
+ 	local_irq_disable();
+ 	preempt_disable();
+-	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_write_trylock, do_raw_write_lock);
+ }
  
- #endif /* CONFIG_LOCK_STAT */
+@@ -202,14 +202,14 @@ static inline void __raw_write_lock_bh(rwlock_t *lock)
+ {
+ 	local_bh_disable();
+ 	preempt_disable();
+-	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_write_trylock, do_raw_write_lock);
+ }
  
--#ifdef CONFIG_LOCKDEP
--
--/*
-- * On lockdep we dont want the hand-coded irq-enable of
-- * _raw_*_lock_flags() code, because lockdep assumes
-- * that interrupts are not re-enabled during lock-acquire:
-- */
--#define LOCK_CONTENDED_FLAGS(_lock, try, lock, lockfl, flags) \
--	LOCK_CONTENDED((_lock), (try), (lock))
--
--#else /* CONFIG_LOCKDEP */
--
--#define LOCK_CONTENDED_FLAGS(_lock, try, lock, lockfl, flags) \
--	lockfl((_lock), (flags))
--
--#endif /* CONFIG_LOCKDEP */
--
- #ifdef CONFIG_GENERIC_HARDIRQS
- extern void early_init_irq_lock_class(void);
- #else
-@@ -450,74 +421,13 @@ static inline void print_irqtrace_events(struct task_struct *curr)
-  */
- #define SINGLE_DEPTH_NESTING			1
+ static inline void __raw_write_lock(rwlock_t *lock)
+ {
+ 	preempt_disable();
+-	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
++	rwlock_acquire(&lock->monitor, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_write_trylock, do_raw_write_lock);
+ }
  
--/*
-- * Map the dependency ops to NOP or to real lockdep ops, depending
-- * on the per lock-class debug mode:
-- */
--
+@@ -217,14 +217,14 @@ static inline void __raw_write_lock(rwlock_t *lock)
+ 
+ static inline void __raw_write_unlock(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_write_unlock(lock);
+ 	preempt_enable();
+ }
+ 
+ static inline void __raw_read_unlock(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_read_unlock(lock);
+ 	preempt_enable();
+ }
+@@ -232,7 +232,7 @@ static inline void __raw_read_unlock(rwlock_t *lock)
+ static inline void
+ __raw_read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_read_unlock(lock);
+ 	local_irq_restore(flags);
+ 	preempt_enable();
+@@ -240,7 +240,7 @@ __raw_read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
+ 
+ static inline void __raw_read_unlock_irq(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_read_unlock(lock);
+ 	local_irq_enable();
+ 	preempt_enable();
+@@ -248,7 +248,7 @@ static inline void __raw_read_unlock_irq(rwlock_t *lock)
+ 
+ static inline void __raw_read_unlock_bh(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_read_unlock(lock);
+ 	preempt_enable_no_resched();
+ 	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
+@@ -257,7 +257,7 @@ static inline void __raw_read_unlock_bh(rwlock_t *lock)
+ static inline void __raw_write_unlock_irqrestore(rwlock_t *lock,
+ 					     unsigned long flags)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_write_unlock(lock);
+ 	local_irq_restore(flags);
+ 	preempt_enable();
+@@ -265,7 +265,7 @@ static inline void __raw_write_unlock_irqrestore(rwlock_t *lock,
+ 
+ static inline void __raw_write_unlock_irq(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_write_unlock(lock);
+ 	local_irq_enable();
+ 	preempt_enable();
+@@ -273,7 +273,7 @@ static inline void __raw_write_unlock_irq(rwlock_t *lock)
+ 
+ static inline void __raw_write_unlock_bh(rwlock_t *lock)
+ {
+-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
++	rwlock_release(&lock->monitor, 1, _RET_IP_);
+ 	do_raw_write_unlock(lock);
+ 	preempt_enable_no_resched();
+ 	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
+diff --git a/include/linux/rwlock_types.h b/include/linux/rwlock_types.h
+index bd31808..b4dd24a 100644
+--- a/include/linux/rwlock_types.h
++++ b/include/linux/rwlock_types.h
+@@ -17,17 +17,17 @@ typedef struct {
+ 	unsigned int magic, owner_cpu;
+ 	void *owner;
+ #endif
 -#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# ifdef CONFIG_PROVE_LOCKING
--#  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, NULL, i)
--#  define spin_acquire_nest(l, s, t, n, i)	lock_acquire(l, s, t, 0, 2, n, i)
--# else
--#  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, NULL, i)
--#  define spin_acquire_nest(l, s, t, n, i)	lock_acquire(l, s, t, 0, 1, NULL, i)
--# endif
--# define spin_release(l, n, i)			lock_release(l, n, i)
--#else
--# define spin_acquire(l, s, t, i)		do { } while (0)
--# define spin_release(l, n, i)			do { } while (0)
--#endif
--
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# ifdef CONFIG_PROVE_LOCKING
--#  define rwlock_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, NULL, i)
--#  define rwlock_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 2, 2, NULL, i)
--# else
--#  define rwlock_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, NULL, i)
--#  define rwlock_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 2, 1, NULL, i)
--# endif
--# define rwlock_release(l, n, i)		lock_release(l, n, i)
--#else
--# define rwlock_acquire(l, s, t, i)		do { } while (0)
--# define rwlock_acquire_read(l, s, t, i)	do { } while (0)
--# define rwlock_release(l, n, i)		do { } while (0)
--#endif
--
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# ifdef CONFIG_PROVE_LOCKING
--#  define mutex_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, NULL, i)
--# else
--#  define mutex_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, NULL, i)
--# endif
--# define mutex_release(l, n, i)			lock_release(l, n, i)
--#else
--# define mutex_acquire(l, s, t, i)		do { } while (0)
--# define mutex_release(l, n, i)			do { } while (0)
--#endif
--
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# ifdef CONFIG_PROVE_LOCKING
--#  define rwsem_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, NULL, i)
--#  define rwsem_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 1, 2, NULL, i)
--# else
--#  define rwsem_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, NULL, i)
--#  define rwsem_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 1, 1, NULL, i)
--# endif
--# define rwsem_release(l, n, i)			lock_release(l, n, i)
--#else
--# define rwsem_acquire(l, s, t, i)		do { } while (0)
--# define rwsem_acquire_read(l, s, t, i)		do { } while (0)
--# define rwsem_release(l, n, i)			do { } while (0)
--#endif
--
+-	struct lockdep_map dep_map;
++#ifdef CONFIG_LOCK_MONITOR
++	struct lock_monitor monitor;
+ #endif
+ } rwlock_t;
+ 
+ #define RWLOCK_MAGIC		0xdeaf1eed
+ 
  #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # ifdef CONFIG_PROVE_LOCKING
--#  define lock_map_acquire(l)		lock_acquire(l, 0, 0, 0, 2, NULL, _THIS_IP_)
-+#  define lock_map_acquire(l)		lockdep_acquire(l, 0, 0, 0, 2, NULL, _THIS_IP_)
- # else
--#  define lock_map_acquire(l)		lock_acquire(l, 0, 0, 0, 1, NULL, _THIS_IP_)
-+#  define lock_map_acquire(l)		lockdep_acquire(l, 0, 0, 0, 1, NULL, _THIS_IP_)
- # endif
--# define lock_map_release(l)			lock_release(l, 1, _THIS_IP_)
-+# define lock_map_release(l)			lockdep_release(l, 1, _THIS_IP_)
+-# define RW_DEP_MAP_INIT(lockname)	.dep_map = { .name = #lockname }
++# define RW_LOCK_MONITOR_INIT(lockname)	.monitor = { __LOCK_MONITOR_INIT(lockname) }
  #else
- # define lock_map_acquire(l)			do { } while (0)
- # define lock_map_release(l)			do { } while (0)
-@@ -526,15 +436,15 @@ static inline void print_irqtrace_events(struct task_struct *curr)
- #ifdef CONFIG_PROVE_LOCKING
- # define might_lock(lock) 						\
- do {									\
--	typecheck(struct lockdep_map *, &(lock)->dep_map);		\
--	lock_acquire(&(lock)->dep_map, 0, 0, 0, 2, NULL, _THIS_IP_);	\
--	lock_release(&(lock)->dep_map, 0, _THIS_IP_);			\
-+	typecheck(struct lockdep_map *, &(lock)->monitor.dep_map);	\
-+	lockdep_acquire(&(lock)->monitor.dep_map, 0, 0, 0, 2, NULL, _THIS_IP_);	\
-+	lockdep_release(&(lock)->monitor.dep_map, 0, _THIS_IP_);		\
- } while (0)
- # define might_lock_read(lock) 						\
- do {									\
--	typecheck(struct lockdep_map *, &(lock)->dep_map);		\
--	lock_acquire(&(lock)->dep_map, 0, 0, 1, 2, NULL, _THIS_IP_);	\
--	lock_release(&(lock)->dep_map, 0, _THIS_IP_);			\
-+	typecheck(struct lockdep_map *, &(lock)->monitor.dep_map);	\
-+	lockdep_acquire(&(lock)->monitor.dep_map, 0, 0, 1, 2, NULL, _THIS_IP_);	\
-+	lockdep_release(&(lock)->monitor.dep_map, 0, _THIS_IP_);	\
- } while (0)
+-# define RW_DEP_MAP_INIT(lockname)
++# define RW_LOCK_MONITOR_INIT(lockname)
+ #endif
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK
+@@ -36,11 +36,11 @@ typedef struct {
+ 				.magic = RWLOCK_MAGIC,			\
+ 				.owner = SPINLOCK_OWNER_INIT,		\
+ 				.owner_cpu = -1,			\
+-				RW_DEP_MAP_INIT(lockname) }
++				RW_LOCK_MONITOR_INIT(lockname) }
  #else
- # define might_lock(lock) do { } while (0)
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index da7435d..f7600a5 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -43,6 +43,7 @@
- #include <linux/ftrace.h>
- #include <linux/stringify.h>
- #include <linux/bitops.h>
-+#include <linux/lock_monitor.h>
- 
- #include <asm/sections.h>
- 
-@@ -3208,7 +3209,7 @@ EXPORT_SYMBOL_GPL(lock_set_class);
-  * We are not always called with irqs disabled - do that here,
-  * and also avoid lockdep recursion:
-  */
--void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
-+void lockdep_acquire(struct lockdep_map *lock, unsigned int subclass,
- 			  int trylock, int read, int check,
- 			  struct lockdep_map *nest_lock, unsigned long ip)
- {
-@@ -3228,9 +3229,9 @@ void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
--EXPORT_SYMBOL_GPL(lock_acquire);
-+EXPORT_SYMBOL_GPL(lockdep_acquire);
- 
--void lock_release(struct lockdep_map *lock, int nested,
-+void lockdep_release(struct lockdep_map *lock, int nested,
- 			  unsigned long ip)
- {
- 	unsigned long flags;
-@@ -3247,7 +3248,7 @@ void lock_release(struct lockdep_map *lock, int nested,
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
--EXPORT_SYMBOL_GPL(lock_release);
-+EXPORT_SYMBOL_GPL(lockdep_release);
- 
- int lock_is_held(struct lockdep_map *lock)
- {
-@@ -3412,7 +3413,7 @@ found_it:
- 	lock->ip = ip;
- }
- 
--void lock_contended(struct lockdep_map *lock, unsigned long ip)
-+void lockdep_contended(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
-@@ -3431,9 +3432,9 @@ void lock_contended(struct lockdep_map *lock, unsigned long ip)
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
--EXPORT_SYMBOL_GPL(lock_contended);
-+EXPORT_SYMBOL_GPL(lockdep_contended);
- 
--void lock_acquired(struct lockdep_map *lock, unsigned long ip)
-+void lockdep_acquired(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
-@@ -3450,7 +3451,7 @@ void lock_acquired(struct lockdep_map *lock, unsigned long ip)
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
--EXPORT_SYMBOL_GPL(lock_acquired);
-+EXPORT_SYMBOL_GPL(lockdep_acquired);
+ #define __RW_LOCK_UNLOCKED(lockname) \
+ 	(rwlock_t)	{	.raw_lock = __ARCH_RW_LOCK_UNLOCKED,	\
+-				RW_DEP_MAP_INIT(lockname) }
++				RW_LOCK_MONITOR_INIT(lockname) }
  #endif
  
  /*
-@@ -3579,6 +3580,38 @@ out_restore:
- 	raw_local_irq_restore(flags);
- }
- 
-+void lockdep_acquire_hook(struct lock_monitor *monitor, unsigned int subclass,
-+			  int trylock, int read, int check,
-+			  struct lock_monitor *nest_monitor, unsigned long ip)
-+{
-+	lockdep_acquire(&monitor->dep_map, subclass, trylock, read,
-+			check, nest_monitor ? &nest_monitor->dep_map : NULL, ip);
-+}
-+
-+void lockdep_acquired_hook(struct lock_monitor *monitor, unsigned long ip)
-+{
-+	lockdep_acquired(&monitor->dep_map, ip);
-+}
-+
-+void lockdep_contended_hook(struct lock_monitor *monitor, unsigned long ip)
-+{
-+	lockdep_contended(&monitor->dep_map, ip);
-+}
-+
-+void lockdep_release_hook(struct lock_monitor *monitor, int nested,
-+			  unsigned long ip)
-+{
-+	lockdep_release(&monitor->dep_map, nested, ip);
-+}
-+
-+static struct lock_monitor_hook lockdep_hook = {
-+	.name = "lockdep",
-+	.acquire = lockdep_acquire_hook,
-+	.acquired = lockdep_acquired_hook,
-+	.contended = lockdep_contended_hook,
-+	.release = lockdep_release_hook,
-+};
-+
- void lockdep_init(void)
- {
- 	int i;
-@@ -3598,6 +3631,8 @@ void lockdep_init(void)
- 	for (i = 0; i < CHAINHASH_SIZE; i++)
- 		INIT_LIST_HEAD(chainhash_table + i);
- 
-+	lock_monitor_register(&lockdep_hook);
-+
- 	lockdep_initialized = 1;
- }
- 
 -- 
 1.6.5.2
 
