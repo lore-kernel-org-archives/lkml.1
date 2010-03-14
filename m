@@ -1,75 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522Ab0CNQu6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 12:50:58 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50720 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759508Ab0CNQu5 (ORCPT
+	id S1759528Ab0CNQz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 12:55:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33745 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759508Ab0CNQzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 12:50:57 -0400
-Date: Sun, 14 Mar 2010 12:49:08 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: should new kfifo implementation really be exporting that much?
-In-Reply-To: <4B9D10D1.1060602@phoenixsoftware.de>
-Message-ID: <alpine.LFD.2.00.1003141244280.7806@localhost>
-References: <alpine.LFD.2.00.1003140929350.4644@localhost> <alpine.LFD.2.00.1003141053380.5987@localhost> <4B9D10D1.1060602@phoenixsoftware.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sun, 14 Mar 2010 12:55:55 -0400
+X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=IkcTkHD0fZMA:10 a=cEzFX_PQ7OMZniYf3OAA:9 a=VoQrNfTcw6ZnWBMj67kF11Ktc7MA:4 a=QEXdDO2ut3YA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: 2.6.33: ftrace triggers soft lockup
+From: Steven Rostedt <rostedt@goodmis.org>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20100313053733.GD3704@hack>
+References: <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>
+	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>
+	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>
+	 <20100305171614.GC5244@nowhere> <4B94A816.4090608@cn.fujitsu.com>
+	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>
+	 <4B95AE4E.6060700@cn.fujitsu.com>
+	 <1268101394.10871.1861.camel@gandalf.stny.rr.com>
+	 <4B95C2AF.7010508@cn.fujitsu.com>
+	 <1268446049.4471.787.camel@gandalf.stny.rr.com>
+	 <20100313053733.GD3704@hack>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Mar 2010 12:55:51 -0400
+Message-ID: <1268585751.13400.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Mar 2010, Tilman Schmidt wrote:
-
-> Am 14.03.2010 15:57 schrieb Robert P. J. Day:
-> >   as a short followup, kfifo.h strongly implies that a lot of the
-> > above shouldn't be exported:
+On Sat, 2010-03-13 at 13:37 +0800, Américo Wang wrote:
+> On Fri, Mar 12, 2010 at 09:07:29PM -0500, Steven Rostedt wrote:
 > >
-> > ...
-> > /*
-> >  * __kfifo_in_... internal functions for put date into the fifo
-> >  * do not call it directly, use kfifo_in_rec() instead
-> >  */
-> > ...
+> >Americo,
 > >
-> >   anyway, you get the idea.  it would seem that a lot of those EXPORTs
-> > should be removed, no?
->
-> If you look at kfifo_in_rec(), it's a static inline void function
-> defined in kfifo.h and which calls __kfifo_in_generic() or
-> __kfifo_in_rec(). I don't think you'll be able to make that work
-> without exporting those functions.
+> >I still do not know why the function graph tracer is making your system
+> >unusable. I'll look more into that when I get a chance. So far, I have
+> >not had any issues on any of my boxes.
+> >
+> 
+> Oh, in fact, I just tried 2 x86_64 machines, both of them have this
+> problem.
+> 
+> Sorry that I don't have much time to do bisect, the last kernel that
+> I tried is 2.6.32-rc6, it is bad too. I will try some older kernels
+> if I have time.
 
-  huh.  i believe you're correct.  i'll take a closer look but i still
-get this feeling that there's something ... messy about that API.
-case in point:  kfifo_in_rec() is *not* being exported, but a routine
-that it invokes -- __kfifo_in_generic() -- *is* being exported.
-doesn't that just seem a bit backwards?
+It may be a config problem. I'll analyze your config again and see if I
+can find something with it. But this will need to wait till next week.
 
-  anyway, off to the gym to bike and see which duke team shows up for
-georgia tech.
+Thanks,
 
-rday
---
+-- Steve
 
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
