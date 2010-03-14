@@ -1,60 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596Ab0CNTJF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 15:09:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:33874 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759577Ab0CNTJB (ORCPT
+	id S1759588Ab0CNTPW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 15:15:22 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:37041 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759537Ab0CNTPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 15:09:01 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wolfram Sang <w.sang@pengutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>, Larry Finger <Larry.Finger@lwfinger.net>,
-       WANG Cong <xiyou.wangcong@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] base firmware: Fix BUG from sysfs attributes change in commit a2db6842873c8e5a70652f278d469128cb52db70
-References: <4b9be956.x5+yAHXGDfXer810%Larry.Finger@lwfinger.net>
-	<alpine.LFD.2.00.1003131426480.3719@i5.linux-foundation.org>
-	<alpine.LRH.2.00.1003132336380.12517@twin.jikos.cz>
-	<alpine.LFD.2.00.1003131455420.3719@i5.linux-foundation.org>
-	<m1fx43zhbd.fsf@fess.ebiederm.org>
-	<loom.20100314T113306-436@post.gmane.org>
-	<alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 14 Mar 2010 12:08:55 -0700
-In-Reply-To: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org> (Linus Torvalds's message of "Sun\, 14 Mar 2010 11\:04\:25 -0700 \(PDT\)")
-Message-ID: <m1fx42yb3s.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 14 Mar 2010 15:15:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=pS2B9d6Sc7R4gm7iGfD/y8aLLrqv54VY6AMzbcC4PNDeCAAVw0fQ+KCVp0/41cGuBI
+         lsvRRxys3gHFMZqGdHiu+rMpiK+xI29O+cs2szUc0WXn/v+/ZJwp/ua9+ax0IQJZk9/g
+         4HSwPxroaVqvV9vMdJSFqw7TTKKLSg/jrcbZQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: torvalds@linux-foundation.org, tj@kernel.org, gregkh@suse.de, xiyou.wangcong@gmail.com, Larry.Finger@lwfinger.net, jkosina@suse.cz, linux-kernel@vger.kernel.org, w.sang@pengutronix.de
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Date: Sun, 14 Mar 2010 23:15:18 +0400
+Message-ID: <1a297b361003141215u70e608b3xb8fba358f3d9e802@mail.gmail.com>
+Subject: PCI express switch handling ..
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Grant Grundler <grundler@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Hi All,
 
-> On Sun, 14 Mar 2010, Wolfram Sang wrote:
->>
->> coccinelle can apply semantic patches, rough description here [1]. So I wrote
->> one which checks for every c-file in the kernel-tree:
->>
->> - Is there a structure containing (bin_)attribute?
->> - Does a function declare a pointer to such a structure?
->> - Is this pointer then used for a sysfs_create(_bin)_file?
->> - If so, has there been a call to sysfs(_bin)_attr_init before?
->>
->> If not -> report. As coccinelle works on an abstract level of the code (not on
->> source-code level), it can follow code-paths and such. Really nice tool, once
->> you gathered the information to learn it.
+I have one of these PCIe switches on one of the PCIe cards that I have:
 
-Any chance you can post the semantic patch?  If it isn't too hard it
-would be nice to have the warm fuzzy of running it myself and seeing
-that there are no more of these left in the kernel.
+http://www.plxtech.com/products/expresslane/pex8604
 
-Eric
+I was wondering how to handle this thing, ie;
+
+I have to PCIe devices behind this switch, which looks thus:
+
+06:00.0 PCI bridge: PLX Technology, Inc. Device 8604 (rev ba)
+07:01.0 PCI bridge: PLX Technology, Inc. Device 8604 (rev ba)
+07:04.0 PCI bridge: PLX Technology, Inc. Device 8604 (rev ba)
+07:05.0 PCI bridge: PLX Technology, Inc. Device 8604 (rev ba)
+09:00.0 Multimedia controller: Philips Semiconductors Device 7231 (rev aa)
+0a:00.0 Multimedia controller: Philips Semiconductors Device 7231 (rev aa)
+
+I am wondering if i need to access or address the switch specifically
+to forward data specifically to one of the bridges behind the switch.
+At present I can access one of the Multimedia controllers (09:00.0) ,
+but it seems I can't access the other one and hence my question as to
+determine whether it is something else.
+
+Any pointer would be appreciated.
+
+Thanks,
+Manu
