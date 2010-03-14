@@ -1,50 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759559Ab0CNSR2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 14:17:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48692 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758696Ab0CNSRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 14:17:24 -0400
-Date: Sun, 14 Mar 2010 11:11:31 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Jiri Kosina <jkosina@suse.cz>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Tejun Heo <tj@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] base firmware: Fix BUG from sysfs attributes change in
-	commit a2db6842873c8e5a70652f278d469128cb52db70
-Message-ID: <20100314181131.GC28359@suse.de>
-References: <4b9be956.x5+yAHXGDfXer810%Larry.Finger@lwfinger.net> <alpine.LFD.2.00.1003131426480.3719@i5.linux-foundation.org> <alpine.LRH.2.00.1003132336380.12517@twin.jikos.cz> <alpine.LFD.2.00.1003131455420.3719@i5.linux-foundation.org> <m1fx43zhbd.fsf@fess.ebiederm.org> <alpine.LFD.2.00.1003132131470.3719@i5.linux-foundation.org>
+	id S1752412Ab0CNSWQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 14:22:16 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:56597 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823Ab0CNSWN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 14:22:13 -0400
+Message-ID: <4B9D294B.6050603@canonical.com>
+Date: Sun, 14 Mar 2010 19:22:03 +0100
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003132131470.3719@i5.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Greg KH <gregkh@suse.de>
+CC: Ben Hutchings <ben@decadent.org.uk>, Gleb Natapov <gleb@redhat.com>,
+       linux-kernel@vger.kernel.org, stable-review@kernel.org,
+       Avi Kivity <avi@redhat.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [141/145] KVM: x86 emulator: Check CPL	level
+ during privilege instruction emulation
+References: <20100313002717.508317046@kvm.kroah.org>	<1268512677.2664.23.camel@localhost> <20100313221645.GA21225@suse.de>
+In-Reply-To: <20100313221645.GA21225@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 13, 2010 at 09:46:46PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 13 Mar 2010, Eric W. Biederman wrote:
-> > 
-> > It also only affects those fairly rare lockdep users as well, and the only
-> > affect is to throw a nasty warning message.  Isn't lockdep all about throwing
-> > nasty warning messages?
-> 
-> Hmm. The report has that "BUG: " message in it (and in the subject line), 
-> but you're right - it ends up being just a warning, not actually a real 
-> BUG() (which is a machine killer).
-> 
-> So yeah - it's not as bad as I thought. Sorry.
+Greg KH wrote:
+> On Sat, Mar 13, 2010 at 08:37:57PM +0000, Ben Hutchings wrote:
+>> On Fri, 2010-03-12 at 16:27 -0800, Greg KH wrote:
+>>> 2.6.32-stable review patch.  If anyone has any objections, please let me know.
+>>>
+>>> ----------------
+>>> From: Gleb Natapov <gleb@redhat.com>
+>>>
+>>> commit e92805ac1228626c59c865f2f4e9059b9fb8c97b upstream.
+>>>
+>>> Add CPL checking in case emulator is tricked into emulating
+>>> privilege instruction from userspace.
+>> There were more security fixes released along with this, which surely
+>> belong in a stable update:
+>>
+>> 1871c6020d7308afb99127bba51f04548e7ca84e KVM: x86 emulator: fix memory access during x86 emulation
 
-It's a messy warning, I have patches that should fix the remaining ones
-that I will send to you tomorrow.
+This one caused a regression for AMD cpus. There is a patch for it in the
+process but not upstream, yet.
 
-thanks,
+>> f850e2e603bf5a05b0aee7901857cf85715aa694 KVM: x86 emulator: Check IOPL level during io instruction emulation
+>> d4c6a1549c056f1d817e8f6f2f97d8b44933472f KVM: x86 emulator: Fix popf emulation
+> 
+> Yes, there were a number of kvm patches that I could not apply either
+> because they did not apply, or because they caused build errors.  These
+> are some of them.  I have asked the KVM developers to properly backport
+> them as I know nothing about KVM.  Hopefully that will be done for the
+> next round of stable releases.
 
-greg k-h
+I have done some backport work for 2.6.32 at least. This can be found at
+
+git://kernel.ubuntu.com/smb/linux-2.6.32.y kvm
+
+I have successfully booted a guest after the changes but it would surely help if
+the KVM developers could give some review on the set.
+
+Stefan
+> thanks,
+> 
+> greg k-h
+> 
+> _______________________________________________
+> Stable-review mailing list
+> Stable-review@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable-review
+
