@@ -1,45 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246Ab0CNCLx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 21:11:53 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57252 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882Ab0CNCLv (ORCPT
+	id S1754907Ab0CNCQP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 21:16:15 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:34182 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753288Ab0CNCQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 21:11:51 -0500
-Subject: Re: Q: select_fallback_rq() && cpuset_lock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20100313192823.GA21462@redhat.com>
-References: <20100309180615.GA11681@redhat.com>
-	 <1268239242.5279.46.camel@twins> <20100310173018.GA1294@redhat.com>
-	 <1268244075.5279.53.camel@twins> <20100310183259.GA23648@redhat.com>
-	 <20100311145248.GA12907@redhat.com> <1268321759.5037.113.camel@laptop>
-	 <20100311161909.GA16008@redhat.com>  <20100313192823.GA21462@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Mar 2010 03:11:39 +0100
-Message-ID: <1268532699.9440.3.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Mar 2010 21:16:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=iFni+1hGGimRBZXsBkT2jLwJUkI94A9HPv9VhPfrEdH6BM5s44ndhdeaUEY21Kx9XV
+         Qa7peBLw0xR/5AYE1ILa+Y0nqLUbxywluJ/9RB5/mhnDbttLeFXdC3ROeJKoFyejpfu0
+         bTzhw8hEAuWLGwojDMgRTOcqj5SRtRf2bVAso=
+Date: Sat, 13 Mar 2010 18:16:04 -0800
+From: 640E9920 <640e9920@gmail.com>
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Helmut.Schaa@gmx.de
+Subject: [PATCH] PM_QOS api update for linux-next
+Message-ID: <20100314021604.GA22158@mgross-acer>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-03-13 at 20:28 +0100, Oleg Nesterov wrote:
-> 
-> Peter, I seem to see the simple fix for the discussed cpuset problems,
-> but it turns out sched.c has more problems evem without cpusets.
-> 
-> I'll try to send the whole series on Monday, but perhaps you can look
-> at the attached compile-tested patches (especially 2 and 3) to quickly
-> correct me if the 3rd one is wrong.
-> 
-> The subsequent fix in cpuset.c depends on the locking rules enforced
-> by 2-3. 
 
-In as far as I can trust my jet-lagged brain, they look good. I'll try
-and have another look later.
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+This patch assumes the pm_qos update just posted is included int
+linux-next.
+
+Signed-off-by: mark gross <mgross@linux.intel.com>
+
+
+=46rom 361b695e0f6468214e6e8c8c789bdb651e163374 Mon Sep 17 00:00:00 2001
+=46rom: mgross <mgross@linux.intel.com>
+Date: Sat, 13 Mar 2010 18:09:04 -0800
+Subject: [PATCH] PM_QOS function name update pm_qos_requierment --> pm_qos_=
+request
+
+---
+ net/mac80211/scan.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/mac80211/scan.c b/net/mac80211/scan.c
+index 75a8597..077eef1 100644
+--- a/net/mac80211/scan.c
++++ b/net/mac80211/scan.c
+@@ -506,7 +506,7 @@ static int ieee80211_scan_state_decision(struct ieee802=
+11_local *local,
+ 		bad_latency =3D time_after(jiffies +
+ 				ieee80211_scan_get_channel_time(next_chan),
+ 				local->leave_oper_channel_time +
+-				usecs_to_jiffies(pm_qos_requirement(PM_QOS_NETWORK_LATENCY)));
++				usecs_to_jiffies(pm_qos_request(PM_QOS_NETWORK_LATENCY)));
+=20
+ 		listen_int_exceeded =3D time_after(jiffies +
+ 				ieee80211_scan_get_channel_time(next_chan),
+--=20
+1.6.3.3
+
+
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkucRuQACgkQhK5OsmQOmSCblQCcDBrdBncwhra2tA3r0SSR+/o9
+oyUAnisC0JS+AhGjSE3CvHVTE61MEXaP
+=P4sd
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
