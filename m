@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685Ab0CNJS5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 05:18:57 -0400
-Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:45212 "HELO
-	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756356Ab0CNJSr (ORCPT
+	id S1756780Ab0CNJTA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 05:19:00 -0400
+Received: from smtp110.sbc.mail.gq1.yahoo.com ([67.195.14.95]:41945 "HELO
+	smtp110.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756542Ab0CNJSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 05:18:47 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Mar 2010 05:18:47 EDT
+	Sun, 14 Mar 2010 05:18:53 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Mar 2010 05:18:53 EDT
 X-Yahoo-SMTP: fzDSGlOswBCWnIOrNw7KwwK1j9PqyNbe5PtLKiS4dDU.UNl_t6bdEZu9tTLW
-X-YMail-OSG: _MnKlKAVM1n9LMBzCf.J4unUWsMY8HbCe3IPQStzUSHCptsyI7KPBYV7bVWzvw9CKpFIWvzoYfIvaUHgqtrISi1ZlMM0Tmbu8ZuqDIf5EzLAkRpCoSsvwLu9CQ0jmLJ4IjJnefdk19mOIKD6_iMs_0Krdy10ToN1mEIgjlHsmZe8DySN7VAhh3feLrvNPtOv_txEhvOQdBPhsu3uLEmUBa8qgCSSKvxrpXqmI01PyIuyrdthtON9yf4mJxNxmGArtlY0PrEzd6TXOvi3CIcZ8ViCt_rqGWCLA.zQFa7Lx6cokK_o8d3pm2xre4djYAf.Ct3PmaXlAPkpS3y5h8q2qrv2SEP0JS_q5nb.Js7OJoyVtw--
+X-YMail-OSG: 0dJxdk8VM1lxxphW69dJxseYYy9_8YqL92r5u.07e_mrf7m7C9rEIyZkXwhlXc6AUG1zx5sL7coMVH7cGnBvBKH_5O.T6TeMwgr23JdsGLT4deDuQ6JyrW_ymIjVfRvTmv_FLMeEN7KHdBDvzW2MqCVjmBECWTJaRn75I6bR0AnRLVmScnmdja12103YaJXV8Fo3Bxnvd5hXW3yyqKUj9pWKUQup31OK2RGStNk3wr4RcNZGGSDXsXzCJiVxpcBCGyd9YDaou3eR1tOZ6n67lhLodzsQJLWRQemf_hhZdwZwfi3NgEesSfbLcM4oSf6yvYOkKenessee06zNtWKMtyEYcQDK99Ft2WLb7cnRq6n21A--
 X-Yahoo-Newman-Property: ymail-3
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: linux-kernel <linux-kernel@vger.kernel.org>,
@@ -22,9 +22,9 @@ To: linux-kernel <linux-kernel@vger.kernel.org>,
        Joe Eykholt <jeykholt@cisco.com>,
        James Bottomley <James.Bottomley@suse.de>
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Subject: [PATCH 1/3] [TCM/PR]: Add TPG, NodeACL and MappedLUN wrappers for configfs_[un]depend_item()
-Date: Sun, 14 Mar 2010 01:17:45 -0800
-Message-Id: <1268558265-10761-1-git-send-email-nab@linux-iscsi.org>
+Subject: [PATCH 2/3] [TCM/PR]: Convert REGISTER_AND_MOVE use new configfs dependency wrappers
+Date: Sun, 14 Mar 2010 01:17:52 -0800
+Message-Id: <1268558272-10784-1-git-send-email-nab@linux-iscsi.org>
 X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,122 +32,156 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-This patch adds TPG, NodeACL and MappedLUN wrappers for configfs_depend_item() and
-configfs_undepend_item() to properly handler the reference counting of *pr_ref_count
-during multi-fabric SPEC_I_PT=1 TransportID and REGISTER_AND_MOVE processing.
+This patch converts core_scsi3_emulate_pro_register_and_move() to use
+the new demo-mode safe configfs dependency wrappers in 9c8e057ee5 instead of
+using direct calls to configfs_depend_item() and configfs_undepend_item() which
+originally require explict NodeACLs for REGISTER_AND_MOVE to function.
 
-For the NodeACL and MappedLUN wrappers, there is also logic to handle the
-NAF_DYNAMIC_NODE_ACL case so that demo-mode (eg: no explict node ACLs) works for
-SPEC_I_PT=1 TransportID and REGISTER_AND_MOVE as well.
+This patch also adds the *pr_ref_count + 1 references for TPG, NodeACL and MappedLUN
+structures used by REGISTER_AND_MOVE, which are dropped when REGISTER_AND_MOVE
+is complete by core_scsi3_tpg_undepend_item(), core_scsi3_nodeacl_undepend_item() and
+core_scsi3_lunacl_undepend_item() respectively.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/target_core_pr.c |   85 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 85 insertions(+), 0 deletions(-)
+ drivers/target/target_core_pr.c |   62 +++++++++++++++++++++++---------------
+ 1 files changed, 37 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5b23767..03f40e3 100644
+index 03f40e3..6211d59 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
-@@ -54,6 +54,7 @@
- struct pr_transport_id_holder {
- 	int dest_local_nexus;
- 	struct t10_pr_registration_s *dest_pr_reg;
-+	struct se_portal_group_s *dest_tpg;
- 	struct se_node_acl_s *dest_node_acl;
- 	struct se_dev_entry_s *dest_se_deve;
- 	struct list_head dest_list;
-@@ -1035,6 +1036,90 @@ void core_scsi3_free_all_registrations(
- 	spin_unlock(&pr_tmpl->aptpl_reg_lock);
- }
+@@ -2842,7 +2842,7 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
+ 	unsigned char *initiator_str;
+ 	char *iport_ptr = NULL, dest_iport[64];
+-	u32 tid_len;
++	u32 tid_len, tmp_tid_len;
+ 	int new_reg = 0, type, scope, ret;
+ 	unsigned short rtpi;
+ 	unsigned char proto_ident;
+@@ -2923,13 +2923,17 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 		dest_tf_ops = TPG_TFO(dest_se_tpg);
+ 		if (!(dest_tf_ops))
+ 			continue;
++
++		atomic_inc(&dest_se_tpg->tpg_pr_ref_count);
++		smp_mb__after_atomic_inc();
+ 		spin_unlock(&dev->se_port_lock);
  
-+static int core_scsi3_tpg_depend_item(se_portal_group_t *tpg)
-+{
-+	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
-+			&tpg->tpg_group.cg_item);
-+}
+-		ret = configfs_depend_item(dest_tf_ops->tf_subsys,
+-				&dest_se_tpg->tpg_group.cg_item);
++		ret = core_scsi3_tpg_depend_item(dest_se_tpg);
+ 		if (ret != 0) {
+-			printk(KERN_ERR "configfs_depend_item() failed for"
+-				" dest_se_tpg->tpg_group\n");
++			printk(KERN_ERR "core_scsi3_tpg_depend_item() failed"
++				" for dest_se_tpg\n");
++			atomic_dec(&dest_se_tpg->tpg_pr_ref_count);
++			smp_mb__after_atomic_dec();
+ 			core_scsi3_put_pr_reg(pr_reg);
+ 			return PYX_TRANSPORT_LU_COMM_FAILURE;
+ 		}
+@@ -2968,7 +2972,7 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 		goto out;
+ 	}
+ 	initiator_str = dest_tf_ops->tpg_parse_pr_out_transport_id(
+-			(const char *)&buf[24], NULL, &iport_ptr);
++			(const char *)&buf[24], &tmp_tid_len, &iport_ptr);
+ 	if (!(initiator_str)) {
+ 		printk(KERN_ERR "SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
+ 			" initiator_str from Transport ID\n");
+@@ -2999,8 +3003,13 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 	/*
+ 	 * Locate the destination se_node_acl_t from the received Transport ID
+ 	 */
+-	dest_node_acl = core_tpg_get_initiator_node_acl(dest_se_tpg,
++	spin_lock_bh(&dest_se_tpg->acl_node_lock);
++	dest_node_acl = __core_tpg_get_initiator_node_acl(dest_se_tpg,
+ 				initiator_str);
++	atomic_inc(&dest_node_acl->acl_pr_ref_count);
++	smp_mb__after_atomic_inc();
++	spin_unlock_bh(&dest_se_tpg->acl_node_lock);
 +
-+static void core_scsi3_tpg_undepend_item(se_portal_group_t *tpg)
-+{
-+	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
-+			&tpg->tpg_group.cg_item);
-+
-+	atomic_dec(&tpg->tpg_pr_ref_count);
-+	smp_mb__after_atomic_dec();
-+}
-+
-+static int core_scsi3_nodeacl_depend_item(se_node_acl_t *nacl)
-+{
-+	se_portal_group_t *tpg = nacl->se_tpg;
-+
-+	if (nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
-+		return 0;
-+
-+	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
-+			&nacl->acl_group.cg_item);
-+}
-+
-+static void core_scsi3_nodeacl_undepend_item(se_node_acl_t *nacl)
-+{
-+	se_portal_group_t *tpg = nacl->se_tpg;
-+
-+	if (nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL) {
-+		atomic_dec(&nacl->acl_pr_ref_count);
+ 	if (!(dest_node_acl)) {
+ 		printk(KERN_ERR "Unable to locate %s dest_node_acl for"
+ 			" TransportID%s\n", dest_tf_ops->get_fabric_name(),
+@@ -3008,11 +3017,12 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 		ret = PYX_TRANSPORT_INVALID_PARAMETER_LIST;
+ 		goto out;
+ 	}
+-	ret = configfs_depend_item(dest_tf_ops->tf_subsys,
+-				&dest_node_acl->acl_group.cg_item);
++	ret = core_scsi3_nodeacl_depend_item(dest_node_acl);
+ 	if (ret != 0) {
+-		printk(KERN_ERR "configfs_depend_item() failed for"
+-			" dest_node_acl->acl_group\n");
++		printk(KERN_ERR "core_scsi3_nodeacl_depend_item() for"
++			" dest_node_acl\n");
++		atomic_dec(&dest_node_acl->acl_pr_ref_count);
 +		smp_mb__after_atomic_dec();
-+		return;
-+	}
-+
-+	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
-+			&nacl->acl_group.cg_item);	
-+
-+	atomic_dec(&nacl->acl_pr_ref_count);
-+	smp_mb__after_atomic_dec();
-+}
-+
-+static int core_scsi3_lunacl_depend_item(se_dev_entry_t *se_deve)
-+{
-+	se_lun_acl_t *lun_acl = se_deve->se_lun_acl;
-+	se_node_acl_t *nacl;
-+	se_portal_group_t *tpg;
-+	/*
-+	 * For nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
-+	 */
-+	if (!(lun_acl))
-+		return 0;
-+
-+	nacl = lun_acl->se_lun_nacl;
-+	tpg = nacl->se_tpg;
-+
-+	return configfs_depend_item(TPG_TFO(tpg)->tf_subsys,
-+			&lun_acl->se_lun_group.cg_item);
-+}
-+
-+static void core_scsi3_lunacl_undepend_item(se_dev_entry_t *se_deve)
-+{
-+	se_lun_acl_t *lun_acl = se_deve->se_lun_acl;
-+	se_node_acl_t *nacl;
-+	se_portal_group_t *tpg;
-+	/*
-+	 * For nacl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL)
-+	 */
-+	if (!(lun_acl)) {
-+		atomic_dec(&se_deve->pr_ref_count);
+ 		ret = PYX_TRANSPORT_LU_COMM_FAILURE;
+ 		dest_node_acl = NULL;
+ 		goto out;
+@@ -3056,8 +3066,7 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 	}
+ 	/*
+ 	 * Locate the se_dev_entry_t pointer for the matching RELATIVE TARGET
+-	 * PORT IDENTIFIER.  core_get_se_deve_from_rtpi() will call
+-	 * configfs_item_depend() on deve->se_lun_acl->se_lun_group.cg_item
++	 * PORT IDENTIFIER.
+ 	 */
+ 	dest_se_deve = core_get_se_deve_from_rtpi(dest_node_acl, rtpi);
+ 	if (!(dest_se_deve)) {
+@@ -3066,6 +3075,15 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 		ret = PYX_TRANSPORT_INVALID_PARAMETER_LIST;
+ 		goto out;
+ 	}
++	
++	ret = core_scsi3_lunacl_depend_item(dest_se_deve);
++	if (ret < 0) {
++		printk(KERN_ERR "core_scsi3_lunacl_depend_item() failed\n");
++		atomic_dec(&dest_se_deve->pr_ref_count);
 +		smp_mb__after_atomic_dec();
-+		return;	
++		ret = PYX_TRANSPORT_LU_COMM_FAILURE;
++		goto out;
 +	}
-+	nacl = lun_acl->se_lun_nacl;
-+	tpg = nacl->se_tpg;
-+
-+	configfs_undepend_item(TPG_TFO(tpg)->tf_subsys,
-+			&lun_acl->se_lun_group.cg_item);
-+
-+	atomic_dec(&se_deve->pr_ref_count);
-+	smp_mb__after_atomic_dec();
-+}
-+
- static int core_scsi3_decode_spec_i_port(
- 	se_cmd_t *cmd,
- 	se_portal_group_t *tpg,
+ #if 0
+ 	printk(KERN_INFO "SPC-3 PR REGISTER_AND_MOVE: Located %s node %s LUN"
+ 		" ACL for dest_se_deve->mapped_lun: %u\n",
+@@ -3201,12 +3219,9 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 	 * It is now safe to release configfs group dependencies for destination
+ 	 * of Transport ID Initiator Device/Port Identifier
+ 	 */
+-	configfs_undepend_item(dest_tf_ops->tf_subsys,
+-			&dest_se_deve->se_lun_acl->se_lun_group.cg_item);
+-	configfs_undepend_item(dest_tf_ops->tf_subsys,
+-			&dest_node_acl->acl_group.cg_item);
+-	configfs_undepend_item(dest_tf_ops->tf_subsys,
+-			&dest_se_tpg->tpg_group.cg_item);
++	core_scsi3_lunacl_undepend_item(dest_se_deve);
++	core_scsi3_nodeacl_undepend_item(dest_node_acl);
++	core_scsi3_tpg_undepend_item(dest_se_tpg);
+ 	/*
+ 	 * h) If the UNREG bit is set to one, unregister (see 5.7.11.3) the I_T
+ 	 * nexus on which PERSISTENT RESERVE OUT command was received.
+@@ -3241,13 +3256,10 @@ static int core_scsi3_emulate_pro_register_and_move(
+ 	return 0;
+ out:
+ 	if (dest_se_deve)
+-		configfs_undepend_item(dest_tf_ops->tf_subsys,
+-			&dest_se_deve->se_lun_acl->se_lun_group.cg_item);
++		core_scsi3_lunacl_undepend_item(dest_se_deve);
+ 	if (dest_node_acl)
+-		configfs_undepend_item(dest_tf_ops->tf_subsys,
+-				&dest_node_acl->acl_group.cg_item);
+-	configfs_undepend_item(dest_tf_ops->tf_subsys,
+-			&dest_se_tpg->tpg_group.cg_item);
++		core_scsi3_nodeacl_undepend_item(dest_node_acl);
++	core_scsi3_tpg_undepend_item(dest_se_tpg);
+ 	core_scsi3_put_pr_reg(pr_reg);
+ 	return ret;
+ }
 -- 
 1.5.6.5
 
