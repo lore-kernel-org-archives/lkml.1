@@ -1,93 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862Ab0CNUQU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 16:16:20 -0400
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:44412 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752982Ab0CNUQR (ORCPT
+	id S1753571Ab0CNUaS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 16:30:18 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:43727 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413Ab0CNUaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 16:16:17 -0400
-Date: Sun, 14 Mar 2010 21:16:10 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Subject: HTC Dream: Hook up LEDs
-Message-ID: <20100314201610.GF22059@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 14 Mar 2010 16:30:15 -0400
+Subject: Re: 2.6.34-rc1: bluetooth oops
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org
+In-Reply-To: <20100314201434.GE22059@elf.ucw.cz>
+References: <20100314201434.GE22059@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Mar 2010 13:28:20 -0700
+Message-ID: <1268598500.3897.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 (2.28.3-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hook up LEDS on HTC Dream. 
+Hi Pavel,
 
-(#ifdef CONFIG_LEDS_GPIO_PLATFORM is actually neccessary, otherwise it
-breaks boot if CONFIG_LEDS_GPIO_PLATFORM is not set).
+> I got this after trying to use bnep for few minutes... Machine locked
+> after that, not sure if it is related.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+I can't explain it since we haven't changed the BNEP code. So that might
+be a problem in the networking layer. So posting it to netdev might be a
+good idea.
 
-diff --git a/arch/arm/mach-msm/board-dream.c b/arch/arm/mach-msm/board-dream.c
-index f48c797..9ef7cc8 100644
---- a/arch/arm/mach-msm/board-dream.c
-+++ b/arch/arm/mach-msm/board-dream.c
-@@ -17,6 +17,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/leds.h>
- 
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
-@@ -153,6 +154,31 @@ static struct platform_device trout_nav_device = {
- };
- #endif
- 
-+
-+static struct gpio_led android_led_list[] = {
-+	{
-+		.name = "keyboard-backlight",
-+		.gpio = TROUT_GPIO_QTKEY_LED_EN,
-+	},
-+	{
-+		.name = "button-backlight",
-+		.gpio = TROUT_GPIO_UI_LED_EN,
-+	},
-+};
-+
-+static struct gpio_led_platform_data android_leds_data = {
-+	.num_leds	= ARRAY_SIZE(android_led_list),
-+	.leds		= android_led_list,
-+};
-+
-+static struct platform_device android_leds = {
-+	.name		= "leds-gpio",
-+	.id		= -1,
-+	.dev		= {
-+		.platform_data = &android_leds_data,
-+	},
-+};
-+
- /*
-  * Core stuff
-  */
-@@ -168,6 +194,9 @@ static struct platform_device *devices[] __initdata = {
- #ifdef CONFIG_INPUT_GPIO
- 	&trout_nav_device,
- #endif
-+#ifdef CONFIG_LEDS_GPIO_PLATFORM
-+	&android_leds,
-+#endif
- };
- 
- extern struct sys_timer msm_timer;
+Regards
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Marcel
+
+
