@@ -1,28 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506Ab0CNAe5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Mar 2010 19:34:57 -0500
+	id S1759513Ab0CNAfR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Mar 2010 19:35:17 -0500
 Received: from mail-pv0-f174.google.com ([74.125.83.174]:50958 "EHLO
 	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759453Ab0CNAev convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1759452Ab0CNAfL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Mar 2010 19:34:51 -0500
+	Sat, 13 Mar 2010 19:35:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:references:mime-version
          :content-type:content-disposition:content-transfer-encoding
          :in-reply-to:user-agent;
-        b=XBZPgNfJ+lHxxHS2wKXsWTn1yyDW/IkacesPh5FrNNii2NJKK7/aSlNhkXtKBxKqir
-         zhiKnA3AEVEZGTq3FZwczgJ4Q3Asem4DLM3oIpXz+LIUlco+EPu98fZkZ3DxwTzFZY2K
-         cZ4Y+MdWIlo//M91IA4hACljocqDkxgwnuVww=
-Date: Sat, 13 Mar 2010 16:34:48 -0800
+        b=MKrAQjNovHP33dL7WPe93i5o65gGQssrMgKxgGInn6lNPDalnsD7B6SNYI19F4RVLd
+         Xw/HkI6PvIwTogwL98FzhemsGypkbXS2ad05h9zKyw/AlwJrKvi8cp9xGtmbt3gKTM7d
+         k9/q6Ri3YqHwCs728j+sd3MHRLo0QRjK9uLcg=
+Date: Sat, 13 Mar 2010 16:35:09 -0800
 From: 640E9920 <640e9920@gmail.com>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com,
        aili@codeaurora.org, khilman@deeprootsystems.com, pavel@ucw.cz,
        mgross@linux.intel.com
-Subject: Re: [PATCH] PM_QOS updates 3 of 6
-Message-ID: <20100314003448.GD17812@mgross-acer>
+Subject: Re: [PATCH] PM_QOS updates 4 of 6
+Message-ID: <20100314003509.GE17812@mgross-acer>
 References: <20100313214857.GA3079@mgross-acer>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -45,119 +45,80 @@ On Sat, Mar 13, 2010 at 01:48:57PM -0800, mgross wrote:
 > User-Agent: Mutt/1.5.20 (2009-06-14)
 >
  
->From b249daab3cfd639b9ba9fc1159fc761ae136c548 Mon Sep 17 00:00:00 2001
+>From fc3ec2c781d868031a77bc6ce5bfd6aae22d5551 Mon Sep 17 00:00:00 2001
 From: mgross <mgross@linux.intel.com>
-Date: Sat, 13 Mar 2010 08:22:03 -0800
-Subject: [PATCH 3/6] PM_QOS-to-use-handle-based-requests-network-update
+Date: Sat, 13 Mar 2010 08:22:37 -0800
+Subject: [PATCH 4/6] PM_QOS-to-use-handle-based-requests-wireless-update
 
 Signed-off-by: Mark Gross <mgross@linux.intel.com>
 ---
- drivers/net/e1000e/netdev.c |   22 ++++++++++++----------
- drivers/net/igbvf/netdev.c  |    6 ++++--
- include/linux/netdevice.h   |    4 ++++
- 3 files changed, 20 insertions(+), 12 deletions(-)
+ drivers/net/wireless/ipw2x00/ipw2100.c |   11 ++++++-----
+ net/mac80211/mlme.c                    |    2 +-
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 88d54d3..b457423 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2523,12 +2523,12 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
- 			 * excessive C-state transition latencies result in
- 			 * dropped transactions.
- 			 */
--			pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
--						  adapter->netdev->name, 55);
-+			pm_qos_update_request(
-+				adapter->netdev->pm_qos_req, 55);
- 		} else {
--			pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
--						  adapter->netdev->name,
--						  PM_QOS_DEFAULT_VALUE);
-+			pm_qos_update_request(
-+				adapter->netdev->pm_qos_req,
-+				PM_QOS_DEFAULT_VALUE);
- 		}
- 	}
+diff --git a/drivers/net/wireless/ipw2x00/ipw2100.c b/drivers/net/wireless/ipw2x00/ipw2100.c
+index 9b72c45..2b05fe5 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2100.c
++++ b/drivers/net/wireless/ipw2x00/ipw2100.c
+@@ -174,6 +174,8 @@ that only one external action is invoked at a time.
+ #define DRV_DESCRIPTION	"Intel(R) PRO/Wireless 2100 Network Driver"
+ #define DRV_COPYRIGHT	"Copyright(c) 2003-2006 Intel Corporation"
  
-@@ -2823,8 +2823,8 @@ int e1000e_up(struct e1000_adapter *adapter)
- 
- 	/* DMA latency requirement to workaround early-receive/jumbo issue */
- 	if (adapter->flags & FLAG_HAS_ERT)
--		pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY,
--		                       adapter->netdev->name,
-+		adapter->netdev->pm_qos_req =
-+			pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 				       PM_QOS_DEFAULT_VALUE);
- 
- 	/* hardware has been reset, we need to reload some things */
-@@ -2887,9 +2887,11 @@ void e1000e_down(struct e1000_adapter *adapter)
- 	e1000_clean_tx_ring(adapter);
- 	e1000_clean_rx_ring(adapter);
- 
--	if (adapter->flags & FLAG_HAS_ERT)
--		pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--		                          adapter->netdev->name);
-+	if (adapter->flags & FLAG_HAS_ERT) {
-+		pm_qos_remove_request(
-+			      adapter->netdev->pm_qos_req);
-+		adapter->netdev->pm_qos_req = NULL;
-+	}
- 
- 	/*
- 	 * TODO: for power management, we could drop the link and
-diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
-index a77afd8..25e7cff 100644
---- a/drivers/net/igbvf/netdev.c
-+++ b/drivers/net/igbvf/netdev.c
-@@ -47,6 +47,7 @@
- #define DRV_VERSION "1.0.0-k0"
- char igbvf_driver_name[] = "igbvf";
- const char igbvf_driver_version[] = DRV_VERSION;
-+struct pm_qos_request_list *igbvf_driver_pm_qos_req;
- static const char igbvf_driver_string[] =
- 				"Intel(R) Virtual Function Network Driver";
- static const char igbvf_copyright[] = "Copyright (c) 2009 Intel Corporation.";
-@@ -2907,7 +2908,7 @@ static int __init igbvf_init_module(void)
- 	printk(KERN_INFO "%s\n", igbvf_copyright);
- 
- 	ret = pci_register_driver(&igbvf_driver);
--	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name,
-+	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 	                       PM_QOS_DEFAULT_VALUE);
- 
- 	return ret;
-@@ -2923,7 +2924,8 @@ module_init(igbvf_init_module);
- static void __exit igbvf_exit_module(void)
- {
- 	pci_unregister_driver(&igbvf_driver);
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name);
-+	pm_qos_remove_request(igbvf_driver_pm_qos_req);
-+	igbvf_driver_pm_qos_req = NULL;
- }
- module_exit(igbvf_exit_module);
- 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index c79a88b..727e296 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -31,6 +31,7 @@
- #include <linux/if_link.h>
- 
- #ifdef __KERNEL__
-+#include <linux/pm_qos_params.h>
- #include <linux/timer.h>
- #include <linux/delay.h>
- #include <linux/mm.h>
-@@ -711,6 +712,9 @@ struct net_device {
- 	 * the interface.
++struct pm_qos_request_list *ipw2100_pm_qos_req;
++
+ /* Debugging stuff */
+ #ifdef CONFIG_IPW2100_DEBUG
+ #define IPW2100_RX_DEBUG	/* Reception debugging */
+@@ -1739,7 +1741,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
+ 	/* the ipw2100 hardware really doesn't want power management delays
+ 	 * longer than 175usec
  	 */
- 	char			name[IFNAMSIZ];
-+
-+	struct pm_qos_request_list *pm_qos_req;
-+
- 	/* device name hash chain */
- 	struct hlist_node	name_hlist;
- 	/* snmp alias */
+-	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100", 175);
++	pm_qos_update_request(ipw2100_pm_qos_req, 175);
+ 
+ 	/* If the interrupt is enabled, turn it off... */
+ 	spin_lock_irqsave(&priv->low_lock, flags);
+@@ -1887,8 +1889,7 @@ static void ipw2100_down(struct ipw2100_priv *priv)
+ 	ipw2100_disable_interrupts(priv);
+ 	spin_unlock_irqrestore(&priv->low_lock, flags);
+ 
+-	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
+-			PM_QOS_DEFAULT_VALUE);
++	pm_qos_update_request(ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
+ 
+ 	/* We have to signal any supplicant if we are disassociating */
+ 	if (associated)
+@@ -6669,7 +6670,7 @@ static int __init ipw2100_init(void)
+ 	if (ret)
+ 		goto out;
+ 
+-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
++	ipw2100_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+ 			PM_QOS_DEFAULT_VALUE);
+ #ifdef CONFIG_IPW2100_DEBUG
+ 	ipw2100_debug_level = debug;
+@@ -6692,7 +6693,7 @@ static void __exit ipw2100_exit(void)
+ 			   &driver_attr_debug_level);
+ #endif
+ 	pci_unregister_driver(&ipw2100_pci_driver);
+-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100");
++	pm_qos_remove_request(ipw2100_pm_qos_req);
+ }
+ 
+ module_init(ipw2100_init);
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 41812a1..671669c 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -489,7 +489,7 @@ void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency)
+ 		s32 beaconint_us;
+ 
+ 		if (latency < 0)
+-			latency = pm_qos_requirement(PM_QOS_NETWORK_LATENCY);
++			latency = pm_qos_request(PM_QOS_NETWORK_LATENCY);
+ 
+ 		beaconint_us = ieee80211_tu_to_usec(
+ 					found->vif.bss_conf.beacon_int);
 -- 
 1.6.3.3
 
