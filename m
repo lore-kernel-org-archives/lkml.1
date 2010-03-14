@@ -1,68 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932663Ab0CNQWC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 12:22:02 -0400
-Received: from mail-iw0-f176.google.com ([209.85.223.176]:61191 "EHLO
-	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758530Ab0CNQVx (ORCPT
+	id S1759522Ab0CNQu6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 12:50:58 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:50720 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759508Ab0CNQu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 12:21:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vCdT7YymbsU64giEKyYSzVwlBVyWorx0ngoJ7zQTqLmS0ud1vDA5vItXH4cLQDahTC
-         pCj/oLqulHptEXQcJmpeyj+yq7efe8majIzQDd4mqIAk2pBqPA6ahXppZCR0EfGlX2/1
-         0x1ebmuZhzqrcjmMWnSPA2dtm+rSsnZffCtWc=
-Message-ID: <4B9D0D1E.3010404@gmail.com>
-Date: Sun, 14 Mar 2010 10:21:50 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+	Sun, 14 Mar 2010 12:50:57 -0400
+Date: Sun, 14 Mar 2010 12:49:08 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: should new kfifo implementation really be exporting that much?
+In-Reply-To: <4B9D10D1.1060602@phoenixsoftware.de>
+Message-ID: <alpine.LFD.2.00.1003141244280.7806@localhost>
+References: <alpine.LFD.2.00.1003140929350.4644@localhost> <alpine.LFD.2.00.1003141053380.5987@localhost> <4B9D10D1.1060602@phoenixsoftware.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sys_umount() returns EBUSY when doing: sh -c "mount /dev/sdc1
- /mnt;  umount /mnt"
-References: <38b2ab8a1003130056u4b025839i556a797ccad894de@mail.gmail.com>
-In-Reply-To: <38b2ab8a1003130056u4b025839i556a797ccad894de@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/13/2010 02:56 AM, Francis Moreau wrote:
-> Hello
->
-> I've some shell scripts which try to find out the filesystem hosted by
-> a block device.
->
-> They basically do this:
->
->      mount /dev/sdc1 /mnt
->      fs=$(stat -f -c %T $mount_point)
->      umount /mnt
->
-> It happens to work but since an unknown upgrade (kernel, libs or tools
-> upgrade), umount(8) returns -EBUSY.
->
-> I found that it's actually the sys_umount() which return -EBUSY.
->
-> So the question, is this expected or is this a regression ?
->
-> If it's expected then which operation should I add between the
-> mount(8) and umount(8) to make the mount operation completely finish
-> (inside the kernel) so the next umount won't return -EBUSY ?
+On Sun, 14 Mar 2010, Tilman Schmidt wrote:
 
-If no other process were involved I would say it's likely a bug. 
-However, my guess is that some other process (HAL, something in GNOME, 
-etc.) detects the mount and decides to start accessing the drive. Then 
-when you immediately try to unmount, it fails because it's busy. I 
-suspect if you try this in single-user mode with no unnecessary 
-processes running you won't see this.
-
+> Am 14.03.2010 15:57 schrieb Robert P. J. Day:
+> >   as a short followup, kfifo.h strongly implies that a lot of the
+> > above shouldn't be exported:
+> >
+> > ...
+> > /*
+> >  * __kfifo_in_... internal functions for put date into the fifo
+> >  * do not call it directly, use kfifo_in_rec() instead
+> >  */
+> > ...
+> >
+> >   anyway, you get the idea.  it would seem that a lot of those EXPORTs
+> > should be removed, no?
 >
-> Oh I'm currently using the kernel shipped with F12: 2.6.32.9-67.fc12.x86_64
->
-> Thanks
+> If you look at kfifo_in_rec(), it's a static inline void function
+> defined in kfifo.h and which calls __kfifo_in_generic() or
+> __kfifo_in_rec(). I don't think you'll be able to make that work
+> without exporting those functions.
 
+  huh.  i believe you're correct.  i'll take a closer look but i still
+get this feeling that there's something ... messy about that API.
+case in point:  kfifo_in_rec() is *not* being exported, but a routine
+that it invokes -- __kfifo_in_generic() -- *is* being exported.
+doesn't that just seem a bit backwards?
+
+  anyway, off to the gym to bike and see which duke team shows up for
+georgia tech.
+
+rday
+--
+
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
