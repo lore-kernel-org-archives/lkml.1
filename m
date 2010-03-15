@@ -1,53 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309Ab0COKjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:39:37 -0400
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:41581 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173Ab0COKje (ORCPT
+	id S1756488Ab0COKlK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:41:10 -0400
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:34030 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173Ab0COKlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:39:34 -0400
+	Mon, 15 Mar 2010 06:41:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NHETrnmmepuhrWMk+UHcf0uyWG+BZVh0jqkH+p8VQ/tUtFuA72kcaMiJPNilh7rx4a
-         DqtwWEDno0AXe02Ci8eMQM9c1hZNPy7GrH5QObSs9FO4mIiU7++d71ZCmF/JHXHAv4Yl
-         WgEQyd2nLBz+7yLNAPUUuBPDprrXpN4HeGfLw=
-From: ruslanpisarev@gmail.com
-To: gregkh@suse.de
-Cc: andre@bitwigglers.org, eugeni@mandriva.com, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org, ruslan <ruslan@rpisarev.org.ua>
-Subject: [PATCH] Staging: asus_oled: fix spaces and TAB coding style issue in asus_oled.c
-Date: Mon, 15 Mar 2010 12:39:27 +0200
-Message-Id: <1268649567-14876-1-git-send-email-ruslan@rpisarev.org.ua>
-X-Mailer: git-send-email 1.6.3.3
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Nqk949N6VOO+/zUr8WkUcIFCVoUEpxSOrAS1l1JntS7iZ7FKgCsVvEpOQ7+sr8x2XW
+         z+uAKlwKxmkaCJyZ9+GhbQHfj8njh1c/m5Knn65fk+PdtNlECYbAt4XIr1mQtDez7ugx
+         ZE8xblY7QUJNMSMN+O+xz9MqYceFR05Deu9jU=
+Subject: Re: 2.6.34-rc1: rcu lockdep bug?
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       David Miller <davem@davemloft.net>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <2375c9f91003150312u37dfd70fk55a4b8820e13590e@mail.gmail.com>
+References: <20100311134556.GA6344@linux.vnet.ibm.com>
+	 <1268392276.3141.4.camel@edumazet-laptop>
+	 <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
+	 <1268401058.3141.9.camel@edumazet-laptop> <20100313053356.GC3704@hack>
+	 <20100313215838.GB6805@linux.vnet.ibm.com> <20100315010802.GB2735@hack>
+	 <2375c9f91003142010g61841666iad53c24f39036acf@mail.gmail.com>
+	 <2375c9f91003150239m1abc765bh59eb51c948eed592@mail.gmail.com>
+	 <1268647460.3154.1.camel@edumazet-laptop>
+	 <2375c9f91003150312u37dfd70fk55a4b8820e13590e@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Mar 2010 11:41:03 +0100
+Message-ID: <1268649663.3154.9.camel@edumazet-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ruslan <ruslan@rpisarev.org.ua>
+Le lundi 15 mars 2010 à 18:12 +0800, Américo Wang a écrit :
+> On Mon, Mar 15, 2010 at 6:04 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > Le lundi 15 mars 2010 à 17:39 +0800, Américo Wang a écrit :
+> >
+> >>
+> >> Ok, I think I found what lockdep really complains about, it is that we took
+> >> spin_lock in netpoll_poll_lock() which is in hardirq-enabled environment,
+> >> later, we took another spin_lock with spin_lock_irqsave() in netpoll_rx(),
+> >> so lockdep thought we broke the locking rule.
+> >>
+> >> I don't know why netpoll_rx() needs irq disabled, it looks like that no one
+> >> takes rx_lock in hardirq context. So can we use spin_lock(&rx_lock)
+> >> instead? Or am I missing something here? Eric? David?
+> >
+> > I am a bit lost.
+> >
+> > Could you give the complete picture, because I cannot find it in my
+> > netdev archives.
+> >
+> 
+> Sure, sorry for this.
+> 
+> Here is the whole thread:
+> 
+> http://lkml.org/lkml/2010/3/11/100
 
-This is a patch to the asus_oled.c file that fixed up a TAB and spaces
-Errors found by the checkpatch.pl tools
+OK thanks
 
-Signed-off-by: Ruslan Pisarev <ruslan@rpisarev.org.ua>
----
- drivers/staging/asus_oled/asus_oled.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+netpoll_rx() can be called from hard irqs (netif_rx()), so rx_lock
+definitly needs irq care.
 
-diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
-index 7ebecc9..9f12f08 100644
---- a/drivers/staging/asus_oled/asus_oled.c
-+++ b/drivers/staging/asus_oled/asus_oled.c
-@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
- };
- 
- static CLASS_ATTR_STRING(version, S_IRUGO,
--		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
-+		ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
- 
- static int __init asus_oled_init(void)
- {
--- 
-1.6.3.3
+netpoll_poll_lock() does take a spinlock with irq enabled, but its not
+rx_lock, its napi->poll_lock.
+
+I dont see what could be the problem, is it reproductible with vanilla
+kernel ?
+
 
