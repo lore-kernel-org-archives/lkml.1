@@ -1,80 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488Ab0COKlK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:41:10 -0400
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:34030 "EHLO
+	id S1756682Ab0COKph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:45:37 -0400
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:49746 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173Ab0COKlI (ORCPT
+	with ESMTP id S1756314Ab0COKpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:41:08 -0400
+	Mon, 15 Mar 2010 06:45:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Nqk949N6VOO+/zUr8WkUcIFCVoUEpxSOrAS1l1JntS7iZ7FKgCsVvEpOQ7+sr8x2XW
-         z+uAKlwKxmkaCJyZ9+GhbQHfj8njh1c/m5Knn65fk+PdtNlECYbAt4XIr1mQtDez7ugx
-         ZE8xblY7QUJNMSMN+O+xz9MqYceFR05Deu9jU=
-Subject: Re: 2.6.34-rc1: rcu lockdep bug?
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       David Miller <davem@davemloft.net>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <2375c9f91003150312u37dfd70fk55a4b8820e13590e@mail.gmail.com>
-References: <20100311134556.GA6344@linux.vnet.ibm.com>
-	 <1268392276.3141.4.camel@edumazet-laptop>
-	 <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
-	 <1268401058.3141.9.camel@edumazet-laptop> <20100313053356.GC3704@hack>
-	 <20100313215838.GB6805@linux.vnet.ibm.com> <20100315010802.GB2735@hack>
-	 <2375c9f91003142010g61841666iad53c24f39036acf@mail.gmail.com>
-	 <2375c9f91003150239m1abc765bh59eb51c948eed592@mail.gmail.com>
-	 <1268647460.3154.1.camel@edumazet-laptop>
-	 <2375c9f91003150312u37dfd70fk55a4b8820e13590e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Mar 2010 11:41:03 +0100
-Message-ID: <1268649663.3154.9.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=F7R8GzaDcyi6G+6gZOOSn3lP7Oj1Z0W9tXM6CFm341dS6JyHsFm2UTTmF0O73Lhe8e
+         LtPtw9KkAE+/xJopSY+mZiI68KKI073fdjpBCcTRz/shcBCPa/kcmzPjgqz9TEMRH4Ma
+         O+wBqIcz8OQ7ijbxzn+THrXqbQ434IUaDa07o=
+Date: Mon, 15 Mar 2010 13:45:23 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: bug list: range checking issues 2.6.34-rc1
+Message-ID: <20100315101146.GL18181@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <201003151002.18928.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <201003151002.18928.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 15 mars 2010 à 18:12 +0800, Américo Wang a écrit :
-> On Mon, Mar 15, 2010 at 6:04 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > Le lundi 15 mars 2010 à 17:39 +0800, Américo Wang a écrit :
-> >
-> >>
-> >> Ok, I think I found what lockdep really complains about, it is that we took
-> >> spin_lock in netpoll_poll_lock() which is in hardirq-enabled environment,
-> >> later, we took another spin_lock with spin_lock_irqsave() in netpoll_rx(),
-> >> so lockdep thought we broke the locking rule.
-> >>
-> >> I don't know why netpoll_rx() needs irq disabled, it looks like that no one
-> >> takes rx_lock in hardirq context. So can we use spin_lock(&rx_lock)
-> >> instead? Or am I missing something here? Eric? David?
-> >
-> > I am a bit lost.
-> >
-> > Could you give the complete picture, because I cannot find it in my
-> > netdev archives.
-> >
+On Mon, Mar 15, 2010 at 10:02:18AM +0100, Toralf F�rster wrote:
+> Hello,
 > 
-> Sure, sorry for this.
+> I'm wondering about these entries :
 > 
-> Here is the whole thread:
+
+No problem, I'm happy to explain.
+
+> drivers/infiniband/core/user_mad.c +646 ib_umad_reg_agent() 'umm' 4 <= 6
+   641                          u32 *umm = (u32 *) ureq.method_mask;
+   642                          int i;
+   643  
+   644                          for (i = 0; i < BITS_TO_LONGS(IB_MGMT_MAX_METHODS); ++i)
+   645                                  req.method_mask[i] =
+   646                                          umm[i * 2] | ((u64) umm[i * 2 + 1] << 32);
+"umm" points to a array with 4 elements.
+i can be 0 to 3, so "i * 2" goes up to 6
+And 4 <= 6 so it's a problem.
+Smatch also complained about "i * 2 + 1" but I didn't include that. 
+
+> drivers/media/dvb/frontends/cx24110.c +210 cx24110_set_fec() 'rate' 7 <= 8
+   184          static const int rate[]={-1,1,2,3,5,7,-1};
+	[snip]
+   192          if (fec>FEC_AUTO)
+   193                  fec=FEC_AUTO;
+   194  
+   195          if (fec==FEC_AUTO) { /* (re-)establish AutoAcq behaviour */
+	[snip]
+   207          } else {
+   208                  cx24110_writereg(state,0x37,cx24110_readreg(state,0x37)|0x20);
+   209                  /* set AcqVitDis bit */
+   210                  if(rate[fec]>0) {
+"rate" has 7 elements.  FEC_AUTO - 1 is 8.  7 <= 8.
+
+> drivers/video/cyber2000fb.c +330 cyber2000fb_setcolreg() 'cfb->palette' 256 <= 504
+   316                  if (var->green.length == 6 && regno < 64) {
+   317                          cfb->palette[regno << 2].green = green;
+	[snip]
+   330                          green = cfb->palette[regno << 3].green;
+"cfb->palette" is an array with 256 elements.  "regno" can be 63.  
+63 << 3 is 504.
+
+> sound/drivers/opl3/opl3_midi.c +652 snd_opl3_kill_voice() 'opl3->voices' 18 <= 20
+   626          if (snd_BUG_ON(voice >= MAX_OPL3_VOICES))
+   627                  return;
+	[snip]
+   651          if (vp->state == SNDRV_OPL3_ST_ON_4OP) {
+   652                  vp2 = &opl3->voices[voice + 3];
+"opl3->voices" has 18 elements.  "voice" can be 17.  17 + 3 is 20.
+
+> sound/i2c/other/ak4113.c +94 snd_ak4113_create() 'pgm' 5 <= 6
+    93          for (reg = 0; reg < AK4113_WRITABLE_REGS ; reg++)
+    94                  chip->regmap[reg] = pgm[reg];
+"pgm" has 5 elements.  AK4113_WRITABLE_REGS is 7.
+
+> sound/soc/codecs/wm8994.c +1703 wm8994_write() 'wm8994->reg_cache' 1570 <=  12799
+  1700          BUG_ON(reg > WM8994_MAX_REGISTER);
+  1701  
+  1702          if (!wm8994_volatile(reg))
+  1703                  wm8994->reg_cache[reg] = value;
+"wm8994->reg_cache" has 1570 elements.  WM8994_MAX_REGISTER is 12799.
+
+Obviously that last one is not the most serious bug in the world...
+
+regards,
+dan carpenter
+
 > 
-> http://lkml.org/lkml/2010/3/11/100
-
-OK thanks
-
-netpoll_rx() can be called from hard irqs (netif_rx()), so rx_lock
-definitly needs irq care.
-
-netpoll_poll_lock() does take a spinlock with irq enabled, but its not
-rx_lock, its napi->poll_lock.
-
-I dont see what could be the problem, is it reproductible with vanilla
-kernel ?
-
-
+> b/c the range end shouldn't be reached, or ?
+> 
+> -- 
+> MfG/Sincerely
+> Toralf F�rster
+> 
+> pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
