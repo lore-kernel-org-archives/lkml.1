@@ -1,97 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934789Ab0COA2P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 20:28:15 -0400
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:61080 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284Ab0COA2J convert rfc822-to-8bit (ORCPT
+	id S934904Ab0COAc4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 20:32:56 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58935 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934836Ab0COAcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 20:28:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GBXxhZGdDGD0x5A0Lo+l175IBlN8y0JZWHaKBGFhNOT9IYpHgyY82afaquqjFS6u1z
-         1+XPBM/0xCpDwI+k/G2Ti353VRFNXCWZAelQEaeeDXoiNOCc6roowiB3WzGqYyxDwgUa
-         CKESJog2unxviowYtnCZuCrpmLijmu4tOfTy0=
-MIME-Version: 1.0
-In-Reply-To: <1268412087-13536-3-git-send-email-mel@csn.ul.ie>
-References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
-	 <1268412087-13536-3-git-send-email-mel@csn.ul.ie>
-Date: Mon, 15 Mar 2010 09:28:08 +0900
-Message-ID: <28c262361003141728g4aa40901hb040144c5a4aeeed@mail.gmail.com>
-Subject: Re: [PATCH 02/11] mm,migration: Do not try to migrate unmapped 
-	anonymous pages
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 14 Mar 2010 20:32:50 -0400
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Grant Likely <grant.likely@secretlab.ca>, kernel-janitors@vger.kernel.org,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>, linux-mips@linux-mips.org,
+       rtc-linux@googlegroups.com
+Date: Mon, 15 Mar 2010 01:29:41 +0100
+Message-Id: <1268612981-9009-1-git-send-email-w.sang@pengutronix.de>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org>
+References: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org>
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+Subject: [PATCH] init dynamic bin_attribute structures
+X-SA-Exim-Version: 4.2.1 (built Sat, 01 Aug 2009 12:09:26 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Mel.
-On Sat, Mar 13, 2010 at 1:41 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> rmap_walk_anon() was triggering errors in memory compaction that looks like
-> use-after-free errors in anon_vma. The problem appears to be that between
-> the page being isolated from the LRU and rcu_read_lock() being taken, the
-> mapcount of the page dropped to 0 and the anon_vma was freed. This patch
-> skips the migration of anon pages that are not mapped by anyone.
->
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> ---
->  mm/migrate.c |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
->
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index 98eaaf2..3c491e3 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -602,6 +602,16 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
->         * just care Anon page here.
->         */
->        if (PageAnon(page)) {
-> +               /*
-> +                * If the page has no mappings any more, just bail. An
-> +                * unmapped anon page is likely to be freed soon but worse,
-> +                * it's possible its anon_vma disappeared between when
-> +                * the page was isolated and when we reached here while
-> +                * the RCU lock was not held
-> +                */
-> +               if (!page_mapcount(page))
+Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requirement.
+First, at25 was fixed manually. Then, other occurences were found with
+coccinelle and the following semantic patch. Results were reviewed and fixed
+up:
 
-As looking code about mapcount of page, I got confused.
-I think mapcount of page is protected by pte lock.
-But I can't find pte lock in unmap_and_move.
-If I am right, what protects race between this condition check and
-rcu_read_lock?
-This patch makes race window very small but It can't remove race totally.
+@ init @
+identifier struct_name, bin;
+@@
 
-I think I am missing something.
-Pz, point me out. :)
+	struct struct_name {
+		...
+		struct bin_attribute bin;
+		...
+	};
 
+@ main extends init @
+expression E;
+statement S;
+identifier name, err;
+@@
 
-> +                       goto uncharge;
-> +
->                rcu_read_lock();
->                rcu_locked = 1;
->                anon_vma = page_anon_vma(page);
-> --
-> 1.6.5
->
+(
+	struct struct_name *name;
+|
+-	struct struct_name *name = NULL;
++	struct struct_name *name;
+)
+	...
+(
+	sysfs_bin_attr_init(&name->bin);
+|
++	sysfs_bin_attr_init(&name->bin);
+	if (sysfs_create_bin_file(E, &name->bin))
+		S
+|
++	sysfs_bin_attr_init(&name->bin);
+	err = sysfs_create_bin_file(E, &name->bin);
+)
 
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ arch/mips/txx9/generic/setup.c |    1 +
+ drivers/misc/eeprom/at25.c     |    1 +
+ drivers/rtc/rtc-ds1742.c       |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
 
-
-
+diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
+index 7174d83..95184a0 100644
+--- a/arch/mips/txx9/generic/setup.c
++++ b/arch/mips/txx9/generic/setup.c
+@@ -956,6 +956,7 @@ void __init txx9_sramc_init(struct resource *r)
+ 	if (!dev->base)
+ 		goto exit;
+ 	dev->dev.cls = &txx9_sramc_sysdev_class;
++	sysfs_bin_attr_init(&dev->bindata_attr);
+ 	dev->bindata_attr.attr.name = "bindata";
+ 	dev->bindata_attr.attr.mode = S_IRUSR | S_IWUSR;
+ 	dev->bindata_attr.read = txx9_sram_read;
+diff --git a/drivers/misc/eeprom/at25.c b/drivers/misc/eeprom/at25.c
+index d902d81..d194212 100644
+--- a/drivers/misc/eeprom/at25.c
++++ b/drivers/misc/eeprom/at25.c
+@@ -347,6 +347,7 @@ static int at25_probe(struct spi_device *spi)
+ 	 * that's sensitive for read and/or write, like ethernet addresses,
+ 	 * security codes, board-specific manufacturing calibrations, etc.
+ 	 */
++	sysfs_bin_attr_init(&at25->bin);
+ 	at25->bin.attr.name = "eeprom";
+ 	at25->bin.attr.mode = S_IRUSR;
+ 	at25->bin.read = at25_bin_read;
+diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
+index a127336..cad9ceb 100644
+--- a/drivers/rtc/rtc-ds1742.c
++++ b/drivers/rtc/rtc-ds1742.c
+@@ -184,6 +184,7 @@ static int __devinit ds1742_rtc_probe(struct platform_device *pdev)
+ 	pdata->size_nvram = pdata->size - RTC_SIZE;
+ 	pdata->ioaddr_rtc = ioaddr + pdata->size_nvram;
+ 
++	sysfs_bin_attr_init(&pdata->nvram_attr);
+ 	pdata->nvram_attr.attr.name = "nvram";
+ 	pdata->nvram_attr.attr.mode = S_IRUGO | S_IWUSR;
+ 	pdata->nvram_attr.read = ds1742_nvram_read;
 -- 
-Kind regards,
-Minchan Kim
+1.7.0
+
