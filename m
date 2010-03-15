@@ -1,58 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747Ab0COBpN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 21:45:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58829 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000Ab0COBpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 21:45:08 -0400
-Message-ID: <4B9D915A.6080101@cn.fujitsu.com>
-Date: Mon, 15 Mar 2010 09:46:02 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S1755190Ab0COBqN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 21:46:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:36237 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000Ab0COBqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 21:46:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,639,1262592000"; 
+   d="scan'208";a="604362567"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Xen-devel] [PATCH][v9 4/6] xen/hvm: Xen PV extension of HVM initialization
+Date: Mon, 15 Mar 2010 09:45:09 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-20-generic; KDE/4.3.2; x86_64; ; )
+Cc: "xen-devel" <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       linux-kernel@vger.kernel.org, Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+References: <1268362647-5317-1-git-send-email-sheng@linux.intel.com> <1268362647-5317-5-git-send-email-sheng@linux.intel.com> <4B9AA5A9.20609@goop.org>
+In-Reply-To: <4B9AA5A9.20609@goop.org>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>	 <1267710847.10871.102.camel@gandalf.stny.rr.com>	 <2375c9f91003042014y17588865g8f9110e666ac2456@mail.gmail.com>	 <2375c9f91003042316g6e774d60n90dfc4784d3b66bf@mail.gmail.com>	 <1267801603.10871.1725.camel@gandalf.stny.rr.com>	 <20100305171614.GC5244@nowhere>  <4B94A816.4090608@cn.fujitsu.com>	 <1268061312.10871.1810.camel@gandalf.stny.rr.com>	 <4B95AE4E.6060700@cn.fujitsu.com>	 <1268101394.10871.1861.camel@gandalf.stny.rr.com>	 <4B95C2AF.7010508@cn.fujitsu.com>	 <1268446049.4471.787.camel@gandalf.stny.rr.com> <1268502976.4471.798.camel@gandalf.stny.rr.com>
-In-Reply-To: <1268502976.4471.798.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003150945.09548.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 2010-03-12 at 21:07 -0500, Steven Rostedt wrote:
->> On Tue, 2010-03-09 at 11:38 +0800, Li Zefan wrote:
->>
->>> The segfault is from userspace. This is a segfault I just got:
->>>
->>> ftrace_stack_ma[14989]: segfault at fe2e ip 00000000004474c0 sp 00007fffb97e38c0 error 4 in bash[400000+d1000]
->> Li and Lai,
->>
->> Thanks a lot for reporting all this, and writing the ftrace_stress_test.
->> I've fixed all the bugs that it has reported (to my knowledge) and after
->> a little more testing I will soon be sending a patch series out.
+On Saturday 13 March 2010 04:35:53 Jeremy Fitzhardinge wrote:
+> On 03/11/2010 06:57 PM, Sheng Yang wrote:
+> > The PV extended HVM(once known as Hybrid) is started from real mode like
+> > HVM guest, but also with a component based PV feature selection(e.g. PV
+> > halt, PV timer, event channel, then PV drivers). So guest can takes the
+> > advantages of both H/W virtualization and Para-Virtualization.
+> >
+> > This patch introduced the PV extension of HVM guest initialization.
+> >
+> > Guest would detect the capability using CPUID 0x40000002.edx, then call
+> > HVMOP_enable_pv hypercall to enable pv support in hypervisor.
+> >
+> > Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> > Signed-off-by: Yaozu (Eddie) Dong<eddie.dong@intel.com>
+> > ---
+> >   arch/x86/include/asm/xen/cpuid.h      |    5 +
+> >   arch/x86/include/asm/xen/hypervisor.h |   12 +++
+> >   arch/x86/xen/Kconfig                  |    4 +
+> >   arch/x86/xen/Makefile                 |    1 +
+> >   arch/x86/xen/hvmpv.c                  |  135
+> > +++++++++++++++++++++++++++++++++ include/xen/interface/hvm/hvm_op.h    |
+> >    8 ++
+> >   6 files changed, 165 insertions(+), 0 deletions(-)
+> >   create mode 100644 arch/x86/xen/hvmpv.c
+> >
+> > diff --git a/arch/x86/include/asm/xen/cpuid.h
+> > b/arch/x86/include/asm/xen/cpuid.h index 8787f03..b3a0b3a 100644
+> > --- a/arch/x86/include/asm/xen/cpuid.h
+> > +++ b/arch/x86/include/asm/xen/cpuid.h
+> > @@ -65,4 +65,9 @@
+> >   #define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
+> >   #define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
+> >
+> > +#define _XEN_CPUID_FEAT2_HVM_PV 0
+> > +#define XEN_CPUID_FEAT2_HVM_PV (1u<<0)
+> > +#define _XEN_CPUID_FEAT2_HVM_PV_CLOCK 1
+> > +#define XEN_CPUID_FEAT2_HVM_PV_CLOCK (1u<<1)
+> > +
+> >   #endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
+> > diff --git a/arch/x86/include/asm/xen/hypervisor.h
+> > b/arch/x86/include/asm/xen/hypervisor.h index d5b7e90..7569f64 100644
+> > --- a/arch/x86/include/asm/xen/hypervisor.h
+> > +++ b/arch/x86/include/asm/xen/hypervisor.h
+> > @@ -55,6 +55,18 @@ extern enum xen_domain_type xen_domain_type;
+> >   #define xen_hvm_domain()	(xen_domain()&&			\
+> >   				 xen_domain_type == XEN_HVM_DOMAIN)
+> >
+> > +#ifdef CONFIG_XEN_HVM_PV
+> > +
+> > +#define XEN_HVM_PV_CLOCK_ENABLED   (1u<<  0)
 > 
-> Li,
-> 
-> I ran your test for 13 hours on three different machines. I did not hit
-> any more errors. Although I see a lockdep warning (not a locking problem
-> but the WARN_ON in fork.c is triggering). I'll look into that on Monday.
-> 
+> Why is this flag needed?  As far as I understand it, there's no real
+> underlying hypervisor change needed to make HVM access to pv clock
+> possible; its just a field in the shared_info's vcpu struct after all.
+> Even if you enable this feature unconditionally, the user can still
+> control whether the Xen clocksource is used with the "clocksource="
+> kernel command-line parameter.
 
-As I said in the offline mail, this warning is caused by global trace_clock,
-and I sent a fix sometime ago:
+But we should make sure Xen have ability to support such kind of operation. 
+The CPUID would show if Xen have such ability, and if it does, the feature 
+would be enabled unconditionally. Guest kernel always enable all features it 
+can do unconditionally, but Xen should offer the support for them.
+ 
+> Also, there's nothing about this which is 64-bit specific is there?
 
-http://lkml.org/lkml/2009/12/21/4
+64 bit things are mostly evtchn/interrupt related. I think no such limit here. 
+But I think it's better to do it step by step, so leave it after evtchn 
+solution settled.
 
-> Please take the new patches that Ingo just pushed to Linus, if you find
-> any more bugs, please let me know right away.
-> 
-
-Thanks for the fixes!
-
+-- 
+regards
+Yang, Sheng
