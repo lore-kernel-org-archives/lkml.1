@@ -1,78 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936267Ab0CONGg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 09:06:36 -0400
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:44945 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934247Ab0CONGe (ORCPT
+	id S964888Ab0CONQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 09:16:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:32144 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964844Ab0CONQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 09:06:34 -0400
+	Mon, 15 Mar 2010 09:16:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=htQ+0mSUNowen2SPTNM0fl8hcE4CJR13eZChsM9vkJzrINFBze4FIa07m6z8Ogdp+H
-         f/qJ9tnoPxKv/3SiPz8Ap1Yd5L5jue53yy7KzOdm6Z5q+njYb1QHT6KXRt2P1u6R4Mh+
-         lc8HeKYj3lD+AGHxEuVzFgtva/6KB9hM0PQ+w=
-Message-ID: <4B9E30D5.2030001@garzik.org>
-Date: Mon, 15 Mar 2010 09:06:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Zeno Davatz <zdavatz@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [git patches] libata updates for 2.6.34
-References: <20100301202330.GA14977@havoc.gtf.org>	 <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org>	 <4B96C7B2.3080008@garzik.org> <4B971F83.4030505@kernel.org>	 <4B9DA1BB.9010808@garzik.org> <40a4ed591003150033w5c416b28rfae989fa2ddf7305@mail.gmail.com>
-In-Reply-To: <40a4ed591003150033w5c416b28rfae989fa2ddf7305@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=pF9f5DklE9jZCXsxvfI07uVJGWFy22ZxpJ0+xqwEVnbRFbqlL9RFlqrTpjZjsNQwb1
+         qSTsD7e/LTchVLSslGCJ0LkZUxm1K8Sa0UgrbIFt6pi/5ANZgUPgAVbBgfdhA4LjAjQ0
+         lhKLIad3NbRoF3iMVM7WeBlMeydI0FQ5f9E60=
+Subject: [PATCH] mm: remove return value of putback_lru_pages
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Mar 2010 22:16:34 +0900
+Message-ID: <1268658994.1889.8.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/15/2010 03:33 AM, Zeno Davatz wrote:
-> On Mon, Mar 15, 2010 at 3:55 AM, Jeff Garzik<jeff@garzik.org>  wrote:
->> On 03/09/2010 11:26 PM, Tejun Heo wrote:
->>>
->>> Hello, Linus, Jeff.
->>>
->>> On 03/10/2010 07:12 AM, Jeff Garzik wrote:
->>>>
->>>> Coincedentally, it looks like someone else just reported the same
->>>> problem, with 2.6.34-rc1.
->>>>
->>>> It definitely sounds like a race.  READ DMA is a DMA command as the name
->>>> implies, so that eliminates the possibility of polling-related paths in
->>>> ata_sff_interrupt (libata-sff.c).
->>>>
->>>> I'll flip some of my machines to the icky slow boring piix mode, rather
->>>> than sexy AHCI mode :) to see if I can reproduce.  I have had a feeling
->>>> that we needed a more sophisticated IRQ handling setup, this may be what
->>>> was needed.  Lost interrupt recovery should occur faster than 30 seconds
->>>> in any case, and should not require a hard reset if the hardware
->>>> functions just fine outside of the lost-interrupt / race that just
->>>> occurred.
->>>
->>> Yeap, there is a race condition with clearing which I don't think we
->>> can solve completely but with some modification I think we can at
->>> least cover known failure cases.
->>>
->>> For longer term, I don't think we can solve this by diddling with the
->>> SFF registers.  The interface is just way too ancient and horrid to
->>> build anything reliable on top of.  I'm planning on implementing
->>> smarter IRQ storm handling and stepped timeouts for ATA commands.
->>
->> A tester on this bug
->>         http://bugzilla.kernel.org/show_bug.cgi?id=15537
->> seemed to find success with the patch.
->
-> Thanks for the Update!
->
-> I will wait some more and then test rc-2.
 
-Can you test the patch, please?
+Now putback_lru_page never can fail.
+So it doesn't matter count of "the number of pages put back".
 
-	Jeff
+In addition, users of this functions don't use return value.
 
+Let's remove unnecessary code.
+
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+---
+ include/linux/migrate.h |    4 ++--
+ mm/migrate.c            |    7 +------
+ 2 files changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+index 7f085c9..7a07b17 100644
+--- a/include/linux/migrate.h
++++ b/include/linux/migrate.h
+@@ -9,7 +9,7 @@ typedef struct page *new_page_t(struct page *, unsigned long private, int **);
+ #ifdef CONFIG_MIGRATION
+ #define PAGE_MIGRATION 1
+ 
+-extern int putback_lru_pages(struct list_head *l);
++extern void putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+ 			struct page *, struct page *);
+ extern int migrate_pages(struct list_head *l, new_page_t x,
+@@ -25,7 +25,7 @@ extern int migrate_vmas(struct mm_struct *mm,
+ #else
+ #define PAGE_MIGRATION 0
+ 
+-static inline int putback_lru_pages(struct list_head *l) { return 0; }
++static inline void putback_lru_pages(struct list_head *l) {}
+ static inline int migrate_pages(struct list_head *l, new_page_t x,
+ 		unsigned long private, int offlining) { return -ENOSYS; }
+ 
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 88000b8..6903abf 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -57,23 +57,18 @@ int migrate_prep(void)
+ /*
+  * Add isolated pages on the list back to the LRU under page lock
+  * to avoid leaking evictable pages back onto unevictable list.
+- *
+- * returns the number of pages put back.
+  */
+-int putback_lru_pages(struct list_head *l)
++void putback_lru_pages(struct list_head *l)
+ {
+ 	struct page *page;
+ 	struct page *page2;
+-	int count = 0;
+ 
+ 	list_for_each_entry_safe(page, page2, l, lru) {
+ 		list_del(&page->lru);
+ 		dec_zone_page_state(page, NR_ISOLATED_ANON +
+ 				page_is_file_cache(page));
+ 		putback_lru_page(page);
+-		count++;
+ 	}
+-	return count;
+ }
+ 
+ /*
+-- 
+1.6.5
+
+
+
+-- 
+Kind regards,
+Minchan Kim
 
 
