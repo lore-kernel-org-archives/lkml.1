@@ -1,178 +1,327 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934934Ab0COAtK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 20:49:10 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49978 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934529Ab0COAtB (ORCPT
+	id S935016Ab0COA4L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 20:56:11 -0400
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:45347 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934806Ab0COA4E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 20:49:01 -0400
-Date: Mon, 15 Mar 2010 01:48:50 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>, Larry Finger <Larry.Finger@lwfinger.net>,
-       WANG Cong <xiyou.wangcong@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>,
-       Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH] base firmware: Fix BUG from sysfs attributes change in
-	commit a2db6842873c8e5a70652f278d469128cb52db70
-Message-ID: <20100315004850.GB28894@pengutronix.de>
-References: <4b9be956.x5+yAHXGDfXer810%Larry.Finger@lwfinger.net> <alpine.LFD.2.00.1003131426480.3719@i5.linux-foundation.org> <alpine.LRH.2.00.1003132336380.12517@twin.jikos.cz> <alpine.LFD.2.00.1003131455420.3719@i5.linux-foundation.org> <m1fx43zhbd.fsf@fess.ebiederm.org> <loom.20100314T113306-436@post.gmane.org> <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org> <m1fx42yb3s.fsf@fess.ebiederm.org>
+	Sun, 14 Mar 2010 20:56:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YGpHbkYnY/DwftrzhqLVoGxcxmEzvlaz5AKSnLwmfw/0e4oOncJveJof4ZYHMXA8Cf
+         iEL3Gxf19zkGfEV8OSAjNx5pGqj4Z/otZH0TEabhyyCzQdrzZ/jgUcHrWOzgpxjsvUtt
+         /rKKHMcVy4fdK20wLw83skMjTtmR13glUXbHk=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VrqPEDrXMn8OVzN4"
-Content-Disposition: inline
-In-Reply-To: <m1fx42yb3s.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <4B8BE489.7020402@codeaurora.org>
+References: <4B8BE42C.1090401@codeaurora.org> <4B8BE489.7020402@codeaurora.org>
+Date: Mon, 15 Mar 2010 10:56:02 +1000
+Message-ID: <21d7e9971003141756l51d9e971x83b8b8cfbb0de25@mail.gmail.com>
+Subject: Re: [PATCH] drm: Allow platform devices to register as DRM devices
+From: Dave Airlie <airlied@gmail.com>
+To: Jordan Crouse <jcrouse@codeaurora.org>
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 2, 2010 at 2:00 AM, Jordan Crouse <jcrouse@codeaurora.org> wrote:
+>
+> Allow platform devices without PCI resources to be DRM devices.
+>
+> Signed-off-by: Jordan Crouse <jcrouse@codeaurora.org>
 
---VrqPEDrXMn8OVzN4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch has a bunch of whitespace damage at least in my inbox and
+also in patchwork
 
-On Sun, Mar 14, 2010 at 12:08:55PM -0700, Eric W. Biederman wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
->=20
-> > On Sun, 14 Mar 2010, Wolfram Sang wrote:
-> >>
-> >> coccinelle can apply semantic patches, rough description here [1]. So =
-I wrote
-> >> one which checks for every c-file in the kernel-tree:
-> >>
-> >> - Is there a structure containing (bin_)attribute?
-> >> - Does a function declare a pointer to such a structure?
-> >> - Is this pointer then used for a sysfs_create(_bin)_file?
-> >> - If so, has there been a call to sysfs(_bin)_attr_init before?
-> >>
-> >> If not -> report. As coccinelle works on an abstract level of the code=
- (not on
-> >> source-code level), it can follow code-paths and such. Really nice too=
-l, once
-> >> you gathered the information to learn it.
->=20
-> Any chance you can post the semantic patch?  If it isn't too hard it
-> would be nice to have the warm fuzzy of running it myself and seeing
-> that there are no more of these left in the kernel.
+Please also be careful with the places you add copyrights, you moved a
+bunch of code
+from drm_drv.c to drm_pci.c and added a copyright for Code Aurora in
+drm_pci.c? You can
+only assert copyright if you actually wrote the code, otherwise the patch
+contains your authorship details and who contributed the code. I'm
+guessing you might have
+copyright over one file in this that being drm_platform.c, the rest
+I'm less sure about.
 
-(Strange, I sent an introductory message to the series:
+I also wonder if we could/should separate the arm drm support out from
+this patch (i.e.
+the __arm__ changes).
 
-http://kerneltrap.org/mailarchive/linux-kernel-janitors/2010/3/12/6848563
+Some other misc comments below:
 
-But it doesn't show up in the gmane-archives? And I just learned that CCs a=
-dded
-while editing the introductory message will be dropped by git-send-email. T=
-his
-is why it isn't on lkml. I have to fix that next time.)
+>  #
+>  menuconfig DRM
+>        tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI
+> support)"
+> -       depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG && MMU
 
-Sure, reviewing is very welcome. I am still new to the semantic patches, so=
- a
-double check is surely helpful (also adding Julia Lawall to cc, grand maste=
-r of
-this topic).
+>From what I can see the AGP || AGP==n is still required, you just want
+to drop the PCI
+dependancy??
 
-Here is the patch again for the binary-attributes (I recommend coccinelle
-v0.2.2. Run it with 'spatch -sp_file <name> .' form kernel-top-level-dir):
+> +       depends on !EMULATED_CMPXCHG && MMU
+>
+> diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
+> index 8417cc4..4177f60 100644
+> --- a/drivers/gpu/drm/drm_bufs.c
+> +++ b/drivers/gpu/drm/drm_bufs.c
+> @@ -11,6 +11,7 @@
+>  *
+>  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+>  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
+> + * Copyright (c) 2009, Code Aurora Forum.
+>  * All Rights Reserved.
 
-@ init @
-identifier struct_name, bin;
-@@
+There have been much bigger changes to these files without copyright
+additions, I'm not sure how big something needs to be but I'm not 100% sure
+this comes close.
 
-        struct struct_name {
-                ...
-                struct bin_attribute bin;
-                ...
-        };
+>
+>  resource_size_t drm_get_resource_start(struct drm_device *dev, unsigned int
+> resource)
+>  {
+> +       if (drm_core_check_feature(dev, DRIVER_USE_PLATFORM_DEVICE)) {
+> +               struct resource *r;
+> +               r = platform_get_resource(dev->platformdev, IORESOURCE_MEM,
+> +                                            resource);
+> +
+> +               return r ? r->start : 0;
+> +       }
+> +
+> +#ifdef CONFIG_PCI
+>        return pci_resource_start(dev->pdev, resource);
+> +#endif
+> +
+> +       return 0;
+>  }
+>  EXPORT_SYMBOL(drm_get_resource_start);
+>
+>  resource_size_t drm_get_resource_len(struct drm_device *dev, unsigned int
+> resource)
+>  {
+> +       if (drm_core_check_feature(dev, DRIVER_USE_PLATFORM_DEVICE)) {
+> +               struct resource *r;
+> +               r = platform_get_resource(dev->platformdev, IORESOURCE_MEM,
+> +                       resource);
+> +
+> +               return r ? (r->end - r->start) : 0;
+> +       }
+> +
+> +#ifdef CONFIG_PCI
+>        return pci_resource_len(dev->pdev, resource);
+> +#endif
+> +
+> +       return 0;
+>  }
+>
+>  EXPORT_SYMBOL(drm_get_resource_len);
+> @@ -188,7 +213,7 @@ static int drm_addmap_core(struct drm_device * dev,
+> resource_size_t offset,
+>        switch (map->type) {
+>        case _DRM_REGISTERS:
+>        case _DRM_FRAME_BUFFER:
+> -#if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__) &&
+> !defined(__powerpc64__) && !defined(__x86_64__)
+> +#if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__) &&
+> !defined(__powerpc64__) && !defined(__x86_64__) && !defined(__arm__)
+>                if (map->offset + (map->size-1) < map->offset ||
+>                    map->offset < virt_to_phys(high_memory)) {
+>                        kfree(map);
 
-@ main extends init @
-expression E;
-statement S;
-identifier name, err;
-@@
+> diff --git a/drivers/gpu/drm/drm_drv.c b/drivers/gpu/drm/drm_drv.c
+> index 766c468..b5171ed 100644
+> --- a/drivers/gpu/drm/drm_drv.c
+> +++ b/drivers/gpu/drm/drm_drv.c
+> @@ -24,6 +24,7 @@
+>  *
+>  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
+>  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
+> + * Copyright (c) 2009, Code Aurora Forum.
+>  * All Rights Reserved.
 
-(
-        struct struct_name *name;
-|
--       struct struct_name *name =3D NULL;
-+       struct struct_name *name;
-)
-        ...
-(
-        sysfs_bin_attr_init(&name->bin);
-|
-+       sysfs_bin_attr_init(&name->bin);
-        if (sysfs_create_bin_file(E, &name->bin))
-                S
-|
-+       sysfs_bin_attr_init(&name->bin);
-        err =3D sysfs_create_bin_file(E, &name->bin);
-)
+again similiar, but even less code since you mostly remove code.
+
+>  *
+>  * Permission is hereby granted, free of charge, to any person obtaining a
+> @@ -242,47 +243,20 @@ int drm_lastclose(struct drm_device * dev)
+>  *
+>  * Initializes an array of drm_device structures, and attempts to
+>  * initialize all available devices, using consecutive minors, registering
+> the
+> - * stubs and initializing the AGP device.
+> + * stubs and initializing the device.
+>  *
+>  * Expands the \c DRIVER_PREINIT and \c DRIVER_POST_INIT macros before and
+>  * after the initialization for driver customization.
+>  */
+>  int drm_init(struct drm_driver *driver)
+>  {
+> -       struct pci_dev *pdev = NULL;
+> -       const struct pci_device_id *pid;
+> -       int i;
+> -
+>        DRM_DEBUG("\n");
+> -
+>        INIT_LIST_HEAD(&driver->device_list);
+>
+> -       if (driver->driver_features & DRIVER_MODESET)
+> -               return pci_register_driver(&driver->pci_driver);
+> -
+> -       /* If not using KMS, fall back to stealth mode manual scanning. */
+> -       for (i = 0; driver->pci_driver.id_table[i].vendor != 0; i++) {
+> -               pid = &driver->pci_driver.id_table[i];
+> -
+> -               /* Loop around setting up a DRM device for each PCI device
+> -                * matching our ID and device class.  If we had the internal
+> -                * function that pci_get_subsys and pci_get_class used, we'd
+> -                * be able to just pass pid in instead of doing a two-stage
+> -                * thing.
+> -                */
+> -               pdev = NULL;
+> -               while ((pdev =
+> -                       pci_get_subsys(pid->vendor, pid->device,
+> pid->subvendor,
+> -                                      pid->subdevice, pdev)) != NULL) {
+> -                       if ((pdev->class & pid->class_mask) != pid->class)
+> -                               continue;
+> -
+> -                       /* stealth mode requires a manual probe */
+> -                       pci_dev_get(pdev);
+> -                       drm_get_dev(pdev, pid, driver);
+> -               }
+> -       }
+> -       return 0;
+> +       if (driver->driver_features & DRIVER_USE_PLATFORM_DEVICE)
+> +               return drm_platform_init(driver);
+> +       else
+> +               return drm_pci_init(driver);
+>  }
+>
+>  EXPORT_SYMBOL(drm_init);
+> diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+> index ab6c973..48a14a0 100644
+> --- a/drivers/gpu/drm/drm_edid.c
+> +++ b/drivers/gpu/drm/drm_edid.c
+> @@ -1220,6 +1220,9 @@ struct edid *drm_get_edid(struct drm_connector
+> *connector,
+>        int ret;
+>        struct edid *edid;
+>
+> +       if (drm_core_check_feature(connector->dev,
+> DRIVER_USE_PLATFORM_DEVICE))
+> +               return NULL;
+> +
 
 
-Here is my patch for the non-binary-attributes:
+This makes no sense, having the ability to probe EDID or not is most
+definitely not a platform vs PCI problem.
 
-@ init @
-identifier struct_name, attr;
-@@
 
-        struct struct_name {
-                ...
-                struct attribute attr;
-                ...
-        };
 
-@ main extends init @
-expression E;
-statement S;
-identifier name, err;
-@@
 
-(
-        struct struct_name *name;
-|
--       struct struct_name *name =3D NULL;
-+       struct struct_name *name;
-)
-        ...
-(
-        sysfs_attr_init(&name->attr);
-|
-+       sysfs_attr_init(&name->attr);
-        if (sysfs_create_file(E, &name->attr))
-                S
-|
-+       sysfs_attr_init(&name->attr);
-        err =3D sysfs_create_file(E, &name->attr);
-)
+>  {
+>        struct drm_irq_busid *p = data;
+>
+> +       if (drm_core_check_feature(dev, DRIVER_USE_PLATFORM_DEVICE))
+> +               return -EINVAL;
 
-Regards,
+Not 100% sure about this, but if you only intend on KMS and don't need to
+inform userspace of irq support this should be okay.
 
-   Wolfram
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---VrqPEDrXMn8OVzN4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
+> index 4ac900f..22aaaae 100644
+> --- a/drivers/gpu/drm/drm_vm.c
+> +++ b/drivers/gpu/drm/drm_vm.c
+> @@ -60,7 +60,7 @@ static pgprot_t drm_io_prot(uint32_t map_type, struct
+> vm_area_struct *vma)
+>                tmp = pgprot_writecombine(tmp);
+>        else
+>                tmp = pgprot_noncached(tmp);
+> -#elif defined(__sparc__)
+> +#elif defined(__sparc__) || defined(__arm__)
+>        tmp = pgprot_noncached(tmp);
+>  #endif
+>        return tmp;
+> @@ -600,6 +600,7 @@ int drm_mmap_locked(struct file *filp, struct
+> vm_area_struct *vma)
+>        }
+>
+>        switch (map->type) {
+> +#if !defined(__arm__)
+>        case _DRM_AGP:
+>                if (drm_core_has_AGP(dev) && dev->agp->cant_use_aperture) {
+>                        /*
+> @@ -614,20 +615,31 @@ int drm_mmap_locked(struct file *filp, struct
+> vm_area_struct *vma)
+>                        break;
+>                }
+>                /* fall through to _DRM_FRAME_BUFFER... */
+> +#endif
+>        case _DRM_FRAME_BUFFER:
+>        case _DRM_REGISTERS:
+>                offset = dev->driver->get_reg_ofs(dev);
+>                vma->vm_flags |= VM_IO; /* not in core dump */
+>                vma->vm_page_prot = drm_io_prot(map->type, vma);
+> +#if !defined(__arm__)
+>                if (io_remap_pfn_range(vma, vma->vm_start,
+>                                       (map->offset + offset) >> PAGE_SHIFT,
+>                                       vma->vm_end - vma->vm_start,
+>                                       vma->vm_page_prot))
+>                        return -EAGAIN;
+> +#else
+> +               if (remap_pfn_range(vma, vma->vm_start,
+> +                                       (map->offset + offset) >>
+> PAGE_SHIFT,
+> +                                       vma->vm_end - vma->vm_start,
+> +                                       vma->vm_page_prot))
+> +                       return -EAGAIN;
+> +#endif
+> +
+>                DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
+>                          " offset = 0x%llx\n",
+>                          map->type,
+>                          vma->vm_start, vma->vm_end, (unsigned long
+> long)(map->offset + offset));
+> +
+>                vma->vm_ops = &drm_vm_ops;
+>                break;
+>        case _DRM_CONSISTENT:
+> diff --git a/drivers/gpu/drm/i915/i915_drv.c
+> b/drivers/gpu/drm/i915/i915_drv.c
+> index cf4cb3e..29d26c2 100644
+> --- a/drivers/gpu/drm/i915/i915_drv.c
+> +++ b/drivers/gpu/drm/i915/i915_drv.c
+> @@ -392,7 +392,7 @@ int i965_reset(struct drm_device *dev, u8 flags)
+>  static int __devinit
+>  i915_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  {
+> -       return drm_get_dev(pdev, ent, &driver);
+> +       return drm_get_pci_dev(pdev, ent, &driver);
+>  }
+>
+>  static void
+> diff --git a/drivers/gpu/drm/radeon/radeon_drv.c
+> b/drivers/gpu/drm/radeon/radeon_drv.c
+> index 8ba3de7..6586f6a 100644
+> --- a/drivers/gpu/drm/radeon/radeon_drv.c
+> +++ b/drivers/gpu/drm/radeon/radeon_drv.c
+> @@ -223,7 +223,7 @@ static struct drm_driver kms_driver;
+>  static int __devinit
+>  radeon_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  {
+> -       return drm_get_dev(pdev, ent, &kms_driver);
+> +       return drm_get_pci_dev(pdev, ent, &kms_driver);
+>  }
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+This also doesn't address noueau/vmwgfx entry points.
 
-iEYEARECAAYFAkudg/IACgkQD27XaX1/VRtd8gCgmjER+e4T1Y/upvKXGAU11IFD
-fpEAoJRan5Z2y7fLqqbB+0tWqvUcXD+B
-=skst
------END PGP SIGNATURE-----
-
---VrqPEDrXMn8OVzN4--
+Dave.
