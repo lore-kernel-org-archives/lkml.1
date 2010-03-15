@@ -1,50 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935168Ab0COCxP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 22:53:15 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:47871 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759579Ab0COCxJ (ORCPT
+	id S935243Ab0COC4L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 22:56:11 -0400
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:56702 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934401Ab0COC4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 22:53:09 -0400
-Date: Mon, 15 Mar 2010 02:52:49 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, u.kleine-koenig@pengutronix.de,
-       a.p.zijlstra@chello.nl, andrea.gallo@stericsson.com,
-       dbrownell@users.sourceforge.net, eric.y.miao@gmail.com,
-       hugh.dickins@tiscali.co.uk, John Stultz <johnstul@us.ibm.com>,
-       linux@bohmer.net, nico@marvell.com,
-       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <greg@kroah.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 2/3] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the right place
-Message-ID: <20100315025249.GP6491@shareable.org>
-References: <201003112208.o2BM8wJU013575@imap1.linux-foundation.org> <alpine.LFD.2.00.1003130031300.22855@localhost.localdomain> <20100312155015.090ba541.akpm@linux-foundation.org> <alpine.LFD.2.00.1003130130090.22855@localhost.localdomain> <20100312171423.b7e7a838.akpm@linux-foundation.org>
+	Sun, 14 Mar 2010 22:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=q/8/QCRhDUDMTP/7gJCYlnTsL/nePYxrghvbvAzbnFgP10bMKCxrnbjgt+QBG5WHX1
+         hcEoi445fhNSD9R9/K/dX637OZd+5K5jkUB6yLeeFQckvbZZBjZbcnWmdhklOM178wGY
+         8GF6H3xfnEHuO94IKEVbx1dmP/6ePAOiCr6es=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100312171423.b7e7a838.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <201003150326.22262.vda.linux@googlemail.com>
+References: <4B947393.2050002@kernel.org>
+	 <1158166a1003100114j6ea329fbh84bfad65dcac90bf@mail.gmail.com>
+	 <4B9D8BB2.1010507@zytor.com>
+	 <201003150326.22262.vda.linux@googlemail.com>
+Date: Sun, 14 Mar 2010 22:56:07 -0400
+Message-ID: <87f94c371003141956t6115f45bga5ec1e6d76b1ea40@mail.gmail.com>
+Subject: Re: ATA 4 KiB sector issues.
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>,
+       Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> We can tweak and tune until we're blue in the face, but the system's
-> IRQ latency will always be worse if handlers always run with interrupts
-> disabled.
+> I just played with ubuntu installation on an usb stick.
+> Yes, it works. Soft of. Write performance is abysmal.
+> I would pay x2 or x3 for the same sized stick if it
+> would perform better.
 
-Are you sure?
+In general USB sticks don't offer the same performance as SSDs.
 
-If good, fast irq handler A runs with interrupts enabled,
-and good, fast irq handler B runs (interrupting A),
-A's latency goes _up_ not down.
+You can find sticks with both USB and eSata.  I'd hope those offer
+better performance.
 
-If B happens first, then you get B's latency going up, and A's latency going down.
+You should read some performance reviews.  I'm sure you can find a few
+sticks that are much better than what you get from a vanilla usb
+stick.
 
-It's not really clear what happens to average latency.  But if you
-know that some handlers require lower latency than others (e.g. serial
-ports with small FIFOs), it makes sense to prioritise them.
-
--- Jamie
+Greg
