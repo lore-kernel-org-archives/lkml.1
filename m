@@ -1,85 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699Ab0COFve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 01:51:34 -0400
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:55753 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759672Ab0COFvb (ORCPT
+	id S1759717Ab0COFy0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 01:54:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36908
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759685Ab0COFyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 01:51:31 -0400
-Date: Mon, 15 Mar 2010 11:21:18 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 120/123] sched: Fix sched_mv_power_savings for !SMT
-Message-ID: <20100315055118.GP5212@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20100313001618.GA9811@kroah.com>
- <20100313001515.642272234@kvm.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100313001515.642272234@kvm.kroah.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 15 Mar 2010 01:54:22 -0400
+Date: Sun, 14 Mar 2010 22:54:43 -0700 (PDT)
+Message-Id: <20100314.225443.150715656.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel@teksavvy.com, drepper@redhat.com, torvalds@linux-foundation.org,
+       munroesj@linux.vnet.ibm.com
+Subject: Re: 64-syscall args on 32-bit vs syscall()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1268630313.2335.2.camel@pasglop>
+References: <1268628493.2355.2.camel@pasglop>
+	<20100314.220646.190065794.davem@davemloft.net>
+	<1268630313.2335.2.camel@pasglop>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <gregkh@suse.de> [2010-03-12 16:13:38]:
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 15 Mar 2010 16:18:33 +1100
 
-> 2.6.33-stable review patch.  If anyone has any objections, please let me know.
+> Or is there any good reason -not- to do that in glibc ?
 
-Hi Greg,
+The whole point of syscall() is to handle cases where the C library
+doesn't know about the system call yet.
 
-Thanks to pulling this into .32 and .33-stable.  Please correct the
-subject and commit message to sched_mc_power_savings when you apply.
-The term sched_mv_power_savings is a typo.
+I think it's therefore very much "buyer beware".
 
-"sched: Fix sched_mc_power_savings for !SMT"
+On sparc it'll never work to use the workaround you're proposing since
+we pass everything in via registers.
 
-Thanks,
-Vaidy
-
-Ref: http://lkml.org/lkml/2010/2/16/230
-
-> -----------------
-> 
-> From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> 
-> commit 28f5318167adf23b16c844b9c2253f355cb21796 upstream.
-> 
-> Fix for sched_mc_powersavigs for pre-Nehalem platforms.
-> Child sched domain should clear SD_PREFER_SIBLING if parent will have
-> SD_POWERSAVINGS_BALANCE because they are contradicting.
-> 
-> Sets the flags correctly based on sched_mc_power_savings.
-> 
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <20100208100555.GD2931@dirshya.in.ibm.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  include/linux/sched.h |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -878,7 +878,10 @@ static inline int sd_balance_for_mc_powe
->  	if (sched_smt_power_savings)
->  		return SD_POWERSAVINGS_BALANCE;
-> 
-> -	return SD_PREFER_SIBLING;
-> +	if (!sched_mc_power_savings)
-> +		return SD_PREFER_SIBLING;
-> +
-> +	return 0;
->  }
-> 
->  static inline int sd_balance_for_package_power(void)
-> 
-> 
+So arch knowledge will always need to be present in these situations.
