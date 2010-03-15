@@ -1,93 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936081Ab0COKAW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:00:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39847 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936033Ab0COKAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:00:19 -0400
-Date: Mon, 15 Mar 2010 11:00:11 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>,
-       kernel-janitors@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, linux-mips@linux-mips.org,
-       rtc-linux@googlegroups.com
-Subject: Re: [PATCH] init dynamic bin_attribute structures
-In-Reply-To: <1268612981-9009-1-git-send-email-w.sang@pengutronix.de>
-Message-ID: <alpine.LRH.2.00.1003151055060.26353@twin.jikos.cz>
-References: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org> <1268612981-9009-1-git-send-email-w.sang@pengutronix.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S936094Ab0COKAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:00:32 -0400
+Received: from trinity.develer.com ([83.149.158.210]:53694 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936084Ab0COKA2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 06:00:28 -0400
+Date: Mon, 15 Mar 2010 11:00:25 +0100
+From: Andrea Righi <arighi@develer.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 1/5] memcg: disable irq at page cgroup lock
+Message-ID: <20100315100024.GA1653@linux.develer.com>
+References: <1268609202-15581-1-git-send-email-arighi@develer.com>
+ <1268609202-15581-2-git-send-email-arighi@develer.com>
+ <20100315090638.ee416d93.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100315090638.ee416d93.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Mar 2010, Wolfram Sang wrote:
-
-> Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requirement.
-> First, at25 was fixed manually. Then, other occurences were found with
-> coccinelle and the following semantic patch. Results were reviewed and fixed
-> up:
+On Mon, Mar 15, 2010 at 09:06:38AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Mon, 15 Mar 2010 00:26:38 +0100
+> Andrea Righi <arighi@develer.com> wrote:
 > 
-> @ init @
-> identifier struct_name, bin;
-> @@
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Now, file-mapped is maintaiend. But more generic update function
+> > will be needed for dirty page accounting.
+> > 
+> > For accountig page status, we have to guarantee lock_page_cgroup()
+> > will be never called under tree_lock held.
+> > To guarantee that, we use trylock at updating status.
+> > By this, we do fuzzy accounting, but in almost all case, it's correct.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> 	struct struct_name {
-> 		...
-> 		struct bin_attribute bin;
-> 		...
-> 	};
-> 
-> @ main extends init @
-> expression E;
-> statement S;
-> identifier name, err;
-> @@
-> 
-> (
-> 	struct struct_name *name;
-> |
-> -	struct struct_name *name = NULL;
-> +	struct struct_name *name;
-> )
-> 	...
-> (
-> 	sysfs_bin_attr_init(&name->bin);
-> |
-> +	sysfs_bin_attr_init(&name->bin);
-> 	if (sysfs_create_bin_file(E, &name->bin))
-> 		S
-> |
-> +	sysfs_bin_attr_init(&name->bin);
-> 	err = sysfs_create_bin_file(E, &name->bin);
-> )
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  arch/mips/txx9/generic/setup.c |    1 +
->  drivers/misc/eeprom/at25.c     |    1 +
->  drivers/rtc/rtc-ds1742.c       |    1 +
->  3 files changed, 3 insertions(+), 0 deletions(-)
+> Bad patch title...."use trylock for safe accounting in some contexts" ?
 
-I don't understand how cocinelle works, but the resulting patch seems to 
-be incomplete.
+OK, sounds better. I just copy & paste the email subject, but the title
+was probably related to the old lock_page_cgroup()+irq_disable patch.
 
-The fix is needed at least in firmware loader (for which Greg has already 
-queued patch), in ACPI thermal driver [1], etc).
-
-[1] http://lkml.indiana.edu/hypermail/linux/kernel/1003.1/02680.html
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+Thanks,
+-Andrea
