@@ -1,71 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256Ab0COEkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 00:40:43 -0400
-Received: from in.cluded.net ([195.159.98.120]:38149 "EHLO in.cluded.net"
+	id S1757250Ab0COEsj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 00:48:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33019 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752643Ab0COEkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 00:40:41 -0400
-X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Mar 2010 00:40:40 EDT
-Message-ID: <4B9DB7F7.6010902@uw.no>
-Date: Mon, 15 Mar 2010 04:30:47 +0000
-From: "Daniel K." <dk@uw.no>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/18] KVM: MMU: Propagate the right fault back to the
- guest after gva_to_gpa
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com> <1267643541-451-16-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1267643541-451-16-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753640Ab0COEsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 00:48:36 -0400
+Subject: Re: 2.6.34-rc1: Badness at fs/proc/generic.c:316
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <m2tysjw27p.fsf@whitebox.home>
+References: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
+	 <20100314065526.GA5353@x200>
+	 <alpine.DEB.2.01.1003140336280.5493@bogon.housecafe.de>
+	 <20100314112428.GA4142@x200>
+	 <alpine.DEB.2.01.1003140431040.5493@bogon.housecafe.de>
+	 <m2tysjw27p.fsf@whitebox.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Mar 2010 14:23:46 +1100
+Message-ID: <1268623426.2209.109.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 2883ce8..9f8b02d 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -314,6 +314,19 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long addr,
->  	kvm_queue_exception_e(vcpu, PF_VECTOR, error_code)
->  }
->  
-> +void kvm_propagate_fault(struct kvm_vcpu *vcpu, unsigned long addr, u32 error_code)
-> +{
-> +	u32 nested, error;
-> +
-> +	nested = error_code &  PFERR_NESTED_MASK;
-> +	error  = error_code & ~PFERR_NESTED_MASK;
-> +
-> +	if (vcpu->arch.mmu.nested && !(error_code && PFERR_NESTED_MASK))
+On Sun, 2010-03-14 at 12:51 +0100, Andreas Schwab wrote:
+> Christian Kujau <lists@nerdbynature.de> writes:
+> 
+> > On Sun, 14 Mar 2010 at 13:24, Alexey Dobriyan wrote:
+> >> Post "find /proc/device-tree" output.
+> >
+> > I did upload[0] a tarball of /proc/device-tree, please see below the 
+> > "find" output.
+> >
+> > Indeed, there's a /cpus/PowerPC,G4@0/l2-cache and 
+> > /cpus/PowerPC,G4@0/l2-cache#1 in the device-tree. However, from looking at 
+> > the logfiles, the
+> >
+> >    device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
+> 
+> That's a red herring, the real problem is this:
+> 
+> name 'pulses/rev'
+> 
+> Of course, this name cannot be found in /proc/device-tree, because it
+> wasn't created.
 
-This looks incorrect, nested is unused.
+You mean apple stuck a bloody "/" in a name property ? ARGH !
 
-At the very least it should be a binary & operation
+We should just add code to detect that and replace it with a "_" or
+something...
 
-	if (vcpu->arch.mmu.nested && !(error_code & PFERR_NESTED_MASK))
-
-which can be simplified to
-
-	if (vcpu->arch.mmu.nested && !nested)
-
-but it seems wrong that the condition is that it is nested and not nested 
-at the same time.
-
-
-> +		vcpu->arch.nested_mmu.inject_page_fault(vcpu, addr, error);
-> +	else
-> +		vcpu->arch.mmu.inject_page_fault(vcpu, addr, error);
-> +}
-> +
->  void kvm_inject_nmi(struct kvm_vcpu *vcpu)
->  {
->  	vcpu->arch.nmi_pending = 1;
+Cheers,
+Ben.
 
 
-Daniel K.
