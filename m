@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459Ab0COCev (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 22:34:51 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53166 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581Ab0COCeu (ORCPT
+	id S1756546Ab0COCkA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 22:40:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46422 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753982Ab0COCj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 22:34:50 -0400
+	Sun, 14 Mar 2010 22:39:58 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 15 Mar 2010 11:31:04 +0900
+Date: Mon, 15 Mar 2010 11:36:12 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Andrea Righi <arighi@develer.com>
 Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
@@ -21,11 +21,10 @@ Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 5/5] memcg: dirty pages instrumentation
-Message-Id: <20100315113104.b208571c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1268609202-15581-6-git-send-email-arighi@develer.com>
+Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v7)
+Message-Id: <20100315113612.8411d92d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1268609202-15581-1-git-send-email-arighi@develer.com>
 References: <1268609202-15581-1-git-send-email-arighi@develer.com>
-	<1268609202-15581-6-git-send-email-arighi@develer.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -35,54 +34,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Mar 2010 00:26:42 +0100
+On Mon, 15 Mar 2010 00:26:37 +0100
 Andrea Righi <arighi@develer.com> wrote:
 
-> Apply the cgroup dirty pages accounting and limiting infrastructure to
-> the opportune kernel functions.
+> Control the maximum amount of dirty pages a cgroup can have at any given time.
 > 
-> [ NOTE: for now do not account WritebackTmp pages (FUSE) and NILFS2
-> bounce pages. This depends on charging also bounce pages per cgroup. ]
+> Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> will not be able to consume more than their designated share of dirty pages and
+> will be forced to perform write-out if they cross that limit.
 > 
-> As a bonus, make determine_dirtyable_memory() static again: this
-> function isn't used anymore outside page writeback.
+> The overall design is the following:
 > 
-> Signed-off-by: Andrea Righi <arighi@develer.com>
+>  - account dirty pages per cgroup
+>  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+>    and memory.dirty_background_ratio / memory.dirty_background_bytes in
+>    cgroupfs
+>  - start to write-out (background or actively) when the cgroup limits are
+>    exceeded
+> 
+> This feature is supposed to be strictly connected to any underlying IO
+> controller implementation, so we can stop increasing dirty pages in VM layer
+> and enforce a write-out before any cgroup will consume the global amount of
+> dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
+> /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
+> 
+> Changelog (v6 -> v7)
+> ~~~~~~~~~~~~~~~~~~~~~~
+>  * introduce trylock_page_cgroup() to guarantee that lock_page_cgroup()
+>    is never called under tree_lock (no strict accounting, but better overall
+>    performance)
+>  * do not account file cache statistics for the root cgroup (zero
+>    overhead for the root cgroup)
+>  * fix: evaluate cgroup free pages as at the minimum free pages of all
+>    its parents
+> 
+> Results
+> ~~~~~~~
+> The testcase is a kernel build (2.6.33 x86_64_defconfig) on a Intel Core 2 @
+> 1.2GHz:
+> 
+> <before>
+>  - root  cgroup:	11m51.983s
+>  - child cgroup:	11m56.596s
+> 
+> <after>
+>  - root cgroup:		11m51.742s
+>  - child cgroup:	12m5.016s
+> 
+> In the previous version of this patchset, using the "complex" locking scheme
+> with the _locked and _unlocked version of mem_cgroup_update_page_stat(), the
+> child cgroup required 11m57.896s and 12m9.920s with lock_page_cgroup()+irq_disabled.
+> 
+> With this version there's no overhead for the root cgroup (the small difference
+> is in error range). I expected to see less overhead for the child cgroup, I'll
+> do more testing and try to figure better what's happening.
+> 
+Okay, thanks. This seems good result. Optimization for children can be done under
+-mm tree, I think. (If no nack, this seems ready for test in -mm.)
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-A nitpick.
-
-> @@ -660,6 +705,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
->  	unsigned long dirty_thresh;
->  
->          for ( ; ; ) {
-> +		unsigned long dirty;
-> +
->  		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
->  
->                  /*
-> @@ -668,10 +715,10 @@ void throttle_vm_writeout(gfp_t gfp_mask)
->                   */
->                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
->  
-> -                if (global_page_state(NR_UNSTABLE_NFS) +
-> -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-> -                        	break;
-> -                congestion_wait(BLK_RW_ASYNC, HZ/10);
-> +		dirty = get_dirty_writeback_pages();
-> +		if (dirty <= dirty_thresh)
-> +			break;
-> +		congestion_wait(BLK_RW_ASYNC, HZ/10);
->  
->  		/*
->  		 * The caller might hold locks which can prevent IO completion
-
-"dirty" seems not to be necessary.
-	if (get_dirty_writeback_pages() < dirty_thresh) ?
+> In the while, it would be great if someone could perform some tests on a larger
+> system... unfortunately at the moment I don't have a big system available for
+> this kind of tests...
+> 
+I hope, too.
 
 Thanks,
 -Kame
-
-
 
