@@ -1,32 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546Ab0COCkA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 22:40:00 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46422 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753982Ab0COCj6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 22:39:58 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 15 Mar 2010 11:36:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/5] memcg: per cgroup dirty limit (v7)
-Message-Id: <20100315113612.8411d92d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1268609202-15581-1-git-send-email-arighi@develer.com>
-References: <1268609202-15581-1-git-send-email-arighi@develer.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1759586Ab0COClP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 22:41:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40115 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755142Ab0COClO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 22:41:14 -0400
+Date: Mon, 15 Mar 2010 13:41:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dave Young <hidave.darkstar@gmail.com>
+Subject: linux-next: manual merge of the fsnotify tree with Linus' tree
+Message-Id: <20100315134110.8982a0f2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,71 +21,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Mar 2010 00:26:37 +0100
-Andrea Righi <arighi@develer.com> wrote:
+Hi Eric,
 
-> Control the maximum amount of dirty pages a cgroup can have at any given time.
-> 
-> Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> will not be able to consume more than their designated share of dirty pages and
-> will be forced to perform write-out if they cross that limit.
-> 
-> The overall design is the following:
-> 
->  - account dirty pages per cgroup
->  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
->    and memory.dirty_background_ratio / memory.dirty_background_bytes in
->    cgroupfs
->  - start to write-out (background or actively) when the cgroup limits are
->    exceeded
-> 
-> This feature is supposed to be strictly connected to any underlying IO
-> controller implementation, so we can stop increasing dirty pages in VM layer
-> and enforce a write-out before any cgroup will consume the global amount of
-> dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
-> /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
-> 
-> Changelog (v6 -> v7)
-> ~~~~~~~~~~~~~~~~~~~~~~
->  * introduce trylock_page_cgroup() to guarantee that lock_page_cgroup()
->    is never called under tree_lock (no strict accounting, but better overall
->    performance)
->  * do not account file cache statistics for the root cgroup (zero
->    overhead for the root cgroup)
->  * fix: evaluate cgroup free pages as at the minimum free pages of all
->    its parents
-> 
-> Results
-> ~~~~~~~
-> The testcase is a kernel build (2.6.33 x86_64_defconfig) on a Intel Core 2 @
-> 1.2GHz:
-> 
-> <before>
->  - root  cgroup:	11m51.983s
->  - child cgroup:	11m56.596s
-> 
-> <after>
->  - root cgroup:		11m51.742s
->  - child cgroup:	12m5.016s
-> 
-> In the previous version of this patchset, using the "complex" locking scheme
-> with the _locked and _unlocked version of mem_cgroup_update_page_stat(), the
-> child cgroup required 11m57.896s and 12m9.920s with lock_page_cgroup()+irq_disabled.
-> 
-> With this version there's no overhead for the root cgroup (the small difference
-> is in error range). I expected to see less overhead for the child cgroup, I'll
-> do more testing and try to figure better what's happening.
-> 
-Okay, thanks. This seems good result. Optimization for children can be done under
--mm tree, I think. (If no nack, this seems ready for test in -mm.)
+Today's linux-next merge of the fsnotify tree got a conflict in
+kernel/sysctl.c between commits 5ed109103d73b0bafc92e860cead56725231384d
+("sysctl extern cleanup: module") and
+15485a4682d1d3bfee2aa78b4b1a5d36f5746b64 ("sysctl extern cleanup: sg")
+from Linus' tree and commit 00e4382acdbe8337cd00d3ed74a6150f0a647d1f
+("sysctl extern cleanup: inotify") from the fsnotify tree.
 
-> In the while, it would be great if someone could perform some tests on a larger
-> system... unfortunately at the moment I don't have a big system available for
-> this kind of tests...
-> 
-I hope, too.
+Just context changes.  I fixed it up (see below) and can carry the fix
+for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks,
--Kame
-
+diff --cc kernel/sysctl.c
+index 8686b0f,a7a3634..0000000
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@@ -128,6 -120,17 +129,10 @@@ static int min_percpu_pagelist_fract = 
+  
+  static int ngroups_max = NGROUPS_MAX;
+  
+ -#ifdef CONFIG_MODULES
+ -extern char modprobe_path[];
+ -extern int modules_disabled;
+ -#endif
++ #ifdef CONFIG_INOTIFY_USER
++ #include <linux/inotify.h>
++ #endif
+ -#ifdef CONFIG_CHR_DEV_SG
+ -extern int sg_big_buff;
+ -#endif
++ 
+  #ifdef CONFIG_SPARC
+  #include <asm/system.h>
+  #endif
