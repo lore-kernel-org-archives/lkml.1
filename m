@@ -1,66 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612Ab0COGuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 02:50:20 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:38018 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756183Ab0COGuS (ORCPT
+	id S934253Ab0COGyJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 02:54:09 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:34684 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759721Ab0COGyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 02:50:18 -0400
-Date: Mon, 15 Mar 2010 07:48:31 +0100
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: RE: [PATCH] lp3971: Fix BUCK_VOL_CHANGE_SHIFT logic
-In-reply-to: <1268306294.3758.78.camel@odin>
-To: "'Liam Girdwood'" <lrg@slimlogic.co.uk>,
-       "'Kyungmin Park'" <kyungmin.park@samsung.com>
-Cc: "'axel lin'" <axel.lin@gmail.com>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'Mark Brown'" <broonie@opensource.wolfsonmicro.com>
-Message-id: <000101cac40b$89137ac0$9b3a7040$%szyprowski@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: text/plain; charset=utf-8
-Content-language: pl
-Content-transfer-encoding: 7BIT
-Thread-index: AcrBDJsiF3v8euwqSrS4pnH/yybTxQC/m00Q
-References: <427d64721003101756j2a5bf502na83ab35de4bc247e@mail.gmail.com>
- <20100311110438.GF2585@rakim.wolfsonmicro.main> <1268306294.3758.78.camel@odin>
+	Mon, 15 Mar 2010 02:54:06 -0400
+From: <samu.p.onkalo@nokia.com>
+To: <akpm@osdl.org>
+CC: <lm-sensors@lm-sensors.org>, <linux-kernel@vger.kernel.org>,
+       <Eric.Piel@tremplin-utc.net>
+Date: Mon, 15 Mar 2010 07:53:21 +0100
+Subject: RE: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts
+Thread-Topic: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts
+Thread-Index: Acq9ORM0AttlAKSuThaNdqeEViBkBQG0dVBg
+Message-ID: <62697B07E9803846BC582181BD6FB6B826A7E4B586@NOK-EUMSG-02.mgdnok.nokia.com>
+References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
+ <4B92662A.4080604@tremplin-utc.net>
+In-Reply-To: <4B92662A.4080604@tremplin-utc.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+X-OriginalArrivalTime: 15 Mar 2010 06:53:25.0057 (UTC) FILETIME=[358D1310:01CAC40C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o2F6sHmE009366
 
-Hello,
+>> Samu Onkalo (6):
+>>   lis3: Add missing constants for 8bit device
+>>   lis3: Separate configuration function for 8 bit device
+>>   lis3: Introduce platform data for second ff / wu unit
+>>   lis3: Add skeletons for interrupt handlers
+>>   lis3: Interrupt handlers for 8bit wakeup and click events
+>>   lis3: Setup poll interval limits
+>(sorry for the delay, I was on holidays)
+>
+>Just had a look at the patches and they seem fine, so here is my
+>Acked-by: Ã‰ric Piel <eric.piel@tremplin-utc.net>
+>
+>Andrew, would you mind to pick this series of patches to replace the
+>dropped one yesterday?
+>
 
-On Thursday, March 11, 2010 12:18 PM Liam Girdwood wrote:
+Hi,
 
-> On Thu, 2010-03-11 at 11:04 +0000, Mark Brown wrote:
-> > On Thu, Mar 11, 2010 at 09:56:34AM +0800, axel lin wrote:
-> > > From 99175ed0f281d54efdaf8eef548077a8f0b4924a Mon Sep 17 00:00:00 2001
-> > > From: Axel Lin <axel.lin@gmail.com>
-> > > Date: Thu, 11 Mar 2010 09:50:07 +0800
-> > > Subject: [PATCH] lp3971: Fix BUCK_VOL_CHANGE_SHIFT logic
-> > >
-> > > Given x=0,1,2, current implementation of BUCK_VOL_CHANGE_SHIFT(x) returns 0,4,8.
-> > > The correct return value should be 0,4,6.
-> > > This patch fix the logic.
-> > >
-> > > Signed-off-by: Axel Lin <axel.lin@gmail.com>
-> >
-> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> >
-> > with the same comment about ideally wanting someone who worked on the
-> > driver previously to check stuff.
-> 
-> Marek, Kyungmin, could someone please test/ack this before both are
-> applied.
+This patch set was meant to replace the dropped ones
 
-Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
+http://www.spinics.net/lists/kernel/msg998876.html
 
-Axel was right, my bit arithmetic was definitely wrong. Again, thanks for spotting
-it and I'm really sorry You had lost some time debugging it.
 
-Best regards
---
-Marek Szyprowski
-Samsung Poland R&D Center
+-Samu
 
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
