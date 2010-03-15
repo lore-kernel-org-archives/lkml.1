@@ -1,59 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936245Ab0COMyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 08:54:18 -0400
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:56408 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936218Ab0COMyR convert rfc822-to-8bit (ORCPT
+	id S936256Ab0COMzW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 08:55:22 -0400
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:45878 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936228Ab0COMzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 08:54:17 -0400
+	Mon, 15 Mar 2010 08:55:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=lSlW46NwGJao8pyeMU7/YU+fI/3KkSQjIEK8SNheGbothQgzeM4PPv/3momPX1rhl7
-         UniGNsdp1MN32oHrx86uBRRoDvT6g1y9cztgauTHDqHKTPlm9bhfwFn5fZHw0u4spIDc
-         DJYVQrdLVtzJb24kluOzEsWrGTC4f/Q138wq8=
-MIME-Version: 1.0
-In-Reply-To: <20100315082148.GD18181@bicker>
-References: <20100315082148.GD18181@bicker>
-Date: Mon, 15 Mar 2010 13:54:15 +0100
-Message-ID: <8aa016e11003150554h549a5853o7b21773915ac2451@mail.gmail.com>
-Subject: Re: [patch] sched: remove some dead code
-From: Dhaval Giani <dhaval.giani@gmail.com>
-To: Dan Carpenter <error27@gmail.com>, Dhaval Giani <dhaval.giani@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hFlzxLhu5b2LvClx0JnvunJE5dZZJz0r11lla8p1gxnlE97G8VLeu5/mVQlytnPFb4
+         RmHstJVcHLRfonmth8uzM2Nn3Pj6XhFsCAQTxOsRvIEM/pLE+Gcr9tqEoxsOOSI+++si
+         O/V1+7zC4wlVrZXrzGh2F2WKVXllaqMfR8NI0=
+Subject: Re: [PATCH 02/11] mm,migration: Do not try to migrate unmapped
+ anonymous pages
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20100315112829.GI18274@csn.ul.ie>
+References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
+	 <1268412087-13536-3-git-send-email-mel@csn.ul.ie>
+	 <28c262361003141728g4aa40901hb040144c5a4aeeed@mail.gmail.com>
+	 <20100315143420.6ec3bdf9.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100315112829.GI18274@csn.ul.ie>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Mar 2010 21:48:49 +0900
+Message-ID: <1268657329.1889.4.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 15, 2010 at 9:21 AM, Dan Carpenter <error27@gmail.com> wrote:
-> This was left over from "7c9414385e sched: Remove USER_SCHED"
->
+On Mon, 2010-03-15 at 11:28 +0000, Mel Gorman wrote:
+> The use after free looks like
+> 
+> 1. page_mapcount(page) was zero so anon_vma was no longer reliable
+> 2. rcu lock taken but the anon_vma at this point can already be garbage because the
+>    process exited
+> 3. call try_to_unmap, looks up tha anon_vma and locks it. This causes problems
+> 
+> I thought the race would be closed but there is still a very tiny window there all
+> right. The following alternative should close it. What do you think?
+> 
+>         if (PageAnon(page)) {
+> 		rcu_read_lock();
+> 
+>                 /*
+>                  * If the page has no mappings any more, just bail. An
+>                  * unmapped anon page is likely to be freed soon but worse,
+>                  * it's possible its anon_vma disappeared between when
+>                  * the page was isolated and when we reached here while
+>                  * the RCU lock was not held
+>                  */
+>                 if (!page_mapcount(page)) {
+> 			rcu_read_unlock();
+>                         goto uncharge;
+> 		}
+> 
+>                 rcu_locked = 1;
+>                 anon_vma = page_anon_vma(page);
+>                 atomic_inc(&anon_vma->external_refcount);
+>         }
+> 
+> The rcu_unlock label is not used here because the reference counts were not taken in
+> the case where page_mapcount == 0.
+> 
 
-Quite surprising I missed that. Thanks for catching it.
+Looks good to me. 
+Please, repost above code with your use-after-free scenario comment.
 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
->
 
-Acked-by: Dhaval Giani <dhaval.giani@gmail.com>
+-- 
+Kind regards,
+Minchan Kim
 
-> diff --git a/kernel/user.c b/kernel/user.c
-> index 766467b..ec3b222 100644
-> --- a/kernel/user.c
-> +++ b/kernel/user.c
-> @@ -178,8 +178,6 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
->
->        return up;
->
-> -       put_user_ns(new->user_ns);
-> -       kmem_cache_free(uid_cachep, new);
->  out_unlock:
->        return NULL;
->  }
->
+
