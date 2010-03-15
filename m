@@ -1,75 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936117Ab0COKIW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:08:22 -0400
-Received: from av11-1-sn2.hy.skanova.net ([81.228.8.183]:37490 "EHLO
-	av11-1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936077Ab0COKIV (ORCPT
+	id S936129Ab0COKKF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:10:05 -0400
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:54033 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936109Ab0COKKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:08:21 -0400
-X-Greylist: delayed 1457 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Mar 2010 06:08:20 EDT
-Message-ID: <4B9E0160.5000900@pelagicore.com>
-Date: Mon, 15 Mar 2010 10:44:00 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@pelagicore.com>
-Organization: Pelagicore AB
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100121 Iceowl/1.0b1 Icedove/3.0.1
-MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: linux-serial@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] serial: Two branches the same in timbuart_set_mctrl()
-References: <4B532CF5.7080000@gmail.com> <20100117181702.026269e9@lxorguk.ukuu.org.uk> <4B535ED8.2050703@gmail.com>
-In-Reply-To: <4B535ED8.2050703@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 15 Mar 2010 06:10:03 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Mon, 15 Mar 2010 11:09:55 +0100
+From: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Subject: [PATCH] USB: f_mass_storage: dynamic buffers for better alignment
+To: linux-usb@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Marek Szyprowski <m.szyprowski@samsung.com>,
+       Michal Nazarewicz <m.nazarewicz@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>
+Message-id: <1268647795-4095-1-git-send-email-m.nazarewicz@samsung.com>
+X-Mailer: git-send-email 1.7.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roel,
+"Static" buffers in fsg_buffhd structure (ie. fields which are arrays
+rather then pointers to dynamically allocated memory) are not aligned
+to any "big" power of two which may lead to poor DMA performance
+(copying "by hand" of head or tail) or no DMA at all even if otherwise
+hardware supports it.
 
-On 01/17/2010 08:02 PM, Roel Kluin wrote:
-> Dear Richard Röjfors,
->
-> It is possible that I found a bug in the Timberdale UART driver that was added
-> to the linux kernel. The patch below tries to fix this, note the RTS to CTS
-> change, could you confirm whether the patch below changes your driver
-> correctly?
+Therefore, this patch makes mass storage function use kmalloc()ed
+buffers which are (because of their size) page aligned (which should
+be enough for any hardware).
 
-Thanks for finding this, I have a comment on the patch below.
+Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/usb/gadget/f_mass_storage.c |   24 ++++++++++++++++++------
+ 1 files changed, 18 insertions(+), 6 deletions(-)
 
->
-> Thank you,
->
-> Roel Kluin
-> ----------------->8----------------------------8<-------------------------------
-> Regardless of whether the TIOCM_RTS bit was set in mctrl, the same write
-> occurred.
->
-> Signed-off-by: Roel Kluin<roel.kluin@gmail.com>
-> ---
->   drivers/serial/timbuart.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/serial/timbuart.c b/drivers/serial/timbuart.c
-> index 34b31da..c433d40 100644
-> --- a/drivers/serial/timbuart.c
-> +++ b/drivers/serial/timbuart.c
-> @@ -219,7 +219,7 @@ static void timbuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
->   	if (mctrl&  TIOCM_RTS)
->   		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
->   	else
-> -		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
-> +		iowrite8(TIMBUART_CTRL_CTS, port->membase + TIMBUART_CTRL);
+diff --git a/drivers/usb/gadget/f_mass_storage.c b/drivers/usb/gadget/f_mass_storage.c
+index 84f6491..8945573 100644
+--- a/drivers/usb/gadget/f_mass_storage.c
++++ b/drivers/usb/gadget/f_mass_storage.c
+@@ -302,7 +302,6 @@ static const char fsg_string_interface[] = "Mass Storage";
+ 
+ 
+ #define FSG_NO_INTR_EP 1
+-#define FSG_BUFFHD_STATIC_BUFFER 1
+ #define FSG_NO_DEVICE_STRINGS    1
+ #define FSG_NO_OTG               1
+ #define FSG_NO_INTR_EP           1
+@@ -2747,13 +2746,18 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
+ 
+ 
+ 	/* Data buffers cyclic list */
+-	/* Buffers in buffhds are static -- no need for additional
+-	 * allocation. */
+ 	bh = common->buffhds;
+-	i = FSG_NUM_BUFFERS - 1;
+-	do {
++	i = FSG_NUM_BUFFERS;
++	for (i = FSG_NUM_BUFFERS;; ++bh) {
++		bh->buf = kmalloc(FSG_BUFLEN, GFP_KERNEL);
++		if (!bh->buf) {
++			rc = -ENOMEM;
++			goto error_release;
++		}
++		if (!--i)
++			break;
+ 		bh->next = bh + 1;
+-	} while (++bh, --i);
++	}
+ 	bh->next = common->buffhds;
+ 
+ 
+@@ -2861,6 +2865,7 @@ static void fsg_common_release(struct kref *ref)
+ 		container_of(ref, struct fsg_common, ref);
+ 	unsigned i = common->nluns;
+ 	struct fsg_lun *lun = common->luns;
++	struct fsg_buffhd *bh;
+ 
+ 	/* If the thread isn't already dead, tell it to exit now */
+ 	if (common->state != FSG_STATE_TERMINATED) {
+@@ -2882,6 +2887,13 @@ static void fsg_common_release(struct kref *ref)
+ 	}
+ 
+ 	kfree(common->luns);
++
++	i = FSG_NUM_BUFFERS;
++	bh = common->buffhds;
++	do {
++		kfree(bh->buf);
++	} while (++bh, --i);
++
+ 	if (common->free_storage_on_release)
+ 		kfree(common);
+ }
+-- 
+1.6.5
 
-This is not completely correct. CTS is a read only bit and we are to stop signal RTS.
-So the line should look like:
-iowrite8(0, port->membase + TIMBUART_CTRL);
-
-
->   }
->
->   static void timbuart_mctrl_check(struct uart_port *port, u32 isr, u32 *ier)
-
---Richard
