@@ -1,61 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936103Ab0COKE2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:04:28 -0400
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:46529 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936076Ab0COKE0 (ORCPT
+	id S936117Ab0COKIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:08:22 -0400
+Received: from av11-1-sn2.hy.skanova.net ([81.228.8.183]:37490 "EHLO
+	av11-1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936077Ab0COKIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:04:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IaduQtuCDPrx1X0ntm35qzQJHUEcA4nS42KhLrqJpJah1JaH18JRT2Ue6onJsnUQJR
-         abPPAw5sjb2LcapuVv/4aE/3iU1SuVVN1e63ufj9snzoyBrRrf4kzQ6VJTieRi70p+XN
-         s+tV3/M9OZp7lvhMTLhOFBtx89rLaZZHWgE5g=
-Subject: Re: 2.6.34-rc1: rcu lockdep bug?
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       David Miller <davem@davemloft.net>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <2375c9f91003150239m1abc765bh59eb51c948eed592@mail.gmail.com>
-References: <20100311134556.GA6344@linux.vnet.ibm.com>
-	 <20100312.000705.225033546.davem@davemloft.net>
-	 <2375c9f91003120059g771d162fxefc21beb2ab17b4d@mail.gmail.com>
-	 <1268392276.3141.4.camel@edumazet-laptop>
-	 <2375c9f91003120511j6f33592cl12cb2617a27351ec@mail.gmail.com>
-	 <1268401058.3141.9.camel@edumazet-laptop> <20100313053356.GC3704@hack>
-	 <20100313215838.GB6805@linux.vnet.ibm.com> <20100315010802.GB2735@hack>
-	 <2375c9f91003142010g61841666iad53c24f39036acf@mail.gmail.com>
-	 <2375c9f91003150239m1abc765bh59eb51c948eed592@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Mar 2010 11:04:20 +0100
-Message-ID: <1268647460.3154.1.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 15 Mar 2010 06:08:21 -0400
+X-Greylist: delayed 1457 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Mar 2010 06:08:20 EDT
+Message-ID: <4B9E0160.5000900@pelagicore.com>
+Date: Mon, 15 Mar 2010 10:44:00 +0100
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@pelagicore.com>
+Organization: Pelagicore AB
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100121 Iceowl/1.0b1 Icedove/3.0.1
+MIME-Version: 1.0
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-serial@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] serial: Two branches the same in timbuart_set_mctrl()
+References: <4B532CF5.7080000@gmail.com> <20100117181702.026269e9@lxorguk.ukuu.org.uk> <4B535ED8.2050703@gmail.com>
+In-Reply-To: <4B535ED8.2050703@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 15 mars 2010 à 17:39 +0800, Américo Wang a écrit :
+Hi Roel,
 
-> 
-> Ok, I think I found what lockdep really complains about, it is that we took
-> spin_lock in netpoll_poll_lock() which is in hardirq-enabled environment,
-> later, we took another spin_lock with spin_lock_irqsave() in netpoll_rx(),
-> so lockdep thought we broke the locking rule.
-> 
-> I don't know why netpoll_rx() needs irq disabled, it looks like that no one
-> takes rx_lock in hardirq context. So can we use spin_lock(&rx_lock)
-> instead? Or am I missing something here? Eric? David?
+On 01/17/2010 08:02 PM, Roel Kluin wrote:
+> Dear Richard R�jfors,
+>
+> It is possible that I found a bug in the Timberdale UART driver that was added
+> to the linux kernel. The patch below tries to fix this, note the RTS to CTS
+> change, could you confirm whether the patch below changes your driver
+> correctly?
 
-I am a bit lost.
+Thanks for finding this, I have a comment on the patch below.
 
-Could you give the complete picture, because I cannot find it in my
-netdev archives.
+>
+> Thank you,
+>
+> Roel Kluin
+> ----------------->8----------------------------8<-------------------------------
+> Regardless of whether the TIOCM_RTS bit was set in mctrl, the same write
+> occurred.
+>
+> Signed-off-by: Roel Kluin<roel.kluin@gmail.com>
+> ---
+>   drivers/serial/timbuart.c |    2 +-
+>   1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/serial/timbuart.c b/drivers/serial/timbuart.c
+> index 34b31da..c433d40 100644
+> --- a/drivers/serial/timbuart.c
+> +++ b/drivers/serial/timbuart.c
+> @@ -219,7 +219,7 @@ static void timbuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
+>   	if (mctrl&  TIOCM_RTS)
+>   		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
+>   	else
+> -		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
+> +		iowrite8(TIMBUART_CTRL_CTS, port->membase + TIMBUART_CTRL);
+
+This is not completely correct. CTS is a read only bit and we are to stop signal RTS.
+So the line should look like:
+iowrite8(0, port->membase + TIMBUART_CTRL);
 
 
+>   }
+>
+>   static void timbuart_mctrl_check(struct uart_port *port, u32 isr, u32 *ier)
 
+--Richard
