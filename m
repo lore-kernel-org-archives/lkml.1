@@ -1,27 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757250Ab0COEsj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 00:48:39 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33019 "EHLO gate.crashing.org"
+	id S1759318Ab0COEs7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 00:48:59 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56096 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640Ab0COEsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 00:48:36 -0400
-Subject: Re: 2.6.34-rc1: Badness at fs/proc/generic.c:316
+	id S1759022Ab0COEsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 00:48:54 -0400
+Subject: 64-syscall args on 32-bit vs syscall()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <m2tysjw27p.fsf@whitebox.home>
-References: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
-	 <20100314065526.GA5353@x200>
-	 <alpine.DEB.2.01.1003140336280.5493@bogon.housecafe.de>
-	 <20100314112428.GA4142@x200>
-	 <alpine.DEB.2.01.1003140431040.5493@bogon.housecafe.de>
-	 <m2tysjw27p.fsf@whitebox.home>
+To: linux-arch@vger.kernel.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Lord <kernel@teksavvy.com>, Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Munroe <munroesj@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Mar 2010 14:23:46 +1100
-Message-ID: <1268623426.2209.109.camel@pasglop>
+Date: Mon, 15 Mar 2010 15:48:13 +1100
+Message-ID: <1268628493.2355.2.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -29,32 +23,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-03-14 at 12:51 +0100, Andreas Schwab wrote:
-> Christian Kujau <lists@nerdbynature.de> writes:
-> 
-> > On Sun, 14 Mar 2010 at 13:24, Alexey Dobriyan wrote:
-> >> Post "find /proc/device-tree" output.
-> >
-> > I did upload[0] a tarball of /proc/device-tree, please see below the 
-> > "find" output.
-> >
-> > Indeed, there's a /cpus/PowerPC,G4@0/l2-cache and 
-> > /cpus/PowerPC,G4@0/l2-cache#1 in the device-tree. However, from looking at 
-> > the logfiles, the
-> >
-> >    device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
-> 
-> That's a red herring, the real problem is this:
-> 
-> name 'pulses/rev'
-> 
-> Of course, this name cannot be found in /proc/device-tree, because it
-> wasn't created.
+Hoy there !
 
-You mean apple stuck a bloody "/" in a name property ? ARGH !
+This may have been discussed earlier (I have some vague memories...) but
+I just hit a problem with that again (Mark: hint, it's in hdparm's
+fallocate) so I'd like a bit of a refresh here on what is the "right
+thing" to do...
 
-We should just add code to detect that and replace it with a "_" or
-something...
+So some syscalls want a 64-bit argument. Let's take fallocate() as our
+example. So we already know that we have to be extra careful since some
+32-bit arch will pass this into 2 registers (or stack slots) which need
+to be aligned, and so we tend to already take care of making sure that
+the said 64-bit argument is either defined as 2x32-bit arguments, or
+defined as 1x64 bit argument aligned to 2x32-bit in the argument list.
+
+So far so good...
+
+The problem is when user space tries to use the same trick for calling
+those functions using glibc-provided syscall() function. In this
+example, hdparm does:
+
+err = syscall(SYS_fallocate, fd, mode, offset, len);
+
+With "offset" being a 64-bit argument.
+
+This will break because the first argument to syscall now shifts
+everything by one register, which breaks the register pair alignment
+(and I suppose archs with stack based calling convention can have
+similar alignment issues even if x86 doesn't).
+
+Ulrich, Steven, shouldn't we have glibc's syscall() take a long long as
+it's first argument to correct that ? Either that or making it some kind
+of macro wrapper around a __syscall(int dummy, int sysno, ...) ?
+
+As it is, any 32-bit app using syscall() on any of the syscalls that
+takes 64-bit arguments will be broken, unless the app itself breaks up
+the argument, but the the order of the hi and lo part is different
+between BE and LE architectures ;-)
+
+So is there a more "correct" solution than another here ? Should powerpc
+glibc be fixed at least so that syscall() keeps the alignment ?
 
 Cheers,
 Ben.
