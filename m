@@ -1,71 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935304Ab0CODCf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 23:02:35 -0400
-Received: from mail-yw0-f201.google.com ([209.85.211.201]:44299 "EHLO
-	mail-yw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934401Ab0CODCb (ORCPT
+	id S935360Ab0CODEN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 23:04:13 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:39081 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935214Ab0CODEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 23:02:31 -0400
-X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Mar 2010 23:02:31 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Lv9yGFy5VJjmxh+X/yRworMUQ8d0DmRCYqoDW12ukaNlRrO1i1J2QGgTJzte7nCLb8
-         J9/V5Q9J5P7dyEQevRxf8FhdeggaQi/wzZmyAz1s/5uoCJDb2Boa54CYoG2HQjaGoHhM
-         49Y8E+SZYMMyfHseBJHXZhmLajrZ47QF335CU=
-Message-ID: <4B9DA1BB.9010808@garzik.org>
-Date: Sun, 14 Mar 2010 22:55:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	Sun, 14 Mar 2010 23:04:10 -0400
+Date: Mon, 15 Mar 2010 03:03:38 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Kreuzer, Michael (NSN - DE/Ulm)" <michael.kreuzer@nsn.com>,
+       linux-mtd@lists.infradead.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] fix MTD CFI/LPDDR flash driver huge latency bug
+Message-ID: <20100315030338.GR6491@shareable.org>
+References: <1267894137.18869.0.camel@wall-e> <20100312142344.174bd46f.akpm@linux-foundation.org> <20100312233820.GH6491@shareable.org> <1268483744.6339.25.camel@wall-e>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Zeno Davatz <zdavatz@gmail.com>,
-       Andrew Benton <b3nton@gmail.com>
-Subject: Re: [git patches] libata updates for 2.6.34
-References: <20100301202330.GA14977@havoc.gtf.org> <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org> <4B96C7B2.3080008@garzik.org> <4B971F83.4030505@kernel.org>
-In-Reply-To: <4B971F83.4030505@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1268483744.6339.25.camel@wall-e>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2010 11:26 PM, Tejun Heo wrote:
-> Hello, Linus, Jeff.
->
-> On 03/10/2010 07:12 AM, Jeff Garzik wrote:
->> Coincedentally, it looks like someone else just reported the same
->> problem, with 2.6.34-rc1.
->>
->> It definitely sounds like a race.  READ DMA is a DMA command as the name
->> implies, so that eliminates the possibility of polling-related paths in
->> ata_sff_interrupt (libata-sff.c).
->>
->> I'll flip some of my machines to the icky slow boring piix mode, rather
->> than sexy AHCI mode :) to see if I can reproduce.  I have had a feeling
->> that we needed a more sophisticated IRQ handling setup, this may be what
->> was needed.  Lost interrupt recovery should occur faster than 30 seconds
->> in any case, and should not require a hard reset if the hardware
->> functions just fine outside of the lost-interrupt / race that just
->> occurred.
->
-> Yeap, there is a race condition with clearing which I don't think we
-> can solve completely but with some modification I think we can at
-> least cover known failure cases.
->
-> For longer term, I don't think we can solve this by diddling with the
-> SFF registers.  The interface is just way too ancient and horrid to
-> build anything reliable on top of.  I'm planning on implementing
-> smarter IRQ storm handling and stepped timeouts for ATA commands.
+Stefani Seibold wrote:
+> Am Freitag, den 12.03.2010, 23:38 +0000 schrieb Jamie Lokier:
+> > Andrew Morton wrote:
+> > > On Sat, 06 Mar 2010 17:48:57 +0100
+> > > Stefani Seibold <stefani@seibold.net> wrote:
+> > > 
+> 
+> 
+> > > > The patch change all the use of spin_lock operations for xxxx->mutex
+> > > > into mutex operations, which is exact what the name says and means.
+> > 
+> > It would be even better if it also split the critical sections into
+> > smaller ones with cond_resched() between, so that non-preemptible
+> > kernels benefit too.
+> 
+> The problem is the memcpy operation which is very slow. A cond_resched
+> wouldn't help, since the cpu bus is blocked during the transfer of the
+> word.
 
-A tester on this bug
-	http://bugzilla.kernel.org/show_bug.cgi?id=15537
-seemed to find success with the patch.
+I mean split the memcpy into multiple smaller memcpys, so that the
+total time in each memcpy is limited to something reasonable.
 
-	Jeff
+The check in cond_resched() is fast, especially once cached.  memcpy
+speed depends a lot on the attached flash and how everything's
+configured, varying from 2.5MB/s up to hundreds of MB/s.  So how about
+doing cond_resched() every 256 bytes?
 
-
+-- Jamie
