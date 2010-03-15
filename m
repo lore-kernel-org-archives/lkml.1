@@ -1,43 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935892Ab0COJcL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 05:32:11 -0400
-Received: from lucidpixels.com ([75.144.35.66]:43214 "EHLO lucidpixels.com"
+	id S936019Ab0COJgx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 05:36:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50782 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756647Ab0COJcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 05:32:07 -0400
-Date: Mon, 15 Mar 2010 05:32:03 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: xfs@oss.sgi.com
-Subject: 2.6.33 crash: invalid opcode: 0000 [#1] SMP: EIP: [<c11a018b>]
- assfail+0x1b/0x20 SS:ESP 0068:f687bf14
-Message-ID: <alpine.DEB.2.00.1003150528060.6999@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S935701Ab0COJgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 05:36:52 -0400
+Date: Mon, 15 Mar 2010 09:36:34 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Markus Rechberger <mrechberger@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: USBFS Memory allocation Bug
+Message-ID: <20100315093634.GF18274@csn.ul.ie>
+References: <20100310155519.GO4883@csn.ul.ie> <Pine.LNX.4.44L0.1003111155030.1367-100000@iolanthe.rowland.org> <20100314193114.619a2616.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100314193114.619a2616.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Specifications:
+On Sun, Mar 14, 2010 at 07:31:14PM -0400, Andrew Morton wrote:
+> On Thu, 11 Mar 2010 11:56:22 -0500 (EST) Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > On Wed, 10 Mar 2010, Mel Gorman wrote:
+> > 
+> > > > > Is there any means for the driver to take the large request, break it up
+> > > > > into multiple smaller requests and submit them one at a time?
+> > > > 
+> > > > In theory almost anything is possible.  But it would be a big effort
+> > > > and not consistent with the way the rest of the driver works.
+> > > > 
+> > > 
+> > > Then about the only other suggestion would be a mempool containing a small
+> > > number of largest-possible buffers that is enabled if there is no swap
+> > > available.
+> > 
+> > Considering that this is the first report I have heard about this sort 
+> > of problem, and that adding swap space would probably fix it, I'm not 
+> > inclined to make any changes.
+> 
+> Adding swap space is unlikely to help here.  For an order-6 allocation
+> the page allocator will go into wtf-youre-kidding-me mode and won't
+> even bother trying.
+> 
 
-2.6.33
-32bit
-Debian Testing
+It will try and make the allocation and probably enter direct reclaim
+and do a lumpy reclaim for contiguous blocks. What it won't do is retry
+as many times as an allocation order <= PAGE_ALLOC_COSTLY_ORDER.
 
-On Mar 14th, my server hung up:
+> Asking the allocator for 2^6 physically contiguous pages is terribly
+> unreliable and shouldn't be done by any kernel code which wants to be
+> useful.
+> 
 
-Mar 14 00:00:22 server1 kernel: [488470.189675] ------------[ cut here ]------------
-Mar 14 00:00:22 server1 kernel: [488470.189679] invalid opcode: 0000 [#1] SMP
-Mar 14 00:00:22 server1 kernel: [488470.189681] last sysfs file: /sys/devices/pci0000:00/0000:00:0e.0/host0/target0:0:0/0:0:0:0/block/sda/uevent
-Mar 14 00:00:22 server1 kernel: [488470.189704] Process xfssyncd (pid: 584, ti=f687a000 task=f70fa400 task.ti=f687a000)
-Mar 14 00:00:22 server1 kernel: [488470.189705] Stack:
-Mar 14 00:00:22 server1 kernel: [488470.189721] Call Trace:
-Mar 14 00:00:22 server1 kernel: [488470.189739] Code: 00 e8 ea e5 01 00 83 c4 14 c3 8d b6 00 00 00 00 83 ec 10 89 4c 24 0c 89 54 24 08 89 44 24 04 c7 04 24 30 ab 42 c1 e8 7c 11 1c 00 <0f> 0b eb fe 90 55 57 89 cf 56 89 c6 b8 80 b0 52 c1 83 e6 07 53
-Mar 14 00:00:22 server1 kernel: [488470.189739] EIP: [<c11a018b>] assfail+0x1b/0x20 SS:ESP 0068:f687bf14
+This remains true. With swap, the high-order allocation attempt might succeed
+many of the times but there will still be situations where it fails.
 
-Is this a bug related to AMD (CPU) or XFS?
-
-Justin.
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
