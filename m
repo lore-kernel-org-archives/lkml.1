@@ -1,115 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098Ab0CONaw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 09:30:52 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49952 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756782Ab0CONau (ORCPT
+	id S933013Ab0CONcO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 09:32:14 -0400
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:65467 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839Ab0CONcH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 09:30:50 -0400
-From: Luotao Fu <l.fu@pengutronix.de>
-To: Russell King <linux@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andres Salomon <dilinger@debian.org>,
-       Alessandro Rubini <rubini@unipv.it>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>, Kevin Wells <wellsk40@gmail.com>,
-       linux-kernel@vger.kernel.org, Luotao Fu <l.fu@pengutronix.de>
-Subject: [PATCH] amba-clcd: add RGB444 support
-Date: Mon, 15 Mar 2010 14:30:09 +0100
-Message-Id: <1268659809-3609-1-git-send-email-l.fu@pengutronix.de>
-X-Mailer: git-send-email 1.7.0
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 15 Mar 2010 09:32:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=H8R4JfMVzN838CKE0fozTvkSfXvjM/tNkCClk7hOAZFQNQjEmwGwBojKykZr44M+Rq
+         MkxtMLAV8WHFz5/U3udax2dPRcEPuZp7CmozbrCPAMGPQlgUAVxU5pgXvETygIiEeK+d
+         7ZDOXohpOq65RVi5/eKmljjYEWafe574UJk+Q=
+Message-ID: <4B9E36D5.9080503@garzik.org>
+Date: Mon, 15 Mar 2010 09:32:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Zeno Davatz <zdavatz@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [git patches] libata updates for 2.6.34
+References: <20100301202330.GA14977@havoc.gtf.org>	 <alpine.LFD.2.00.1003091304400.3583@i5.linux-foundation.org>	 <4B96C7B2.3080008@garzik.org> <4B971F83.4030505@kernel.org>	 <4B9DA1BB.9010808@garzik.org>	 <40a4ed591003150033w5c416b28rfae989fa2ddf7305@mail.gmail.com>	 <4B9E30D5.2030001@garzik.org> <40a4ed591003150621h792f0a7ex793b54708166ffa0@mail.gmail.com>
+In-Reply-To: <40a4ed591003150621h792f0a7ex793b54708166ffa0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This one adds RGB444 (bpp=12) support to amba clcd drivers. Tested on a lpc3250
-based platform.
+On 03/15/2010 09:21 AM, Zeno Davatz wrote:
+> On Mon, Mar 15, 2010 at 2:06 PM, Jeff Garzik<jeff@garzik.org>  wrote:
+>> On 03/15/2010 03:33 AM, Zeno Davatz wrote:
+>>>
+>>> On Mon, Mar 15, 2010 at 3:55 AM, Jeff Garzik<jeff@garzik.org>    wrote:
+>>>>
+>>>> On 03/09/2010 11:26 PM, Tejun Heo wrote:
+>>>>>
+>>>>> Hello, Linus, Jeff.
+>>>>>
+>>>>> On 03/10/2010 07:12 AM, Jeff Garzik wrote:
+>>>>>>
+>>>>>> Coincedentally, it looks like someone else just reported the same
+>>>>>> problem, with 2.6.34-rc1.
+>>>>>>
+>>>>>> It definitely sounds like a race.  READ DMA is a DMA command as the
+>>>>>> name
+>>>>>> implies, so that eliminates the possibility of polling-related paths in
+>>>>>> ata_sff_interrupt (libata-sff.c).
+>>>>>>
+>>>>>> I'll flip some of my machines to the icky slow boring piix mode, rather
+>>>>>> than sexy AHCI mode :) to see if I can reproduce.  I have had a feeling
+>>>>>> that we needed a more sophisticated IRQ handling setup, this may be
+>>>>>> what
+>>>>>> was needed.  Lost interrupt recovery should occur faster than 30
+>>>>>> seconds
+>>>>>> in any case, and should not require a hard reset if the hardware
+>>>>>> functions just fine outside of the lost-interrupt / race that just
+>>>>>> occurred.
+>>>>>
+>>>>> Yeap, there is a race condition with clearing which I don't think we
+>>>>> can solve completely but with some modification I think we can at
+>>>>> least cover known failure cases.
+>>>>>
+>>>>> For longer term, I don't think we can solve this by diddling with the
+>>>>> SFF registers.  The interface is just way too ancient and horrid to
+>>>>> build anything reliable on top of.  I'm planning on implementing
+>>>>> smarter IRQ storm handling and stepped timeouts for ATA commands.
+>>>>
+>>>> A tester on this bug
+>>>>         http://bugzilla.kernel.org/show_bug.cgi?id=15537
+>>>> seemed to find success with the patch.
+>>>
+>>> Thanks for the Update!
+>>>
+>>> I will wait some more and then test rc-2.
+>>
+>> Can you test the patch, please?
+>
+> Sure. I done:
+>
+> /usr/src/linux>  sudo patch -p1<  teo
+> patching file drivers/ata/libata-sff.c
+> Hunk #1 FAILED at 1667.
+> Hunk #2 FAILED at 1700.
+> Hunk #3 FAILED at 1718.
+> Hunk #4 FAILED at 1770.
+> Hunk #5 FAILED at 1792.
+> Hunk #6 FAILED at 1801.
+> Hunk #7 FAILED at 1818.
+> 7 out of 7 hunks FAILED -- saving rejects to file drivers/ata/libata-sff.c.rej
+>
+> Is that the expected outcome? Can I ignore the "failed" output?
 
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
----
- drivers/video/amba-clcd.c |   11 ++++++++---
- include/linux/amba/clcd.h |    7 ++++++-
- 2 files changed, 14 insertions(+), 4 deletions(-)
+With 7 out of 7 hunks failing, nothing got modified.
 
-diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
-index a21efcd..5111a12 100644
---- a/drivers/video/amba-clcd.c
-+++ b/drivers/video/amba-clcd.c
-@@ -134,6 +134,11 @@ clcdfb_set_bitfields(struct clcd_fb *fb, struct fb_var_screeninfo *var)
- 		var->blue.length	= var->bits_per_pixel;
- 		var->blue.offset	= 0;
- 		break;
-+	case 12:
-+		var->red.length		= 4;
-+		var->green.length	= 4;
-+		var->blue.length	= 4;
-+		break;
- 	case 16:
- 		var->red.length = 5;
- 		var->blue.length = 5;
-@@ -161,7 +166,7 @@ clcdfb_set_bitfields(struct clcd_fb *fb, struct fb_var_screeninfo *var)
- 	 * encoded in the pixel data.  Calculate their position from
- 	 * the bitfield length defined above.
- 	 */
--	if (ret == 0 && var->bits_per_pixel >= 16) {
-+	if (ret == 0 && var->bits_per_pixel >= 12) {
- 		if (fb->panel->cntl & CNTL_BGR) {
- 			var->blue.offset = 0;
- 			var->green.offset = var->blue.offset + var->blue.length;
-@@ -200,6 +205,8 @@ static int clcdfb_set_par(struct fb_info *info)
- 	struct clcd_fb *fb = to_clcd(info);
- 	struct clcd_regs regs;
- 
-+	fb->board->decode(fb, &regs);
-+
- 	fb->fb.fix.line_length = fb->fb.var.xres_virtual *
- 				 fb->fb.var.bits_per_pixel / 8;
- 
-@@ -208,8 +215,6 @@ static int clcdfb_set_par(struct fb_info *info)
- 	else
- 		fb->fb.fix.visual = FB_VISUAL_TRUECOLOR;
- 
--	fb->board->decode(fb, &regs);
--
- 	clcdfb_disable(fb);
- 
- 	writel(regs.tim0, fb->regs + CLCD_TIM0);
-diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
-index 8d0d491..7e0bcc7 100644
---- a/include/linux/amba/clcd.h
-+++ b/include/linux/amba/clcd.h
-@@ -53,6 +53,7 @@
- #define CNTL_LCDBPP2		(1 << 1)
- #define CNTL_LCDBPP4		(2 << 1)
- #define CNTL_LCDBPP8		(3 << 1)
-+#define CNTL_LCDBPP12		(7 << 1)
- #define CNTL_LCDBPP16		(4 << 1)
- #define CNTL_LCDBPP16_565	(6 << 1)
- #define CNTL_LCDBPP24		(5 << 1)
-@@ -209,6 +210,10 @@ static inline void clcdfb_decode(struct clcd_fb *fb, struct clcd_regs *regs)
- 	case 8:
- 		val |= CNTL_LCDBPP8;
- 		break;
-+	case 12:
-+		fb->fb.var.bits_per_pixel = 16;
-+		val |= CNTL_LCDBPP12;
-+		break;
- 	case 16:
- 		/*
- 		 * PL110 cannot choose between 5551 and 565 modes in
-@@ -225,7 +230,7 @@ static inline void clcdfb_decode(struct clcd_fb *fb, struct clcd_regs *regs)
- 		val |= CNTL_LCDBPP24;
- 		break;
- 	}
--
-+	printk("**** %s: cntl val 0x%08x\n", __func__, val);
- 	regs->cntl = val;
- 	regs->pixclock = fb->fb.var.pixclock;
- }
--- 
-1.7.0
+Is your source tree an unmodified, vanilla 2.6.34-rc1 tree?
+
+	Jeff
+
+
+
 
