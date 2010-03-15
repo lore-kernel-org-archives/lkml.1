@@ -1,151 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936011Ab0COJNG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 05:13:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37280 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935996Ab0COJM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 05:12:29 -0400
-Date: Mon, 15 Mar 2010 10:10:23 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Ben Blum <bblum@google.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] _cpu_down: don't play with current->cpus_allowed
-Message-ID: <20100315091023.GA9148@redhat.com>
+	id S935990Ab0COJR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 05:17:26 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:36103 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935892Ab0COJRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 05:17:25 -0400
+Date: Mon, 15 Mar 2010 14:47:20 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: KVM development list <kvm@vger.kernel.org>,
+       Rik van Riel <riel@surriel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RF C/T/D] Unmapped page cache control - via boot
+ parameter
+Message-ID: <20100315091720.GC18054@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20100315072214.GA18054@balbir.in.ibm.com>
+ <4B9DE635.8030208@redhat.com>
+ <20100315080726.GB18054@balbir.in.ibm.com>
+ <4B9DEF81.6020802@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B9DEF81.6020802@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-_cpu_down() changes the current task's affinity and then recovers it at
-the end. The problems are well known: we can't restore old_allowed if it
-was bound to the now-dead-cpu, and we can race with the userspace which
-can change cpu-affinity during unplug.
+* Avi Kivity <avi@redhat.com> [2010-03-15 10:27:45]:
 
-_cpu_down() should not play with current->cpus_allowed at all. Instead,
-take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
-removes the dying cpu from cpu_online_mask.
+> On 03/15/2010 10:07 AM, Balbir Singh wrote:
+> >* Avi Kivity<avi@redhat.com>  [2010-03-15 09:48:05]:
+> >
+> >>On 03/15/2010 09:22 AM, Balbir Singh wrote:
+> >>>Selectively control Unmapped Page Cache (nospam version)
+> >>>
+> >>>From: Balbir Singh<balbir@linux.vnet.ibm.com>
+> >>>
+> >>>This patch implements unmapped page cache control via preferred
+> >>>page cache reclaim. The current patch hooks into kswapd and reclaims
+> >>>page cache if the user has requested for unmapped page control.
+> >>>This is useful in the following scenario
+> >>>
+> >>>- In a virtualized environment with cache!=none, we see
+> >>>   double caching - (one in the host and one in the guest). As
+> >>>   we try to scale guests, cache usage across the system grows.
+> >>>   The goal of this patch is to reclaim page cache when Linux is running
+> >>>   as a guest and get the host to hold the page cache and manage it.
+> >>>   There might be temporary duplication, but in the long run, memory
+> >>>   in the guests would be used for mapped pages.
+> >>Well, for a guest, host page cache is a lot slower than guest page cache.
+> >>
+> >Yes, it is a virtio call away, but is the cost of paying twice in
+> >terms of memory acceptable?
+> 
+> Usually, it isn't, which is why I recommend cache=off.
+>
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+cache=off works for *direct I/O* supported filesystems and my concern is that
+one of the side-effects is that idle VM's can consume a lot of memory
+(assuming all the memory is available to them). As the number of VM's
+grow, they could cache a whole lot of memory. In my experiments I
+found that the total amount of memory cached far exceeded the mapped
+ratio by a large amount when we had idle VM's. The philosophy of this
+patch is to move the caching to the _host_ and let the host maintain
+the cache instead of the guest.
+ 
+> >One of the reasons I created a boot
+> >parameter was to deal with selective enablement for cases where
+> >memory is the most important resource being managed.
+> >
+> >I do see a hit in performance with my results (please see the data
+> >below), but the savings are quite large. The other solution mentioned
+> >in the TODOs is to have the balloon driver invoke this path. The
+> >sysctl also allows the guest to tune the amount of unmapped page cache
+> >if needed.
+> >
+> >The knobs are for
+> >
+> >1. Selective enablement
+> >2. Selective control of the % of unmapped pages
+> 
+> An alternative path is to enable KSM for page cache.  Then we have
+> direct read-only guest access to host page cache, without any guest
+> modifications required.  That will be pretty difficult to achieve
+> though - will need a readonly bit in the page cache radix tree, and
+> teach all paths to honour it.
+> 
 
- include/linux/sched.h |    1 +
- kernel/sched.c        |    2 +-
- kernel/cpu.c          |   18 ++++++------------
- 3 files changed, 8 insertions(+), 13 deletions(-)
+Yes, it is, I've taken a quick look. I am not sure if de-duplication
+would be the best approach, may be dropping the page in the page cache
+might be a good first step. Data consistency would be much easier to
+maintain that way, as long as the guest is not writing frequently to
+that page, we don't need the page cache in the host.
 
---- 34-rc1/include/linux/sched.h~4_CPU_DOWN_AFFINITY	2010-03-15 09:37:46.000000000 +0100
-+++ 34-rc1/include/linux/sched.h	2010-03-15 09:41:51.000000000 +0100
-@@ -1843,6 +1843,7 @@ extern void sched_clock_idle_sleep_event
- extern void sched_clock_idle_wakeup_event(u64 delta_ns);
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+extern void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p);
- extern void idle_task_exit(void);
- #else
- static inline void idle_task_exit(void) {}
---- 34-rc1/kernel/sched.c~4_CPU_DOWN_AFFINITY	2010-03-15 09:41:28.000000000 +0100
-+++ 34-rc1/kernel/sched.c	2010-03-15 09:41:51.000000000 +0100
-@@ -5503,7 +5503,7 @@ static int migration_thread(void *data)
- /*
-  * Figure out where task on dead CPU should go, use force if necessary.
-  */
--static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-+void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
- {
- 	struct rq *rq = cpu_rq(dead_cpu);
- 	int needs_cpu, dest_cpu;
---- 34-rc1/kernel/cpu.c~4_CPU_DOWN_AFFINITY	2010-03-15 09:37:46.000000000 +0100
-+++ 34-rc1/kernel/cpu.c	2010-03-15 09:41:51.000000000 +0100
-@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
- }
- 
- struct take_cpu_down_param {
-+	struct task_struct *caller;
- 	unsigned long mod;
- 	void *hcpu;
- };
-@@ -171,6 +172,7 @@ struct take_cpu_down_param {
- static int __ref take_cpu_down(void *_param)
- {
- 	struct take_cpu_down_param *param = _param;
-+	unsigned int cpu = (unsigned long)param->hcpu;
- 	int err;
- 
- 	/* Ensure this CPU doesn't handle any more interrupts. */
-@@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
- 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
- 				param->hcpu);
- 
-+	if (task_cpu(param->caller) == cpu)
-+		move_task_off_dead_cpu(cpu, param->caller);
- 	/* Force idle task to run as soon as we yield: it should
- 	   immediately notice cpu is offline and die quickly. */
- 	sched_idle_next();
-@@ -191,10 +195,10 @@ static int __ref take_cpu_down(void *_pa
- static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- {
- 	int err, nr_calls = 0;
--	cpumask_var_t old_allowed;
- 	void *hcpu = (void *)(long)cpu;
- 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
- 	struct take_cpu_down_param tcd_param = {
-+		.caller = current,
- 		.mod = mod,
- 		.hcpu = hcpu,
- 	};
-@@ -205,9 +209,6 @@ static int __ref _cpu_down(unsigned int 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
--	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
--		return -ENOMEM;
--
- 	cpu_hotplug_begin();
- 	set_cpu_active(cpu, false);
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
-@@ -224,10 +225,6 @@ static int __ref _cpu_down(unsigned int 
- 		goto out_release;
- 	}
- 
--	/* Ensure that we are not runnable on dying cpu */
--	cpumask_copy(old_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpu_active_mask);
--
- 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
- 	if (err) {
- 		set_cpu_active(cpu, true);
-@@ -236,7 +233,7 @@ static int __ref _cpu_down(unsigned int 
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 
--		goto out_allowed;
-+		goto out_release;
- 	}
- 	BUG_ON(cpu_online(cpu));
- 
-@@ -254,8 +251,6 @@ static int __ref _cpu_down(unsigned int 
- 
- 	check_for_tasks(cpu);
- 
--out_allowed:
--	set_cpus_allowed_ptr(current, old_allowed);
- out_release:
- 	cpu_hotplug_done();
- 	if (!err) {
-@@ -263,7 +258,6 @@ out_release:
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 	}
--	free_cpumask_var(old_allowed);
- 	return err;
- }
- 
+> -- 
+> Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> 
 
+-- 
+	Three Cheers,
+	Balbir
