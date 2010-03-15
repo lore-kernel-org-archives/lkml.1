@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935982Ab0COJMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 05:12:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49725 "EHLO mx1.redhat.com"
+	id S936005Ab0COJMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 05:12:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11742 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935894Ab0COJMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 05:12:20 -0400
-Date: Mon, 15 Mar 2010 10:10:14 +0100
+	id S935894Ab0COJMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 05:12:24 -0400
+Date: Mon, 15 Mar 2010 10:09:58 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
 Cc: Ben Blum <bblum@google.com>, Jiri Slaby <jirislaby@gmail.com>,
@@ -14,8 +14,8 @@ Cc: Ben Blum <bblum@google.com>, Jiri Slaby <jirislaby@gmail.com>,
        Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/6] move_task_off_dead_cpu: remove retry logic
-Message-ID: <20100315091014.GA9138@redhat.com>
+Subject: [PATCH 0/6] sched/cpusets fixes, more changes are needed
+Message-ID: <20100315090958.GA9116@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,50 +24,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The previous patch preserved the retry logic, but it looks unneeded.
+Ingo, Peter.
 
-__migrate_task() can only fail if we raced with migration after we dropped
-the lock, but in this case the caller of set_cpus_allowed/etc must initiate
-migration itself if ->on_rq == T.
+Unless I missed something, with or without these patches the TASK_WAKING
+logic in do_fork() is very broken.
 
-We already fixed p->cpus_allowed, the changes in active/online masks must
-be visible to racer, it should migrate the task to online cpu correctly.
+	- do_fork() clears PF_STARTING and then calls wake_up_new_task()
+	  which finally does s/WAKING/RUNNING.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+	  But. Nobody can take rq->lock in between. This means a signal
+	  from irq (quite possible with CLONE_THREAD) or another rt
+	  thread which preempts us can lockup.
 
- kernel/sched.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+	- the comment in wake_up_new_task says:
+	
+		We still have TASK_WAKING but PF_STARTING is gone now, meaning
+		->cpus_allowed is stable
 
---- 34-rc1/kernel/sched.c~2_XXX_MTODC_DONT_RETRY	2010-03-15 09:40:31.000000000 +0100
-+++ 34-rc1/kernel/sched.c	2010-03-15 09:40:44.000000000 +0100
-@@ -5517,7 +5517,7 @@ static void move_task_off_dead_cpu(int d
- 	struct rq *rq = cpu_rq(dead_cpu);
- 	int needs_cpu, dest_cpu;
- 	unsigned long flags;
--again:
-+
- 	local_irq_save(flags);
- 
- 	raw_spin_lock(&rq->lock);
-@@ -5525,14 +5525,13 @@ again:
- 	if (needs_cpu)
- 		dest_cpu = select_fallback_rq(dead_cpu, p);
- 	raw_spin_unlock(&rq->lock);
--
--	/* It can have affinity changed while we were choosing. */
-+	/*
-+	 * It can only fail if we race with set_cpus_allowed(),
-+	 * in the racer should migrate the task anyway.
-+	 */
- 	if (needs_cpu)
--		needs_cpu = !__migrate_task(p, dead_cpu, dest_cpu);
-+		__migrate_task(p, dead_cpu, dest_cpu);
- 	local_irq_restore(flags);
--
--	if (unlikely(needs_cpu))
--		goto again;
- }
- 
- /*
+	  this is not true. Yes, nobody can take rq->lock _after_ we cleared
+	  PF_STARTING, but it is possible that another thread took this lock
+	  before and still holds it doing, say, sched_setaffinity().
+
+No?
+
+If yes. I can make a patch, but the question is: what is the point to use
+TASK_WAKING in fork pathes? Can't sched_fork() set TASK_RUNNING instead?
+Afaics, TASK_RUNNING can equally protect from premature wakeups but doesn't
+these PF_STARTING complications.
+
+As for this series. Please review. I don't understand how it is possible
+to really test these changes.
+
+Dear cpuset developers! Please review ;) If you don't like 6/6, please make
+a better fix. I tried to make as "simple" patch as possible because I hardly
+understand cpuset.c, last time I quickly read it a long ago.
+
+Oleg.
 
