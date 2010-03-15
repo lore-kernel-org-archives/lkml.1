@@ -1,60 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935904Ab0COJGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 05:06:19 -0400
-Received: from 8bytes.org ([88.198.83.132]:41527 "EHLO 8bytes.org"
+	id S935915Ab0COJJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 05:09:20 -0400
+Received: from www.tglx.de ([62.245.132.106]:56894 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759885Ab0COJGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 05:06:18 -0400
-Date: Mon, 15 Mar 2010 10:06:09 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/18] KVM: MMU: Propagate the right fault back to the
-	guest after gva_to_gpa
-Message-ID: <20100315090609.GA13108@8bytes.org>
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com> <1267643541-451-16-git-send-email-joerg.roedel@amd.com> <4B9DE394.2080401@redhat.com>
+	id S1759885Ab0COJJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 05:09:19 -0400
+To: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] serial: fix possible imx deadlock
+From: John Ogness <john.ogness@linutronix.de>
+Date: Mon, 15 Mar 2010 10:08:58 +0100
+Message-ID: <80k4tehryt.fsf@merkur.tec.linutronix.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B9DE394.2080401@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 15, 2010 at 09:36:52AM +0200, Avi Kivity wrote:
-> On 03/03/2010 09:12 PM, Joerg Roedel wrote:
->> This patch implements logic to make sure that either a
->> page-fault/page-fault-vmexit or a nested-page-fault-vmexit
->> is propagated back to the guest.
->>
->> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
->> ---
->>   arch/x86/kvm/mmu.h         |    1 +
->>   arch/x86/kvm/paging_tmpl.h |    2 ++
->>   arch/x86/kvm/x86.c         |   15 ++++++++++++++-
->>   3 files changed, 17 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
->> index 64f619b..b42b27e 100644
->> --- a/arch/x86/kvm/mmu.h
->> +++ b/arch/x86/kvm/mmu.h
->> @@ -47,6 +47,7 @@
->>   #define PFERR_USER_MASK (1U<<  2)
->>   #define PFERR_RSVD_MASK (1U<<  3)
->>   #define PFERR_FETCH_MASK (1U<<  4)
->> +#define PFERR_NESTED_MASK (1U<<  31)
->>    
->
->
-> Why is this needed?  Queue an ordinary page fault page; the injection  
-> code should check the page fault intercept and #VMEXIT if needed.
+This patch fixes a possible deadlock situation with the port and timer
+locks. The calling paths for the deadlock situation are:
 
-This is needed because we could have a nested page fault or an ordinary
-page fault which need to be propagated.
+1. imx_set_termios() -> LOCK(port.lock)
+      -> del_timer_sync() -> LOCK(timer.base.lock)
 
-	Joerg
+2. run_timer_softirq() -> LOCK(timer.base.lock)
+      -> imx_timeout() -> LOCK(port.lock)
 
+This patch is against 2.6.34-rc1.
+
+Signed-off-by: John Ogness <john.ogness@linutronix.de>
+---
+ drivers/serial/imx.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+diff -Naurp a/drivers/serial/imx.c b/drivers/serial/imx.c
+--- a/drivers/serial/imx.c	2010-03-08 19:45:44.000000000 +0100
++++ b/drivers/serial/imx.c	2010-03-15 09:52:39.855261060 +0100
+@@ -836,6 +836,12 @@ imx_set_termios(struct uart_port *port, 
+ 	baud = uart_get_baud_rate(port, termios, old, 50, port->uartclk / 16);
+ 	quot = uart_get_divisor(port, baud);
+ 
++	/*
++	 * Stop our timer. This is done with the port unlocked
++	 * to avoid possible deadlock against the timer function.
++	 */
++	del_timer_sync(&sport->timer);
++
+ 	spin_lock_irqsave(&sport->port.lock, flags);
+ 
+ 	sport->port.read_status_mask = 0;
+@@ -860,8 +866,6 @@ imx_set_termios(struct uart_port *port, 
+ 			sport->port.ignore_status_mask |= URXD_OVRRUN;
+ 	}
+ 
+-	del_timer_sync(&sport->timer);
+-
+ 	/*
+ 	 * Update the per-port timeout.
+ 	 */
