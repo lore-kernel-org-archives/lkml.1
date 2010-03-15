@@ -1,58 +1,209 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600Ab0COGqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 02:46:42 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:37059 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756183Ab0COGql (ORCPT
+	id S1759607Ab0COGsq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 02:48:46 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36632 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756997Ab0COGsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 02:46:41 -0400
-Date: Mon, 15 Mar 2010 07:44:53 +0100
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: RE: [PATCH] Regulators: lp3971 - Fix setting val for LDO2 and LDO4
-In-reply-to: <20100310170717.GC22626@rakim.wolfsonmicro.main>
-To: "'Mark Brown'" <broonie@opensource.wolfsonmicro.com>,
-       "'axel lin'" <axel.lin@gmail.com>
-Cc: "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'Kyungmin Park'" <kyungmin.park@samsung.com>, lrg@slimlogic.co.uk
-Message-id: <000001cac40b$07368ba0$15a3a2e0$%szyprowski@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: text/plain; charset=us-ascii
-Content-language: pl
-Content-transfer-encoding: 7BIT
-Thread-index: AcrAdCacLsv9QBKuQCuSKgbRgO30SADln1Qg
-References: <427d64721003091629s4c5728b4y9005feeef9a05b7e@mail.gmail.com>
- <20100310170717.GC22626@rakim.wolfsonmicro.main>
+	Mon, 15 Mar 2010 02:48:43 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 15 Mar 2010 15:44:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 02/11] mm,migration: Do not try to migrate unmapped 
+ anonymous pages
+Message-Id: <20100315154459.c665f68d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <28c262361003142328w610f0478sbc17880ffa454fe8@mail.gmail.com>
+References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
+	<1268412087-13536-3-git-send-email-mel@csn.ul.ie>
+	<28c262361003141728g4aa40901hb040144c5a4aeeed@mail.gmail.com>
+	<20100315143420.6ec3bdf9.kamezawa.hiroyu@jp.fujitsu.com>
+	<28c262361003142328w610f0478sbc17880ffa454fe8@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 15 Mar 2010 15:28:15 +0900
+Minchan Kim <minchan.kim@gmail.com> wrote:
 
-On Wednesday, March 10, 2010 6:07 PM Mark Brown wrote:
-
-> On Wed, Mar 10, 2010 at 08:29:40AM +0800, axel lin wrote:
-> > From: Axel Lin <axel.lin@gmail.com>
-> > Date: Tue, 9 Mar 2010 16:53:59 +0800
-> > Subject: [PATCH] lp3971: Fix setting val for LDO2 and LDO4
+> On Mon, Mar 15, 2010 at 2:34 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Mon, 15 Mar 2010 09:28:08 +0900
+> > Minchan Kim <minchan.kim@gmail.com> wrote:
 > >
-> > In lp3971_ldo_set_voltage function, it requires val to left shift 4
-> > bits for LDO2 and LDO4.
-> > This patch fix this issue.
+> >> Hi, Mel.
+> >> On Sat, Mar 13, 2010 at 1:41 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> >> > rmap_walk_anon() was triggering errors in memory compaction that looks like
+> >> > use-after-free errors in anon_vma. The problem appears to be that between
+> >> > the page being isolated from the LRU and rcu_read_lock() being taken, the
+> >> > mapcount of the page dropped to 0 and the anon_vma was freed. This patch
+> >> > skips the migration of anon pages that are not mapped by anyone.
+> >> >
+> >> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> >> > Acked-by: Rik van Riel <riel@redhat.com>
+> >> > ---
+> >> >  mm/migrate.c |   10 ++++++++++
+> >> >  1 files changed, 10 insertions(+), 0 deletions(-)
+> >> >
+> >> > diff --git a/mm/migrate.c b/mm/migrate.c
+> >> > index 98eaaf2..3c491e3 100644
+> >> > --- a/mm/migrate.c
+> >> > +++ b/mm/migrate.c
+> >> > @@ -602,6 +602,16 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+> >> >         * just care Anon page here.
+> >> >         */
+> >> >        if (PageAnon(page)) {
+> >> > +               /*
+> >> > +                * If the page has no mappings any more, just bail. An
+> >> > +                * unmapped anon page is likely to be freed soon but worse,
+> >> > +                * it's possible its anon_vma disappeared between when
+> >> > +                * the page was isolated and when we reached here while
+> >> > +                * the RCU lock was not held
+> >> > +                */
+> >> > +               if (!page_mapcount(page))
+> >>
+> >> As looking code about mapcount of page, I got confused.
+> >> I think mapcount of page is protected by pte lock.
+> >> But I can't find pte lock in unmap_and_move.
+> > There is no pte_lock.
 > >
-> > Signed-off-by: Axel Lin <axel.lin@gmail.com>
+> >> If I am right, what protects race between this condition check and
+> >> rcu_read_lock?
+> >> This patch makes race window very small but It can't remove race totally.
+> >>
+> >> I think I am missing something.
+> >> Pz, point me out. :)
+> >>
+> >
+> > Hmm. This is my understanding of old story.
+> >
+> > At migration.
+> >  1. we increase page_count().
+> >  2. isolate it from LRU.
+> >  3. call try_to_unmap() under rcu_read_lock(). Then,
+> >  4. replace pte with swp_entry_t made by PFN. under pte_lock.
+> >  5. do migarate
+> >  6. remap new pages. under pte_lock()>
+> >  7. release rcu_read_lock().
+> >
+> > Here, we don't care whether page->mapping holds valid anon_vma or not.
+> >
+> > Assume a racy threads which calls zap_pte_range() (or some other)
+> >
+> > a) When the thread finds valid pte under pte_lock and successfully call
+> >   page_remove_rmap().
+> >   In this case, migration thread finds try_to_unmap doesn't unmap any pte.
+> >   Then, at 6, remap pte will not work.
+> > b) When the thread finds migrateion PTE(as swap entry) in zap_page_range().
+> >   In this case, migration doesn't find migrateion PTE and remap fails.
+> >
+> > Why rcu_read_lock() is necessary..
+> >  - When page_mapcount() goes to 0, we shouldn't trust page->mapping is valid.
+> >  - Possible cases are
+> >        i) anon_vma (= page->mapping) is freed and used for other object.
+> >        ii) anon_vma (= page->mapping) is freed
+> >        iii) anon_vma (= page->mapping) is freed and used as anon_vma again.
+> >
+> > Here, anon_vma_cachep is created  by SLAB_DESTROY_BY_RCU. Then, possible cases
+> > are only ii) and iii). While anon_vma is anon_vma, try_to_unmap and remap_page
+> > can work well because of the list of vmas and address check. IOW, remap routine
+> > just do nothing if anon_vma is freed.
+> >
+> > I'm not sure by what logic "use-after-free anon_vma" is caught. But yes,
+> > there will be case, "anon_vma is touched after freed.", I think.
+> >
+> > Thanks,
+> > -Kame
+> >
 > 
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Thanks for detail explanation, Kame.
+> But it can't understand me enough, Sorry.
 > 
-> but I really would prefer to see one of the Samsung folks comment.
+> Mel said he met "use-after-free errors in anon_vma".
+> So added the check in unmap_and_move.
+> 
+> if (PageAnon(page)) {
+>  ....
+>  if (!page_mapcount(page))
+>    goto uncharge;
+>  rcu_read_lock();
+> 
+> My concern what protects racy mapcount of the page?
+> For example,
+> 
+> CPU A                                 CPU B
+> unmap_and_move
+> page_mapcount check pass    zap_pte_range
+> <-- some stall -->                   pte_lock
+> <-- some stall -->                   page_remove_rmap(map_count is zero!)
+> <-- some stall -->                   pte_unlock
+> <-- some stall -->                   anon_vma_unlink
+> <-- some stall -->                   anon_vma free !!!!
+> rcu_read_lock
+> anon_vma has gone!!
+> 
+> I think above scenario make error "use-after-free", again.
+> What prevent above scenario?
+> 
+I think this patch is not complete. 
+I guess this patch in [1/11] is trigger for the race.
+==
++
++	/* Drop an anon_vma reference if we took one */
++	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
++		int empty = list_empty(&anon_vma->head);
++		spin_unlock(&anon_vma->lock);
++		if (empty)
++			anon_vma_free(anon_vma);
++	}
+==
+If my understainding in above is correct, this "modify" freed anon_vma.
+Then, use-after-free happens. (In old implementation, there are no refcnt,
+so, there is no use-after-free ops.)
 
-Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-This was definitely a bug. Thanks for spotting it.
+So, what I can think of now is a patch like following is necessary.
 
-Best regards
---
-Marek Szyprowski
-Samsung Poland R&D Center
+==
+static inline struct anon_vma *anon_vma_alloc(void)
+{
+        struct anon_vma *anon_vma;
+        anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
+        atomic_set(&anon_vma->refcnt, 1);
+}
+
+void anon_vma_free(struct anon_vma *anon_vma)
+{
+        /*
+         * This called when anon_vma is..
+         * - anon_vma->vma_list becomes empty.
+         * - incremetned refcnt while migration, ksm etc.. is dropped.
+         * - allocated but unused.
+         */
+        if (atomic_dec_and_test(&anon_vma->refcnt))
+                kmem_cache_free(anon_vma_cachep, anon_vma);
+}
+==
+Then all things will go simple. 
+Overhead is concern but list_empty() helps us much.
+
+Thanks,
+-Kame
+
+
+
 
