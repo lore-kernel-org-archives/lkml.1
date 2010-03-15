@@ -1,68 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936173Ab0COL5a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 07:57:30 -0400
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:36446 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936134Ab0COL50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 07:57:26 -0400
-Date: Mon, 15 Mar 2010 12:57:25 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Gui Jianfeng <GuiJianfeng@cn.fujitsu.com>,
-       Ben Blum <bblum@andrew.cmu.edu>, LKML <linux-kernel@vger.kernel.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>
-Subject: Re: [PATCH] block: make CONFIG_BLK_CGROUP visible
-Message-ID: <20100315115724.GK5768@kernel.dk>
-References: <4B9DA6F5.3070606@cn.fujitsu.com>
+	id S936191Ab0COL74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 07:59:56 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:6965 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936177Ab0COL7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 07:59:55 -0400
+X-IronPort-AV: E=Sophos;i="4.49,643,1262563200"; 
+   d="scan'208";a="9945525"
+Date: Mon, 15 Mar 2010 12:04:16 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+X-X-Sender: sstabellini@kaball-desktop
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>
+Subject: Re: [Xen-devel] [PATCH][v9 4/6] xen/hvm: Xen PV extension of HVM
+ initialization
+In-Reply-To: <201003150945.09548.sheng@linux.intel.com>
+Message-ID: <alpine.DEB.2.00.1003151108151.27222@kaball-desktop>
+References: <1268362647-5317-1-git-send-email-sheng@linux.intel.com> <1268362647-5317-5-git-send-email-sheng@linux.intel.com> <4B9AA5A9.20609@goop.org> <201003150945.09548.sheng@linux.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B9DA6F5.3070606@cn.fujitsu.com>
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 15 2010, Li Zefan wrote:
-> Make the config visible, so we can choose from CONFIG_BLK_CGROUP=y
-> and CONFIG_BLK_CGROUP=m when CONFIG_IOSCHED_CFQ=m.
+On Mon, 15 Mar 2010, Sheng Yang wrote:
+> > > +#ifdef CONFIG_XEN_HVM_PV
+> > > +
+> > > +#define XEN_HVM_PV_CLOCK_ENABLED   (1u<<  0)
+> > 
+> > Why is this flag needed?  As far as I understand it, there's no real
+> > underlying hypervisor change needed to make HVM access to pv clock
+> > possible; its just a field in the shared_info's vcpu struct after all.
+> > Even if you enable this feature unconditionally, the user can still
+> > control whether the Xen clocksource is used with the "clocksource="
+> > kernel command-line parameter.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
-What kernel is this against?
-
-> ---
->  block/Kconfig |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index 62a5921..906950c 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -78,8 +78,9 @@ config BLK_DEV_INTEGRITY
->  	Protection.  If in doubt, say N.
+> But we should make sure Xen have ability to support such kind of operation. 
+> The CPUID would show if Xen have such ability, and if it does, the feature 
+> would be enabled unconditionally. Guest kernel always enable all features it 
+> can do unconditionally, but Xen should offer the support for them.
 >  
->  config BLK_CGROUP
-> -	tristate
-> +	tristate "Block cgroup support"
->  	depends on CGROUPS
-> +	depends on CFQ_GROUP_IOSCHED
->  	default n
->  	---help---
->  	Generic block IO controller cgroup interface. This is the common
-> @@ -91,7 +92,7 @@ config BLK_CGROUP
->  	to such task groups.
->  
->  config DEBUG_BLK_CGROUP
-> -	bool
-> +	bool "Block cgroup debugging help"
->  	depends on BLK_CGROUP
->  	default n
->  	---help---
-> -- 
-> 1.6.3
+
+In my opinion once the guest knows that is running on Xen HVM (that is
+from xen_cpuid_base() or xen_para_available()) it should assume
+that the pv clocksource is available, therefore XEN_HVM_PV_CLOCK_ENABLED
+should not be needed.
+In other words the mere presence of Xen should imply
+XEN_HVM_PV_CLOCK_ENABLED.
+
+
+> > Also, there's nothing about this which is 64-bit specific is there?
+> 
+> 64 bit things are mostly evtchn/interrupt related. I think no such limit here. 
+> But I think it's better to do it step by step, so leave it after evtchn 
+> solution settled.
 > 
 
--- 
-Jens Axboe
+Do you mean write generic code now, then introduce the 64 bit
+limitation later? Or the other way around?
+I don't have a strong opinion here so I am OK with both approaches, but
+I would prefer to add the limitation later (maybe we'll be able to make
+it work on 32 bit too...).
 
