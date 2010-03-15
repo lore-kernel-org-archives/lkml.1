@@ -1,65 +1,177 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935743Ab0COKqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:46:07 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:36384 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756595Ab0COKqC (ORCPT
+	id S964815Ab0COKqu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:46:50 -0400
+Received: from smtpq1.tb.mail.iss.as9143.net ([212.54.42.164]:43922 "EHLO
+	smtpq1.tb.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933819Ab0COKqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:46:02 -0400
-Date: Mon, 15 Mar 2010 16:15:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: KVM development list <kvm@vger.kernel.org>,
-       Rik van Riel <riel@surriel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RF C/T/D] Unmapped page cache control - via boot
- parameter
-Message-ID: <20100315104555.GD18054@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20100315072214.GA18054@balbir.in.ibm.com>
- <4B9DE635.8030208@redhat.com>
- <20100315080726.GB18054@balbir.in.ibm.com>
- <4B9DEF81.6020802@redhat.com>
- <20100315091720.GC18054@balbir.in.ibm.com>
- <4B9DFD9C.8030608@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4B9DFD9C.8030608@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Mon, 15 Mar 2010 06:46:45 -0400
+X-Greylist: delayed 1309 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Mar 2010 06:46:44 EDT
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; charset=us-ascii
+From: waltergoossens@home.nl
+To: nios2-dev@sopc.et.ntust.edu.tw
+Cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Message-id: <fba089db11ddf.4b9e0af1@home.nl>
+Date: Mon, 15 Mar 2010 10:24:49 +0000 (GMT)
+X-Mailer: Sun Java(tm) System Messenger Express 6.3-7.04 (built Sep 26 2008;
+ 32bit)
+Content-language: nl
+Subject: Re: [Nios2-dev] [PATCHv3 1/2] serial: Add driver for the Altera	JTAG
+ UART
+X-Accept-Language: nl
+In-reply-to: <20100315102045.GM21818@distanz.ch>
+References: <cover.1267807169.git.klto@zhaw.ch>
+ <15dc056891fb785001073bab4f9a0d0f3bf99af1.1267807169.git.klto@zhaw.ch>
+ <20100312124835.724eb806.akpm@linux-foundation.org>
+ <20100315102045.GM21818@distanz.ch>
+X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
+X-ZiggoSMTP-MailScanner-ID: 1Nr7Te-0001Uk-Cb
+X-ZiggoSMTP-MailScanner: Found to be clean
+X-ZiggoSMTP-MailScanner-SpamCheck: geen spam, SpamAssassin (cached,
+	score=0.101, vereist 5, BAYES_50 0.00, NO_REAL_NAME 0.10)
+X-ZiggoSMTP-MailScanner-From: waltergoossens@home.nl
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Avi Kivity <avi@redhat.com> [2010-03-15 11:27:56]:
+----- Origineel bericht -----
+Van: Tobias Klauser <tklauser@distanz.ch>
+Datum: maandag, maart 15, 2010 10:21
+Onderwerp: Re: [Nios2-dev] [PATCHv3 1/2] serial: Add driver for the Altera	JTAG UART
+Aan: Andrew Morton <akpm@linux-foundation.org>
+Cc: nios2-dev@sopc.et.ntust.edu.tw, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
 
-> >>>The knobs are for
-> >>>
-> >>>1. Selective enablement
-> >>>2. Selective control of the % of unmapped pages
-> >>An alternative path is to enable KSM for page cache.  Then we have
-> >>direct read-only guest access to host page cache, without any guest
-> >>modifications required.  That will be pretty difficult to achieve
-> >>though - will need a readonly bit in the page cache radix tree, and
-> >>teach all paths to honour it.
-> >>
-> >Yes, it is, I've taken a quick look. I am not sure if de-duplication
-> >would be the best approach, may be dropping the page in the page cache
-> >might be a good first step. Data consistency would be much easier to
-> >maintain that way, as long as the guest is not writing frequently to
-> >that page, we don't need the page cache in the host.
+
+> On 2010-03-12 at 21:48:35 +0100, Andrew Morton 
+> <akpm@linux-foundation.org> wrote:
+> > On Fri,  5 Mar 2010 17:52:22 +0100
+> > Tobias Klauser <tklauser@distanz.ch> wrote:
+> > 
+> > > Add an UART driver for the JTAG UART component available as a SOPC
+> > > (System on Programmable Chip) component for Altera FPGAs.
+> > > 
+> > > ...
+> > >
+> > > --- a/drivers/serial/Kconfig
+> > > +++ b/drivers/serial/Kconfig
+> > > @@ -1490,4 +1490,25 @@ config SERIAL_GRLIB_GAISLER_APBUART_CONSOLE
+> > >  	help
+> > >  	Support for running a console on the GRLIB APBUART
+> > >  
+> > > +config SERIAL_ALTERA_JTAGUART
+> > > +	bool "Altera JTAG UART support"
+> > > +	select SERIAL_CORE
+> > > +	help
+> > > +          This driver supports the Altera JTAG UART port.
+> > > +
+> > > +config SERIAL_ALTERA_JTAGUART_CONSOLE
+> > > +	bool "Altera JTAG UART console support"
+> > > +	depends on SERIAL_ALTERA_JTAGUART
+> > > +	select SERIAL_CORE_CONSOLE
+> > > +	help
+> > > +          Enable a Altera JTAG UART port to be the system console.
+> > > +
+> > > +config SERIAL_ALTERA_JTAGUART_CONSOLE_BYPASS
+> > > +	bool "Bypass output when no connection"
+> > > +	depends on SERIAL_ALTERA_JTAGUART_CONSOLE
+> > > +	select SERIAL_CORE_CONSOLE
+> > > +	help
+> > > +          Bypass console output and keep going even if there is no
+> > > +          JTAG terminal connection with the host.
+> > 
+> > So this driver will be available on all CPU architectures.
+> > 
+> > I'm guessing that the hardware _isn't_ available on all CPU
+> > architectures?  Maybe that's wrong.
 > 
-> Trimming the host page cache should happen automatically under
-> pressure.  Since the page is cached by the guest, it won't be
-> re-read, so the host page is not frequently used and then dropped.
->
+> In principle it is available on all CPU. I can think of a hardware
+> component with an Altera FPGA containing this UART. But at the moment 
+> no
+> such implementation is known to me and the UART is only usable on the
+> nios2 CPU architecture  (which is not in mainline yet - we're planning
+> to change that, submitting the arch-sepcific drivers is the first step
+> towards this).
+> 
+We are actually working on a project without a Nios2 where a PCIe core connected to a powerPC is the avalon-master. So I'm in favor of not getting everything too nios2 specific.
 
-Yes, agreed, but dropping is easier than tagging cache as read-only
-and getting everybody to understand read-only cached pages. 
-
--- 
-	Three Cheers,
-	Balbir
+> > If this hardware is only available on certain CPUs then we face
+> > tradeoffs.  By making it universally available, the code gets better
+> > compile tesst coverage and that can detect problems (usually minor
+> > ones).  otoh, it can increase your maintenance load a bit, and adds 
+> a
+> > risk that people will ship unusable kernel modules and will see
+> > increased build times.  I have no particular opinion either way.
+> 
+> I'd like to have this universally available if no one objects. It'd be
+> nice to get better test coverage and I don't really mind the additional
+> maintanance load. AFAICS other UART driver are only available on one
+> single architecture too, so I hoped it would be fine to go the same way
+> with the altera_{jtag,}uart drivers.
+> 
+> > >  endmenu
+> > > diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
+> > > index 5548fe7..6228b6e 100644
+> > > --- a/drivers/serial/Makefile
+> > > +++ b/drivers/serial/Makefile
+> > > @@ -82,3 +82,4 @@ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
+> > >  obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
+> > >  obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
+> > >  obj-$(CONFIG_SERIAL_GRLIB_GAISLER_APBUART) += apbuart.o
+> > > +obj-$(CONFIG_SERIAL_ALTERA_JTAGUART) += altera_jtaguart.o
+> > > diff --git a/drivers/serial/altera_jtaguart.c b/drivers/serial/altera_jtaguart.c
+> > > new file mode 100644
+> > > index 0000000..f9b49b5
+> > > --- /dev/null
+> > > +++ b/drivers/serial/altera_jtaguart.c
+> > > @@ -0,0 +1,504 @@
+> > > +/*
+> > > + * altera_jtaguart.c -- Altera JTAG UART driver
+> > > + *
+> > > + * Based on mcf.c -- Freescale ColdFire UART driver
+> > > + *
+> > > + * (C) Copyright 2003-2007, Greg Ungerer <gerg@snapgear.com>
+> > > + * (C) Copyright 2008, Thomas Chou <thomas@wytron.com.tw>
+> > > + * (C) Copyright 2010, Tobias Klauser <tklauser@distanz.ch>
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or 
+> modify
+> > > + * it under the terms of the GNU General Public License as 
+> published by
+> > > + * the Free Software Foundation; either version 2 of the License, 
+> or
+> > > + * (at your option) any later version.
+> > > + */
+> > > +
+> > > +#include <linux/kernel.h>
+> > > +#include <linux/init.h>
+> > > +#include <linux/interrupt.h>
+> > > +#include <linux/module.h>
+> > > +#include <linux/console.h>
+> > > +#include <linux/tty.h>
+> > > +#include <linux/tty_flip.h>
+> > > +#include <linux/serial.h>
+> > > +#include <linux/serial_core.h>
+> > > +#include <linux/platform_device.h>
+> > > +#include <linux/io.h>
+> > > +#include <linux/altera_jtaguart.h>
+> > 
+> > Does it make sense to put altera_jtaguart.h into include/linux?  Could
+> > we put it in drivers/serial/?
+> 
+> It is stored in include/linux and not in drivers/serial because we need
+> to include it from arch/nios2 for the platform device setup. Including
+> <linux/altera_jtaguart.h> looks nicer than including
+> "../drivers/serial/altera_jtaguart.h". The same holds true for the
+> altera_uart driver.
+> 
+> Thanks a lot,
+> Tobias
+> _______________________________________________
+> Nios2-dev mailing list
+> Nios2-dev@sopc.et.ntust.edu.tw
+> http://sopc.et.ntust.edu.tw/cgi-bin/mailman/listinfo/nios2-dev
