@@ -1,60 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586Ab0COClP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 22:41:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40115 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755142Ab0COClO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 22:41:14 -0400
-Date: Mon, 15 Mar 2010 13:41:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Young <hidave.darkstar@gmail.com>
-Subject: linux-next: manual merge of the fsnotify tree with Linus' tree
-Message-Id: <20100315134110.8982a0f2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S935168Ab0COCxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 22:53:15 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:47871 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759579Ab0COCxJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Mar 2010 22:53:09 -0400
+Date: Mon, 15 Mar 2010 02:52:49 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, u.kleine-koenig@pengutronix.de,
+       a.p.zijlstra@chello.nl, andrea.gallo@stericsson.com,
+       dbrownell@users.sourceforge.net, eric.y.miao@gmail.com,
+       hugh.dickins@tiscali.co.uk, John Stultz <johnstul@us.ibm.com>,
+       linux@bohmer.net, nico@marvell.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <greg@kroah.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 2/3] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the right place
+Message-ID: <20100315025249.GP6491@shareable.org>
+References: <201003112208.o2BM8wJU013575@imap1.linux-foundation.org> <alpine.LFD.2.00.1003130031300.22855@localhost.localdomain> <20100312155015.090ba541.akpm@linux-foundation.org> <alpine.LFD.2.00.1003130130090.22855@localhost.localdomain> <20100312171423.b7e7a838.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100312171423.b7e7a838.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+Andrew Morton wrote:
+> We can tweak and tune until we're blue in the face, but the system's
+> IRQ latency will always be worse if handlers always run with interrupts
+> disabled.
 
-Today's linux-next merge of the fsnotify tree got a conflict in
-kernel/sysctl.c between commits 5ed109103d73b0bafc92e860cead56725231384d
-("sysctl extern cleanup: module") and
-15485a4682d1d3bfee2aa78b4b1a5d36f5746b64 ("sysctl extern cleanup: sg")
-from Linus' tree and commit 00e4382acdbe8337cd00d3ed74a6150f0a647d1f
-("sysctl extern cleanup: inotify") from the fsnotify tree.
+Are you sure?
 
-Just context changes.  I fixed it up (see below) and can carry the fix
-for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+If good, fast irq handler A runs with interrupts enabled,
+and good, fast irq handler B runs (interrupting A),
+A's latency goes _up_ not down.
 
-diff --cc kernel/sysctl.c
-index 8686b0f,a7a3634..0000000
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@@ -128,6 -120,17 +129,10 @@@ static int min_percpu_pagelist_fract = 
-  
-  static int ngroups_max = NGROUPS_MAX;
-  
- -#ifdef CONFIG_MODULES
- -extern char modprobe_path[];
- -extern int modules_disabled;
- -#endif
-+ #ifdef CONFIG_INOTIFY_USER
-+ #include <linux/inotify.h>
-+ #endif
- -#ifdef CONFIG_CHR_DEV_SG
- -extern int sg_big_buff;
- -#endif
-+ 
-  #ifdef CONFIG_SPARC
-  #include <asm/system.h>
-  #endif
+If B happens first, then you get B's latency going up, and A's latency going down.
+
+It's not really clear what happens to average latency.  But if you
+know that some handlers require lower latency than others (e.g. serial
+ports with small FIFOs), it makes sense to prioritise them.
+
+-- Jamie
