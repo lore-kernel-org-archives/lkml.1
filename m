@@ -1,67 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867Ab0CODpB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 23:45:01 -0400
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:49042 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753732Ab0CODpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 23:45:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=mnB5qnOo3YRFfO/qDdUR1Qcwmi5xrGJ/RTJijv/6jmE7CGkHcKDOxGfeMijpR61+6Q
-         3kdJOeapyHwobead6Ery++KgVw7x2lG6R2kGbyoQfjTuiuJireKLjph+NrdcJsmcCzjn
-         /LNdnDlzBA2dDCEZGx2eqm2WoxZs48NQW1uTY=
-From: Chihau Chau <chihau@gmail.com>
-To: gregkh@suse.de
-Cc: pavel@ucw.cz, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Chihau Chau <chihau@gmail.com>
-Subject: [PATCH] Staging: dream: smd: smd_qmi: fix code style issues
-Date: Mon, 15 Mar 2010 00:44:54 -0300
-Message-Id: <1268624694-11635-1-git-send-email-chihau@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	id S1752539Ab0COECG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 00:02:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44959 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818Ab0COECD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 00:02:03 -0400
+Message-ID: <4B9DB0F2.7060808@zytor.com>
+Date: Sun, 14 Mar 2010 21:00:50 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Daniel Taylor <Daniel.Taylor@wdc.com>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <kernel@teksavvy.com>, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, irtiger@gmail.com,
+       Matthew Wilcox <matthew@wil.cx>, aschnell@suse.de, knikanth@suse.de,
+       jdelvare@suse.de
+Subject: Re: ATA 4 KiB sector issues.
+References: <4B947393.2050002@kernel.org> <1158166a1003100114j6ea329fbh84bfad65dcac90bf@mail.gmail.com> <4B9D8BB2.1010507@zytor.com> <201003150326.22262.vda.linux@googlemail.com>
+In-Reply-To: <201003150326.22262.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chihau Chau <chihau@gmail.com>
+On 03/14/2010 07:26 PM, Denys Vlasenko wrote:
+>>
+>> Yes, but it does squat for a flash disk that wants, say, 256K alignment.
+> 
+> 4K makes sense. 256K not so much.
+> 
+> 256K alignment is hard to swallow for a lot of reasons anyway.
+> Unless the filesystem packs small files into blocks a-la reiserfs,
+> 256K block filesystems will be very inefficient for a typical
+> storage scenarios.
+> 
 
-This fixes some code style issues about to #include <linux/uaccess.h>
-instead of <asm/uaccess.h> and some not necessary braces {}.
+Noone has talked about using 256K filesystem blocks.  The fact of the
+matter, though, is that both flash and RAID have much larger alignment
+requirements than a mere 4K for optimal performance.
 
-Signed-off-by: Chihau Chau <chihau@gmail.com>
----
- drivers/staging/dream/smd/smd_qmi.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+You might not like it, but that's the way it is.
 
-diff --git a/drivers/staging/dream/smd/smd_qmi.c b/drivers/staging/dream/smd/smd_qmi.c
-index 687db14..9e9067f 100644
---- a/drivers/staging/dream/smd/smd_qmi.c
-+++ b/drivers/staging/dream/smd/smd_qmi.c
-@@ -25,7 +25,7 @@
- #include <linux/miscdevice.h>
- #include <linux/workqueue.h>
- 
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- #include <mach/msm_smd.h>
- 
- #define QMI_CTL 0x00
-@@ -643,11 +643,10 @@ static int qmi_print_state(struct qmi_ctxt *ctxt, char *buf, int max)
- 	}
- 
- 	i = scnprintf(buf, max, "STATE=%s\n", statename);
--	i += scnprintf(buf + i, max - i, "CID=%d\n",ctxt->wds_client_id);
-+	i += scnprintf(buf + i, max - i, "CID=%d\n", ctxt->wds_client_id);
- 
--	if (ctxt->state != STATE_ONLINE){
-+	if (ctxt->state != STATE_ONLINE)
- 		return i;
--	}
- 
- 	i += scnprintf(buf + i, max - i, "ADDR=%d.%d.%d.%d\n",
- 		ctxt->addr[0], ctxt->addr[1], ctxt->addr[2], ctxt->addr[3]);
+	-hpa
+
+
 -- 
-1.5.6.3
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
