@@ -1,108 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964851Ab0COKYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:24:08 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42427 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964838Ab0COKYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:24:04 -0400
-Date: Mon, 15 Mar 2010 19:23:51 +0900
-To: mcree@orcon.net.nz
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Alpha:  Compilation error 2.6.34-rc1 git a3d3203e4b
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B9DDCD8.4070902@orcon.net.nz>
-References: <4B9DDCD8.4070902@orcon.net.nz>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100315192321I.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Mar 2010 19:23:51 +0900 (JST)
+	id S1755309Ab0COKjh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:39:37 -0400
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:41581 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173Ab0COKje (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 06:39:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=NHETrnmmepuhrWMk+UHcf0uyWG+BZVh0jqkH+p8VQ/tUtFuA72kcaMiJPNilh7rx4a
+         DqtwWEDno0AXe02Ci8eMQM9c1hZNPy7GrH5QObSs9FO4mIiU7++d71ZCmF/JHXHAv4Yl
+         WgEQyd2nLBz+7yLNAPUUuBPDprrXpN4HeGfLw=
+From: ruslanpisarev@gmail.com
+To: gregkh@suse.de
+Cc: andre@bitwigglers.org, eugeni@mandriva.com, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, ruslan <ruslan@rpisarev.org.ua>
+Subject: [PATCH] Staging: asus_oled: fix spaces and TAB coding style issue in asus_oled.c
+Date: Mon, 15 Mar 2010 12:39:27 +0200
+Message-Id: <1268649567-14876-1-git-send-email-ruslan@rpisarev.org.ua>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Mar 2010 20:08:08 +1300
-Michael Cree <mcree@orcon.net.nz> wrote:
+From: ruslan <ruslan@rpisarev.org.ua>
 
-> I note that for_each_sg is defined in include/linux/scatterlist.h, which 
-> arch/alpha/include/asm/dma-mapping.h attempts to load, however 
-> include/linux/scatterlist.h was the one that included (indirectly) 
-> arch/alpha/include/asm/dma-mapping.h.  There is therefore a complete 
-> loop of includes from include/linux/scatterlist.h back to itself.
+This is a patch to the asus_oled.c file that fixed up a TAB and spaces
+Errors found by the checkpatch.pl tools
 
-Very sorry about that. Seems that I broke CONFIG_ALPHA_{TSUNAMI,
-TITAN, RAWHIDE, MARVEL}.
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] alpha: fix compile errors in dma-mapping-common.h
-
-The commit c186caca3dbe7f44da624cb4f9d78e1b1dfb13b8 leads to the
-following errors with CONFIG_ALPHA_{TSUNAMI, TITAN, RAWHIDE, MARVEL}:
-
-/home/fujita/git/linux-2.6/include/asm-generic/dma-mapping-common.h: In function `dma_map_sg_attrs':
-/home/fujita/git/linux-2.6/include/asm-generic/dma-mapping-common.h:49: error: implicit declaration of function `for_each_sg'
-/home/fujita/git/linux-2.6/include/asm-generic/dma-mapping-common.h:50: error: syntax error before "kmemcheck_mark_initialized"
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Reported-by: Michael Cree <mcree@orcon.net.nz>
+Signed-off-by: Ruslan Pisarev <ruslan@rpisarev.org.ua>
 ---
- arch/alpha/include/asm/core_marvel.h  |    1 -
- arch/alpha/include/asm/core_mcpcia.h  |    1 -
- arch/alpha/include/asm/core_titan.h   |    1 -
- arch/alpha/include/asm/core_tsunami.h |    1 -
- 4 files changed, 0 insertions(+), 4 deletions(-)
+ drivers/staging/asus_oled/asus_oled.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/alpha/include/asm/core_marvel.h b/arch/alpha/include/asm/core_marvel.h
-index 30d55fe..dad300f 100644
---- a/arch/alpha/include/asm/core_marvel.h
-+++ b/arch/alpha/include/asm/core_marvel.h
-@@ -12,7 +12,6 @@
- #define __ALPHA_MARVEL__H__
+diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+index 7ebecc9..9f12f08 100644
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -771,7 +771,7 @@ static struct usb_driver oled_driver = {
+ };
  
- #include <linux/types.h>
--#include <linux/pci.h>
- #include <linux/spinlock.h>
+ static CLASS_ATTR_STRING(version, S_IRUGO,
+-		 	ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
++		ASUS_OLED_UNDERSCORE_NAME " " ASUS_OLED_VERSION);
  
- #include <asm/compiler.h>
-diff --git a/arch/alpha/include/asm/core_mcpcia.h b/arch/alpha/include/asm/core_mcpcia.h
-index acf55b4..21ac533 100644
---- a/arch/alpha/include/asm/core_mcpcia.h
-+++ b/arch/alpha/include/asm/core_mcpcia.h
-@@ -6,7 +6,6 @@
- #define MCPCIA_ONE_HAE_WINDOW 1
- 
- #include <linux/types.h>
--#include <linux/pci.h>
- #include <asm/compiler.h>
- 
- /*
-diff --git a/arch/alpha/include/asm/core_titan.h b/arch/alpha/include/asm/core_titan.h
-index a17f6f3..8cf79d1 100644
---- a/arch/alpha/include/asm/core_titan.h
-+++ b/arch/alpha/include/asm/core_titan.h
-@@ -2,7 +2,6 @@
- #define __ALPHA_TITAN__H__
- 
- #include <linux/types.h>
--#include <linux/pci.h>
- #include <asm/compiler.h>
- 
- /*
-diff --git a/arch/alpha/include/asm/core_tsunami.h b/arch/alpha/include/asm/core_tsunami.h
-index 58d4fe4..8e39ecf 100644
---- a/arch/alpha/include/asm/core_tsunami.h
-+++ b/arch/alpha/include/asm/core_tsunami.h
-@@ -2,7 +2,6 @@
- #define __ALPHA_TSUNAMI__H__
- 
- #include <linux/types.h>
--#include <linux/pci.h>
- #include <asm/compiler.h>
- 
- /*
+ static int __init asus_oled_init(void)
+ {
 -- 
-1.7.0
+1.6.3.3
 
