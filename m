@@ -1,62 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755Ab0COHIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 03:08:13 -0400
-Received: from mx3.orcon.net.nz ([219.88.242.53]:44759 "EHLO mx3.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759741Ab0COHIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 03:08:12 -0400
-Message-ID: <4B9DDCD8.4070902@orcon.net.nz>
-Date: Mon, 15 Mar 2010 20:08:08 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100121 Lightning/1.0b2pre Shredder/3.0.1
+	id S934790Ab0COHLe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 03:11:34 -0400
+Received: from mail-pz0-f200.google.com ([209.85.222.200]:59074 "EHLO
+	mail-pz0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757363Ab0COHLd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 03:11:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Bc3UKwRnTbm+NAruvogCF8NsQlPKHD+vua4iZSA1fALFqVH9uHSMhQtw46aOXK46eC
+         Lf1aRewxYEgO5c7ecC1xnPl8vnDCouEFhbegYCCVBirxReCDAomnxCo3FMId0ZfcshMX
+         wc0cIdxteH7mFXBu4jKIcuZuxq1N45gi41fzM=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-alpha@vger.kernel.org
-Subject: Alpha:  Compilation error 2.6.34-rc1 git a3d3203e4b
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
-X-DSPAM-Check: by mx3.orcon.net.nz on Mon, 15 Mar 2010 20:08:10 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Mon Mar 15 20:08:10 2010
-X-DSPAM-Confidence: 0.6909
-X-DSPAM-Probability: 0.0000
+In-Reply-To: <20100315154459.c665f68d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
+	 <1268412087-13536-3-git-send-email-mel@csn.ul.ie>
+	 <28c262361003141728g4aa40901hb040144c5a4aeeed@mail.gmail.com>
+	 <20100315143420.6ec3bdf9.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262361003142328w610f0478sbc17880ffa454fe8@mail.gmail.com>
+	 <20100315154459.c665f68d.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 15 Mar 2010 16:11:31 +0900
+Message-ID: <28c262361003150011u4525f6aas9c47760bf9c8faef@mail.gmail.com>
+Subject: Re: [PATCH 02/11] mm,migration: Do not try to migrate unmapped 
+	anonymous pages
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compilation error while compiling latest kernel (commit a3d3203e4b) on 
-Alpha:
+On Mon, Mar 15, 2010 at 3:44 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com>
+>> Thanks for detail explanation, Kame.
+>> But it can't understand me enough, Sorry.
+>>
+>> Mel said he met "use-after-free errors in anon_vma".
+>> So added the check in unmap_and_move.
+>>
+>> if (PageAnon(page)) {
+>>  ....
+>>  if (!page_mapcount(page))
+>>    goto uncharge;
+>>  rcu_read_lock();
+>>
+>> My concern what protects racy mapcount of the page?
+>> For example,
+>>
+>> CPU A                                 CPU B
+>> unmap_and_move
+>> page_mapcount check pass    zap_pte_range
+>> <-- some stall -->                   pte_lock
+>> <-- some stall -->                   page_remove_rmap(map_count is zero!)
+>> <-- some stall -->                   pte_unlock
+>> <-- some stall -->                   anon_vma_unlink
+>> <-- some stall -->                   anon_vma free !!!!
+>> rcu_read_lock
+>> anon_vma has gone!!
+>>
+>> I think above scenario make error "use-after-free", again.
+>> What prevent above scenario?
+>>
+> I think this patch is not complete.
+> I guess this patch in [1/11] is trigger for the race.
+> ==
+> +
+> +       /* Drop an anon_vma reference if we took one */
+> +       if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
+> +               int empty = list_empty(&anon_vma->head);
+> +               spin_unlock(&anon_vma->lock);
+> +               if (empty)
+> +                       anon_vma_free(anon_vma);
+> +       }
+> ==
+> If my understainding in above is correct, this "modify" freed anon_vma.
+> Then, use-after-free happens. (In old implementation, there are no refcnt,
+> so, there is no use-after-free ops.)
+>
 
-   CC      init/do_mounts.o
-In file included from 
-/home/mjc/linux/linux-git/arch/alpha/include/asm/dma-mapping.h:13,
-                  from include/linux/dma-mapping.h:103,
-                  from 
-/home/mjc/linux/linux-git/arch/alpha/include/asm/pci.h:7,
-                  from include/linux/pci.h:1209,
-                  from 
-/home/mjc/linux/linux-git/arch/alpha/include/asm/core_tsunami.h:5,
-                  from 
-/home/mjc/linux/linux-git/arch/alpha/include/asm/io.h:229,
-                  from include/linux/scatterlist.h:8,
-                  from include/linux/sunrpc/xdr.h:15,
-                  from include/linux/sunrpc/sched.h:17,
-                  from include/linux/sunrpc/auth.h:14,
-                  from include/linux/nfs_fs.h:47,
-                  from init/do_mounts.c:19:
-include/asm-generic/dma-mapping-common.h: In function �dma_map_sg_attrs�:
-include/asm-generic/dma-mapping-common.h:49: error: implicit declaration 
-of function �for_each_sg�
-include/asm-generic/dma-mapping-common.h:50: error: expected �;� before 
-�kmemcheck_mark_initialized�
-make[1]: *** [init/do_mounts.o] Error 1
+I agree.
+Let's wait Mel's response.
 
-I note that for_each_sg is defined in include/linux/scatterlist.h, which 
-arch/alpha/include/asm/dma-mapping.h attempts to load, however 
-include/linux/scatterlist.h was the one that included (indirectly) 
-arch/alpha/include/asm/dma-mapping.h.  There is therefore a complete 
-loop of includes from include/linux/scatterlist.h back to itself.
+>
+> So, what I can think of now is a patch like following is necessary.
+>
+> ==
+> static inline struct anon_vma *anon_vma_alloc(void)
+> {
+>        struct anon_vma *anon_vma;
+>        anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
+>        atomic_set(&anon_vma->refcnt, 1);
+> }
+>
+> void anon_vma_free(struct anon_vma *anon_vma)
+> {
+>        /*
+>         * This called when anon_vma is..
+>         * - anon_vma->vma_list becomes empty.
+>         * - incremetned refcnt while migration, ksm etc.. is dropped.
+>         * - allocated but unused.
+>         */
+>        if (atomic_dec_and_test(&anon_vma->refcnt))
+>                kmem_cache_free(anon_vma_cachep, anon_vma);
+> }
+> ==
+> Then all things will go simple.
+> Overhead is concern but list_empty() helps us much.
 
-Cheers
-Michael.
+When they made things complicated without atomic_op,
+there was reasonable reason, I think. :)
+
+My opinion depends on you and server guys(Hugh, Rik, Andrea Arcangeli and so on)
+
+
+>
+> Thanks,
+> -Kame
+>
+>
+>
+>
+>
+
+
+
+-- 
+Kind regards,
+Minchan Kim
