@@ -1,177 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964815Ab0COKqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 06:46:50 -0400
-Received: from smtpq1.tb.mail.iss.as9143.net ([212.54.42.164]:43922 "EHLO
-	smtpq1.tb.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933819Ab0COKqp (ORCPT
+	id S936079Ab0COKvL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 06:51:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41595 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752136Ab0COKvJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 06:46:45 -0400
-X-Greylist: delayed 1309 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Mar 2010 06:46:44 EDT
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; charset=us-ascii
-From: waltergoossens@home.nl
-To: nios2-dev@sopc.et.ntust.edu.tw
-Cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Message-id: <fba089db11ddf.4b9e0af1@home.nl>
-Date: Mon, 15 Mar 2010 10:24:49 +0000 (GMT)
-X-Mailer: Sun Java(tm) System Messenger Express 6.3-7.04 (built Sep 26 2008;
- 32bit)
-Content-language: nl
-Subject: Re: [Nios2-dev] [PATCHv3 1/2] serial: Add driver for the Altera	JTAG
- UART
-X-Accept-Language: nl
-In-reply-to: <20100315102045.GM21818@distanz.ch>
-References: <cover.1267807169.git.klto@zhaw.ch>
- <15dc056891fb785001073bab4f9a0d0f3bf99af1.1267807169.git.klto@zhaw.ch>
- <20100312124835.724eb806.akpm@linux-foundation.org>
- <20100315102045.GM21818@distanz.ch>
-X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
-X-ZiggoSMTP-MailScanner-ID: 1Nr7Te-0001Uk-Cb
-X-ZiggoSMTP-MailScanner: Found to be clean
-X-ZiggoSMTP-MailScanner-SpamCheck: geen spam, SpamAssassin (cached,
-	score=0.101, vereist 5, BAYES_50 0.00, NO_REAL_NAME 0.10)
-X-ZiggoSMTP-MailScanner-From: waltergoossens@home.nl
+	Mon, 15 Mar 2010 06:51:09 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Robert =?utf-8?q?Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
+Subject: Re: [PATCH] trace power_frequency events on the correct cpu  (for Intel x86 CPUs)
+Date: Mon, 15 Mar 2010 11:51:05 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.5; x86_64; ; )
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Dave Jones <davej@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       cpufreq <cpufreq@vger.kernel.org>, x86@kernel.org
+References: <1268399863.3407.15.camel@localhost> <4B9A552D.6080103@linux.intel.com> <1268408506.3407.17.camel@localhost>
+In-Reply-To: <1268408506.3407.17.camel@localhost>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201003151151.05741.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Origineel bericht -----
-Van: Tobias Klauser <tklauser@distanz.ch>
-Datum: maandag, maart 15, 2010 10:21
-Onderwerp: Re: [Nios2-dev] [PATCHv3 1/2] serial: Add driver for the Altera	JTAG UART
-Aan: Andrew Morton <akpm@linux-foundation.org>
-Cc: nios2-dev@sopc.et.ntust.edu.tw, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-
-
-> On 2010-03-12 at 21:48:35 +0100, Andrew Morton 
-> <akpm@linux-foundation.org> wrote:
-> > On Fri,  5 Mar 2010 17:52:22 +0100
-> > Tobias Klauser <tklauser@distanz.ch> wrote:
-> > 
-> > > Add an UART driver for the JTAG UART component available as a SOPC
-> > > (System on Programmable Chip) component for Altera FPGAs.
-> > > 
-> > > ...
+On Friday 12 March 2010 16:41:46 Robert Schöne wrote:
+> Am Freitag, den 12.03.2010, 06:52 -0800 schrieb Arjan van de Ven:
+> > On 3/12/2010 5:17, Robert Schöne wrote:
+> > > This patch fixes the following behaviour:
+> > > Currently, the power_frequency event is reported for the cpu (core) which initiated the frequency change.
+> > > It should be reported for the cpu that actually changes its frequency.
 > > >
-> > > --- a/drivers/serial/Kconfig
-> > > +++ b/drivers/serial/Kconfig
-> > > @@ -1490,4 +1490,25 @@ config SERIAL_GRLIB_GAISLER_APBUART_CONSOLE
-> > >  	help
-> > >  	Support for running a console on the GRLIB APBUART
-> > >  
-> > > +config SERIAL_ALTERA_JTAGUART
-> > > +	bool "Altera JTAG UART support"
-> > > +	select SERIAL_CORE
-> > > +	help
-> > > +          This driver supports the Altera JTAG UART port.
-> > > +
-> > > +config SERIAL_ALTERA_JTAGUART_CONSOLE
-> > > +	bool "Altera JTAG UART console support"
-> > > +	depends on SERIAL_ALTERA_JTAGUART
-> > > +	select SERIAL_CORE_CONSOLE
-> > > +	help
-> > > +          Enable a Altera JTAG UART port to be the system console.
-> > > +
-> > > +config SERIAL_ALTERA_JTAGUART_CONSOLE_BYPASS
-> > > +	bool "Bypass output when no connection"
-> > > +	depends on SERIAL_ALTERA_JTAGUART_CONSOLE
-> > > +	select SERIAL_CORE_CONSOLE
-> > > +	help
-> > > +          Bypass console output and keep going even if there is no
-> > > +          JTAG terminal connection with the host.
+> > > Example: when using
+> > >   taskset -c 0 echo<new_frequency>  >  /sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed
+> > > cpu 0 is traced, instead of cpu 1
+> > >
+> > > Signed of by Robert Schoene<robert.schoene@tu-dresden.de>
+> > >
+> > >
+> > > diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > > index 1b1920f..0a47f10 100644
+> > > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > > @@ -174,6 +174,7 @@ static void do_drv_write(void *_cmd)
+> > >
+> > >          switch (cmd->type) {
+> > >          case SYSTEM_INTEL_MSR_CAPABLE:
+> > > +               trace_power_frequency(POWER_PSTATE, cmd->val);
+> > >                  rdmsr(cmd->addr.msr.reg, lo, hi);
+> > >                  lo = (lo&  ~INTEL_MSR_RANGE) | (cmd->val&  INTEL_MSR_RANGE);
+> > >                  wrmsr(cmd->addr.msr.reg, lo, hi);
+> > > @@ -363,7 +364,6 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+> > >                  }
+> > >          }
+> > >
+> > > -       trace_power_frequency(POWER_PSTATE, data->freq_table[next_state].frequency);
+> > >
+> > >          switch (data->cpu_feature) {
+> > >          case SYSTEM_INTEL_MSR_CAPABLE:
+> > >
+> > >
 > > 
-> > So this driver will be available on all CPU architectures.
-> > 
-> > I'm guessing that the hardware _isn't_ available on all CPU
-> > architectures?  Maybe that's wrong.
+> > are you sure this is right?
+> > it's moving something from outside a switch statement to inside only one prong of a switch statement...
 > 
-> In principle it is available on all CPU. I can think of a hardware
-> component with an Altera FPGA containing this UART. But at the moment 
-> no
-> such implementation is known to me and the UART is only usable on the
-> nios2 CPU architecture  (which is not in mainline yet - we're planning
-> to change that, submitting the arch-sepcific drivers is the first step
-> towards this).
-> 
-We are actually working on a project without a Nios2 where a PCIe core connected to a powerPC is the avalon-master. So I'm in favor of not getting everything too nios2 specific.
+> I'm pretty sure, since I'm moving it from function acpi_cpufreq_target(...) to do_drv_write(...)
+What exactly is the argument you are pretty sure this is correct?
 
-> > If this hardware is only available on certain CPUs then we face
-> > tradeoffs.  By making it universally available, the code gets better
-> > compile tesst coverage and that can detect problems (usually minor
-> > ones).  otoh, it can increase your maintenance load a bit, and adds 
-> a
-> > risk that people will ship unusable kernel modules and will see
-> > increased build times.  I have no particular opinion either way.
-> 
-> I'd like to have this universally available if no one objects. It'd be
-> nice to get better test coverage and I don't really mind the additional
-> maintanance load. AFAICS other UART driver are only available on one
-> single architecture too, so I hoped it would be fine to go the same way
-> with the altera_{jtag,}uart drivers.
-> 
-> > >  endmenu
-> > > diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
-> > > index 5548fe7..6228b6e 100644
-> > > --- a/drivers/serial/Makefile
-> > > +++ b/drivers/serial/Makefile
-> > > @@ -82,3 +82,4 @@ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
-> > >  obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
-> > >  obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
-> > >  obj-$(CONFIG_SERIAL_GRLIB_GAISLER_APBUART) += apbuart.o
-> > > +obj-$(CONFIG_SERIAL_ALTERA_JTAGUART) += altera_jtaguart.o
-> > > diff --git a/drivers/serial/altera_jtaguart.c b/drivers/serial/altera_jtaguart.c
-> > > new file mode 100644
-> > > index 0000000..f9b49b5
-> > > --- /dev/null
-> > > +++ b/drivers/serial/altera_jtaguart.c
-> > > @@ -0,0 +1,504 @@
-> > > +/*
-> > > + * altera_jtaguart.c -- Altera JTAG UART driver
-> > > + *
-> > > + * Based on mcf.c -- Freescale ColdFire UART driver
-> > > + *
-> > > + * (C) Copyright 2003-2007, Greg Ungerer <gerg@snapgear.com>
-> > > + * (C) Copyright 2008, Thomas Chou <thomas@wytron.com.tw>
-> > > + * (C) Copyright 2010, Tobias Klauser <tklauser@distanz.ch>
-> > > + *
-> > > + * This program is free software; you can redistribute it and/or 
-> modify
-> > > + * it under the terms of the GNU General Public License as 
-> published by
-> > > + * the Free Software Foundation; either version 2 of the License, 
-> or
-> > > + * (at your option) any later version.
-> > > + */
-> > > +
-> > > +#include <linux/kernel.h>
-> > > +#include <linux/init.h>
-> > > +#include <linux/interrupt.h>
-> > > +#include <linux/module.h>
-> > > +#include <linux/console.h>
-> > > +#include <linux/tty.h>
-> > > +#include <linux/tty_flip.h>
-> > > +#include <linux/serial.h>
-> > > +#include <linux/serial_core.h>
-> > > +#include <linux/platform_device.h>
-> > > +#include <linux/io.h>
-> > > +#include <linux/altera_jtaguart.h>
-> > 
-> > Does it make sense to put altera_jtaguart.h into include/linux?  Could
-> > we put it in drivers/serial/?
-> 
-> It is stored in include/linux and not in drivers/serial because we need
-> to include it from arch/nios2 for the platform device setup. Including
-> <linux/altera_jtaguart.h> looks nicer than including
-> "../drivers/serial/altera_jtaguart.h". The same holds true for the
-> altera_uart driver.
-> 
-> Thanks a lot,
-> Tobias
-> _______________________________________________
-> Nios2-dev mailing list
-> Nios2-dev@sopc.et.ntust.edu.tw
-> http://sopc.et.ntust.edu.tw/cgi-bin/mailman/listinfo/nios2-dev
+I expect Arjan is right.
+You now only trace MSR based and not IO based frequency switching.
+
+I don't know the tracing stuff, but it seems the cpu that executes
+trace_power_frequency shows up in the statistics as the one on which the
+frequency change happened which currently is wrong and you try to fix this?
+
+What exactly is the reason you do not add
+trace_power_frequency(..);
+also in the
+SYSTEM_IO_CAPABLE:
+branch in do_drv_write()?
+
+    Thomas
+
+
+
+   Thomas
