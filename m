@@ -1,23 +1,33 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656Ab0COCcX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 22:32:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50947 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751581Ab0COCcV (ORCPT
+	id S1756459Ab0COCev (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 22:34:51 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53166 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581Ab0COCeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 22:32:21 -0400
-Date: Sun, 14 Mar 2010 19:31:14 -0400
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Mel Gorman <mel@csn.ul.ie>, Markus Rechberger <mrechberger@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: USBFS Memory allocation Bug
-Message-Id: <20100314193114.619a2616.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003111155030.1367-100000@iolanthe.rowland.org>
-References: <20100310155519.GO4883@csn.ul.ie>
-	<Pine.LNX.4.44L0.1003111155030.1367-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.7; x86_64-redhat-linux-gnu)
+	Sun, 14 Mar 2010 22:34:50 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 15 Mar 2010 11:31:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 5/5] memcg: dirty pages instrumentation
+Message-Id: <20100315113104.b208571c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1268609202-15581-6-git-send-email-arighi@develer.com>
+References: <1268609202-15581-1-git-send-email-arighi@develer.com>
+	<1268609202-15581-6-git-send-email-arighi@develer.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,31 +35,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Mar 2010 11:56:22 -0500 (EST) Alan Stern <stern@rowland.harvard.edu> wrote:
+On Mon, 15 Mar 2010 00:26:42 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
-> On Wed, 10 Mar 2010, Mel Gorman wrote:
+> Apply the cgroup dirty pages accounting and limiting infrastructure to
+> the opportune kernel functions.
 > 
-> > > > Is there any means for the driver to take the large request, break it up
-> > > > into multiple smaller requests and submit them one at a time?
-> > > 
-> > > In theory almost anything is possible.  But it would be a big effort
-> > > and not consistent with the way the rest of the driver works.
-> > > 
-> > 
-> > Then about the only other suggestion would be a mempool containing a small
-> > number of largest-possible buffers that is enabled if there is no swap
-> > available.
+> [ NOTE: for now do not account WritebackTmp pages (FUSE) and NILFS2
+> bounce pages. This depends on charging also bounce pages per cgroup. ]
 > 
-> Considering that this is the first report I have heard about this sort 
-> of problem, and that adding swap space would probably fix it, I'm not 
-> inclined to make any changes.
+> As a bonus, make determine_dirtyable_memory() static again: this
+> function isn't used anymore outside page writeback.
+> 
+> Signed-off-by: Andrea Righi <arighi@develer.com>
 
-Adding swap space is unlikely to help here.  For an order-6 allocation
-the page allocator will go into wtf-youre-kidding-me mode and won't
-even bother trying.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Asking the allocator for 2^6 physically contiguous pages is terribly
-unreliable and shouldn't be done by any kernel code which wants to be
-useful.
+A nitpick.
+
+> @@ -660,6 +705,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+>  	unsigned long dirty_thresh;
+>  
+>          for ( ; ; ) {
+> +		unsigned long dirty;
+> +
+>  		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+>  
+>                  /*
+> @@ -668,10 +715,10 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+>                   */
+>                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+>  
+> -                if (global_page_state(NR_UNSTABLE_NFS) +
+> -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> -                        	break;
+> -                congestion_wait(BLK_RW_ASYNC, HZ/10);
+> +		dirty = get_dirty_writeback_pages();
+> +		if (dirty <= dirty_thresh)
+> +			break;
+> +		congestion_wait(BLK_RW_ASYNC, HZ/10);
+>  
+>  		/*
+>  		 * The caller might hold locks which can prevent IO completion
+
+"dirty" seems not to be necessary.
+	if (get_dirty_writeback_pages() < dirty_thresh) ?
+
+Thanks,
+-Kame
+
 
 
