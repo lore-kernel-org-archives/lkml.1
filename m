@@ -1,107 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887Ab0COI1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 04:27:14 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:53333 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750Ab0COI1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 04:27:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=AVpYoi/QVNjtNPBkdkBA3tQNzMeFCmcBa+vQeVFsgz91U9GEB/zLBuJpxnZH7i/Exv
-         bL9ntFTRJrxPB1BoXrKeAW3uZnmyO4kir++B+On1dwPj4MXSD1c/WxhDyY3QVCL8T9Wt
-         lBilTrbXJbJctKQGiIdJcoyXAKGB2esg4xy1Q=
-Date: Mon, 15 Mar 2010 11:26:56 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Adaptec OEM Raid Solutions <aacraid@adaptec.com>
-Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yang Hongyang <yanghy@cn.fujitsu.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Alan Cox <alan@linux.intel.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [patch] dpt_i20: several use after free issues
-Message-ID: <20100315082656.GJ18181@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
-	"James E.J. Bottomley" <James.Bottomley@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Yang Hongyang <yanghy@cn.fujitsu.com>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	Alan Cox <alan@linux.intel.com>, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+	id S1756443Ab0COI2K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 04:28:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13375 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750Ab0COI2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 04:28:07 -0400
+Message-ID: <4B9DEF81.6020802@redhat.com>
+Date: Mon, 15 Mar 2010 10:27:45 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: balbir@linux.vnet.ibm.com
+CC: KVM development list <kvm@vger.kernel.org>,
+       Rik van Riel <riel@surriel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RF C/T/D] Unmapped page cache control - via boot parameter
+References: <20100315072214.GA18054@balbir.in.ibm.com> <4B9DE635.8030208@redhat.com> <20100315080726.GB18054@balbir.in.ibm.com>
+In-Reply-To: <20100315080726.GB18054@balbir.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adpt_i2o_delete_hba() calls kfree() so we have to save "pHba->next"
-before calling it.  Also inside adpt_i2o_delete_hba() itself, there
-was another use after free bug which I fixed by moving the kfree() 
-down a line.
+On 03/15/2010 10:07 AM, Balbir Singh wrote:
+> * Avi Kivity<avi@redhat.com>  [2010-03-15 09:48:05]:
+>
+>    
+>> On 03/15/2010 09:22 AM, Balbir Singh wrote:
+>>      
+>>> Selectively control Unmapped Page Cache (nospam version)
+>>>
+>>> From: Balbir Singh<balbir@linux.vnet.ibm.com>
+>>>
+>>> This patch implements unmapped page cache control via preferred
+>>> page cache reclaim. The current patch hooks into kswapd and reclaims
+>>> page cache if the user has requested for unmapped page control.
+>>> This is useful in the following scenario
+>>>
+>>> - In a virtualized environment with cache!=none, we see
+>>>    double caching - (one in the host and one in the guest). As
+>>>    we try to scale guests, cache usage across the system grows.
+>>>    The goal of this patch is to reclaim page cache when Linux is running
+>>>    as a guest and get the host to hold the page cache and manage it.
+>>>    There might be temporary duplication, but in the long run, memory
+>>>    in the guests would be used for mapped pages.
+>>>        
+>> Well, for a guest, host page cache is a lot slower than guest page cache.
+>>
+>>      
+> Yes, it is a virtio call away, but is the cost of paying twice in
+> terms of memory acceptable?
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+Usually, it isn't, which is why I recommend cache=off.
 
-diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-index 4967643..0435d04 100644
---- a/drivers/scsi/dpt_i2o.c
-+++ b/drivers/scsi/dpt_i2o.c
-@@ -188,7 +188,8 @@ MODULE_DEVICE_TABLE(pci,dptids);
- static int adpt_detect(struct scsi_host_template* sht)
- {
- 	struct pci_dev *pDev = NULL;
--	adpt_hba* pHba;
-+	adpt_hba *pHba;
-+	adpt_hba *next;
- 
- 	PINFO("Detecting Adaptec I2O RAID controllers...\n");
- 
-@@ -206,7 +207,8 @@ static int adpt_detect(struct scsi_host_template* sht)
- 	}
- 
- 	/* In INIT state, Activate IOPs */
--	for (pHba = hba_chain; pHba; pHba = pHba->next) {
-+	for (pHba = hba_chain; pHba; pHba = next) {
-+		next = pHba->next;
- 		// Activate does get status , init outbound, and get hrt
- 		if (adpt_i2o_activate_hba(pHba) < 0) {
- 			adpt_i2o_delete_hba(pHba);
-@@ -243,7 +245,8 @@ rebuild_sys_tab:
- 	PDEBUG("HBA's in OPERATIONAL state\n");
- 
- 	printk("dpti: If you have a lot of devices this could take a few minutes.\n");
--	for (pHba = hba_chain; pHba; pHba = pHba->next) {
-+	for (pHba = hba_chain; pHba; pHba = next) {
-+		next = pHba->next;
- 		printk(KERN_INFO"%s: Reading the hardware resource table.\n", pHba->name);
- 		if (adpt_i2o_lct_get(pHba) < 0){
- 			adpt_i2o_delete_hba(pHba);
-@@ -263,7 +266,8 @@ rebuild_sys_tab:
- 		adpt_sysfs_class = NULL;
- 	}
- 
--	for (pHba = hba_chain; pHba; pHba = pHba->next) {
-+	for (pHba = hba_chain; pHba; pHba = next) {
-+		next = pHba->next;
- 		if (adpt_scsi_host_alloc(pHba, sht) < 0){
- 			adpt_i2o_delete_hba(pHba);
- 			continue;
-@@ -1229,11 +1233,10 @@ static void adpt_i2o_delete_hba(adpt_hba* pHba)
- 		}
- 	}
- 	pci_dev_put(pHba->pDev);
--	kfree(pHba);
--
- 	if (adpt_sysfs_class)
- 		device_destroy(adpt_sysfs_class,
- 				MKDEV(DPTI_I2O_MAJOR, pHba->unit));
-+	kfree(pHba);
- 
- 	if(hba_count <= 0){
- 		unregister_chrdev(DPTI_I2O_MAJOR, DPT_DRIVER);   
+> One of the reasons I created a boot
+> parameter was to deal with selective enablement for cases where
+> memory is the most important resource being managed.
+>
+> I do see a hit in performance with my results (please see the data
+> below), but the savings are quite large. The other solution mentioned
+> in the TODOs is to have the balloon driver invoke this path. The
+> sysctl also allows the guest to tune the amount of unmapped page cache
+> if needed.
+>
+> The knobs are for
+>
+> 1. Selective enablement
+> 2. Selective control of the % of unmapped pages
+>    
+
+An alternative path is to enable KSM for page cache.  Then we have 
+direct read-only guest access to host page cache, without any guest 
+modifications required.  That will be pretty difficult to achieve though 
+- will need a readonly bit in the page cache radix tree, and teach all 
+paths to honour it.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
