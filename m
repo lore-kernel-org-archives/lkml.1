@@ -1,121 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934904Ab0COAc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Mar 2010 20:32:56 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58935 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934836Ab0COAcu (ORCPT
+	id S934878Ab0COAkH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Mar 2010 20:40:07 -0400
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:60099 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933427Ab0COAkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Mar 2010 20:32:50 -0400
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Grant Likely <grant.likely@secretlab.ca>, kernel-janitors@vger.kernel.org,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, linux-mips@linux-mips.org,
-       rtc-linux@googlegroups.com
-Date: Mon, 15 Mar 2010 01:29:41 +0100
-Message-Id: <1268612981-9009-1-git-send-email-w.sang@pengutronix.de>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org>
-References: <alpine.LFD.2.00.1003141054050.3719@i5.linux-foundation.org>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-Subject: [PATCH] init dynamic bin_attribute structures
-X-SA-Exim-Version: 4.2.1 (built Sat, 01 Aug 2009 12:09:26 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Sun, 14 Mar 2010 20:40:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=nhXe5OckBdMsganTIQj+kXB5K4qrhZaHbrmyRwmS+9w5d4DmlD/pAPLCGvy0YIjWZT
+         xuiD+0I7JSPwlxsulHjoxOs2A2HFS7PL+3j33r1Lo276msdk0YyaY4qCFpYy3BhTEIc1
+         YRPv1naOqjXwp3mHcojojFHbyNCvBWctPfCkM=
+From: Vikram Dhillon <dhillonv10@gmail.com>
+To: gregkh@suse.de
+Cc: andrea.gelmini@gelma.net, linville@tuxdriver.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Vikram Dhillon <dhillonv10@gmail.com>
+Subject: [PATCH] Staging: arlan: arlan.h: Fixed some style issues
+Date: Sun, 14 Mar 2010 20:39:30 -0400
+Message-Id: <1268613570-8975-1-git-send-email-dhillonv10@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 6992f5334995af474c2b58d010d08bc597f0f2fe introduced this requirement.
-First, at25 was fixed manually. Then, other occurences were found with
-coccinelle and the following semantic patch. Results were reviewed and fixed
-up:
+Fixed some style issues in accordance with checkpatch.pl. Before the patch contained "total: 2 errors, 186 warnings, 535 lines checked" and now it has: total: 0 errors, 170 warnings. Most of the warnings that remain now are the line over 80 chars ones. This is my first patch, so please take it easy on me :)
 
-@ init @
-identifier struct_name, bin;
-@@
-
-	struct struct_name {
-		...
-		struct bin_attribute bin;
-		...
-	};
-
-@ main extends init @
-expression E;
-statement S;
-identifier name, err;
-@@
-
-(
-	struct struct_name *name;
-|
--	struct struct_name *name = NULL;
-+	struct struct_name *name;
-)
-	...
-(
-	sysfs_bin_attr_init(&name->bin);
-|
-+	sysfs_bin_attr_init(&name->bin);
-	if (sysfs_create_bin_file(E, &name->bin))
-		S
-|
-+	sysfs_bin_attr_init(&name->bin);
-	err = sysfs_create_bin_file(E, &name->bin);
-)
-
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Vikram Dhillon <dhillonv10@gmail.com>
 ---
- arch/mips/txx9/generic/setup.c |    1 +
- drivers/misc/eeprom/at25.c     |    1 +
- drivers/rtc/rtc-ds1742.c       |    1 +
- 3 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/staging/arlan/arlan.h |   40 ++++++++++++++++++++--------------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
-index 7174d83..95184a0 100644
---- a/arch/mips/txx9/generic/setup.c
-+++ b/arch/mips/txx9/generic/setup.c
-@@ -956,6 +956,7 @@ void __init txx9_sramc_init(struct resource *r)
- 	if (!dev->base)
- 		goto exit;
- 	dev->dev.cls = &txx9_sramc_sysdev_class;
-+	sysfs_bin_attr_init(&dev->bindata_attr);
- 	dev->bindata_attr.attr.name = "bindata";
- 	dev->bindata_attr.attr.mode = S_IRUSR | S_IWUSR;
- 	dev->bindata_attr.read = txx9_sram_read;
-diff --git a/drivers/misc/eeprom/at25.c b/drivers/misc/eeprom/at25.c
-index d902d81..d194212 100644
---- a/drivers/misc/eeprom/at25.c
-+++ b/drivers/misc/eeprom/at25.c
-@@ -347,6 +347,7 @@ static int at25_probe(struct spi_device *spi)
- 	 * that's sensitive for read and/or write, like ethernet addresses,
- 	 * security codes, board-specific manufacturing calibrations, etc.
- 	 */
-+	sysfs_bin_attr_init(&at25->bin);
- 	at25->bin.attr.name = "eeprom";
- 	at25->bin.attr.mode = S_IRUSR;
- 	at25->bin.read = at25_bin_read;
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index a127336..cad9ceb 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -184,6 +184,7 @@ static int __devinit ds1742_rtc_probe(struct platform_device *pdev)
- 	pdata->size_nvram = pdata->size - RTC_SIZE;
- 	pdata->ioaddr_rtc = ioaddr + pdata->size_nvram;
- 
-+	sysfs_bin_attr_init(&pdata->nvram_attr);
- 	pdata->nvram_attr.attr.name = "nvram";
- 	pdata->nvram_attr.attr.mode = S_IRUGO | S_IWUSR;
- 	pdata->nvram_attr.read = ds1742_nvram_read;
--- 
-1.7.0
+diff --git a/drivers/staging/arlan/arlan.h b/drivers/staging/arlan/arlan.h
+index ffcd3ea..3974acf 100644
+--- a/drivers/staging/arlan/arlan.h
++++ b/drivers/staging/arlan/arlan.h
+@@ -318,7 +318,7 @@ extern struct arlan_conf_stru arlan_conf[MAX_ARLANS];
+ struct TxParam {
+       volatile	short 		offset;
+       volatile 	short 		length;
+-      volatile	u_char 		dest[6];
++      volatile	u_char	dest[6];
+       volatile	unsigned	char clear;
+       volatile	unsigned	char retries;
+       volatile	unsigned	char routing;
+@@ -354,37 +354,37 @@ struct arlan_private {
+       unsigned long	tx_last_sent;
+       unsigned long	tx_last_cleared;
+       unsigned long	retransmissions;
+-      unsigned long 	interrupt_ack_requested;
++      unsigned long	interrupt_ack_requested;
+       spinlock_t	lock;
+       unsigned long	waiting_command_mask;
+-      unsigned long 	card_polling_interval;
+-      unsigned long 	last_command_buff_free_time;
++      unsigned long	card_polling_interval;
++      unsigned long	last_command_buff_free_time;
+
+-      int 		under_reset;
+-      int 		under_config;
+-      int 		rx_command_given;
+-      int	 	tx_command_given;
++      int		under_reset;
++      int		under_config;
++      int		rx_command_given;
++      int		tx_command_given;
+       unsigned  long	interrupt_processing_active;
+       unsigned long	last_rx_int_ack_time;
+       unsigned long	in_bytes;
+-      unsigned long 	out_bytes;
++      unsigned long	out_bytes;
+       unsigned long	in_time;
+       unsigned long	out_time;
+       unsigned long	in_time10;
+       unsigned long	out_time10;
+       unsigned long	in_bytes10;
+-      unsigned long 	out_bytes10;
++      unsigned long	out_bytes10;
+       int	init_etherdev_alloc;
+ };
+
+
+
+ #define ARLAN_CLEAR		0x00
+-#define ARLAN_RESET 		0x01
++#define ARLAN_RESET		0x01
+ #define ARLAN_CHANNEL_ATTENTION 0x02
+-#define ARLAN_INTERRUPT_ENABLE 	0x04
+-#define ARLAN_CLEAR_INTERRUPT 	0x08
+-#define ARLAN_POWER 		0x40
++#define ARLAN_INTERRUPT_ENABLE	0x04
++#define ARLAN_CLEAR_INTERRUPT	0x08
++#define ARLAN_POWER		0x40
+ #define ARLAN_ACCESS		0x80
+
+ #define ARLAN_COM_CONF                0x01
+@@ -445,8 +445,8 @@ struct arlan_private {
+
+
+ #define registrationBad(dev)\
+-    ((   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
+-     (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0))
++    ((READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
++     (READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0))
+
+
+ #define readControlRegister(dev)\
+@@ -461,9 +461,9 @@ struct arlan_private {
+    int cr;   \
+    \
+    cr = readControlRegister(dev);\
+-   if (cr & ARLAN_CHANNEL_ATTENTION) { \
++   if (cr & ARLAN_CHANNEL_ATTENTION) \
+       writeControlRegister(dev, (cr & ~ARLAN_CHANNEL_ATTENTION));\
+-   } else  \
++   else \
+       writeControlRegister(dev, (cr | ARLAN_CHANNEL_ATTENTION));\
+ }
+
+@@ -504,8 +504,8 @@ struct arlan_private {
+ #define ARLAN_COMMAND_RX_ABORT		0x000080
+ #define ARLAN_COMMAND_POWERDOWN		0x000100
+ #define ARLAN_COMMAND_POWERUP		0x000200
+-#define ARLAN_COMMAND_SLOW_POLL 	0x000400
+-#define ARLAN_COMMAND_ACTIVATE 		0x000800
++#define ARLAN_COMMAND_SLOW_POLL	0x000400
++#define ARLAN_COMMAND_ACTIVATE	0x000800
+ #define ARLAN_COMMAND_INT_ACK		0x001000
+ #define ARLAN_COMMAND_INT_ENABLE	0x002000
+ #define ARLAN_COMMAND_WAIT_NOW		0x004000
+--
+1.6.3.3
 
