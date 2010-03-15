@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935994Ab0COJM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 05:12:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57318 "EHLO mx1.redhat.com"
+	id S936011Ab0COJNG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 05:13:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37280 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935985Ab0COJMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 05:12:24 -0400
-Date: Mon, 15 Mar 2010 10:10:10 +0100
+	id S935996Ab0COJM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 05:12:29 -0400
+Date: Mon, 15 Mar 2010 10:10:23 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
 Cc: Ben Blum <bblum@google.com>, Jiri Slaby <jirislaby@gmail.com>,
@@ -14,9 +14,8 @@ Cc: Ben Blum <bblum@google.com>, Jiri Slaby <jirislaby@gmail.com>,
        Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] move_task_off_dead_cpu: take rq->lock around
-	select_fallback_rq()
-Message-ID: <20100315091010.GA9131@redhat.com>
+Subject: [PATCH 5/6] _cpu_down: don't play with current->cpus_allowed
+Message-ID: <20100315091023.GA9148@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,76 +24,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move_task_off_dead_cpu()->select_fallback_rq() reads/updates ->cpus_allowed
-lockless. We can race with set_cpus_allowed() running in parallel.
+_cpu_down() changes the current task's affinity and then recovers it at
+the end. The problems are well known: we can't restore old_allowed if it
+was bound to the now-dead-cpu, and we can race with the userspace which
+can change cpu-affinity during unplug.
 
-Change it to take rq->lock around select_fallback_rq(). Note that it is not
-trivial to move this spin_lock() into select_fallback_rq(), we must recheck
-the task was not migrated after we take the lock and other callers do not
-need this lock.
-
-To avoid the races with other callers of select_fallback_rq() which rely on
-TASK_WAKING, we also check p->state != TASK_WAKING and do nothing otherwise.
-The owner of TASK_WAKING must update ->cpus_allowed and choose the correct
-CPU anyway, and the subsequent __migrate_task() is just meaningless because
-p->se.on_rq must be false.
-
-Alternatively, we could change select_task_rq() to take rq->lock right
-after it calls sched_class->select_task_rq(), but this looks a bit ugly.
-
-Also, change it to not assume irqs are disabled and absorb __migrate_task_irq().
+_cpu_down() should not play with current->cpus_allowed at all. Instead,
+take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
+removes the dying cpu from cpu_online_mask.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- kernel/sched.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |    2 +-
+ kernel/cpu.c          |   18 ++++++------------
+ 3 files changed, 8 insertions(+), 13 deletions(-)
 
---- 34-rc1/kernel/sched.c~2_MTODC_TAKE_RQ_LOCK	2010-03-15 09:40:16.000000000 +0100
-+++ 34-rc1/kernel/sched.c	2010-03-15 09:40:31.000000000 +0100
-@@ -5509,29 +5509,29 @@ static int migration_thread(void *data)
- }
+--- 34-rc1/include/linux/sched.h~4_CPU_DOWN_AFFINITY	2010-03-15 09:37:46.000000000 +0100
++++ 34-rc1/include/linux/sched.h	2010-03-15 09:41:51.000000000 +0100
+@@ -1843,6 +1843,7 @@ extern void sched_clock_idle_sleep_event
+ extern void sched_clock_idle_wakeup_event(u64 delta_ns);
  
  #ifdef CONFIG_HOTPLUG_CPU
--
--static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
--{
--	int ret;
--
--	local_irq_disable();
--	ret = __migrate_task(p, src_cpu, dest_cpu);
--	local_irq_enable();
--	return ret;
--}
--
++extern void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p);
+ extern void idle_task_exit(void);
+ #else
+ static inline void idle_task_exit(void) {}
+--- 34-rc1/kernel/sched.c~4_CPU_DOWN_AFFINITY	2010-03-15 09:41:28.000000000 +0100
++++ 34-rc1/kernel/sched.c	2010-03-15 09:41:51.000000000 +0100
+@@ -5503,7 +5503,7 @@ static int migration_thread(void *data)
  /*
   * Figure out where task on dead CPU should go, use force if necessary.
   */
- static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+-static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
++void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
  {
--	int dest_cpu;
--
-+	struct rq *rq = cpu_rq(dead_cpu);
-+	int needs_cpu, dest_cpu;
-+	unsigned long flags;
- again:
--	dest_cpu = select_fallback_rq(dead_cpu, p);
-+	local_irq_save(flags);
-+
-+	raw_spin_lock(&rq->lock);
-+	needs_cpu = (task_cpu(p) == dead_cpu) && (p->state != TASK_WAKING);
-+	if (needs_cpu)
-+		dest_cpu = select_fallback_rq(dead_cpu, p);
-+	raw_spin_unlock(&rq->lock);
+ 	struct rq *rq = cpu_rq(dead_cpu);
+ 	int needs_cpu, dest_cpu;
+--- 34-rc1/kernel/cpu.c~4_CPU_DOWN_AFFINITY	2010-03-15 09:37:46.000000000 +0100
++++ 34-rc1/kernel/cpu.c	2010-03-15 09:41:51.000000000 +0100
+@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
+ }
  
- 	/* It can have affinity changed while we were choosing. */
--	if (unlikely(!__migrate_task_irq(p, dead_cpu, dest_cpu)))
-+	if (needs_cpu)
-+		needs_cpu = !__migrate_task(p, dead_cpu, dest_cpu);
-+	local_irq_restore(flags);
-+
-+	if (unlikely(needs_cpu))
- 		goto again;
+ struct take_cpu_down_param {
++	struct task_struct *caller;
+ 	unsigned long mod;
+ 	void *hcpu;
+ };
+@@ -171,6 +172,7 @@ struct take_cpu_down_param {
+ static int __ref take_cpu_down(void *_param)
+ {
+ 	struct take_cpu_down_param *param = _param;
++	unsigned int cpu = (unsigned long)param->hcpu;
+ 	int err;
+ 
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+@@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
+ 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
+ 				param->hcpu);
+ 
++	if (task_cpu(param->caller) == cpu)
++		move_task_off_dead_cpu(cpu, param->caller);
+ 	/* Force idle task to run as soon as we yield: it should
+ 	   immediately notice cpu is offline and die quickly. */
+ 	sched_idle_next();
+@@ -191,10 +195,10 @@ static int __ref take_cpu_down(void *_pa
+ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ {
+ 	int err, nr_calls = 0;
+-	cpumask_var_t old_allowed;
+ 	void *hcpu = (void *)(long)cpu;
+ 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
+ 	struct take_cpu_down_param tcd_param = {
++		.caller = current,
+ 		.mod = mod,
+ 		.hcpu = hcpu,
+ 	};
+@@ -205,9 +209,6 @@ static int __ref _cpu_down(unsigned int 
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+-	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+-		return -ENOMEM;
+-
+ 	cpu_hotplug_begin();
+ 	set_cpu_active(cpu, false);
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+@@ -224,10 +225,6 @@ static int __ref _cpu_down(unsigned int 
+ 		goto out_release;
+ 	}
+ 
+-	/* Ensure that we are not runnable on dying cpu */
+-	cpumask_copy(old_allowed, &current->cpus_allowed);
+-	set_cpus_allowed_ptr(current, cpu_active_mask);
+-
+ 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
+ 	if (err) {
+ 		set_cpu_active(cpu, true);
+@@ -236,7 +233,7 @@ static int __ref _cpu_down(unsigned int 
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
+ 
+-		goto out_allowed;
++		goto out_release;
+ 	}
+ 	BUG_ON(cpu_online(cpu));
+ 
+@@ -254,8 +251,6 @@ static int __ref _cpu_down(unsigned int 
+ 
+ 	check_for_tasks(cpu);
+ 
+-out_allowed:
+-	set_cpus_allowed_ptr(current, old_allowed);
+ out_release:
+ 	cpu_hotplug_done();
+ 	if (!err) {
+@@ -263,7 +258,6 @@ out_release:
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
+ 	}
+-	free_cpumask_var(old_allowed);
+ 	return err;
  }
  
 
