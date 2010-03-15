@@ -1,257 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759671Ab0COFpN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 01:45:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36977 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753682Ab0COFpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 01:45:09 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 15 Mar 2010 14:41:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 05/11] Export unusable free space index via
- /proc/unusable_index
-Message-Id: <20100315144124.ba503bfe.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1268412087-13536-6-git-send-email-mel@csn.ul.ie>
-References: <1268412087-13536-1-git-send-email-mel@csn.ul.ie>
-	<1268412087-13536-6-git-send-email-mel@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1759681Ab0COFqg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 01:46:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:55641 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759639Ab0COFqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 01:46:34 -0400
+Date: Mon, 15 Mar 2010 16:46:15 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, benh@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/perf_events: Implement perf_arch_fetch_caller_regs
+ for powerpc
+Message-ID: <20100315054615.GA6245@drongo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Mar 2010 16:41:21 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+This implements a powerpc version of perf_arch_fetch_caller_regs.
+It's implemented in assembly because that way we can be sure there
+isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
+C, gcc might or might not create a stack frame for it, which would
+affect the number of levels we have to skip.  It's not ifdef'd
+because it is only 14 instructions long.
 
-> Unusable free space index is a measure of external fragmentation that
-> takes the allocation size into account. For the most part, the huge page
-> size will be the size of interest but not necessarily so it is exported
-> on a per-order and per-zone basis via /proc/unusable_index.
-> 
-> The index is a value between 0 and 1. It can be expressed as a
-> percentage by multiplying by 100 as documented in
-> Documentation/filesystems/proc.txt.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> ---
->  Documentation/filesystems/proc.txt |   13 ++++-
->  mm/vmstat.c                        |  120 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 132 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> index 5e132b5..5c4b0fb 100644
-> --- a/Documentation/filesystems/proc.txt
-> +++ b/Documentation/filesystems/proc.txt
-> @@ -452,6 +452,7 @@ Table 1-5: Kernel info in /proc
->   sys         See chapter 2                                     
->   sysvipc     Info of SysVIPC Resources (msg, sem, shm)		(2.4)
->   tty	     Info of tty drivers
-> + unusable_index Additional page allocator information (see text)(2.5)
->   uptime      System uptime                                     
->   version     Kernel version                                    
->   video	     bttv info of video resources			(2.4)
-> @@ -609,7 +610,7 @@ ZONE_DMA, 4 chunks of 2^1*PAGE_SIZE in ZONE_DMA, 101 chunks of 2^4*PAGE_SIZE
->  available in ZONE_NORMAL, etc... 
->  
->  More information relevant to external fragmentation can be found in
-> -pagetypeinfo.
-> +pagetypeinfo and unusable_index
->  
->  > cat /proc/pagetypeinfo
->  Page block order: 9
-> @@ -650,6 +651,16 @@ unless memory has been mlock()'d. Some of the Reclaimable blocks should
->  also be allocatable although a lot of filesystem metadata may have to be
->  reclaimed to achieve this.
->  
-> +> cat /proc/unusable_index
-> +Node 0, zone      DMA 0.000 0.000 0.000 0.001 0.005 0.013 0.021 0.037 0.037 0.101 0.230
-> +Node 0, zone   Normal 0.000 0.000 0.000 0.001 0.002 0.002 0.005 0.015 0.028 0.028 0.054
-> +
-> +The unusable free space index measures how much of the available free
-> +memory cannot be used to satisfy an allocation of a given size and is a
-> +value between 0 and 1. The higher the value, the more of free memory is
-> +unusable and by implication, the worse the external fragmentation is. This
-> +can be expressed as a percentage by multiplying by 100.
-> +
+With this, we see results from perf record -e lock:lock_acquire like
+this:
 
-I'm sorry but how this information is different from buddyinfo ?
+# Samples: 24878
+#
+# Overhead         Command      Shared Object  Symbol
+# ........  ..............  .................  ......
+#
+    14.99%            perf  [kernel.kallsyms]  [k] ._raw_spin_lock
+                      |
+                      --- ._raw_spin_lock
+                         |          
+                         |--25.00%-- .alloc_fd
+                         |          (nil)
+                         |          |          
+                         |          |--50.00%-- .anon_inode_getfd
+                         |          |          .sys_perf_event_open
+                         |          |          syscall_exit
+                         |          |          syscall
+                         |          |          create_counter
+                         |          |          __cmd_record
+                         |          |          run_builtin
+                         |          |          main
+                         |          |          0xfd2e704
+                         |          |          0xfd2e8c0
+                         |          |          (nil)
 
-Thanks,
--Kame
+... etc.
 
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/asm-compat.h |    2 ++
+ arch/powerpc/kernel/misc.S            |   20 ++++++++++++++++++++
+ 2 files changed, 22 insertions(+)
 
-
->  ..............................................................................
->  
->  meminfo:
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 7f760cb..ca42e10 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -453,6 +453,106 @@ static int frag_show(struct seq_file *m, void *arg)
->  	return 0;
->  }
->  
-> +
-> +struct contig_page_info {
-> +	unsigned long free_pages;
-> +	unsigned long free_blocks_total;
-> +	unsigned long free_blocks_suitable;
-> +};
-> +
-> +/*
-> + * Calculate the number of free pages in a zone, how many contiguous
-> + * pages are free and how many are large enough to satisfy an allocation of
-> + * the target size. Note that this function makes to attempt to estimate
-> + * how many suitable free blocks there *might* be if MOVABLE pages were
-> + * migrated. Calculating that is possible, but expensive and can be
-> + * figured out from userspace
-> + */
-> +static void fill_contig_page_info(struct zone *zone,
-> +				unsigned int suitable_order,
-> +				struct contig_page_info *info)
-> +{
-> +	unsigned int order;
-> +
-> +	info->free_pages = 0;
-> +	info->free_blocks_total = 0;
-> +	info->free_blocks_suitable = 0;
-> +
-> +	for (order = 0; order < MAX_ORDER; order++) {
-> +		unsigned long blocks;
-> +
-> +		/* Count number of free blocks */
-> +		blocks = zone->free_area[order].nr_free;
-> +		info->free_blocks_total += blocks;
-> +
-> +		/* Count free base pages */
-> +		info->free_pages += blocks << order;
-> +
-> +		/* Count the suitable free blocks */
-> +		if (order >= suitable_order)
-> +			info->free_blocks_suitable += blocks <<
-> +						(order - suitable_order);
-> +	}
-> +}
-> +
-> +/*
-> + * Return an index indicating how much of the available free memory is
-> + * unusable for an allocation of the requested size.
-> + */
-> +static int unusable_free_index(unsigned int order,
-> +				struct contig_page_info *info)
-> +{
-> +	/* No free memory is interpreted as all free memory is unusable */
-> +	if (info->free_pages == 0)
-> +		return 1000;
-> +
-> +	/*
-> +	 * Index should be a value between 0 and 1. Return a value to 3
-> +	 * decimal places.
-> +	 *
-> +	 * 0 => no fragmentation
-> +	 * 1 => high fragmentation
-> +	 */
-> +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
-> +
-> +}
-> +
-> +static void unusable_show_print(struct seq_file *m,
-> +					pg_data_t *pgdat, struct zone *zone)
-> +{
-> +	unsigned int order;
-> +	int index;
-> +	struct contig_page_info info;
-> +
-> +	seq_printf(m, "Node %d, zone %8s ",
-> +				pgdat->node_id,
-> +				zone->name);
-> +	for (order = 0; order < MAX_ORDER; ++order) {
-> +		fill_contig_page_info(zone, order, &info);
-> +		index = unusable_free_index(order, &info);
-> +		seq_printf(m, "%d.%03d ", index / 1000, index % 1000);
-> +	}
-> +
-> +	seq_putc(m, '\n');
-> +}
-> +
-> +/*
-> + * Display unusable free space index
-> + * XXX: Could be a lot more efficient, but it's not a critical path
-> + */
-> +static int unusable_show(struct seq_file *m, void *arg)
-> +{
-> +	pg_data_t *pgdat = (pg_data_t *)arg;
-> +
-> +	/* check memoryless node */
-> +	if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
-> +		return 0;
-> +
-> +	walk_zones_in_node(m, pgdat, unusable_show_print);
-> +
-> +	return 0;
-> +}
-> +
->  static void pagetypeinfo_showfree_print(struct seq_file *m,
->  					pg_data_t *pgdat, struct zone *zone)
->  {
-> @@ -603,6 +703,25 @@ static const struct file_operations pagetypeinfo_file_ops = {
->  	.release	= seq_release,
->  };
->  
-> +static const struct seq_operations unusable_op = {
-> +	.start	= frag_start,
-> +	.next	= frag_next,
-> +	.stop	= frag_stop,
-> +	.show	= unusable_show,
-> +};
-> +
-> +static int unusable_open(struct inode *inode, struct file *file)
-> +{
-> +	return seq_open(file, &unusable_op);
-> +}
-> +
-> +static const struct file_operations unusable_file_ops = {
-> +	.open		= unusable_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= seq_release,
-> +};
-> +
->  #ifdef CONFIG_ZONE_DMA
->  #define TEXT_FOR_DMA(xx) xx "_dma",
->  #else
-> @@ -947,6 +1066,7 @@ static int __init setup_vmstat(void)
->  #ifdef CONFIG_PROC_FS
->  	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
->  	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
-> +	proc_create("unusable_index", S_IRUGO, NULL, &unusable_file_ops);
->  	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
->  	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
->  #endif
-> -- 
-> 1.6.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
+index c1b475a..a9b91ed 100644
+--- a/arch/powerpc/include/asm/asm-compat.h
++++ b/arch/powerpc/include/asm/asm-compat.h
+@@ -28,6 +28,7 @@
+ #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
++#define PPC_LR_STKOFF	16
+ 
+ /* Move to CR, single-entry optimized version. Only available
+  * on POWER4 and later.
+@@ -51,6 +52,7 @@
+ #define PPC_STLCX	stringify_in_c(stwcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzw)
+ #define PPC_MTOCRF	stringify_in_c(mtcrf)
++#define PPC_LR_STKOFF	4
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+index 2d29752..4459500 100644
+--- a/arch/powerpc/kernel/misc.S
++++ b/arch/powerpc/kernel/misc.S
+@@ -127,3 +127,23 @@ _GLOBAL(__setup_cpu_power7)
+ _GLOBAL(__restore_cpu_power7)
+ 	/* place holder */
+ 	blr
++
++/*
++ * Get a minimal set of registers for our caller's nth caller.
++ * r3 = regs pointer, r5 = n.
++ */
++_GLOBAL(perf_arch_fetch_caller_regs)
++	mr	r6,r1
++	cmpwi	r5,0
++	mflr	r4
++	ble	2f
++	mtctr	r5
++1:	PPC_LL	r6,0(r6)
++	bdnz	1b
++	PPC_LL	r4,PPC_LR_STKOFF(r6)
++2:	PPC_LL	r7,0(r6)
++	PPC_LL	r7,PPC_LR_STKOFF(r7)
++	PPC_STL	r6,GPR1-STACK_FRAME_OVERHEAD(r3)
++	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
++	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
++	blr
