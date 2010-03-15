@@ -1,45 +1,305 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749Ab0COMg3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Mar 2010 08:36:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58192 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756734Ab0COMg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Mar 2010 08:36:27 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4B9B5A37.2010206@s5r6.in-berlin.de>
-References: <4B9B5A37.2010206@s5r6.in-berlin.de> <4B9A6033.8010705@s5r6.in-berlin.de> <20100311172055.7328.51353.stgit@warthog.procyon.org.uk> <18180.1268437268@redhat.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       sgruszka@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] Document Linux's circular buffering capabilities
-Date: Mon, 15 Mar 2010 12:36:05 +0000
-Message-ID: <30121.1268656565@redhat.com>
+	id S936197Ab0COMsi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Mar 2010 08:48:38 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:35241 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933709Ab0COMse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Mar 2010 08:48:34 -0400
+Date: Mon, 15 Mar 2010 13:48:18 +0100
+From: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Subject: [PATCHv2] USB: composite: allow optional removal of __init and __exit
+ tags
+In-reply-to: <94ae17705a23aec612042afcc34c44f993088eca.1268307147.git.mina86@mina86.com>
+To: linux-usb@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Michal Nazarewicz <m.nazarewicz@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>
+Message-id: <1865d3ee9a5ca4e41844577fff9e01e63427ed71.1268656947.git.mina86@mina86.com>
+MIME-version: 1.0
+X-Mailer: git-send-email 1.7.0
+Content-type: TEXT/PLAIN
+Content-transfer-encoding: 7BIT
+References: <94ae17705a23aec612042afcc34c44f993088eca.1268307147.git.mina86@mina86.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+The composite framework has been written using __init and __exit tags
+to mark init and exit functions as such.  This works with most of the
+composite gadgets however some may need to call init/exit functions
+during normal operations.  One example is mass storage gadget which
+needs to call exit functions.
 
-> Would you agree to add a quick note that these examples are simple
-> enough to not strictly require ACCESS_ONCE but are meant to show what
-> more general code would have to do?  Else a reader might be left puzzled
-> why he can't see in the example code the circumstances which require
-> ACCESS_ONCE and may remain unsure about where to use it in his own works...
+This patch allows gadgets to define USB_NO_INIT_SEGMENT or
+USB_NO_EXIT_SEGMENT to remove the __init and __exit declarations
+from composite framework.
 
-How about adding a bit:
+For example see mass_storage.c.
 
- Note the use of ACCESS_ONCE() in both algorithms to read the opposition index.
- This prevents the compiler from discarding and reloading its cached value -
--which some compilers will do across smp_read_barrier_depends().
-+which some compilers will do across smp_read_barrier_depends().  This isn't
-+strictly needed if you can be sure that the opposition index will _only_ be
-+used the once.
+Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ Sorry about the previous version.  It was obviously an unfixed version
+ (files got mixed).  This is the correct version.
 
-David
+ drivers/usb/gadget/composite.c     |   25 +++++++++++++------------
+ drivers/usb/gadget/config.c        |    6 ++++--
+ drivers/usb/gadget/epautoconf.c    |   13 +++++++------
+ drivers/usb/gadget/mass_storage.c  |    4 ++++
+ drivers/usb/gadget/usb-init-exit.h |   23 +++++++++++++++++++++++
+ 5 files changed, 51 insertions(+), 20 deletions(-)
+ create mode 100644 drivers/usb/gadget/usb-init-exit.h
+
+diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
+index 09289bb..0039aba 100644
+--- a/drivers/usb/gadget/composite.c
++++ b/drivers/usb/gadget/composite.c
+@@ -27,6 +27,8 @@
+ 
+ #include <linux/usb/composite.h>
+ 
++#include "usb-init-exit.h"
++
+ 
+ /*
+  * The code in this file is utility code, used to build a gadget driver
+@@ -85,7 +87,7 @@ MODULE_PARM_DESC(iSerialNumber, "SerialNumber string");
+  * This function returns the value of the function's bind(), which is
+  * zero for success else a negative errno value.
+  */
+-int __init usb_add_function(struct usb_configuration *config,
++int __usb_init usb_add_function(struct usb_configuration *config,
+ 		struct usb_function *function)
+ {
+ 	int	value = -EINVAL;
+@@ -215,7 +217,7 @@ int usb_function_activate(struct usb_function *function)
+  * Returns the interface ID which was allocated; or -ENODEV if no
+  * more interface IDs can be allocated.
+  */
+-int __init usb_interface_id(struct usb_configuration *config,
++int __usb_init usb_interface_id(struct usb_configuration *config,
+ 		struct usb_function *function)
+ {
+ 	unsigned id = config->next_interface_id;
+@@ -480,7 +482,7 @@ done:
+  * assigns global resources including string IDs, and per-configuration
+  * resources such as interface IDs and endpoints.
+  */
+-int __init usb_add_config(struct usb_composite_dev *cdev,
++int __usb_init usb_add_config(struct usb_composite_dev *cdev,
+ 		struct usb_configuration *config)
+ {
+ 	int				status = -EINVAL;
+@@ -677,7 +679,7 @@ static int get_string(struct usb_composite_dev *cdev,
+  * ensure that for example different functions don't wrongly assign
+  * different meanings to the same identifier.
+  */
+-int __init usb_string_id(struct usb_composite_dev *cdev)
++int __usb_init usb_string_id(struct usb_composite_dev *cdev)
+ {
+ 	if (cdev->next_string_id < 254) {
+ 		/* string id 0 is reserved */
+@@ -898,7 +900,7 @@ static void composite_disconnect(struct usb_gadget *gadget)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-static void /* __init_or_exit */
++static void __usb_init_or_exit
+ composite_unbind(struct usb_gadget *gadget)
+ {
+ 	struct usb_composite_dev	*cdev = get_gadget_data(gadget);
+@@ -947,7 +949,7 @@ composite_unbind(struct usb_gadget *gadget)
+ 	composite = NULL;
+ }
+ 
+-static void __init
++static void __usb_init
+ string_override_one(struct usb_gadget_strings *tab, u8 id, const char *s)
+ {
+ 	struct usb_string		*str = tab->strings;
+@@ -960,7 +962,7 @@ string_override_one(struct usb_gadget_strings *tab, u8 id, const char *s)
+ 	}
+ }
+ 
+-static void __init
++static void __usb_init
+ string_override(struct usb_gadget_strings **tab, u8 id, const char *s)
+ {
+ 	while (*tab) {
+@@ -969,7 +971,7 @@ string_override(struct usb_gadget_strings **tab, u8 id, const char *s)
+ 	}
+ }
+ 
+-static int __init composite_bind(struct usb_gadget *gadget)
++static int __usb_init composite_bind(struct usb_gadget *gadget)
+ {
+ 	struct usb_composite_dev	*cdev;
+ 	int				status = -ENOMEM;
+@@ -1092,8 +1094,7 @@ static struct usb_gadget_driver composite_driver = {
+ 	.speed		= USB_SPEED_HIGH,
+ 
+ 	.bind		= composite_bind,
+-	/* .unbind		= __exit_p(composite_unbind), */
+-	.unbind		= composite_unbind,
++	.unbind		= __usb_exit_p(composite_unbind),
+ 
+ 	.setup		= composite_setup,
+ 	.disconnect	= composite_disconnect,
+@@ -1121,7 +1122,7 @@ static struct usb_gadget_driver composite_driver = {
+  * while it was binding.  That would usually be done in order to wait for
+  * some userspace participation.
+  */
+-int __init usb_composite_register(struct usb_composite_driver *driver)
++int __usb_init usb_composite_register(struct usb_composite_driver *driver)
+ {
+ 	if (!driver || !driver->dev || !driver->bind || composite)
+ 		return -EINVAL;
+@@ -1142,7 +1143,7 @@ int __init usb_composite_register(struct usb_composite_driver *driver)
+  * This function is used to unregister drivers using the composite
+  * driver framework.
+  */
+-void /* __exit */ usb_composite_unregister(struct usb_composite_driver *driver)
++void __usb_exit usb_composite_unregister(struct usb_composite_driver *driver)
+ {
+ 	if (composite != driver)
+ 		return;
+diff --git a/drivers/usb/gadget/config.c b/drivers/usb/gadget/config.c
+index e1191b9..31741ed 100644
+--- a/drivers/usb/gadget/config.c
++++ b/drivers/usb/gadget/config.c
+@@ -27,6 +27,8 @@
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/gadget.h>
+ 
++#include "usb-init-exit.h"
++
+ 
+ /**
+  * usb_descriptor_fillbuf - fill buffer with descriptors
+@@ -127,7 +129,7 @@ int usb_gadget_config_buf(
+  * with identifiers (for interfaces, strings, endpoints, and more)
+  * as needed by a given function instance.
+  */
+-struct usb_descriptor_header **__init
++struct usb_descriptor_header **__usb_init
+ usb_copy_descriptors(struct usb_descriptor_header **src)
+ {
+ 	struct usb_descriptor_header **tmp;
+@@ -174,7 +176,7 @@ usb_copy_descriptors(struct usb_descriptor_header **src)
+  * intended use is to help remembering the endpoint descriptor to use
+  * when enabling a given endpoint.
+  */
+-struct usb_endpoint_descriptor *__init
++struct usb_endpoint_descriptor *__usb_init
+ usb_find_endpoint(
+ 	struct usb_descriptor_header **src,
+ 	struct usb_descriptor_header **copy,
+diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
+index cd0914e..ba2af33 100644
+--- a/drivers/usb/gadget/epautoconf.c
++++ b/drivers/usb/gadget/epautoconf.c
+@@ -31,15 +31,16 @@
+ #include <linux/usb/gadget.h>
+ 
+ #include "gadget_chips.h"
++#include "usb-init-exit.h"
+ 
+ 
+ /* we must assign addresses for configurable endpoints (like net2280) */
+-static __initdata unsigned epnum;
++static __usb_initdata unsigned epnum;
+ 
+ // #define MANY_ENDPOINTS
+ #ifdef MANY_ENDPOINTS
+ /* more than 15 configurable endpoints */
+-static __initdata unsigned in_epnum;
++static __usb_initdata unsigned in_epnum;
+ #endif
+ 
+ 
+@@ -59,7 +60,7 @@ static __initdata unsigned in_epnum;
+  * NOTE:  each endpoint is unidirectional, as specified by its USB
+  * descriptor; and isn't specific to a configuration or altsetting.
+  */
+-static int __init
++static int __usb_init
+ ep_matches (
+ 	struct usb_gadget		*gadget,
+ 	struct usb_ep			*ep,
+@@ -187,7 +188,7 @@ ep_matches (
+ 	return 1;
+ }
+ 
+-static struct usb_ep * __init
++static struct usb_ep * __usb_init
+ find_ep (struct usb_gadget *gadget, const char *name)
+ {
+ 	struct usb_ep	*ep;
+@@ -229,7 +230,7 @@ find_ep (struct usb_gadget *gadget, const char *name)
+  *
+  * On failure, this returns a null endpoint descriptor.
+  */
+-struct usb_ep * __init usb_ep_autoconfig (
++struct usb_ep * __usb_init usb_ep_autoconfig (
+ 	struct usb_gadget		*gadget,
+ 	struct usb_endpoint_descriptor	*desc
+ )
+@@ -296,7 +297,7 @@ struct usb_ep * __init usb_ep_autoconfig (
+  * state such as ep->driver_data and the record of assigned endpoints
+  * used by usb_ep_autoconfig().
+  */
+-void __init usb_ep_autoconfig_reset (struct usb_gadget *gadget)
++void __usb_init usb_ep_autoconfig_reset (struct usb_gadget *gadget)
+ {
+ 	struct usb_ep	*ep;
+ 
+diff --git a/drivers/usb/gadget/mass_storage.c b/drivers/usb/gadget/mass_storage.c
+index 19619fb..3d4b2ac 100644
+--- a/drivers/usb/gadget/mass_storage.c
++++ b/drivers/usb/gadget/mass_storage.c
+@@ -57,6 +57,10 @@
+  * a "gcc --combine ... part1.c part2.c part3.c ... " build would.
+  */
+ 
++/* Do not mark composite_unbind() and usb_composite_unregister() as
++ * __exit, we may need it even if we are not unloaded. */
++#define USB_NO_EXIT_SEGMENT 1
++
+ #include "composite.c"
+ #include "usbstring.c"
+ #include "config.c"
+diff --git a/drivers/usb/gadget/usb-init-exit.h b/drivers/usb/gadget/usb-init-exit.h
+new file mode 100644
+index 0000000..04cd624
+--- /dev/null
++++ b/drivers/usb/gadget/usb-init-exit.h
+@@ -0,0 +1,23 @@
++#ifndef __usb_init
++#  if defined USB_NO_INIT_SEGMENT
++#    define __usb_init          __cold
++#    define __usb_initdata
++#  else
++#    define __usb_init          __init
++#    define __usb_initdata      __initdata
++#  endif
++#  if defined USB_NO_EXIT_SEGMENT
++#    define __usb_exit          __cold
++#    define __usb_exit_p(func)  func
++#    define __usb_exitdata
++#  else
++#    define __usb_exit          __exit
++#    define __usb_exit_p(func)  __exit_p(func)
++#    define __usb_exitdata      __exitdata
++#  endif
++#  if defined USB_NO_INIT_SEGMENT || defined USB_NO_EXIT_SEGMENT
++#    define __usb_init_or_exit  __cold
++#  else
++#    define __usb_init_or_exit  /* __init_or_exit */
++#  endif
++#endif
+-- 
+1.7.0
+
