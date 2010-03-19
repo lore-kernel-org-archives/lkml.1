@@ -1,115 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992Ab0CBADl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 19:03:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34663 "EHLO ogre.sisk.pl"
+	id S1753031Ab0CBAEf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 19:04:35 -0500
+Received: from mms2.broadcom.com ([216.31.210.18]:2335 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752877Ab0CBADj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 19:03:39 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michal Hocko <mstsxfx@gmail.com>
-Subject: Re: unable to handle kernel paging request on resume with 2.6.33-00001-gbaac35c
-Date: Tue, 2 Mar 2010 01:06:06 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>, linux-mm@kvack.org
-References: <20100301175256.GA4034@tiehlicka.suse.cz> <201003012207.37582.rjw@sisk.pl> <20100301223457.GB4034@tiehlicka.suse.cz>
-In-Reply-To: <20100301223457.GB4034@tiehlicka.suse.cz>
+	id S1752887Ab0CBAEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 19:04:33 -0500
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+From: "Hugh Daschbach" <hdasch@broadcom.com>
+To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "Chandra Seetharaman" <sekharan@us.ibm.com>,
+       "Eddie Williams" <Eddie.Williams@steeleye.com>
+cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Hugh Daschbach" <hdasch@broadcom.com>
+Subject: PROBLEM: kernel BUG at block/cfq-iosched.c:3402
+Date: Thu, 18 Mar 2010 22:31:29 -0700
+Message-ID: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>
+X-Mailer: git-send-email 1.6.6
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+X-WSS-ID: 6792898E38O129518052-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003020106.06867.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 March 2010, Michal Hocko wrote:
-> [Let's CC mm guys]
+Apologies in advance if this seems like nagging.  I've posted this
+before, but never saw it pass through the mailing list.
 
-I guess it's rather architecture-related than a genering mm issue.
+For long trespass CDBs, the EMC multipath device handler (in
+get_req()) allocates a "struct request" with READ specified in the I/O
+direction flag.  It then changes this to a WRITE before
+send_trespass_cmd() calls blk_execute_rq().  This provokes a BUG() in
+cfq_put_request() after the I/O completes and the request is released.
 
-> On Mon, Mar 01, 2010 at 10:07:37PM +0100, Rafael J. Wysocki wrote:
-> > On Monday 01 March 2010, Michal Hocko wrote:
-> > > Hi,
-> > > 
-> > > I have experienced the following kernel BUG on resume from suspend from
-> > > disk (the whole log from  hibarnation to suspend along with kernel
-> > > config are attached):
-> > > 
-> > > BUG: unable to handle kernel paging request at 00aaaaaa
-> > > IP: [<c019e28c>] anon_vma_link+0x2c/0x39
-> > > *pde = 00000000
-> > > Oops: 0002 [#1] PREEMPT SMP
-> > > last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0003:00/power_supply/AC/type
-> > > Modules linked in: aes_i586 aes_generic iwl3945 iwlcore mac80211 cfg80211 fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect fuse tun coretemp hwmon snd_hda_codec_realtek snd_hda_intel snd_hda_codec arc4 ecb snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi_event snd_seq snd_timer fujitsu_laptop snd_seq_device rtc_cmos rtc_core led_class rtc_lib snd snd_page_alloc video backlight output [last unloaded: cfg80211]
-> > > 
-> > > Pid: 3942, comm: kxkb Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
-> > > EIP: 0060:[<c019e28c>] EFLAGS: 00010246 CPU: 1
-> > > EIP is at anon_vma_link+0x2c/0x39
-> > > EAX: 00aaaaaa EBX: f69c6410 ECX: f69c6414 EDX: f63e4df4
-> > > ESI: f63e4dc0 EDI: f63e4e14 EBP: f6901ec0 ESP: f6901eb8
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > > Process kxkb (pid: 3942, ti=f6901000 task=f6aa6ff0 task.ti=f6901000)
-> > > Stack:
-> > >  f63e4dc0 f23fc7e4 f6901efc c012fc28 f6aa6ff0 f63e4e30 f63e4e34 f63e4e24
-> > > <0> ca4656f4 f6ace734 f6aa6ff0 f6ace700 ca4656c0 f23fc790 ca560000 fffffff4
-> > > <0> f659ef94 f6901f38 c0130821 f6aa6ff0 f6901fb4 bff441f0 ca560208 00000000
-> > > Call Trace:
-> > >  [<c012fc28>] ? dup_mm+0x1c7/0x3d3
-> > >  [<c0130821>] ? copy_process+0x98e/0xf26
-> > >  [<c0130ed6>] ? do_fork+0x11d/0x2a1
-> > >  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
-> > >  [<c01b6795>] ? set_close_on_exec+0x45/0x4b
-> > >  [<c01b6e98>] ? do_fcntl+0x15f/0x3f1
-> > >  [<c0108678>] ? sys_clone+0x20/0x25
-> > >  [<c010291d>] ? ptregs_clone+0x15/0x38
-> > >  [<c0102850>] ? sysenter_do_call+0x12/0x26
-> > > Code: 89 e5 56 53 0f 1f 44 00 00 8b 58 3c 89 c6 85 db 74 22 89 d8 e8 54 65 29 00 8b 43 08 8d 56 34 8d 4b 04 89 53 08 89 4e 34 89 46 38 <89> 10 89 d8 e8 9e 62 29 00 5b 5e 5d c3 55 89 e5 0f 1f 44 00 00
-> > > EIP: [<c019e28c>] anon_vma_link+0x2c/0x39 SS:ESP 0068:f6901eb8
-> > > CR2: 0000000000aaaaaa
-> > > ---[ end trace b7f008b0e5aa7c65 ]---
-> > 
-> > This looks like a low-level memory management issue of some sort.
-> 
-> Yes, it really looks strange. dup_mm+0x1c7 matches to:
-> c102fc0e:       81 60 14 ff df ff ff    andl   $0xffffdfff,0x14(%eax)
-> c102fc15:       8b 45 ec                mov    -0x14(%ebp),%eax
-> c102fc18:       c7 43 0c 00 00 00 00    movl   $0x0,0xc(%ebx)
-> c102fc1f:       89 03                   mov    %eax,(%ebx)
-> c102fc21:       89 d8                   mov    %ebx,%eax
-> c102fc23:       e8 38 e6 06 00          call   c109e260 <anon_vma_link>
-> c102fc28:       8b 43 48                mov    0x48(%ebx),%eax  <<< BANG
-> 
-> which corresponds to:
-> kernel/fork.c:336
-> 		tmp->vm_flags &= ~VM_LOCKED;
->                 tmp->vm_mm = mm;
->                 tmp->vm_next = NULL;
->                 anon_vma_link(tmp);
->                 file = tmp->vm_file; <<< BANG
-> 
-> ebx is tmp which somehow got deallocated. I cannot see how this could happened.
+cfq_set_request() and cfq_put_request() count READ and WRITE requests
+separately.  Changing the I/O request direction after blk_get_request()
+allocates the request throws off this CFQ accounting.
 
-Through a page tables corruption or a TLB issue, for example.
+Here's a traceback of the BUG.
 
-> > What's the HEAD commit in this kernel tree?
-> 
-> $ git describe
-> v2.6.33-1-gbaac35c
+Dec 28 15:06:07 ------------[ cut here ]------------
+kernel BUG at block/cfq-iosched.c:3402!
+invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC
+last sysfs file: /sys/devices/pci0000:00/0000:00:03.0/0000:02:00.1/irq
+CPU 1
+Modules linked in: dm_round_robin scsi_dh_emc bnx2fc libfcoe libfc scsi_transport_fc cnic 8021q nfs fscache nfsd lockd bridge nfs_acl auth_rpcgss exportfs stp bnep sco l2cap crc16 bluetooth sunrpc iptable_filter ip_tables ip6table_filter ip6_tables x_tables ipv6 loop dm_multipath scsi_dh uinput sr_mod cdrom bnx2x ata_piix mdio serio_raw pcspkr rtc_cmos libata rtc_core rtc_lib bnx2 sg button joydev dcdbas dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod shpchp mptsas mptscsih mptbase scsi_transport_sas sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: microcode]
+Pid: 1645, comm: kmpath_handlerd Tainted: G        W  2.6.32-next #33 PowerEdge T710
+RIP: 0010:[<ffffffff81168581>]  [<ffffffff81168581>] cfq_put_request+0x28/0x66
+RSP: 0018:ffff880128e4dc50  EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8800ace10ea0 RCX: ffff880128ded1e0
+RDX: 0000000000000001 RSI: ffff8800ace10ea0 RDI: ffff8800ace10ea0
+RBP: ffff880128e4dc60 R08: ffff880128e4db90 R09: ffff880128ded218
+R10: ffff880128e4dbe0 R11: ffffffff8115d3d9 R12: ffff880091b37ee0
+R13: ffff8801124f3460 R14: 0000000000002000 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff88002f200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000931000 CR3: 000000010f220000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process kmpath_handlerd (pid: 1645, threadinfo ffff880128e4c000, task ffff880128decb40)
+Stack:
+ ffff8800ace10ea0 0000000001282c4f ffff880128e4dc70 ffffffff8115667d
+<0> ffff880128e4dca0 ffffffff8115ce21 ffff8801124f3460 ffff8800ace10ea0
+<0> 0000000000000282 ffff8801124f27f0 ffff880128e4dcd0 ffffffff8115d3e7
+Call Trace:
+ [<ffffffff8115667d>] elv_put_request+0x19/0x1b
+ [<ffffffff8115ce21>] __blk_put_request+0x88/0xb9
+ [<ffffffff8115d3e7>] blk_put_request+0x2e/0x46
+ [<ffffffffa00206ed>] send_trespass_cmd+0x24e/0x260 [scsi_dh_emc]
+ [<ffffffffa0020d9b>] clariion_activate+0x55/0x13e [scsi_dh_emc]
+ [<ffffffff81062818>] ? trace_hardirqs_on_caller+0x113/0x13e
+ [<ffffffffa0268cd7>] ? pg_init_done+0x0/0x187 [dm_multipath]
+ [<ffffffffa01767ec>] scsi_dh_activate+0x70/0xbd [scsi_dh]
+ [<ffffffffa0268cd7>] ? pg_init_done+0x0/0x187 [dm_multipath]
+ [<ffffffffa026a4c1>] ? activate_path+0x0/0x2b [dm_multipath]
+ [<ffffffffa026a4ea>] activate_path+0x29/0x2b [dm_multipath]
+ [<ffffffff810519eb>] worker_thread+0x1af/0x2ae
+ [<ffffffff81051992>] ? worker_thread+0x156/0x2ae
+ [<ffffffff812f1a9a>] ? schedule+0x8e6/0x996
+ [<ffffffff810549e4>] ? autoremove_wake_function+0x0/0x38
+ [<ffffffff8105183c>] ? worker_thread+0x0/0x2ae
+ [<ffffffff810548eb>] kthread+0x7d/0x86
+ [<ffffffff810038fa>] child_rip+0xa/0x20
+ [<ffffffff812f487c>] ? restore_args+0x0/0x30
+ [<ffffffff81179e0b>] ? debug_object_activate+0x38/0xd8
+ [<ffffffff81058de1>] ? sched_clock_cpu+0x42/0xc7
+ [<ffffffff8105486e>] ? kthread+0x0/0x86
+ [<ffffffff810038f0>] ? child_rip+0x0/0x20
+Code: 5c c9 c3 55 48 89 e5 41 54 53 4c 8b a7 a8 00 00 00 48 89 fb 4d 85 e4 74 4b 8b 47 48 83 e0 01 48 63 d0 41 8b 44 94 68 85 c0 75 04 <0f> 0b eb fe ff c8 41 89 44 94 68 48 8b 87 a0 00 00 00 48 8b 78
+RIP  [<ffffffff81168581>] cfq_put_request+0x28/0x66
+ RSP <ffff880128e4dc50>
+---[ end trace fd0fef9ed4a171a1 ]---
 
-I can't find gbaac35c anywhere post 2.6.33.  Can you just send the output
-of "git show | head -1", please?
+Hugh Daschbach (1):
+  Don't change direction flags in struct request.
 
-> > Also, is the problem reproducible?
-> 
-> As I've already mentioned. This is the first time I have seen this problem.
-> I am using suspend to disk and wake up quite often (several times a day). I
-> haven't tried suspend/resume loop test yet.
+ drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-OK
 
-Given the apparent nature of the problem it will be extremely difficult to
-track down without a reliable way to reproduce it.
-
-Rafael
